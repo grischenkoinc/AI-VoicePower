@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AI VoicePower</string>
+
+    <!-- Home Screen -->
+    <string name="home_title">Привіт! 👋</string>
+    <string name="home_subtitle">Розпочнімо покращення вашого голосу</string>
+    <string name="lessons_section_title">Уроки</string>
+
+    <!-- Lesson Categories -->
+    <string name="category_diction">Дикція</string>
+    <string name="category_breathing">Дихання</string>
+    <string name="category_intonation">Інтонація</string>
+    <string name="category_presentation">Виступи</string>
+
+    <!-- Common -->
+    <string name="start">Почати</string>
+    <string name="continue_lesson">Продовжити</string>
+    <string name="complete">Завершити</string>
+    <string name="next">Далі</string>
+    <string name="back">Назад</string>
+    <string name="record">Записати</string>
+    <string name="stop">Зупинити</string>
+    <string name="play">Відтворити</string>
+    <string name="analyze">Аналізувати</string>
+
+    <!-- Lesson Screen -->
+    <string name="lesson_progress">Прогрес уроку</string>
+    <string name="lesson_duration">%d хв</string>
+
+    <!-- Recording -->
+    <string name="recording_instruction">Натисніть кнопку і почніть говорити</string>
+    <string name="recording_in_progress">Запис...</string>
+    <string name="recording_finished">Запис завершено</string>
+
+    <!-- AI Feedback -->
+    <string name="ai_analyzing">AI аналізує вашу промову...</string>
+    <string name="ai_feedback_title">Фідбек від AI наставника</string>
+    <string name="recommendations">Рекомендації</string>
+
+    <!-- Permissions -->
+    <string name="permission_audio_required">Потрібен дозвіл на запис аудіо</string>
+    <string name="grant_permission">Надати дозвіл</string>
+</resources>
