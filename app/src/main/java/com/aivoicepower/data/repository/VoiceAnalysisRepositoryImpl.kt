@@ -1,7 +1,7 @@
 package com.aivoicepower.data.repository
 
-import com.aivoicepower.domain.model.VoiceAnalysis
-import com.aivoicepower.domain.model.VoiceMetrics
+import com.aivoicepower.domain.model.analysis.VoiceAnalysis
+import com.aivoicepower.domain.model.analysis.VoiceMetrics
 import com.aivoicepower.domain.repository.VoiceAnalysisRepository
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content

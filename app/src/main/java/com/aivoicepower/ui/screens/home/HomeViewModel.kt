@@ -2,7 +2,7 @@ package com.aivoicepower.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aivoicepower.domain.model.Lesson
+import com.aivoicepower.domain.model.course.Lesson
 import com.aivoicepower.domain.repository.LessonRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

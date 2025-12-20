@@ -21,8 +21,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.aivoicepower.domain.model.Lesson
-import com.aivoicepower.domain.model.LessonCategory
+import com.aivoicepower.domain.model.course.Lesson
+import com.aivoicepower.domain.model.course.LessonCategory
 import com.aivoicepower.ui.theme.*
 
 @Composable

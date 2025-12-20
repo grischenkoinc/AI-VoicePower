@@ -7,8 +7,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.aivoicepower.ui.screens.home.HomeScreen
-import com.aivoicepower.ui.screens.lesson.LessonScreen
+import com.aivoicepower.ui.screens.courses.LessonScreen
 import com.aivoicepower.ui.screens.results.ResultsScreen
+import com.aivoicepower.ui.screens.onboarding.OnboardingScreen
+import com.aivoicepower.ui.screens.diagnostic.DiagnosticScreen
 
 @Composable
 fun NavGraph(
@@ -19,6 +21,26 @@ fun NavGraph(
         navController = navController,
         startDestination = startDestination
     ) {
+        composable(route = Screen.Onboarding.route) {
+            OnboardingScreen(
+                onNavigateToDiagnostic = {
+                    navController.navigate(Screen.Diagnostic.route) {
+                        popUpTo(Screen.Onboarding.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(route = Screen.Diagnostic.route) {
+            DiagnosticScreen(
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Diagnostic.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
         composable(route = Screen.Home.route) {
             HomeScreen(
                 onLessonClick = { lessonId ->

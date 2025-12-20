@@ -17,7 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.aivoicepower.domain.model.VoiceMetrics
+import com.aivoicepower.domain.model.analysis.VoiceMetrics
 import com.aivoicepower.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -1,10 +1,10 @@
-package com.aivoicepower.ui.screens.lesson
+package com.aivoicepower.ui.screens.courses
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aivoicepower.domain.model.Exercise
-import com.aivoicepower.domain.model.Lesson
+import com.aivoicepower.domain.model.course.Exercise
+import com.aivoicepower.domain.model.course.Lesson
 import com.aivoicepower.domain.repository.LessonRepository
 import com.aivoicepower.domain.repository.VoiceAnalysisRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -152,6 +152,6 @@ sealed interface RecordingState {
     object Idle : RecordingState
     object Recording : RecordingState
     object Processing : RecordingState
-    data class Completed(val analysis: com.aivoicepower.domain.model.VoiceAnalysis) : RecordingState
+    data class Completed(val analysis: com.aivoicepower.domain.model.analysis.VoiceAnalysis) : RecordingState
     data class Error(val message: String) : RecordingState
 }

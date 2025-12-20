@@ -1,4 +1,4 @@
-package com.aivoicepower.ui.screens.lesson
+package com.aivoicepower.ui.screens.courses
 
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -27,7 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.aivoicepower.ui.theme.*
-import com.aivoicepower.utils.AudioRecorder
+import com.aivoicepower.utils.audio.AudioRecorder
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -125,7 +125,7 @@ fun LessonScreen(
 
 @Composable
 private fun ExerciseContent(
-    exercise: com.aivoicepower.domain.model.Exercise,
+    exercise: com.aivoicepower.domain.model.course.Exercise,
     currentStepIndex: Int,
     recordingState: RecordingState,
     hasPermission: Boolean,
@@ -354,7 +354,7 @@ private fun RecordButton(
 
 @Composable
 private fun AnalysisResults(
-    analysis: com.aivoicepower.domain.model.VoiceAnalysis,
+    analysis: com.aivoicepower.domain.model.analysis.VoiceAnalysis,
     onRetry: () -> Unit,
     onNext: () -> Unit
 ) {
@@ -518,7 +518,7 @@ private fun AnalysisResults(
 // New Components for Step-by-Step UI
 
 @Composable
-private fun ExerciseHeader(exercise: com.aivoicepower.domain.model.Exercise) {
+private fun ExerciseHeader(exercise: com.aivoicepower.domain.model.course.Exercise) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -570,11 +570,11 @@ private fun ExerciseHeader(exercise: com.aivoicepower.domain.model.Exercise) {
 }
 
 @Composable
-private fun DifficultyBadge(difficulty: com.aivoicepower.domain.model.Difficulty) {
+private fun DifficultyBadge(difficulty: com.aivoicepower.domain.model.course.Difficulty) {
     val (text, color) = when (difficulty) {
-        com.aivoicepower.domain.model.Difficulty.BEGINNER -> "Початковий" to Success
-        com.aivoicepower.domain.model.Difficulty.INTERMEDIATE -> "Середній" to Warning
-        com.aivoicepower.domain.model.Difficulty.ADVANCED -> "Просунутий" to Error
+        com.aivoicepower.domain.model.course.Difficulty.BEGINNER -> "Початковий" to Success
+        com.aivoicepower.domain.model.course.Difficulty.INTERMEDIATE -> "Середній" to Warning
+        com.aivoicepower.domain.model.course.Difficulty.ADVANCED -> "Просунутий" to Error
     }
 
     Surface(
@@ -625,7 +625,7 @@ private fun StepProgressIndicator(currentStep: Int, totalSteps: Int) {
 
 @Composable
 private fun StepContent(
-    step: com.aivoicepower.domain.model.ExerciseStep,
+    step: com.aivoicepower.domain.model.course.ExerciseStep,
     stepNumber: Int,
     totalSteps: Int,
     exampleText: String?
