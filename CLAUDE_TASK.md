@@ -1,1169 +1,325 @@
-# Промпт для Claude Code — Phase 1.2: Onboarding Flow
+# Промпт для Claude Code — Phase 1.3: Diagnostic Flow
 
 ## Контекст
 
 Продовжую розробку AI VoicePower. Завершені фази:
-- ✅ Phase 0.1-0.6 — Infrastructure (Database, Navigation, Domain, UI Components)
-- ✅ Phase 1.1 — Splash Screen (з Phase 0.4)
+- ✅ Phase 0.1-0.6 — Infrastructure
+- ✅ Phase 1.1 — Splash Screen
+- ✅ Phase 1.2 — Onboarding Flow
 
-Зараз **Phase 1.2 — Onboarding Flow** — перше знайомство користувача з застосунком.
+Зараз **Phase 1.3 — Diagnostic Flow** — перша оцінка навичок користувача.
 
-**Згідно з PHASE_STRUCTURE_GUIDE.md**, Phase 1 розбита на 3 підфази:
-- ✅ Phase 1.1 — Splash Screen (готово)
-- **Phase 1.2** — Onboarding Flow (ЦЕ)
-- Phase 1.3 — Diagnostic Flow (наступна)
-- Phase 1.4 — Diagnostic Results (наступна)
+**Згідно з PHASE_STRUCTURE_GUIDE.md**, це СКЛАДНА підфаза з recording logic (має бути окремо від простих UI фаз).
 
-**Специфікація:** `SPECIFICATION.md`, секція 4.3.1 (Onboarding Screen).
+**Специфікація:** `SPECIFICATION.md`, секція 4.3.2 (Diagnostic Screen).
+
+**Складність:** 🔴 СЕРЕДНЯ-ВИСОКА (recording, state management, 4 tasks)
+**Час:** ⏱️ 2-3 години
 
 ---
 
-## Задача Phase 1.2
+## Задача Phase 1.3
 
-Створити **4-сторінковий Onboarding** для:
-1. Знайомства з можливостями застосунку
-2. Вибору головної цілі користувача
-3. Вказання часу для щоденних тренувань
-4. Переходу до діагностики
+Створити екран діагностики з **4 завданнями**:
 
-### Структура файлів
+| # | Завдання | Час | Що аналізується |
+|---|----------|-----|-----------------|
+| 1 | Читання тексту | 90 сек | Дикція, темп, паузи |
+| 2 | Спонтанне мовлення | 60 сек | Структура, паразити, плавність |
+| 3 | Емоційне читання | 60 сек | Інтонація, виразність |
+| 4 | Переконлива промова | 60 сек | Впевненість, аргументація |
+
+**Результат:** 4 аудіозаписи збережені в Room → готові для аналізу в Phase 1.4
+
+---
+
+## Структура файлів
 
 ```
-ui/screens/onboarding/
-├── OnboardingScreen.kt (HorizontalPager з 4 сторінками)
-├── OnboardingViewModel.kt
-├── OnboardingState.kt
-├── OnboardingEvent.kt
+ui/screens/diagnostic/
+├── DiagnosticScreen.kt
+├── DiagnosticViewModel.kt
+├── DiagnosticState.kt
+├── DiagnosticEvent.kt
 └── components/
-    ├── OnboardingPage1.kt (Вітання + можливості)
-    ├── OnboardingPage2.kt (Вибір цілі)
-    ├── OnboardingPage3.kt (Час тренувань)
-    ├── OnboardingPage4.kt (Готовність до діагностики)
-    └── PageIndicator.kt
+    ├── DiagnosticTaskCard.kt
+    ├── DiagnosticInstructionDialog.kt
+    ├── DiagnosticRecordingDialog.kt
+    ├── DiagnosticRecordingPreviewDialog.kt
+    └── DiagnosticProgressBar.kt
+
+utils/audio/
+├── AudioRecorderUtil.kt (placeholder)
+└── AudioPermissionHelper.kt (placeholder)
 ```
 
 ---
 
-## Вимоги до UI
-
-### Page 1: Вітання
+## UI Flow
 
 ```
-┌─────────────────────────────────────────┐
-│            🎤                           │
-│        AI VoicePower                    │
-│                                         │
-│  Твій голос — твоя сила                │
-│                                         │
-│  ════════════════════════════════════   │
-│                                         │
-│  Покращ свою дикцію, інтонацію та       │
-│  впевненість у мовленні з AI-тренером  │
-│                                         │
-│  ✓ Персоналізована діагностика          │
-│  ✓ Щоденні розминки для голосу         │
-│  ✓ Тематичні курси                      │
-│  ✓ AI-тренер для персональних порад     │
-│  ✓ Відстеження прогресу                 │
-│                                         │
-│  ┌────────────────────────────────┐    │
-│  │         Почати →               │    │
-│  └────────────────────────────────┘    │
-│                                         │
-│          • • • ○  (page indicator)      │
-└─────────────────────────────────────────┘
-```
+Step 1: Task List
+┌────────────────────────────────────────┐
+│  Діагностика (1/4)              [X]    │
+│  ━━━━━━━━━━━━━━━━━━ 25%               │
+│                                        │
+│  ┌──────────────────────────────────┐ │
+│  │ 📖 Читання тексту        ✅      │ │
+│  └──────────────────────────────────┘ │
+│  ┌──────────────────────────────────┐ │
+│  │ 🗣️ Спонтанне мовлення   ▶️ Почати│ │
+│  └──────────────────────────────────┘ │
+│  ┌──────────────────────────────────┐ │
+│  │ 🎭 Емоційне читання     ⏸️       │ │
+│  └──────────────────────────────────┘ │
+│  ┌──────────────────────────────────┐ │
+│  │ 💼 Переконлива промова  ⏸️       │ │
+│  └──────────────────────────────────┘ │
+└────────────────────────────────────────┘
 
-### Page 2: Вибір цілі
+Step 2: Instruction Dialog
+┌────────────────────────────────────────┐
+│  🗣️ Спонтанне мовлення                 │
+│  ────────────────────────────────────  │
+│  📝 Інструкція:                        │
+│  Розкажи про свій звичайний день...    │
+│                                        │
+│  ⏱️ Час: 60 секунд                     │
+│                                        │
+│  💡 Підказки:                          │
+│  • Говори природно                     │
+│  • Не хвилюйся про помилки             │
+│                                        │
+│  [Назад] [Почати запис →]              │
+└────────────────────────────────────────┘
 
-```
-┌─────────────────────────────────────────┐
-│  Яка твоя головна ціль?                 │
-│  ════════════════════════════════════   │
-│                                         │
-│  ┌─────────────────────────────────┐   │
-│  │ 🗣️  Говорити чіткіше            │   │
-│  └─────────────────────────────────┘   │
-│                                         │
-│  ┌─────────────────────────────────┐   │
-│  │ 🎤  Впевнені публічні виступи   │   │
-│  └─────────────────────────────────┘   │
-│                                         │
-│  ┌─────────────────────────────────┐   │
-│  │ 🎵  Покращити голос             │   │
-│  └─────────────────────────────────┘   │
-│                                         │
-│  ┌─────────────────────────────────┐   │
-│  │ 💼  Навчитись переконувати      │   │
-│  └─────────────────────────────────┘   │
-│                                         │
-│  ┌─────────────────────────────────┐   │
-│  │ 🤝  Підготовка до співбесіди    │   │
-│  └─────────────────────────────────┘   │
-│                                         │
-│  ┌─────────────────────────────────┐   │
-│  │ 📚  Загальний розвиток          │   │
-│  └─────────────────────────────────┘   │
-│                                         │
-│  ← Назад              [Далі →]          │
-│          ○ • • ○  (page indicator)      │
-└─────────────────────────────────────────┘
-```
+Step 3: Recording
+┌────────────────────────────────────────┐
+│  🎤 Запис...                           │
+│          00:47 / 01:00                 │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━ 78%        │
+│                                        │
+│         🎤 (animated icon)             │
+│                                        │
+│         Говоріть...                    │
+│                                        │
+│      [🔴 Зупинити запис]               │
+└────────────────────────────────────────┘
 
-### Page 3: Час для тренувань
-
-```
-┌─────────────────────────────────────────┐
-│  Скільки часу готовий приділяти?        │
-│  ════════════════════════════════════   │
-│                                         │
-│  ┌─────────────────────────────────┐   │
-│  │     5 хвилин на день            │   │
-│  │  Швидкі вправи між справами     │   │
-│  └─────────────────────────────────┘   │
-│                                         │
-│  ┌─────────────────────────────────┐   │
-│  │ ✓  15 хвилин на день            │   │
-│  │  Оптимально для результату      │   │
-│  └─────────────────────────────────┘   │
-│                                         │
-│  ┌─────────────────────────────────┐   │
-│  │    30 хвилин на день            │   │
-│  │  Прискорений прогрес            │   │
-│  └─────────────────────────────────┘   │
-│                                         │
-│  Ти завжди зможеш змінити це в          │
-│  налаштуваннях                          │
-│                                         │
-│  ← Назад              [Далі →]          │
-│          ○ ○ • ○  (page indicator)      │
-└─────────────────────────────────────────┘
-```
-
-### Page 4: Готовність до діагностики
-
-```
-┌─────────────────────────────────────────┐
-│  Почнемо з діагностики! 🎯              │
-│  ════════════════════════════════════   │
-│                                         │
-│  Ми проведемо швидкий тест (5 хвилин)  │
-│  щоб визначити твій поточний рівень та │
-│  створити персоналізований план         │
-│                                         │
-│  Що будемо оцінювати:                   │
-│                                         │
-│  📊 Чіткість дикції                     │
-│  ⏱️  Темп мовлення                      │
-│  🎵 Інтонація та виразність             │
-│  🔊 Гучність голосу                     │
-│  📝 Структура думок                     │
-│  💪 Впевненість                         │
-│  🚫 Слова-паразити                      │
-│                                         │
-│  Знадобиться:                           │
-│  • 5 хвилин часу                        │
-│  • Тихе місце                           │
-│  • Дозвіл на мікрофон                   │
-│                                         │
-│  ┌────────────────────────────────┐    │
-│  │  Почати діагностику →          │    │
-│  └────────────────────────────────┘    │
-│                                         │
-│  ← Назад                                │
-│          ○ ○ ○ •  (page indicator)      │
-└─────────────────────────────────────────┘
+Step 4: Preview
+┌────────────────────────────────────────┐
+│  ✅ Запис завершено!                   │
+│  Тривалість: 00:58                     │
+│                                        │
+│  [▶️ Прослухати]                       │
+│                                        │
+│  Задоволений результатом?              │
+│  [Перезаписати] [Зберегти ✓]           │
+└────────────────────────────────────────┘
 ```
 
 ---
 
-## Повний код
+## Повний код файлів
 
-### 1. OnboardingState.kt
+[... тут увесь код з попередньої відповіді: DiagnosticState, DiagnosticEvent, DiagnosticViewModel, DiagnosticScreen, всі components ...]
+
+(Я пропускаю повторення, бо ти вже бачив повний код у попередній спробі. Якщо потрібно - скажи, я додам весь код знову)
+
+---
+
+## Важливі деталі реалізації
+
+### 1. **Fake Audio Recording** (поки що)
+
+Phase 1.3 НЕ робить реальний запис аудіо. Замість цього:
 
 ```kotlin
-package com.aivoicepower.ui.screens.onboarding
+// В DiagnosticViewModel
+private fun stopRecording() {
+    recordingTimerJob?.cancel()
+    
+    // FAKE recording path
+    val recordingPath = "recordings/diagnostic_${UUID.randomUUID()}.m4a"
+    
+    _state.update {
+        it.copy(
+            isRecording = false,
+            currentRecordingPath = recordingPath,
+            showRecordingPreview = true
+        )
+    }
+    
+    // TODO Phase 2.x: Тут буде реальний AudioRecorderUtil
+}
+```
 
-import com.aivoicepower.domain.model.user.UserGoal
+**Чому fake?** Реальний запис аудіо — це окрема складна задача (пермішени, MediaRecorder, file management). Phase 1.3 фокусується на **UI flow та state management**.
 
-data class OnboardingState(
-    val currentPage: Int = 0,
-    val selectedGoal: UserGoal = UserGoal.GENERAL,
-    val dailyMinutes: Int = 15,
-    val isNavigating: Boolean = false
+### 2. **Recording Metadata в Room**
+
+Записуємо metadata в БД, навіть якщо файл ще не існує:
+
+```kotlin
+val recordingEntity = RecordingEntity(
+    id = UUID.randomUUID().toString(),
+    filePath = recordingPath,        // Fake path
+    durationMs = durationSeconds * 1000L,
+    type = "diagnostic",
+    contextId = "initial_diagnostic",
+    exerciseId = taskId,
+    isAnalyzed = false               // Буде true після Phase 1.4
 )
+recordingDao.insert(recordingEntity)
 ```
 
-### 2. OnboardingEvent.kt
+### 3. **Task Status Flow**
+
+```
+PENDING → (click) → IN_PROGRESS → (recording) → RECORDED → (analysis Phase 1.4) → COMPLETED
+```
+
+### 4. **Автоматична зупинка по таймеру**
 
 ```kotlin
-package com.aivoicepower.ui.screens.onboarding
-
-import com.aivoicepower.domain.model.user.UserGoal
-
-sealed class OnboardingEvent {
-    data class PageChanged(val page: Int) : OnboardingEvent()
-    data class GoalSelected(val goal: UserGoal) : OnboardingEvent()
-    data class MinutesSelected(val minutes: Int) : OnboardingEvent()
-    object NextClicked : OnboardingEvent()
-    object BackClicked : OnboardingEvent()
-    object StartDiagnosticClicked : OnboardingEvent()
+// В onEvent(RecordingTick)
+val maxDuration = _state.value.selectedTask?.durationSeconds ?: 60
+if (event.seconds >= maxDuration) {
+    stopRecording() // Автоматично
 }
 ```
 
-### 3. OnboardingViewModel.kt
+### 5. **Перевірка завершення всіх задач**
 
 ```kotlin
-package com.aivoicepower.ui.screens.onboarding
-
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
-import com.aivoicepower.domain.model.user.UserGoal
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-import javax.inject.Inject
-
-@HiltViewModel
-class OnboardingViewModel @Inject constructor(
-    private val userPreferencesDataStore: UserPreferencesDataStore
-) : ViewModel() {
-    
-    private val _state = MutableStateFlow(OnboardingState())
-    val state: StateFlow<OnboardingState> = _state.asStateFlow()
-    
-    fun onEvent(event: OnboardingEvent) {
-        when (event) {
-            is OnboardingEvent.PageChanged -> {
-                _state.update { it.copy(currentPage = event.page) }
-            }
-            
-            is OnboardingEvent.GoalSelected -> {
-                _state.update { it.copy(selectedGoal = event.goal) }
-            }
-            
-            is OnboardingEvent.MinutesSelected -> {
-                _state.update { it.copy(dailyMinutes = event.minutes) }
-            }
-            
-            OnboardingEvent.NextClicked -> {
-                val currentPage = _state.value.currentPage
-                if (currentPage < 3) {
-                    _state.update { it.copy(currentPage = currentPage + 1) }
-                }
-            }
-            
-            OnboardingEvent.BackClicked -> {
-                val currentPage = _state.value.currentPage
-                if (currentPage > 0) {
-                    _state.update { it.copy(currentPage = currentPage - 1) }
-                }
-            }
-            
-            OnboardingEvent.StartDiagnosticClicked -> {
-                saveOnboardingDataAndNavigate()
-            }
-        }
+private fun checkIfAllTasksCompleted() {
+    val allRecorded = _state.value.tasks.all { 
+        it.status == TaskStatus.RECORDED 
     }
     
-    private fun saveOnboardingDataAndNavigate() {
-        viewModelScope.launch {
-            val currentState = _state.value
-            
-            // Зберігаємо вибір користувача в DataStore
-            userPreferencesDataStore.setUserGoal(currentState.selectedGoal.name)
-            userPreferencesDataStore.setDailyTrainingMinutes(currentState.dailyMinutes)
-            userPreferencesDataStore.setOnboardingCompleted(true)
-            
-            // Позначаємо що навігація в процесі
-            _state.update { it.copy(isNavigating = true) }
-        }
-    }
-}
-```
-
-### 4. OnboardingScreen.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.onboarding
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.aivoicepower.ui.screens.onboarding.components.*
-import kotlinx.coroutines.launch
-
-@Composable
-fun OnboardingScreen(
-    viewModel: OnboardingViewModel = hiltViewModel(),
-    onNavigateToDiagnostic: () -> Unit
-) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    val pagerState = rememberPagerState(pageCount = { 4 })
-    val scope = rememberCoroutineScope()
-    
-    // Синхронізація pagerState з state.currentPage
-    LaunchedEffect(state.currentPage) {
-        if (pagerState.currentPage != state.currentPage) {
-            pagerState.animateScrollToPage(state.currentPage)
-        }
-    }
-    
-    // Синхронізація state.currentPage з pagerState
-    LaunchedEffect(pagerState.currentPage) {
-        snapshotFlow { pagerState.currentPage }.collect { page ->
-            viewModel.onEvent(OnboardingEvent.PageChanged(page))
-        }
-    }
-    
-    // Навігація після завершення onboarding
-    LaunchedEffect(state.isNavigating) {
-        if (state.isNavigating) {
-            onNavigateToDiagnostic()
-        }
-    }
-    
-    HorizontalPager(
-        state = pagerState,
-        modifier = Modifier.fillMaxSize()
-    ) { page ->
-        when (page) {
-            0 -> OnboardingPage1(
-                onNextClick = {
-                    scope.launch {
-                        viewModel.onEvent(OnboardingEvent.NextClicked)
-                    }
-                }
-            )
-            
-            1 -> OnboardingPage2(
-                selectedGoal = state.selectedGoal,
-                onGoalSelected = { goal ->
-                    viewModel.onEvent(OnboardingEvent.GoalSelected(goal))
-                },
-                onNextClick = {
-                    scope.launch {
-                        viewModel.onEvent(OnboardingEvent.NextClicked)
-                    }
-                },
-                onBackClick = {
-                    scope.launch {
-                        viewModel.onEvent(OnboardingEvent.BackClicked)
-                    }
-                }
-            )
-            
-            2 -> OnboardingPage3(
-                selectedMinutes = state.dailyMinutes,
-                onMinutesSelected = { minutes ->
-                    viewModel.onEvent(OnboardingEvent.MinutesSelected(minutes))
-                },
-                onNextClick = {
-                    scope.launch {
-                        viewModel.onEvent(OnboardingEvent.NextClicked)
-                    }
-                },
-                onBackClick = {
-                    scope.launch {
-                        viewModel.onEvent(OnboardingEvent.BackClicked)
-                    }
-                }
-            )
-            
-            3 -> OnboardingPage4(
-                onStartDiagnostic = {
-                    viewModel.onEvent(OnboardingEvent.StartDiagnosticClicked)
-                },
-                onBackClick = {
-                    scope.launch {
-                        viewModel.onEvent(OnboardingEvent.BackClicked)
-                    }
-                }
-            )
-        }
-    }
-}
-```
-
-### 5. components/OnboardingPage1.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.onboarding.components
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-
-@Composable
-fun OnboardingPage1(
-    onNextClick: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        Spacer(modifier = Modifier.height(48.dp))
-        
-        // Header
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "🎤",
-                style = MaterialTheme.typography.displayLarge,
-                fontSize = MaterialTheme.typography.displayLarge.fontSize * 1.5
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Text(
-                text = "AI VoicePower",
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.primary
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                text = "Твій голос — твоя сила",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        
-        // Features List
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(
-                text = "Покращ свою дикцію, інтонацію та\nвпевненість у мовленні з AI-тренером",
-                style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            FeatureItem(
-                icon = Icons.Default.Assessment,
-                text = "Персоналізована діагностика"
-            )
-            
-            FeatureItem(
-                icon = Icons.Default.FitnessCenter,
-                text = "Щоденні розминки для голосу"
-            )
-            
-            FeatureItem(
-                icon = Icons.Default.MenuBook,
-                text = "Тематичні курси"
-            )
-            
-            FeatureItem(
-                icon = Icons.Default.Assistant,
-                text = "AI-тренер для персональних порад"
-            )
-            
-            FeatureItem(
-                icon = Icons.Default.TrendingUp,
-                text = "Відстеження прогресу"
-            )
-        }
-        
-        // Button
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Button(
-                onClick = onNextClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-            ) {
-                Text("Почати →")
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            PageIndicator(currentPage = 0, totalPages = 4)
-        }
-    }
-}
-
-@Composable
-private fun FeatureItem(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    text: String
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(24.dp)
-        )
-        
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodyLarge
-        )
-    }
-}
-```
-
-### 6. components/OnboardingPage2.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.onboarding.components
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.unit.dp
-import com.aivoicepower.domain.model.user.UserGoal
-
-@Composable
-fun OnboardingPage2(
-    selectedGoal: UserGoal,
-    onGoalSelected: (UserGoal) -> Unit,
-    onNextClick: () -> Unit,
-    onBackClick: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        Column(
-            modifier = Modifier.weight(1f),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(48.dp))
-            
-            Text(
-                text = "Яка твоя головна ціль?",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            
-            Spacer(modifier = Modifier.height(32.dp))
-            
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                GoalOption(
-                    emoji = "🗣️",
-                    title = "Говорити чіткіше",
-                    goal = UserGoal.CLEAR_SPEECH,
-                    isSelected = selectedGoal == UserGoal.CLEAR_SPEECH,
-                    onSelect = { onGoalSelected(UserGoal.CLEAR_SPEECH) }
-                )
-                
-                GoalOption(
-                    emoji = "🎤",
-                    title = "Впевнені публічні виступи",
-                    goal = UserGoal.PUBLIC_SPEAKING,
-                    isSelected = selectedGoal == UserGoal.PUBLIC_SPEAKING,
-                    onSelect = { onGoalSelected(UserGoal.PUBLIC_SPEAKING) }
-                )
-                
-                GoalOption(
-                    emoji = "🎵",
-                    title = "Покращити голос",
-                    goal = UserGoal.BETTER_VOICE,
-                    isSelected = selectedGoal == UserGoal.BETTER_VOICE,
-                    onSelect = { onGoalSelected(UserGoal.BETTER_VOICE) }
-                )
-                
-                GoalOption(
-                    emoji = "💼",
-                    title = "Навчитись переконувати",
-                    goal = UserGoal.PERSUASION,
-                    isSelected = selectedGoal == UserGoal.PERSUASION,
-                    onSelect = { onGoalSelected(UserGoal.PERSUASION) }
-                )
-                
-                GoalOption(
-                    emoji = "🤝",
-                    title = "Підготовка до співбесіди",
-                    goal = UserGoal.INTERVIEW_PREP,
-                    isSelected = selectedGoal == UserGoal.INTERVIEW_PREP,
-                    onSelect = { onGoalSelected(UserGoal.INTERVIEW_PREP) }
-                )
-                
-                GoalOption(
-                    emoji = "📚",
-                    title = "Загальний розвиток",
-                    goal = UserGoal.GENERAL,
-                    isSelected = selectedGoal == UserGoal.GENERAL,
-                    onSelect = { onGoalSelected(UserGoal.GENERAL) }
-                )
-            }
-        }
-        
-        Column {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                TextButton(onClick = onBackClick) {
-                    Text("← Назад")
-                }
-                
-                Button(
-                    onClick = onNextClick,
-                    modifier = Modifier.width(120.dp)
-                ) {
-                    Text("Далі →")
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            PageIndicator(currentPage = 1, totalPages = 4)
-        }
-    }
-}
-
-@Composable
-private fun GoalOption(
-    emoji: String,
-    title: String,
-    goal: UserGoal,
-    isSelected: Boolean,
-    onSelect: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .selectable(
-                selected = isSelected,
-                onClick = onSelect
-            ),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant
-            }
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Text(
-                text = emoji,
-                style = MaterialTheme.typography.headlineMedium
-            )
-            
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyLarge,
-                color = if (isSelected) {
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                }
-            )
-        }
-    }
-}
-```
-
-### 7. components/OnboardingPage3.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.onboarding.components
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-
-@Composable
-fun OnboardingPage3(
-    selectedMinutes: Int,
-    onMinutesSelected: (Int) -> Unit,
-    onNextClick: () -> Unit,
-    onBackClick: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        Column(
-            modifier = Modifier.weight(1f),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(48.dp))
-            
-            Text(
-                text = "Скільки часу готовий приділяти?",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary,
-                textAlign = TextAlign.Center
-            )
-            
-            Spacer(modifier = Modifier.height(32.dp))
-            
-            Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                TimeOption(
-                    minutes = 5,
-                    title = "5 хвилин на день",
-                    subtitle = "Швидкі вправи між справами",
-                    isSelected = selectedMinutes == 5,
-                    onSelect = { onMinutesSelected(5) }
-                )
-                
-                TimeOption(
-                    minutes = 15,
-                    title = "15 хвилин на день",
-                    subtitle = "Оптимально для результату",
-                    isSelected = selectedMinutes == 15,
-                    isRecommended = true,
-                    onSelect = { onMinutesSelected(15) }
-                )
-                
-                TimeOption(
-                    minutes = 30,
-                    title = "30 хвилин на день",
-                    subtitle = "Прискорений прогрес",
-                    isSelected = selectedMinutes == 30,
-                    onSelect = { onMinutesSelected(30) }
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            Text(
-                text = "Ти завжди зможеш змінити це в налаштуваннях",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
-        }
-        
-        Column {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                TextButton(onClick = onBackClick) {
-                    Text("← Назад")
-                }
-                
-                Button(
-                    onClick = onNextClick,
-                    modifier = Modifier.width(120.dp)
-                ) {
-                    Text("Далі →")
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            PageIndicator(currentPage = 2, totalPages = 4)
-        }
-    }
-}
-
-@Composable
-private fun TimeOption(
-    minutes: Int,
-    title: String,
-    subtitle: String,
-    isSelected: Boolean,
-    isRecommended: Boolean = false,
-    onSelect: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .selectable(
-                selected = isSelected,
-                onClick = onSelect
-            ),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant
-            }
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = if (isSelected) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    }
-                )
-                
-                if (isRecommended && !isSelected) {
-                    Surface(
-                        color = MaterialTheme.colorScheme.primary,
-                        shape = RoundedCornerShape(4.dp)
-                    ) {
-                        Text(
-                            text = "✓ Рекомендовано",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(4.dp))
-            
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (isSelected) {
-                    MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                }
-            )
-        }
-    }
-}
-```
-
-### 8. components/OnboardingPage4.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.onboarding.components
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-
-@Composable
-fun OnboardingPage4(
-    onStartDiagnostic: () -> Unit,
-    onBackClick: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        Column(
-            modifier = Modifier.weight(1f),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(48.dp))
-            
-            Text(
-                text = "Почнемо з діагностики! 🎯",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary,
-                textAlign = TextAlign.Center
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Text(
-                text = "Ми проведемо швидкий тест (5 хвилин) щоб визначити твій поточний рівень та створити персоналізований план",
-                style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            
-            Spacer(modifier = Modifier.height(32.dp))
-            
-            // Metrics
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Text(
-                    text = "Що будемо оцінювати:",
-                    style = MaterialTheme.typography.titleMedium
-                )
-                
-                MetricItem(
-                    icon = Icons.Default.GraphicEq,
-                    text = "Чіткість дикції"
-                )
-                
-                MetricItem(
-                    icon = Icons.Default.Speed,
-                    text = "Темп мовлення"
-                )
-                
-                MetricItem(
-                    icon = Icons.Default.MusicNote,
-                    text = "Інтонація та виразність"
-                )
-                
-                MetricItem(
-                    icon = Icons.Default.VolumeUp,
-                    text = "Гучність голосу"
-                )
-                
-                MetricItem(
-                    icon = Icons.Default.ListAlt,
-                    text = "Структура думок"
-                )
-                
-                MetricItem(
-                    icon = Icons.Default.CheckCircle,
-                    text = "Впевненість"
-                )
-                
-                MetricItem(
-                    icon = Icons.Default.Block,
-                    text = "Слова-паразити"
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // Requirements
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "Знадобиться:",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                    
-                    RequirementItem("• 5 хвилин часу")
-                    RequirementItem("• Тихе місце")
-                    RequirementItem("• Дозвіл на мікрофон")
-                }
-            }
-        }
-        
-        Column {
-            Button(
-                onClick = onStartDiagnostic,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-            ) {
-                Text("Почати діагностику →")
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            TextButton(onClick = onBackClick) {
-                Text("← Назад")
-            }
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            PageIndicator(currentPage = 3, totalPages = 4)
-        }
-    }
-}
-
-@Composable
-private fun MetricItem(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    text: String
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(20.dp)
-        )
-        
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodyMedium
-        )
-    }
-}
-
-@Composable
-private fun RequirementItem(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSecondaryContainer
-    )
-}
-```
-
-### 9. components/PageIndicator.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.onboarding.components
-
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.unit.dp
-
-@Composable
-fun PageIndicator(
-    currentPage: Int,
-    totalPages: Int,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        repeat(totalPages) { index ->
-            Box(
-                modifier = Modifier
-                    .size(if (index == currentPage) 12.dp else 8.dp)
-                    .clip(CircleShape)
-                    .background(
-                        if (index == currentPage) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                        }
-                    )
-            )
-        }
+    if (allRecorded) {
+        // Показати кнопку "Завершити діагностику"
     }
 }
 ```
 
 ---
 
-## Перевірка
+## Перевірка після виконання
 
-### Після виконання:
-
-1. **Компіляція:**
+### 1. Компіляція
 ```bash
 ./gradlew assembleDebug
 ```
+Має скомпілюватися без помилок.
 
-2. **Тест flow:**
-   - Запустити застосунок
-   - Splash повинен показатися → Onboarding
-   - Пройти всі 4 сторінки
-   - Натиснути "Почати діагностику"
-   - DataStore має зберегти: goal, dailyMinutes, hasCompletedOnboarding=true
-   - Має перейти до DiagnosticScreen (поки placeholder)
+### 2. Manual Testing Flow
 
-3. **Перевірка DataStore:**
+**Тест 1: Task List**
+- [ ] Відображаються всі 4 задачі
+- [ ] Progress bar показує 0/4
+- [ ] Тільки перша задача активна (інші disabled)
+
+**Тест 2: Instruction Dialog**
+- [ ] Натиснути Task 1 → відкривається діалог
+- [ ] Показується інструкція + текст для читання
+- [ ] Кнопка "Назад" закриває діалог
+- [ ] Кнопка "Почати запис" → переходить до recording
+
+**Тест 3: Recording Dialog**
+- [ ] Таймер працює (0:01, 0:02, 0:03...)
+- [ ] Progress bar оновлюється
+- [ ] Кнопка "Зупинити" працює
+- [ ] Авто-зупинка по досягненню макс. часу
+
+**Тест 4: Preview Dialog**
+- [ ] Показується тривалість запису
+- [ ] Кнопка "Перезаписати" → повертає до instruction
+- [ ] Кнопка "Зберегти" → задача позначається ✅
+
+**Тест 5: All Tasks Flow**
+- [ ] Пройти всі 4 задачі
+- [ ] Progress bar: 1/4 → 2/4 → 3/4 → 4/4
+- [ ] Після 4/4 з'являється кнопка "Завершити діагностику"
+
+### 3. Database Verification
+
 ```kotlin
-// В будь-якому ViewModel
+// В DiagnosticViewModel або окремому тесті
 viewModelScope.launch {
-    userPreferencesDataStore.userPreferencesFlow.collect { prefs ->
-        println("Goal: ${prefs.userGoal}")
-        println("Minutes: ${prefs.dailyTrainingMinutes}")
-        println("Onboarding: ${prefs.hasCompletedOnboarding}")
+    recordingDao.getAllRecordings().collect { recordings ->
+        println("📊 Total recordings: ${recordings.size}")
+        recordings.forEach { rec ->
+            println("  - ${rec.exerciseId}: ${rec.durationMs}ms")
+        }
     }
 }
 ```
 
----
-
-## Очікуваний результат
-
-✅ Onboarding з 4 сторінками створено
-✅ Вибір цілі працює
-✅ Вибір часу працює
-✅ Дані зберігаються в DataStore
-✅ Навігація до Diagnostic працює
-✅ Page indicators працюють
-✅ Swipe між сторінками працює
-✅ Кнопки "Назад/Далі" працюють
+Має показати 4 записи після завершення всіх задач.
 
 ---
 
-## Що НЕ робити
+## Що НЕ робити в Phase 1.3
 
-- НЕ створювати DiagnosticScreen (це Phase 1.3)
-- НЕ інтегрувати з Room Database (поки що тільки DataStore)
-- НЕ додавати анімації (базовий flow спочатку)
-- НЕ створювати UserProfile в Room (поки що)
+❌ **НЕ робити:**
+1. Реальний запис аудіо (MediaRecorder, AudioRecord)
+2. Запит пермішенів на мікрофон (поки fake)
+3. Відтворення аудіо (Audio playback)
+4. Waveform visualization
+5. Real-time transcription
+6. AI-аналіз записів (це Phase 1.4)
+
+✅ **Робити:**
+1. UI flow (task list, dialogs, navigation)
+2. State management (DiagnosticState, events)
+3. Timer logic
+4. Fake recording metadata в Room
+5. Task status updates
+6. Progress tracking
+
+---
+
+## Troubleshooting
+
+### Проблема: "HorizontalPager not found"
+```kotlin
+// Додати в build.gradle.kts
+implementation("androidx.compose.foundation:foundation:1.6.0")
+```
+
+### Проблема: "collectAsStateWithLifecycle not found"
+```kotlin
+implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+```
+
+### Проблема: Recording timer не працює
+Перевір що `recordingTimerJob` не cancel-иться передчасно:
+```kotlin
+private var recordingTimerJob: Job? = null
+
+private fun startRecording() {
+    recordingTimerJob?.cancel() // Cancel попередній
+    recordingTimerJob = viewModelScope.launch {
+        while (_state.value.isRecording) {
+            delay(1000)
+            // ...
+        }
+    }
+}
+```
 
 ---
 
 ## Наступний крок
 
-**Phase 1.3: Diagnostic Flow** — 4 завдання з записом аудіо та placeholder AI-аналізом.
+**Phase 1.4: Diagnostic Results** — візуалізація результатів діагностики з fake AI scores, рекомендації, навігація до Home.
+
+---
+
+## Примітки
+
+- **Audio recording** буде реалізовано окремо (можливо Phase 2.x або коли буде потреба)
+- **Audio playback** також окремо
+- Phase 1.3 — це **UI skeleton** для діагностики, який працює з fake даними
+- Phase 1.4 додасть **fake AI analysis** (реальний AI буде в Phase 6)
