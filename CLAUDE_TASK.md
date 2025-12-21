@@ -1,660 +1,660 @@
-# Промпт для Claude Code — Phase 1.4: Diagnostic Results
+# Промпт для Claude Code — Phase 3: Home Screen
 
 ## Контекст
 
 Продовжую розробку AI VoicePower. Завершені фази:
-- ✅ Phase 0.1-0.6 — Infrastructure
-- ✅ Phase 1.1 — Splash Screen
-- ✅ Phase 1.2 — Onboarding Flow
-- ✅ Phase 1.3 — Diagnostic Flow (4 записи в Room)
+- ✅ Phase 0.1-0.6 — Infrastructure  
+- ✅ Phase 1.1-1.4 — Onboarding + Diagnostic
+- ✅ Phase 2.1-2.5 — Warmup (всі 5 підфаз)
 
-Зараз **Phase 1.4 — Diagnostic Results** — візуалізація результатів та перехід до Home.
+Зараз **Phase 3 — Home Screen** — головний екран застосунку.
 
-**Згідно з PHASE_STRUCTURE_GUIDE.md**, це ПРОСТА підфаза (візуалізація даних).
+**Згідно з PHASE_STRUCTURE_GUIDE.md**: ЦІЛЬНА ФАЗА (не розбивати на підфази).
 
-**Специфікація:** `SPECIFICATION.md`, секція 4.3.3 (DiagnosticResult Screen).
+**Специфікація:** `SPECIFICATION.md`, секція 4.3.3 (Home Screen).
 
-**Складність:** 🟡 НИЗЬКА-СЕРЕДНЯ (UI + fake scores)
-**Час:** ⏱️ 1-1.5 години
+**Складність:** 🟡 СЕРЕДНЯ  
+**Час:** ⏱️ 2-3 години
 
 ---
 
-## Задача Phase 1.4
+## Ключова ідея
 
-Створити екран результатів діагностики, який показує:
-1. **7 метрик** з оцінками 0-100 та radar chart
-2. **Сильні сторони** (2-3 пункти)
-3. **Зони покращення** (2-3 пункти)
-4. **Персоналізовані рекомендації**
-5. **Кнопка переходу до Home**
+**Home Screen** — це **центральний хаб** застосунку, персоналізований план на день.
 
-### Що створюємо
+**Основні функції:**
+1. **Привітання + Streak** — "Доброго ранку, [ім'я]! 🔥 5 днів поспіль"
+2. **Сьогоднішній план** — рекомендовані активності на основі:
+   - UserGoal (мета користувача)
+   - DiagnosticResult (слабкі місця)
+   - Прогресу (що вже зробив сьогодні)
+3. **Швидкі дії** — 4 кнопки до основних розділів
+4. **Прогрес тижня** — міні-графік активності
+
+**Персоналізація:**
+- Якщо мета "CLEAR_SPEECH" → рекомендувати курс "Чітке мовлення"
+- Якщо низька дикція з діагностики → пропонувати артикуляцію
+- Якщо сьогодні ще не робив розминку → "Почни з розминки"
+
+---
+
+## Задача Phase 3
+
+Створити головний екран з **4 секціями**:
+
+### 1. Header (привітання + streak)
+```
+┌────────────────────────────────────┐
+│ Доброго ранку, Євгеній! ☀️         │
+│ 🔥 5 днів поспіль                  │
+└────────────────────────────────────┘
+```
+
+### 2. Сьогоднішній план (персоналізований)
+```
+┌────────────────────────────────────┐
+│ 📋 Сьогоднішній план               │
+│                                    │
+│ ┌────────────────────────────────┐ │
+│ │ ✅ Швидка розминка (виконано)  │ │
+│ └────────────────────────────────┘ │
+│                                    │
+│ ┌────────────────────────────────┐ │
+│ │ ▶️ Урок 8: Чітке мовлення      │ │
+│ │    Курс "Чітке мовлення"       │ │
+│ │    ~15 хв                      │ │
+│ └────────────────────────────────┘ │
+│                                    │
+│ ┌────────────────────────────────┐ │
+│ │ 💬 Попрактикуйся з AI          │ │
+│ │    Обговори свій прогрес       │ │
+│ └────────────────────────────────┘ │
+│                                    │
+└────────────────────────────────────┘
+```
+
+### 3. Швидкі дії
+```
+┌────────────────────────────────────┐
+│ 🚀 Швидкі дії                      │
+│                                    │
+│ [💪 Розминка] [📚 Курси]           │
+│ [🎤 Імпровізація] [📊 Прогрес]     │
+│                                    │
+└────────────────────────────────────┘
+```
+
+### 4. Прогрес тижня
+```
+┌────────────────────────────────────┐
+│ 📈 Прогрес тижня                   │
+│                                    │
+│  Пн Вт Ср Чт Пт Сб Нд             │
+│  ■  ■  ■  ■  □  □  □              │
+│  15 20 15 10  0  0  0  (хв)       │
+│                                    │
+└────────────────────────────────────┘
+```
+
+---
+
+## Структура файлів
 
 ```
-ui/screens/diagnostic/
-├── DiagnosticResultScreen.kt
-├── DiagnosticResultViewModel.kt
-├── DiagnosticResultState.kt
+ui/screens/home/
+├── HomeScreen.kt
+├── HomeViewModel.kt
+├── HomeState.kt
+├── HomeEvent.kt
 └── components/
-    ├── SkillRadarChart.kt (7-кутний radar)
-    ├── SkillScoreCard.kt (окрема метрика з progress bar)
-    ├── FeedbackSection.kt (сильні сторони / покращення)
-    └── RecommendationCard.kt
+    ├── WelcomeHeader.kt
+    ├── TodayPlanCard.kt
+    ├── PlanActivityItem.kt
+    ├── QuickActionsGrid.kt
+    └── WeekProgressChart.kt
 
-domain/model/analysis/ (якщо ще немає з Phase 0.5)
-└── DiagnosticResult.kt
-```
+domain/model/
+└── home/
+    ├── TodayPlan.kt
+    └── PlanActivity.kt
 
----
-
-## UI Design
-
-```
-┌──────────────────────────────────────────────┐
-│  Результати діагностики                [X]   │
-├──────────────────────────────────────────────┤
-│  (scroll)                                    │
-│                                              │
-│  🎉 Діагностика завершена!                   │
-│  Ось що ми дізналися про твоє мовлення:     │
-│                                              │
-│  ┌────────────────────────────────────────┐ │
-│  │         RADAR CHART (7 metrics)        │ │
-│  │              Дикція                    │ │
-│  │         75                             │ │
-│  │    Паразити       Темп                 │ │
-│  │    50       •       70                 │ │
-│  │                                        │ │
-│  │  Впевн.                  Інтонація    │ │
-│  │   55                      65          │ │
-│  │       Структ.    Гучність             │ │
-│  │         60         80                 │ │
-│  └────────────────────────────────────────┘ │
-│                                              │
-│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━    │
-│                                              │
-│  📊 Детальні оцінки                          │
-│                                              │
-│  Дикція                          75 / 100   │
-│  ━━━━━━━━━━━━━━━━━━○○○○○                    │
-│  Добре! Чітке вимовляння звуків.            │
-│                                              │
-│  Темп мовлення                   70 / 100   │
-│  ━━━━━━━━━━━━━━━━○○○○○○                     │
-│  Гарний темп, невелика поспіх.              │
-│                                              │
-│  Інтонація                       65 / 100   │
-│  ━━━━━━━━━━━━━━○○○○○○○○                     │
-│  Можна додати більше виразності.            │
-│                                              │
-│  [показати всі 7 метрик]                    │
-│                                              │
-│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━    │
-│                                              │
-│  ✅ Твої сильні сторони:                     │
-│  • Чітка дикція та вимова                   │
-│  • Гарна гучність голосу                    │
-│  • Структурована мова                       │
-│                                              │
-│  🎯 Зони для покращення:                     │
-│  • Зменш кількість слів-паразитів           │
-│  • Працюй над впевненістю                   │
-│  • Додай більше емоційності                 │
-│                                              │
-│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━    │
-│                                              │
-│  💡 Персоналізовані рекомендації:            │
-│                                              │
-│  ┌────────────────────────────────────────┐ │
-│  │ 📖 Курс: "Чисте мовлення"             │ │
-│  │ Позбався слів-паразитів за 14 днів    │ │
-│  └────────────────────────────────────────┘ │
-│                                              │
-│  ┌────────────────────────────────────────┐ │
-│  │ 🎤 Щоденна розминка                    │ │
-│  │ Почни з артикуляційної гімнастики     │ │
-│  └────────────────────────────────────────┘ │
-│                                              │
-│  ┌────────────────────────────────────────┐ │
-│  │ 🎭 Практика інтонації                  │ │
-│  │ Емоційне читання 10 хв щодня          │ │
-│  └────────────────────────────────────────┘ │
-│                                              │
-│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━    │
-│                                              │
-│  [Почати тренування →]                      │
-│  (перехід до Home Screen)                   │
-│                                              │
-└──────────────────────────────────────────────┘
+data/repository/
+└── HomeRepositoryImpl.kt (new)
 ```
 
 ---
 
 ## Повний код
 
-### 1. DiagnosticResultState.kt
+### 1. Domain Models
+
+#### domain/model/home/TodayPlan.kt
 
 ```kotlin
-package com.aivoicepower.ui.screens.diagnostic
+package com.aivoicepower.domain.model.home
 
-data class DiagnosticResultState(
-    val isLoading: Boolean = true,
-    val result: DiagnosticResultDisplay? = null,
-    val error: String? = null
+data class TodayPlan(
+    val activities: List<PlanActivity>,
+    val recommendedFocus: String // "Сьогодні попрацюй над дикцією"
 )
 
-data class DiagnosticResultDisplay(
-    val overall: Int,
-    val metrics: List<MetricDisplay>,
-    val strengths: List<String>,
-    val improvements: List<String>,
-    val recommendations: List<RecommendationDisplay>
-)
-
-data class MetricDisplay(
-    val name: String,
-    val score: Int,          // 0-100
-    val label: String,       // "Відмінно", "Добре", "Середньо", "Потребує покращення"
-    val description: String
-)
-
-data class RecommendationDisplay(
-    val icon: String,
+data class PlanActivity(
+    val id: String,
+    val type: ActivityType,
     val title: String,
-    val description: String,
-    val actionRoute: String? = null
+    val subtitle: String?,
+    val estimatedMinutes: Int,
+    val isCompleted: Boolean,
+    val navigationRoute: String
+)
+
+enum class ActivityType {
+    WARMUP,         // Розминка
+    LESSON,         // Урок курсу
+    IMPROVISATION,  // Імпровізація
+    AI_COACH,       // AI тренер
+    DIAGNOSTIC,     // Повторна діагностика
+    DAILY_CHALLENGE // Щоденний челендж
+}
+```
+
+#### domain/model/home/WeekProgress.kt
+
+```kotlin
+package com.aivoicepower.domain.model.home
+
+data class WeekProgress(
+    val days: List<DayProgress>
+)
+
+data class DayProgress(
+    val dayName: String,      // "Пн", "Вт", ...
+    val date: String,         // "2024-12-15"
+    val minutes: Int,
+    val isCompleted: Boolean  // Чи була активність
 )
 ```
 
-### 2. DiagnosticResultViewModel.kt
+### 2. HomeState.kt
 
 ```kotlin
-package com.aivoicepower.ui.screens.diagnostic
+package com.aivoicepower.ui.screens.home
+
+import com.aivoicepower.domain.model.home.TodayPlan
+import com.aivoicepower.domain.model.home.WeekProgress
+
+data class HomeState(
+    val userName: String? = null,
+    val currentStreak: Int = 0,
+    val greeting: String = "Доброго дня",
+    val todayPlan: TodayPlan? = null,
+    val weekProgress: WeekProgress? = null,
+    val isLoading: Boolean = true,
+    val error: String? = null
+)
+```
+
+### 3. HomeEvent.kt
+
+```kotlin
+package com.aivoicepower.ui.screens.home
+
+sealed class HomeEvent {
+    object Refresh : HomeEvent()
+    data class ActivityClicked(val navigationRoute: String) : HomeEvent()
+    object WarmupClicked : HomeEvent()
+    object CoursesClicked : HomeEvent()
+    object ImprovisationClicked : HomeEvent()
+    object ProgressClicked : HomeEvent()
+    object AiCoachClicked : HomeEvent()
+}
+```
+
+### 4. HomeViewModel.kt
+
+```kotlin
+package com.aivoicepower.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aivoicepower.data.local.database.dao.DiagnosticResultDao
-import com.aivoicepower.data.local.database.dao.UserProgressDao
-import com.aivoicepower.data.local.database.entity.UserProgressEntity
+import com.aivoicepower.data.local.database.dao.*
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
+import com.aivoicepower.domain.model.home.*
+import com.aivoicepower.ui.navigation.NavRoutes
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class DiagnosticResultViewModel @Inject constructor(
-    private val diagnosticResultDao: DiagnosticResultDao,
+class HomeViewModel @Inject constructor(
+    private val userPreferencesDataStore: UserPreferencesDataStore,
     private val userProgressDao: UserProgressDao,
-    private val userPreferencesDataStore: UserPreferencesDataStore
+    private val diagnosticResultDao: DiagnosticResultDao,
+    private val warmupCompletionDao: WarmupCompletionDao,
+    private val courseProgressDao: CourseProgressDao
 ) : ViewModel() {
     
-    private val _state = MutableStateFlow(DiagnosticResultState())
-    val state: StateFlow<DiagnosticResultState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(HomeState())
+    val state: StateFlow<HomeState> = _state.asStateFlow()
     
     init {
-        loadDiagnosticResult()
+        loadHomeData()
     }
     
-    private fun loadDiagnosticResult() {
+    fun onEvent(event: HomeEvent) {
+        when (event) {
+            HomeEvent.Refresh -> {
+                loadHomeData()
+            }
+            is HomeEvent.ActivityClicked -> {
+                // Navigation handled in Screen
+            }
+            HomeEvent.WarmupClicked,
+            HomeEvent.CoursesClicked,
+            HomeEvent.ImprovisationClicked,
+            HomeEvent.ProgressClicked,
+            HomeEvent.AiCoachClicked -> {
+                // Navigation handled in Screen
+            }
+        }
+    }
+    
+    private fun loadHomeData() {
         viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            
             try {
-                // Завантажуємо останній результат діагностики
-                diagnosticResultDao.getLatestDiagnostic().collect { entity ->
-                    if (entity != null) {
-                        // Конвертуємо Entity → Display model
-                        val display = DiagnosticResultDisplay(
-                            overall = calculateOverall(entity),
-                            metrics = listOf(
-                                MetricDisplay(
-                                    name = "Дикція",
-                                    score = entity.diction,
-                                    label = getScoreLabel(entity.diction),
-                                    description = getScoreDescription("diction", entity.diction)
-                                ),
-                                MetricDisplay(
-                                    name = "Темп мовлення",
-                                    score = entity.tempo,
-                                    label = getScoreLabel(entity.tempo),
-                                    description = getScoreDescription("tempo", entity.tempo)
-                                ),
-                                MetricDisplay(
-                                    name = "Інтонація",
-                                    score = entity.intonation,
-                                    label = getScoreLabel(entity.intonation),
-                                    description = getScoreDescription("intonation", entity.intonation)
-                                ),
-                                MetricDisplay(
-                                    name = "Гучність",
-                                    score = entity.volume,
-                                    label = getScoreLabel(entity.volume),
-                                    description = getScoreDescription("volume", entity.volume)
-                                ),
-                                MetricDisplay(
-                                    name = "Структура",
-                                    score = entity.structure,
-                                    label = getScoreLabel(entity.structure),
-                                    description = getScoreDescription("structure", entity.structure)
-                                ),
-                                MetricDisplay(
-                                    name = "Впевненість",
-                                    score = entity.confidence,
-                                    label = getScoreLabel(entity.confidence),
-                                    description = getScoreDescription("confidence", entity.confidence)
-                                ),
-                                MetricDisplay(
-                                    name = "Без паразитів",
-                                    score = entity.fillerWords,
-                                    label = getScoreLabel(entity.fillerWords),
-                                    description = getScoreDescription("fillerWords", entity.fillerWords)
-                                )
-                            ),
-                            strengths = generateStrengths(entity),
-                            improvements = generateImprovements(entity),
-                            recommendations = generateRecommendations(entity)
-                        )
-                        
-                        _state.update {
-                            it.copy(
-                                isLoading = false,
-                                result = display
-                            )
-                        }
-                        
-                        // Зберігаємо рівні навичок в UserProgress
-                        saveToUserProgress(entity)
-                    }
+                // Load user data
+                val preferences = userPreferencesDataStore.userPreferencesFlow.first()
+                val progress = userProgressDao.getUserProgressOnce()
+                
+                // Load personalized plan
+                val todayPlan = generateTodayPlan(preferences, progress)
+                
+                // Load week progress
+                val weekProgress = loadWeekProgress()
+                
+                // Determine greeting
+                val greeting = getGreetingByTime()
+                
+                _state.update {
+                    it.copy(
+                        userName = preferences.name,
+                        currentStreak = preferences.currentStreak,
+                        greeting = greeting,
+                        todayPlan = todayPlan,
+                        weekProgress = weekProgress,
+                        isLoading = false,
+                        error = null
+                    )
                 }
             } catch (e: Exception) {
                 _state.update {
                     it.copy(
                         isLoading = false,
-                        error = "Не вдалося завантажити результати"
+                        error = "Не вдалось завантажити дані"
                     )
                 }
             }
         }
     }
     
-    private fun calculateOverall(entity: com.aivoicepower.data.local.database.entity.DiagnosticResultEntity): Int {
-        return (entity.diction + entity.tempo + entity.intonation + 
-                entity.volume + entity.structure + entity.confidence + 
-                entity.fillerWords) / 7
-    }
-    
-    private fun getScoreLabel(score: Int): String {
-        return when {
-            score >= 85 -> "Відмінно"
-            score >= 70 -> "Добре"
-            score >= 50 -> "Середньо"
-            else -> "Потребує покращення"
-        }
-    }
-    
-    private fun getScoreDescription(metric: String, score: Int): String {
-        // Fake descriptions based on score
-        return when (metric) {
-            "diction" -> when {
-                score >= 70 -> "Чітке вимовляння звуків"
-                else -> "Працюй над чіткістю вимови"
-            }
-            "tempo" -> when {
-                score >= 70 -> "Гарний темп мовлення"
-                score >= 50 -> "Невелика поспіх"
-                else -> "Занадто швидко або повільно"
-            }
-            "intonation" -> when {
-                score >= 70 -> "Виразна інтонація"
-                else -> "Можна додати більше виразності"
-            }
-            "volume" -> when {
-                score >= 70 -> "Гарна гучність голосу"
-                else -> "Говори трохи голосніше"
-            }
-            "structure" -> when {
-                score >= 70 -> "Структурована мова"
-                else -> "Працюй над логікою викладу"
-            }
-            "confidence" -> when {
-                score >= 70 -> "Впевнена манера мовлення"
-                else -> "Додай більше впевненості"
-            }
-            "fillerWords" -> when {
-                score >= 70 -> "Мало слів-паразитів"
-                else -> "Зменш кількість слів-паразитів"
-            }
-            else -> "Гарний результат"
-        }
-    }
-    
-    private fun generateStrengths(entity: com.aivoicepower.data.local.database.entity.DiagnosticResultEntity): List<String> {
-        val strengths = mutableListOf<String>()
+    private suspend fun generateTodayPlan(
+        preferences: com.aivoicepower.data.local.datastore.UserPreferences,
+        progress: com.aivoicepower.data.local.database.entity.UserProgressEntity?
+    ): TodayPlan {
+        val today = getCurrentDateString()
+        val activities = mutableListOf<PlanActivity>()
         
-        if (entity.diction >= 70) strengths.add("Чітка дикція та вимова")
-        if (entity.tempo >= 70) strengths.add("Гарний темп мовлення")
-        if (entity.intonation >= 70) strengths.add("Виразна інтонація")
-        if (entity.volume >= 70) strengths.add("Гарна гучність голосу")
-        if (entity.structure >= 70) strengths.add("Структурована мова")
-        if (entity.confidence >= 70) strengths.add("Впевнена манера мовлення")
-        if (entity.fillerWords >= 70) strengths.add("Мало слів-паразитів")
-        
-        return if (strengths.size >= 2) {
-            strengths.take(3)
+        // 1. Check warmup completion
+        val warmupCompletion = warmupCompletionDao.getCompletion(today, "quick")
+        if (warmupCompletion == null) {
+            activities.add(
+                PlanActivity(
+                    id = "warmup_quick",
+                    type = ActivityType.WARMUP,
+                    title = "Швидка розминка",
+                    subtitle = "Почни день правильно",
+                    estimatedMinutes = 5,
+                    isCompleted = false,
+                    navigationRoute = NavRoutes.QuickWarmup.route
+                )
+            )
         } else {
-            listOf("Ти на правильному шляху!", "Є базові навички для розвитку")
-        }
-    }
-    
-    private fun generateImprovements(entity: com.aivoicepower.data.local.database.entity.DiagnosticResultEntity): List<String> {
-        val improvements = mutableListOf<String>()
-        
-        if (entity.diction < 70) improvements.add("Покращ чіткість дикції")
-        if (entity.tempo < 70) improvements.add("Працюй над темпом мовлення")
-        if (entity.intonation < 70) improvements.add("Додай більше емоційності")
-        if (entity.volume < 70) improvements.add("Збільш гучність голосу")
-        if (entity.structure < 70) improvements.add("Працюй над структурою думок")
-        if (entity.confidence < 70) improvements.add("Розвивай впевненість")
-        if (entity.fillerWords < 70) improvements.add("Зменш кількість слів-паразитів")
-        
-        return improvements.take(3)
-    }
-    
-    private fun generateRecommendations(entity: com.aivoicepower.data.local.database.entity.DiagnosticResultEntity): List<RecommendationDisplay> {
-        val recommendations = mutableListOf<RecommendationDisplay>()
-        
-        // Рекомендації на основі найслабших метрик
-        if (entity.fillerWords < 60) {
-            recommendations.add(
-                RecommendationDisplay(
-                    icon = "📖",
-                    title = "Курс: \"Чисте мовлення\"",
-                    description = "Позбався слів-паразитів за 14 днів",
-                    actionRoute = "courses/clean_speech"
+            activities.add(
+                PlanActivity(
+                    id = "warmup_quick",
+                    type = ActivityType.WARMUP,
+                    title = "Швидка розминка",
+                    subtitle = "Виконано сьогодні",
+                    estimatedMinutes = 5,
+                    isCompleted = true,
+                    navigationRoute = NavRoutes.QuickWarmup.route
                 )
             )
         }
         
-        if (entity.diction < 60 || entity.tempo < 60) {
-            recommendations.add(
-                RecommendationDisplay(
-                    icon = "🎤",
-                    title = "Щоденна розминка",
-                    description = "Почни з артикуляційної гімнастики",
-                    actionRoute = "warmup/articulation"
-                )
-            )
+        // 2. Recommend course lesson based on goal
+        val recommendedCourse = when (preferences.userGoal) {
+            "CLEAR_SPEECH" -> "course_1" // Чітке мовлення
+            "PUBLIC_SPEAKING" -> "course_3" // Впевнений спікер
+            "BETTER_VOICE" -> "course_2" // Магія інтонації
+            else -> "course_1"
         }
         
-        if (entity.intonation < 60) {
-            recommendations.add(
-                RecommendationDisplay(
-                    icon = "🎭",
-                    title = "Практика інтонації",
-                    description = "Емоційне читання 10 хв щодня",
-                    actionRoute = "courses/intonation"
-                )
-            )
-        }
+        // Find next incomplete lesson
+        val courseProgress = courseProgressDao.getCourseProgress(recommendedCourse).first()
+        val nextLesson = (1..21).firstOrNull { lessonNumber ->
+            val lessonId = "lesson_$lessonNumber"
+            courseProgress.none { it.lessonId == lessonId && it.isCompleted }
+        } ?: 1
         
-        if (entity.confidence < 60) {
-            recommendations.add(
-                RecommendationDisplay(
-                    icon = "💪",
-                    title = "Тренуй впевненість",
-                    description = "Імпровізуй на випадкові теми",
-                    actionRoute = "improvisation/random"
-                )
-            )
-        }
-        
-        // Завжди додаємо загальну рекомендацію
-        recommendations.add(
-            RecommendationDisplay(
-                icon = "🏠",
-                title = "Почни з головного",
-                description = "Переглянь персоналізований план на сьогодні",
-                actionRoute = "home"
+        activities.add(
+            PlanActivity(
+                id = "lesson_${recommendedCourse}_$nextLesson",
+                type = ActivityType.LESSON,
+                title = "Урок $nextLesson: ${getCourseName(recommendedCourse)}",
+                subtitle = "Курс \"${getCourseName(recommendedCourse)}\"",
+                estimatedMinutes = 15,
+                isCompleted = false,
+                navigationRoute = NavRoutes.Lesson.createRoute(recommendedCourse, "lesson_$nextLesson")
             )
         )
         
-        return recommendations.take(3)
-    }
-    
-    private suspend fun saveToUserProgress(entity: com.aivoicepower.data.local.database.entity.DiagnosticResultEntity) {
-        val existingProgress = userProgressDao.getUserProgressOnce()
-        
-        if (existingProgress == null) {
-            // Створюємо новий прогрес
-            userProgressDao.insertOrUpdate(
-                UserProgressEntity(
-                    id = "default_progress",
-                    dictionLevel = entity.diction,
-                    tempoLevel = entity.tempo,
-                    intonationLevel = entity.intonation,
-                    volumeLevel = entity.volume,
-                    structureLevel = entity.structure,
-                    confidenceLevel = entity.confidence,
-                    fillerWordsLevel = entity.fillerWords
+        // 3. Improvisation or AI Coach
+        if (preferences.todayExercises >= 2) {
+            // Already did some work, suggest relaxed activity
+            activities.add(
+                PlanActivity(
+                    id = "ai_coach",
+                    type = ActivityType.AI_COACH,
+                    title = "Попрактикуйся з AI",
+                    subtitle = "Обговори свій прогрес",
+                    estimatedMinutes = 10,
+                    isCompleted = false,
+                    navigationRoute = NavRoutes.AiCoach.route
                 )
             )
         } else {
-            // Оновлюємо існуючий
-            userProgressDao.updateSkillLevels(
-                diction = entity.diction,
-                tempo = entity.tempo,
-                intonation = entity.intonation,
-                volume = entity.volume,
-                structure = entity.structure,
-                confidence = entity.confidence,
-                fillerWords = entity.fillerWords
+            activities.add(
+                PlanActivity(
+                    id = "improvisation",
+                    type = ActivityType.IMPROVISATION,
+                    title = "Імпровізація",
+                    subtitle = "Спонтанне мовлення",
+                    estimatedMinutes = 5,
+                    isCompleted = false,
+                    navigationRoute = NavRoutes.RandomTopic.route
+                )
             )
         }
+        
+        // 4. Recommendation based on weakest skill
+        val recommendedFocus = getRecommendedFocus(progress, preferences)
+        
+        return TodayPlan(
+            activities = activities,
+            recommendedFocus = recommendedFocus
+        )
+    }
+    
+    private fun getRecommendedFocus(
+        progress: com.aivoicepower.data.local.database.entity.UserProgressEntity?,
+        preferences: com.aivoicepower.data.local.datastore.UserPreferences
+    ): String {
+        if (progress == null) return "Почни з діагностики, щоб визначити свій рівень"
+        
+        // Find weakest skill
+        val skills = mapOf(
+            "дикцією" to progress.dictionLevel,
+            "темпом мовлення" to progress.tempoLevel,
+            "інтонацією" to progress.intonationLevel,
+            "структурою мовлення" to progress.structureLevel,
+            "впевненістю" to progress.confidenceLevel
+        )
+        
+        val weakest = skills.minByOrNull { it.value }
+        
+        return if (weakest != null && weakest.value < 60) {
+            "Сьогодні попрацюй над ${weakest.key}"
+        } else {
+            "Чудовий прогрес! Продовжуй в тому ж дусі"
+        }
+    }
+    
+    private suspend fun loadWeekProgress(): WeekProgress {
+        val calendar = Calendar.getInstance()
+        val today = calendar.time
+        
+        // Get start of week (Monday)
+        calendar.firstDayOfWeek = Calendar.MONDAY
+        calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
+        
+        val days = mutableListOf<DayProgress>()
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val dayFormat = SimpleDateFormat("EEE", Locale("uk", "UA"))
+        
+        for (i in 0..6) {
+            val date = calendar.time
+            val dateString = dateFormat.format(date)
+            val dayName = dayFormat.format(date).take(2).capitalize(Locale.getDefault())
+            
+            // Load activity for this day
+            val prefs = userPreferencesDataStore.userPreferencesFlow.first()
+            val minutes = if (dateString == getCurrentDateString()) {
+                prefs.todayMinutes
+            } else {
+                // TODO: Load from historical data (not implemented yet)
+                0
+            }
+            
+            days.add(
+                DayProgress(
+                    dayName = dayName,
+                    date = dateString,
+                    minutes = minutes,
+                    isCompleted = minutes > 0
+                )
+            )
+            
+            calendar.add(Calendar.DAY_OF_MONTH, 1)
+        }
+        
+        return WeekProgress(days = days)
+    }
+    
+    private fun getGreetingByTime(): String {
+        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+        return when (hour) {
+            in 5..11 -> "Доброго ранку"
+            in 12..17 -> "Доброго дня"
+            in 18..22 -> "Доброго вечора"
+            else -> "Доброї ночі"
+        }
+    }
+    
+    private fun getCourseName(courseId: String): String {
+        return when (courseId) {
+            "course_1" -> "Чітке мовлення"
+            "course_2" -> "Магія інтонації"
+            "course_3" -> "Впевнений спікер"
+            "course_4" -> "Чисте мовлення"
+            "course_5" -> "Ділова комунікація"
+            "course_6" -> "Харизматичний оратор"
+            else -> "Курс"
+        }
+    }
+    
+    private fun getCurrentDateString(): String {
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        return sdf.format(Date())
     }
 }
 ```
 
-### 3. DiagnosticResultScreen.kt
+### 5. HomeScreen.kt
 
 ```kotlin
-package com.aivoicepower.ui.screens.diagnostic
+package com.aivoicepower.ui.screens.home
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.aivoicepower.ui.screens.diagnostic.components.*
+import com.aivoicepower.ui.screens.home.components.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DiagnosticResultScreen(
-    viewModel: DiagnosticResultViewModel = hiltViewModel(),
-    onNavigateToHome: () -> Unit
+fun HomeScreen(
+    viewModel: HomeViewModel = hiltViewModel(),
+    onNavigateToCourse: (String) -> Unit,
+    onNavigateToAiCoach: () -> Unit,
+    onNavigateToLesson: (courseId: String, lessonId: String) -> Unit,
+    onNavigateToWarmup: () -> Unit,
+    onNavigateToCourses: () -> Unit,
+    onNavigateToImprovisation: () -> Unit,
+    onNavigateToProgress: () -> Unit,
+    onNavigateToQuickWarmup: () -> Unit,
+    onNavigateToRandomTopic: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Результати діагностики") },
-                actions = {
-                    IconButton(onClick = onNavigateToHome) {
-                        Icon(Icons.Default.Close, contentDescription = "Закрити")
-                    }
-                }
+                title = { Text("AI VoicePower") }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { 
+                    viewModel.onEvent(HomeEvent.AiCoachClicked)
+                    onNavigateToAiCoach()
+                }
+            ) {
+                Icon(Icons.Default.Assistant, contentDescription = "AI Тренер")
+            }
         }
     ) { paddingValues ->
-        when {
-            state.isLoading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
+        if (state.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = androidx.compose.ui.Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else if (state.error != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = androidx.compose.ui.Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        CircularProgressIndicator()
-                        Text("Аналізуємо твоє мовлення...")
+                    Text(state.error!!)
+                    Button(onClick = { viewModel.onEvent(HomeEvent.Refresh) }) {
+                        Text("Повторити")
                     }
                 }
             }
-            
-            state.error != null -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(state.error ?: "Помилка")
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Welcome Header
+                item {
+                    WelcomeHeader(
+                        greeting = state.greeting,
+                        userName = state.userName,
+                        currentStreak = state.currentStreak
+                    )
+                }
+                
+                // Today's Plan
+                item {
+                    state.todayPlan?.let { plan ->
+                        TodayPlanCard(
+                            plan = plan,
+                            onActivityClick = { activity ->
+                                when (activity.navigationRoute) {
+                                    com.aivoicepower.ui.navigation.NavRoutes.QuickWarmup.route -> 
+                                        onNavigateToQuickWarmup()
+                                    com.aivoicepower.ui.navigation.NavRoutes.AiCoach.route -> 
+                                        onNavigateToAiCoach()
+                                    com.aivoicepower.ui.navigation.NavRoutes.RandomTopic.route -> 
+                                        onNavigateToRandomTopic()
+                                    else -> {
+                                        // Parse lesson route
+                                        val parts = activity.navigationRoute.split("/")
+                                        if (parts.size >= 4 && parts[0] == "courses") {
+                                            onNavigateToLesson(parts[1], parts[3])
+                                        }
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+                
+                // Quick Actions
+                item {
+                    QuickActionsGrid(
+                        onWarmupClick = {
+                            viewModel.onEvent(HomeEvent.WarmupClicked)
+                            onNavigateToWarmup()
+                        },
+                        onCoursesClick = {
+                            viewModel.onEvent(HomeEvent.CoursesClicked)
+                            onNavigateToCourses()
+                        },
+                        onImprovisationClick = {
+                            viewModel.onEvent(HomeEvent.ImprovisationClicked)
+                            onNavigateToImprovisation()
+                        },
+                        onProgressClick = {
+                            viewModel.onEvent(HomeEvent.ProgressClicked)
+                            onNavigateToProgress()
+                        }
+                    )
+                }
+                
+                // Week Progress
+                item {
+                    state.weekProgress?.let { weekProgress ->
+                        WeekProgressChart(weekProgress = weekProgress)
+                    }
                 }
             }
-            
-            state.result != null -> {
-                DiagnosticResultContent(
-                    result = state.result!!,
-                    onNavigateToHome = onNavigateToHome,
-                    modifier = Modifier.padding(paddingValues)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun DiagnosticResultContent(
-    result: DiagnosticResultDisplay,
-    onNavigateToHome: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
-    ) {
-        // Header
-        item {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "🎉 Діагностика завершена!",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    textAlign = TextAlign.Center
-                )
-                
-                Text(
-                    text = "Ось що ми дізналися про твоє мовлення:",
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-        
-        // Radar Chart
-        item {
-            SkillRadarChart(
-                metrics = result.metrics,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp)
-            )
-        }
-        
-        item {
-            Divider()
-        }
-        
-        // Detailed Scores
-        item {
-            Text(
-                text = "📊 Детальні оцінки",
-                style = MaterialTheme.typography.titleLarge
-            )
-        }
-        
-        items(result.metrics) { metric ->
-            SkillScoreCard(metric = metric)
-        }
-        
-        item {
-            Divider()
-        }
-        
-        // Strengths
-        item {
-            FeedbackSection(
-                title = "✅ Твої сильні сторони:",
-                items = result.strengths,
-                isPositive = true
-            )
-        }
-        
-        // Improvements
-        item {
-            FeedbackSection(
-                title = "🎯 Зони для покращення:",
-                items = result.improvements,
-                isPositive = false
-            )
-        }
-        
-        item {
-            Divider()
-        }
-        
-        // Recommendations
-        item {
-            Text(
-                text = "💡 Персоналізовані рекомендації:",
-                style = MaterialTheme.typography.titleLarge
-            )
-        }
-        
-        items(result.recommendations) { recommendation ->
-            RecommendationCard(
-                recommendation = recommendation,
-                onClick = { /* TODO: Navigate to recommendation.actionRoute */ }
-            )
-        }
-        
-        // Start button
-        item {
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Button(
-                onClick = onNavigateToHome,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Почати тренування →")
-            }
         }
     }
 }
 ```
 
-### 4. components/SkillScoreCard.kt
+### 6. Components
+
+#### components/WelcomeHeader.kt
 
 ```kotlin
-package com.aivoicepower.ui.screens.diagnostic.components
+package com.aivoicepower.ui.screens.home.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -662,220 +662,426 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.aivoicepower.ui.screens.diagnostic.MetricDisplay
 
 @Composable
-fun SkillScoreCard(
-    metric: MetricDisplay,
+fun WelcomeHeader(
+    greeting: String,
+    userName: String?,
+    currentStreak: Int,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    Card(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        )
     ) {
-        // Header
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = metric.name,
-                style = MaterialTheme.typography.titleMedium
+                text = if (userName != null) "$greeting, $userName! ☀️" else "$greeting! ☀️",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
             )
             
-            Text(
-                text = "${metric.score} / 100",
-                style = MaterialTheme.typography.titleMedium,
-                color = getScoreColor(metric.score)
-            )
+            if (currentStreak > 0) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "🔥",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    Text(
+                        text = "$currentStreak ${getDaysText(currentStreak)} поспіль",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
         }
-        
-        // Progress bar
-        LinearProgressIndicator(
-            progress = { metric.score / 100f },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(8.dp),
-            color = getScoreColor(metric.score)
-        )
-        
-        // Description
-        Text(
-            text = metric.description,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }
 
-@Composable
-private fun getScoreColor(score: Int) = when {
-    score >= 85 -> MaterialTheme.colorScheme.primary
-    score >= 70 -> MaterialTheme.colorScheme.tertiary
-    score >= 50 -> MaterialTheme.colorScheme.secondary
-    else -> MaterialTheme.colorScheme.error
+private fun getDaysText(count: Int): String {
+    return when {
+        count % 10 == 1 && count % 100 != 11 -> "день"
+        count % 10 in 2..4 && count % 100 !in 12..14 -> "дні"
+        else -> "днів"
+    }
 }
 ```
 
-### 5. components/SkillRadarChart.kt (simplified placeholder)
+#### components/TodayPlanCard.kt
 
 ```kotlin
-package com.aivoicepower.ui.screens.diagnostic.components
+package com.aivoicepower.ui.screens.home.components
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
-import com.aivoicepower.ui.screens.diagnostic.MetricDisplay
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.sin
+import com.aivoicepower.domain.model.home.TodayPlan
+import com.aivoicepower.domain.model.home.PlanActivity
 
 @Composable
-fun SkillRadarChart(
-    metrics: List<MetricDisplay>,
+fun TodayPlanCard(
+    plan: TodayPlan,
+    onActivityClick: (PlanActivity) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Simplified radar chart
-    // TODO: Implement proper radar chart with Canvas or use library
-    
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Card(
+        modifier = modifier.fillMaxWidth()
     ) {
-        Text(
-            text = "📊 Профіль навичок",
-            style = MaterialTheme.typography.titleMedium
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        // Simple Canvas placeholder
-        Canvas(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            val center = Offset(size.width / 2, size.height / 2)
-            val radius = size.minDimension / 2 * 0.8f
+            Text(
+                text = "📋 Сьогоднішній план",
+                style = MaterialTheme.typography.titleLarge
+            )
             
-            // Draw background circles
-            for (i in 1..4) {
-                drawCircle(
-                    color = Color.LightGray.copy(alpha = 0.3f),
-                    radius = radius * i / 4,
-                    center = center,
-                    style = Stroke(width = 1.dp.toPx())
+            Text(
+                text = plan.recommendedFocus,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            
+            Divider()
+            
+            plan.activities.forEach { activity ->
+                PlanActivityItem(
+                    activity = activity,
+                    onClick = { onActivityClick(activity) }
                 )
             }
-            
-            // Draw metrics as points
-            // TODO: Proper implementation
         }
     }
 }
 ```
 
-### 6. components/FeedbackSection.kt
+#### components/PlanActivityItem.kt
 
 ```kotlin
-package com.aivoicepower.ui.screens.diagnostic.components
+package com.aivoicepower.ui.screens.home.components
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-
-@Composable
-fun FeedbackSection(
-    title: String,
-    items: List<String>,
-    isPositive: Boolean,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            color = if (isPositive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
-        )
-        
-        items.forEach { item ->
-            Text(
-                text = "• $item",
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
-    }
-}
-```
-
-### 7. components/RecommendationCard.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.diagnostic.components
-
-import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.aivoicepower.ui.screens.diagnostic.RecommendationDisplay
+import com.aivoicepower.domain.model.home.PlanActivity
+import com.aivoicepower.domain.model.home.ActivityType
 
 @Composable
-fun RecommendationCard(
-    recommendation: RecommendationDisplay,
+fun PlanActivityItem(
+    activity: PlanActivity,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth(),
+        colors = if (activity.isCompleted) {
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer
+            )
+        } else {
+            CardDefaults.cardColors()
+        }
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = recommendation.icon,
-                style = MaterialTheme.typography.headlineMedium
-            )
-            
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
             ) {
-                Text(
-                    text = recommendation.title,
-                    style = MaterialTheme.typography.titleMedium
+                Icon(
+                    imageVector = when (activity.type) {
+                        ActivityType.WARMUP -> Icons.Default.FitnessCenter
+                        ActivityType.LESSON -> Icons.Default.MenuBook
+                        ActivityType.IMPROVISATION -> Icons.Default.Mic
+                        ActivityType.AI_COACH -> Icons.Default.Assistant
+                        ActivityType.DIAGNOSTIC -> Icons.Default.Assessment
+                        ActivityType.DAILY_CHALLENGE -> Icons.Default.EmojiEvents
+                    },
+                    contentDescription = null,
+                    tint = if (activity.isCompleted) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    }
                 )
                 
-                Text(
-                    text = recommendation.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                Column {
+                    Text(
+                        text = if (activity.isCompleted) "✅ ${activity.title}" else "▶️ ${activity.title}",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    
+                    activity.subtitle?.let {
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+            
+            Text(
+                text = "~${activity.estimatedMinutes} хв",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+```
+
+#### components/QuickActionsGrid.kt
+
+```kotlin
+package com.aivoicepower.ui.screens.home.components
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+
+@Composable
+fun QuickActionsGrid(
+    onWarmupClick: () -> Unit,
+    onCoursesClick: () -> Unit,
+    onImprovisationClick: () -> Unit,
+    onProgressClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = "🚀 Швидкі дії",
+                style = MaterialTheme.typography.titleLarge
+            )
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                QuickActionButton(
+                    icon = Icons.Default.FitnessCenter,
+                    label = "Розминка",
+                    onClick = onWarmupClick,
+                    modifier = Modifier.weight(1f)
+                )
+                
+                QuickActionButton(
+                    icon = Icons.Default.MenuBook,
+                    label = "Курси",
+                    onClick = onCoursesClick,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                QuickActionButton(
+                    icon = Icons.Default.Mic,
+                    label = "Імпровізація",
+                    onClick = onImprovisationClick,
+                    modifier = Modifier.weight(1f)
+                )
+                
+                QuickActionButton(
+                    icon = Icons.Default.TrendingUp,
+                    label = "Прогрес",
+                    onClick = onProgressClick,
+                    modifier = Modifier.weight(1f)
                 )
             }
         }
     }
+}
+
+@Composable
+private fun QuickActionButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                modifier = Modifier.size(32.dp),
+                tint = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+        }
+    }
+}
+```
+
+#### components/WeekProgressChart.kt
+
+```kotlin
+package com.aivoicepower.ui.screens.home.components
+
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.unit.dp
+import com.aivoicepower.domain.model.home.WeekProgress
+
+@Composable
+fun WeekProgressChart(
+    weekProgress: WeekProgress,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = "📈 Прогрес тижня",
+                style = MaterialTheme.typography.titleLarge
+            )
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                weekProgress.days.forEach { day ->
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = day.dayName,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp, 50.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Canvas(modifier = Modifier.fillMaxSize()) {
+                                drawRect(
+                                    color = if (day.isCompleted) {
+                                        androidx.compose.ui.graphics.Color(0xFF6366F1)
+                                    } else {
+                                        androidx.compose.ui.graphics.Color(0xFFE2E8F0)
+                                    },
+                                    topLeft = Offset(0f, 0f),
+                                    size = Size(size.width, size.height)
+                                )
+                            }
+                        }
+                        
+                        Text(
+                            text = "${day.minutes}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+---
+
+## Оновити NavGraph.kt
+
+Оновити `HomeScreen` composable в `NavGraph.kt`:
+
+```kotlin
+composable(NavRoutes.Home.route) {
+    HomeScreen(
+        onNavigateToCourse = { courseId ->
+            navController.navigate(NavRoutes.CourseDetail.createRoute(courseId))
+        },
+        onNavigateToAiCoach = {
+            navController.navigate(NavRoutes.AiCoach.route)
+        },
+        onNavigateToLesson = { courseId, lessonId ->
+            navController.navigate(NavRoutes.Lesson.createRoute(courseId, lessonId))
+        },
+        onNavigateToWarmup = {
+            navController.navigate(NavRoutes.Warmup.route)
+        },
+        onNavigateToCourses = {
+            navController.navigate(NavRoutes.Courses.route)
+        },
+        onNavigateToImprovisation = {
+            navController.navigate(NavRoutes.Improvisation.route)
+        },
+        onNavigateToProgress = {
+            navController.navigate(NavRoutes.Progress.route)
+        },
+        onNavigateToQuickWarmup = {
+            navController.navigate(NavRoutes.QuickWarmup.route)
+        },
+        onNavigateToRandomTopic = {
+            navController.navigate(NavRoutes.RandomTopic.route)
+        }
+    )
 }
 ```
 
@@ -890,59 +1096,56 @@ fun RecommendationCard(
 
 ### 2. Testing Flow
 
-**Тест 1: Loading State**
-- [ ] Показується "Аналізуємо твоє мовлення..." + spinner
+**Тест 1: Welcome Header**
+- [ ] Показується правильне привітання (ранок/день/вечір)
+- [ ] Якщо є ім'я → "Доброго ранку, [ім'я]"
+- [ ] Якщо streak > 0 → показується 🔥 X днів поспіль
 
-**Тест 2: Results Display**
-- [ ] Відображаються 7 метрик з оцінками
-- [ ] Progress bars працюють
-- [ ] Radar chart показується (навіть placeholder)
-- [ ] Сильні сторони відображаються
-- [ ] Зони покращення відображаються
-- [ ] 3 рекомендації показуються
+**Тест 2: Today's Plan**
+- [ ] Показується 3-4 активності
+- [ ] Якщо розминка виконана → позначена ✅
+- [ ] Клік на активність → правильна навігація
+- [ ] Рекомендація показується (based on weakest skill)
 
-**Тест 3: Navigation**
-- [ ] Кнопка "Почати тренування" → Home Screen
-- [ ] Close button → Home Screen
+**Тест 3: Quick Actions**
+- [ ] 4 кнопки: Розминка, Курси, Імпровізація, Прогрес
+- [ ] Кожна кнопка веде на правильний екран
 
-### 3. Database Verification
+**Тест 4: Week Progress**
+- [ ] 7 днів (Пн-Нд)
+- [ ] Поточний день показує правильні хвилини
+- [ ] Дні з активністю підсвічені
 
-```kotlin
-// Перевірити що дані збережені в UserProgress
-userProgressDao.getUserProgress().collect { progress ->
-    println("Skill levels saved:")
-    println("  Diction: ${progress?.dictionLevel}")
-    println("  Tempo: ${progress?.tempoLevel}")
-    // ...
-}
-```
+**Тест 5: FAB (AI Coach)**
+- [ ] Кнопка показується
+- [ ] Клік → навігація до AI Coach
+
+**Тест 6: Personalization**
+- [ ] План змінюється на основі UserGoal
+- [ ] Якщо goal = "CLEAR_SPEECH" → рекомендує курс 1
+- [ ] Якщо goal = "PUBLIC_SPEAKING" → рекомендує курс 3
 
 ---
 
 ## Очікуваний результат
 
-✅ DiagnosticResultScreen показує результати
-✅ 7 метрик з оцінками відображаються
-✅ Сильні сторони та покращення генеруються
-✅ Рекомендації персоналізовані
-✅ Дані зберігаються в UserProgress
-✅ Навігація до Home працює
-✅ Phase 1 повністю завершена! 🎉
+✅ HomeScreen з 4 секціями створено
+✅ Персоналізований план (based on goal + progress)
+✅ Привітання + streak
+✅ Швидкі дії (4 кнопки)
+✅ Прогрес тижня (міні-графік)
+✅ FAB для AI Coach
+✅ Навігація до всіх розділів
+✅ Loading/Error states
 
 ---
 
-## Що далі?
+## 🎉 Phase 3 Завершена!
 
-**Phase 2: Warmup** — розминка мовленнєвого апарату (артикуляція, дихання, голос).
+**Наступний крок:** Phase 4 — Courses (розбити на 4 підфази згідно PHASE_STRUCTURE_GUIDE.md)
 
 ---
 
-**Phase 1 завершена!** 🎊
+**Час на Phase 3:** ~2-3 години
 
-Тепер у тебе є:
-- ✅ Splash Screen (перевірка онбордингу)
-- ✅ Onboarding (4 сторінки, збір даних)
-- ✅ Diagnostic (4 завдання, fake recording)
-- ✅ Results (візуалізація, рекомендації)
-
-Користувач може пройти повний flow від першого запуску до персоналізованих рекомендацій!
+**Примітка:** Week Progress показує тільки поточний тиждень. Історичні дані будуть додані в Phase 7 (Progress).

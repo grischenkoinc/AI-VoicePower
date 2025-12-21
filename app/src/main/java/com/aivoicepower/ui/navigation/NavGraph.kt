@@ -54,8 +54,33 @@ fun NavGraph(
 
         composable(route = Screen.Home.route) {
             HomeScreen(
-                onLessonClick = { lessonId ->
+                onNavigateToCourse = { courseId ->
+                    // TODO: Navigate to course detail when implemented
+                },
+                onNavigateToAiCoach = {
+                    // TODO: Navigate to AI Coach when implemented
+                },
+                onNavigateToLesson = { courseId, lessonId ->
+                    // TODO: Navigate to specific lesson when courses are implemented
                     navController.navigate(Screen.Lesson.createRoute(lessonId))
+                },
+                onNavigateToWarmup = {
+                    // TODO: Navigate to warmup when implemented
+                },
+                onNavigateToCourses = {
+                    // TODO: Navigate to courses list when implemented
+                },
+                onNavigateToImprovisation = {
+                    // TODO: Navigate to improvisation when implemented
+                },
+                onNavigateToProgress = {
+                    // TODO: Navigate to progress when implemented
+                },
+                onNavigateToQuickWarmup = {
+                    // TODO: Navigate to quick warmup when implemented
+                },
+                onNavigateToRandomTopic = {
+                    // TODO: Navigate to random topic when implemented
                 }
             )
         }
