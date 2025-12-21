@@ -2,7 +2,9 @@ package com.aivoicepower.ui.screens.diagnostic
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aivoicepower.data.local.database.dao.DiagnosticResultDao
 import com.aivoicepower.data.local.database.dao.RecordingDao
+import com.aivoicepower.data.local.database.entity.DiagnosticResultEntity
 import com.aivoicepower.data.local.database.entity.RecordingEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -14,10 +16,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.random.Random
 
 @HiltViewModel
 class DiagnosticViewModel @Inject constructor(
-    private val recordingDao: RecordingDao
+    private val recordingDao: RecordingDao,
+    private val diagnosticResultDao: DiagnosticResultDao
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DiagnosticState())
@@ -194,6 +198,29 @@ class DiagnosticViewModel @Inject constructor(
                     recordingSeconds = 0
                 )
             }
+
+            // Якщо всі задачі завершені, зберігаємо fake результати
+            if (completedCount == updatedTasks.size) {
+                saveFakeDiagnosticResults()
+            }
         }
+    }
+
+    private suspend fun saveFakeDiagnosticResults() {
+        // Генеруємо fake scores (60-85 діапазон для реалістичності)
+        val diagnosticResult = DiagnosticResultEntity(
+            id = UUID.randomUUID().toString(),
+            diction = Random.nextInt(60, 86),
+            tempo = Random.nextInt(60, 86),
+            intonation = Random.nextInt(55, 81),
+            volume = Random.nextInt(65, 91),
+            structure = Random.nextInt(55, 81),
+            confidence = Random.nextInt(50, 76),
+            fillerWords = Random.nextInt(45, 71),
+            recommendations = "[]", // Empty for now
+            isInitial = true
+        )
+
+        diagnosticResultDao.insert(diagnosticResult)
     }
 }

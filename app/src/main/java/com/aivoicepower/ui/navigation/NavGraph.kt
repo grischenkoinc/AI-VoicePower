@@ -11,6 +11,7 @@ import com.aivoicepower.ui.screens.courses.LessonScreen
 import com.aivoicepower.ui.screens.results.ResultsScreen
 import com.aivoicepower.ui.screens.onboarding.OnboardingScreen
 import com.aivoicepower.ui.screens.diagnostic.DiagnosticScreen
+import com.aivoicepower.ui.screens.diagnostic.DiagnosticResultScreen
 
 @Composable
 fun NavGraph(
@@ -34,8 +35,18 @@ fun NavGraph(
         composable(route = Screen.Diagnostic.route) {
             DiagnosticScreen(
                 onNavigateToHome = {
-                    navController.navigate(Screen.Home.route) {
+                    navController.navigate(Screen.DiagnosticResult.route) {
                         popUpTo(Screen.Diagnostic.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(route = Screen.DiagnosticResult.route) {
+            DiagnosticResultScreen(
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.DiagnosticResult.route) { inclusive = true }
                     }
                 }
             )
