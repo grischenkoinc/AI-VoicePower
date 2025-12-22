@@ -16,4 +16,10 @@ sealed class Screen(val route: String) {
         fun createRoute(recordingId: String) = "results/$recordingId"
     }
     object Premium : Screen("premium")
+
+    // Progress screens
+    object Progress : Screen("progress")
+    object Compare : Screen("compare")
+    object Achievements : Screen("achievements")
+    object RecordingHistory : Screen("recording_history")
 }

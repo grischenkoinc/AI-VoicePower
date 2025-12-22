@@ -14,6 +14,10 @@ import com.aivoicepower.ui.screens.results.ResultsScreen
 import com.aivoicepower.ui.screens.onboarding.OnboardingScreen
 import com.aivoicepower.ui.screens.diagnostic.DiagnosticScreen
 import com.aivoicepower.ui.screens.diagnostic.DiagnosticResultScreen
+import com.aivoicepower.ui.screens.progress.ProgressScreen
+import com.aivoicepower.ui.screens.progress.CompareScreen
+import com.aivoicepower.ui.screens.progress.AchievementsScreen
+import com.aivoicepower.ui.screens.progress.RecordingHistoryScreen
 
 @Composable
 fun NavGraph(
@@ -75,7 +79,7 @@ fun NavGraph(
                     // TODO: Navigate to improvisation when implemented
                 },
                 onNavigateToProgress = {
-                    // TODO: Navigate to progress when implemented
+                    navController.navigate(Screen.Progress.route)
                 },
                 onNavigateToQuickWarmup = {
                     // TODO: Navigate to quick warmup when implemented
@@ -137,6 +141,42 @@ fun NavGraph(
             ResultsScreen(
                 recordingId = recordingId,
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Progress screens
+        composable(route = Screen.Progress.route) {
+            ProgressScreen(
+                onNavigateToCompare = {
+                    navController.navigate(Screen.Compare.route)
+                },
+                onNavigateToAchievements = {
+                    navController.navigate(Screen.Achievements.route)
+                },
+                onNavigateToHistory = {
+                    navController.navigate(Screen.RecordingHistory.route)
+                }
+            )
+        }
+
+        composable(route = Screen.Compare.route) {
+            CompareScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(route = Screen.Achievements.route) {
+            AchievementsScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(route = Screen.RecordingHistory.route) {
+            RecordingHistoryScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToResults = { recordingId ->
+                    navController.navigate(Screen.Results.createRoute(recordingId))
+                }
             )
         }
     }
