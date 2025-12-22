@@ -125,7 +125,7 @@ fun LessonScreen(
 
 @Composable
 private fun ExerciseContent(
-    exercise: com.aivoicepower.domain.model.course.Exercise,
+    exercise: com.aivoicepower.domain.model.exercise.Exercise,
     currentStepIndex: Int,
     recordingState: RecordingState,
     hasPermission: Boolean,
@@ -138,7 +138,8 @@ private fun ExerciseContent(
     onSkipToRecording: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val showSteps = exercise.steps.isNotEmpty() && currentStepIndex < exercise.steps.size
+    // TODO: Phase 4.2 - Add steps support to Exercise model
+    val showSteps = false // exercise.steps.isNotEmpty() && currentStepIndex < exercise.steps.size
 
     Column(
         modifier = modifier
@@ -152,6 +153,8 @@ private fun ExerciseContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Progress Indicator for steps
+        // TODO: Phase 4.2 - Implement steps when Exercise model is updated
+        /*
         if (exercise.steps.isNotEmpty()) {
             StepProgressIndicator(
                 currentStep = currentStepIndex,
@@ -159,10 +162,12 @@ private fun ExerciseContent(
             )
             Spacer(modifier = Modifier.height(24.dp))
         }
+        */
 
         // Main Content: Steps or Recording
         if (showSteps) {
-            // Show current step
+            // TODO: Phase 4.2 - Show current step
+            /*
             val currentStep = exercise.steps[currentStepIndex]
             StepContent(
                 step = currentStep,
@@ -170,10 +175,12 @@ private fun ExerciseContent(
                 totalSteps = exercise.steps.size,
                 exampleText = exercise.exampleText
             )
+            */
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Step Navigation
+            // TODO: Phase 4.2 - Step Navigation
+            /*
             StepNavigation(
                 currentStep = currentStepIndex,
                 totalSteps = exercise.steps.size,
@@ -181,12 +188,14 @@ private fun ExerciseContent(
                 onNext = onNextStep,
                 onSkip = onSkipToRecording
             )
+            */
         } else {
             // Show recording interface
             when (recordingState) {
                 is RecordingState.Idle -> {
                     // Show example text if available
-                    if (!exercise.exampleText.isNullOrEmpty()) {
+                    val exampleText = getExerciseText(exercise)
+                    if (exampleText != null) {
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp),
@@ -203,7 +212,7 @@ private fun ExerciseContent(
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
-                                    text = exercise.exampleText,
+                                    text = exampleText,
                                     style = MaterialTheme.typography.headlineSmall,
                                     fontWeight = FontWeight.Medium,
                                     textAlign = TextAlign.Center,
@@ -228,7 +237,8 @@ private fun ExerciseContent(
                 }
                 is RecordingState.Recording -> {
                     // Show example text during recording
-                    if (!exercise.exampleText.isNullOrEmpty()) {
+                    val exampleText = getExerciseText(exercise)
+                    if (exampleText != null) {
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp),
@@ -256,7 +266,7 @@ private fun ExerciseContent(
                                 }
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
-                                    text = exercise.exampleText,
+                                    text = exampleText,
                                     style = MaterialTheme.typography.headlineSmall,
                                     fontWeight = FontWeight.Bold,
                                     textAlign = TextAlign.Center,
@@ -518,7 +528,7 @@ private fun AnalysisResults(
 // New Components for Step-by-Step UI
 
 @Composable
-private fun ExerciseHeader(exercise: com.aivoicepower.domain.model.course.Exercise) {
+private fun ExerciseHeader(exercise: com.aivoicepower.domain.model.exercise.Exercise) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -537,7 +547,8 @@ private fun ExerciseHeader(exercise: com.aivoicepower.domain.model.course.Exerci
                     color = Primary,
                     modifier = Modifier.weight(1f)
                 )
-                DifficultyBadge(difficulty = exercise.difficulty)
+                // TODO: Phase 4.2 - Add difficulty to Exercise model
+                // DifficultyBadge(difficulty = exercise.difficulty)
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -548,6 +559,8 @@ private fun ExerciseHeader(exercise: com.aivoicepower.domain.model.course.Exerci
                 color = TextSecondary
             )
 
+            // TODO: Phase 4.2 - Add repetitions to Exercise model
+            /*
             if (exercise.repetitions > 1) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -565,6 +578,7 @@ private fun ExerciseHeader(exercise: com.aivoicepower.domain.model.course.Exerci
                     )
                 }
             }
+            */
         }
     }
 }
@@ -813,5 +827,16 @@ private fun getScoreColor(score: Float): Color {
         score >= 80 -> Success
         score >= 60 -> Warning
         else -> Error
+    }
+}
+
+private fun getExerciseText(exercise: com.aivoicepower.domain.model.exercise.Exercise): String? {
+    return when (val content = exercise.content) {
+        is com.aivoicepower.domain.model.exercise.ExerciseContent.TongueTwister -> content.text
+        is com.aivoicepower.domain.model.exercise.ExerciseContent.ReadingText -> content.text
+        is com.aivoicepower.domain.model.exercise.ExerciseContent.FreeSpeechTopic -> content.topic
+        is com.aivoicepower.domain.model.exercise.ExerciseContent.Retelling -> content.sourceText
+        is com.aivoicepower.domain.model.exercise.ExerciseContent.Dialogue -> content.lines.joinToString("\n") { "${it.speaker}: ${it.text}" }
+        is com.aivoicepower.domain.model.exercise.ExerciseContent.Pitch -> content.scenario
     }
 }

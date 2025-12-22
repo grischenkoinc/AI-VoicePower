@@ -1,8 +1,6 @@
 package com.aivoicepower.di
 
-import com.aivoicepower.data.repository.LessonRepositoryImpl
 import com.aivoicepower.data.repository.VoiceAnalysisRepositoryImpl
-import com.aivoicepower.domain.repository.LessonRepository
 import com.aivoicepower.domain.repository.VoiceAnalysisRepository
 import com.google.ai.client.generativeai.GenerativeModel
 import dagger.Module
@@ -24,12 +22,6 @@ object AppModule {
             apiKey = "AIzaSyAte8eIXj8aqTp5-ymLHQqcBZEeuj8miQU" // Replace with actual API key
         )
     }
-
-    @Provides
-    @Singleton
-    fun provideLessonRepository(
-        impl: LessonRepositoryImpl
-    ): LessonRepository = impl
 
     @Provides
     @Singleton

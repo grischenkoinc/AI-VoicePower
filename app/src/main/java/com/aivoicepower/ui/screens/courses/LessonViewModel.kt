@@ -3,9 +3,9 @@ package com.aivoicepower.ui.screens.courses
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aivoicepower.domain.model.course.Exercise
 import com.aivoicepower.domain.model.course.Lesson
-import com.aivoicepower.domain.repository.LessonRepository
+import com.aivoicepower.domain.model.exercise.Exercise
+import com.aivoicepower.domain.repository.CourseRepository
 import com.aivoicepower.domain.repository.VoiceAnalysisRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +17,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LessonViewModel @Inject constructor(
-    private val lessonRepository: LessonRepository,
+    private val courseRepository: CourseRepository,
     private val voiceAnalysisRepository: VoiceAnalysisRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -40,16 +40,8 @@ class LessonViewModel @Inject constructor(
     private fun loadLesson() {
         viewModelScope.launch {
             try {
-                val lesson = lessonRepository.getLessonById(lessonId)
-                if (lesson != null) {
-                    _uiState.value = LessonUiState.Success(
-                        lesson = lesson,
-                        currentExercise = lesson.exercises.firstOrNull(),
-                        currentStepIndex = 0
-                    )
-                } else {
-                    _uiState.value = LessonUiState.Error("Урок не знайдено")
-                }
+                // TODO: Phase 4.2 - Implement lesson loading with course ID
+                _uiState.value = LessonUiState.Error("Lesson UI буде реалізовано в Phase 4.2")
             } catch (e: Exception) {
                 _uiState.value = LessonUiState.Error(e.message ?: "Помилка завантаження уроку")
             }
@@ -111,7 +103,8 @@ class LessonViewModel @Inject constructor(
         val currentState = _uiState.value
         if (currentState is LessonUiState.Success) {
             val exercise = currentState.currentExercise
-            if (exercise != null && currentStepIndex < exercise.steps.size - 1) {
+            // TODO: Phase 4.2 - Implement steps navigation when Exercise model is updated
+            if (exercise != null && currentStepIndex < 0) {
                 currentStepIndex++
                 _uiState.value = currentState.copy(currentStepIndex = currentStepIndex)
             }
@@ -131,7 +124,8 @@ class LessonViewModel @Inject constructor(
         if (currentState is LessonUiState.Success) {
             val exercise = currentState.currentExercise
             if (exercise != null) {
-                currentStepIndex = exercise.steps.size // Move past all steps
+                // TODO: Phase 4.2 - Implement skip to recording when Exercise model is updated
+                currentStepIndex = 0 // Move past all steps (placeholder)
                 _uiState.value = currentState.copy(currentStepIndex = currentStepIndex)
             }
         }

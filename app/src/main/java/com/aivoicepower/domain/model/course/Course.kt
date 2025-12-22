@@ -2,21 +2,15 @@ package com.aivoicepower.domain.model.course
 
 import com.aivoicepower.domain.model.user.SkillType
 
-// New domain model from Phase 0.5 specification
 data class Course(
     val id: String,
     val title: String,
     val description: String,
-    val iconRes: Int,
-    val lessons: List<NewLesson>,
-    val isPremium: Boolean,
+    val iconEmoji: String,           // Emoji замість iconRes для простоти
+    val totalLessons: Int,
+    val isPremium: Boolean,          // Чи потрібен Premium для уроків 8+
     val estimatedDays: Int,
     val difficulty: Difficulty,
-    val skills: List<SkillType> // Навички, які розвиває курс
-) {
-    val totalLessons: Int
-        get() = lessons.size
-
-    val estimatedMinutes: Int
-        get() = lessons.sumOf { it.estimatedMinutes }
-}
+    val skills: List<SkillType>,     // Які навички розвиває
+    val lessons: List<Lesson>        // Перші 7 уроків завантажені
+)

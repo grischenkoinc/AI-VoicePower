@@ -1,305 +1,8 @@
-# Промпт для Claude Code — Phase 4.1: Courses Infrastructure
-
-## Контекст
-
-Продовжую розробку AI VoicePower. Завершені фази:
-- ✅ Phase 0.1-0.6 — Infrastructure  
-- ✅ Phase 1.1-1.4 — Onboarding + Diagnostic
-- ✅ Phase 2.1-2.5 — Warmup
-- ✅ Phase 3 — Home Screen
-
-Зараз **Phase 4.1 — Courses Infrastructure** — перша підфаза Phase 4.
-
-**Згідно з PHASE_STRUCTURE_GUIDE.md**: Розбити на 4 підфази. 4.1 — Infrastructure.
-
-**Специфікація:** `SPECIFICATION.md`, секції 5.2 (Course models) + 4.3.5 (Courses Screen).
-
-**Складність:** 🟡 СЕРЕДНЯ  
-**Час:** ⏱️ 2 години
-
----
-
-## Ключова ідея
-
-**Phase 4.1** — це **фундамент для курсів**:
-1. Domain models (якщо ще не з Phase 0.5)
-2. Repository interface + implementation
-3. **ContentProvider** — hardcoded дані 6 курсів (перші 7 уроків кожного)
-4. Database queries optimization
-
-**БЕЗ UI** — тільки дані та бізнес-логіка.
-
----
-
-## Задача Phase 4.1
-
-### 1. Domain Models (якщо ще не створені)
-
-**6 курсів:**
-
-| ID | Назва | Уроків | Фокус | Difficulty | Premium |
-|----|-------|--------|-------|-----------|---------|
-| course_1 | Чітке мовлення за 21 день | 21 | Дикція, скоромовки | BEGINNER | Перші 7 free |
-| course_2 | Магія інтонації | 21 | Емоції, виразність | INTERMEDIATE | Перші 7 free |
-| course_3 | Впевнений спікер | 21 | Публічні виступи | INTERMEDIATE | Перші 7 free |
-| course_4 | Чисте мовлення | 14 | Слова-паразити | BEGINNER | Перші 7 free |
-| course_5 | Ділова комунікація | 20 | Переговори, співбесіди | ADVANCED | Перші 7 free |
-| course_6 | Харизматичний оратор | 21 | Просунутий рівень | ADVANCED | Перші 7 free |
-
-**Для Phase 4.1** створюємо тільки **перші 7 уроків кожного курсу** (решта в Phase 8).
-
-### 2. Repository Pattern
-
-```
-CourseRepository (interface)
-    ├── getAllCourses(): Flow<List<Course>>
-    ├── getCourseById(id): Flow<Course?>
-    ├── getLessonById(courseId, lessonId): Flow<Lesson?>
-    └── searchCourses(query): Flow<List<Course>>
-
-CourseRepositoryImpl
-    ├── Uses CourseContentProvider (hardcoded data)
-    └── Uses CourseProgressDao (progress tracking)
-```
-
-### 3. ContentProvider
-
-**CourseContentProvider** — клас з hardcoded даними:
-- 6 courses
-- Перші 7 lessons для кожного курсу
-- Exercises для кожного уроку
-
----
-
-## Структура файлів
-
-```
-domain/model/course/
-├── Course.kt (якщо ще не з Phase 0.5)
-├── Lesson.kt
-├── Exercise.kt
-├── ExerciseType.kt
-└── TheoryContent.kt
-
-domain/repository/
-└── CourseRepository.kt (interface)
-
-data/repository/
-└── CourseRepositoryImpl.kt
-
-data/content/
-└── CourseContentProvider.kt (hardcoded data)
-
-di/
-└── RepositoryModule.kt (оновити)
-```
-
----
-
-## Повний код
-
-### 1. Domain Models
-
-#### domain/model/course/Course.kt
-
-```kotlin
-package com.aivoicepower.domain.model.course
-
-data class Course(
-    val id: String,
-    val title: String,
-    val description: String,
-    val iconEmoji: String,           // Emoji замість iconRes для простоти
-    val totalLessons: Int,
-    val isPremium: Boolean,          // Чи потрібен Premium для уроків 8+
-    val estimatedDays: Int,
-    val difficulty: Difficulty,
-    val skills: List<SkillType>,     // Які навички розвиває
-    val lessons: List<Lesson>        // Перші 7 уроків завантажені
-)
-
-enum class Difficulty {
-    BEGINNER,
-    INTERMEDIATE,
-    ADVANCED
-}
-
-enum class SkillType {
-    DICTION,
-    TEMPO,
-    INTONATION,
-    VOLUME,
-    STRUCTURE,
-    CONFIDENCE,
-    FILLER_WORDS
-}
-
-fun Difficulty.toDisplayString(): String {
-    return when (this) {
-        Difficulty.BEGINNER -> "Початковий"
-        Difficulty.INTERMEDIATE -> "Середній"
-        Difficulty.ADVANCED -> "Просунутий"
-    }
-}
-
-fun SkillType.toDisplayString(): String {
-    return when (this) {
-        SkillType.DICTION -> "Дикція"
-        SkillType.TEMPO -> "Темп"
-        SkillType.INTONATION -> "Інтонація"
-        SkillType.VOLUME -> "Гучність"
-        SkillType.STRUCTURE -> "Структура"
-        SkillType.CONFIDENCE -> "Впевненість"
-        SkillType.FILLER_WORDS -> "Без слів-паразитів"
-    }
-}
-```
-
-#### domain/model/course/Lesson.kt
-
-```kotlin
-package com.aivoicepower.domain.model.course
-
-data class Lesson(
-    val id: String,
-    val courseId: String,
-    val dayNumber: Int,
-    val title: String,
-    val description: String,
-    val theory: TheoryContent?,
-    val exercises: List<Exercise>,
-    val estimatedMinutes: Int
-)
-
-data class TheoryContent(
-    val text: String,
-    val tips: List<String>
-)
-```
-
-#### domain/model/course/Exercise.kt
-
-```kotlin
-package com.aivoicepower.domain.model.course
-
-data class Exercise(
-    val id: String,
-    val type: ExerciseType,
-    val title: String,
-    val instruction: String,
-    val content: ExerciseContent,
-    val durationSeconds: Int,
-    val targetMetrics: List<SkillType>
-)
-
-enum class ExerciseType {
-    TONGUE_TWISTER,     // Скоромовка
-    READING,            // Читання тексту
-    EMOTION_READING,    // Читання з емоцією
-    FREE_SPEECH,        // Вільне мовлення на тему
-    RETELLING,          // Переказ
-    DIALOGUE,           // Читання діалогу
-    PITCH,              // Презентація/pitch
-    QA                  // Відповіді на питання
-}
-
-sealed class ExerciseContent {
-    data class TongueTwister(
-        val text: String,
-        val difficulty: Int,       // 1-5
-        val targetSounds: List<String>
-    ) : ExerciseContent()
-    
-    data class ReadingText(
-        val text: String,
-        val emotion: Emotion? = null
-    ) : ExerciseContent()
-    
-    data class FreeSpeechTopic(
-        val topic: String,
-        val hints: List<String>
-    ) : ExerciseContent()
-    
-    data class Retelling(
-        val sourceText: String
-    ) : ExerciseContent()
-    
-    data class Dialogue(
-        val lines: List<DialogueLine>
-    ) : ExerciseContent()
-}
-
-data class DialogueLine(
-    val speaker: String,
-    val text: String
-)
-
-enum class Emotion {
-    NEUTRAL, JOY, SADNESS, ANGER, SURPRISE, FEAR
-}
-
-fun ExerciseType.toDisplayString(): String {
-    return when (this) {
-        ExerciseType.TONGUE_TWISTER -> "Скоромовка"
-        ExerciseType.READING -> "Читання"
-        ExerciseType.EMOTION_READING -> "Емоційне читання"
-        ExerciseType.FREE_SPEECH -> "Вільне мовлення"
-        ExerciseType.RETELLING -> "Переказ"
-        ExerciseType.DIALOGUE -> "Діалог"
-        ExerciseType.PITCH -> "Презентація"
-        ExerciseType.QA -> "Питання-відповіді"
-    }
-}
-```
-
-### 2. Repository Interface
-
-#### domain/repository/CourseRepository.kt
-
-```kotlin
-package com.aivoicepower.domain.repository
-
-import com.aivoicepower.domain.model.course.Course
-import com.aivoicepower.domain.model.course.Lesson
-import kotlinx.coroutines.flow.Flow
-
-interface CourseRepository {
-    
-    /**
-     * Отримати всі доступні курси
-     */
-    fun getAllCourses(): Flow<List<Course>>
-    
-    /**
-     * Отримати курс за ID
-     */
-    fun getCourseById(courseId: String): Flow<Course?>
-    
-    /**
-     * Отримати урок за ID
-     */
-    fun getLessonById(courseId: String, lessonId: String): Flow<Lesson?>
-    
-    /**
-     * Пошук курсів за запитом
-     */
-    fun searchCourses(query: String): Flow<List<Course>>
-    
-    /**
-     * Отримати рекомендовані курси на основі цілі користувача
-     */
-    fun getRecommendedCourses(userGoal: String): Flow<List<Course>>
-}
-```
-
-### 3. Content Provider (Hardcoded Data)
-
-#### data/content/CourseContentProvider.kt
-
-```kotlin
 package com.aivoicepower.data.content
 
 import com.aivoicepower.domain.model.course.*
+import com.aivoicepower.domain.model.exercise.*
+import com.aivoicepower.domain.model.user.SkillType
 
 /**
  * Hardcoded дані курсів
@@ -307,7 +10,7 @@ import com.aivoicepower.domain.model.course.*
  * Phase 8: Додати решту уроків (8-21)
  */
 object CourseContentProvider {
-    
+
     fun getAllCourses(): List<Course> {
         return listOf(
             getCourse1(),
@@ -318,17 +21,17 @@ object CourseContentProvider {
             getCourse6()
         )
     }
-    
+
     fun getCourseById(id: String): Course? {
         return getAllCourses().find { it.id == id }
     }
-    
+
     fun getLessonById(courseId: String, lessonId: String): Lesson? {
         return getCourseById(courseId)?.lessons?.find { it.id == lessonId }
     }
-    
+
     // ========== КУРС 1: Чітке мовлення за 21 день ==========
-    
+
     private fun getCourse1(): Course {
         return Course(
             id = "course_1",
@@ -343,7 +46,7 @@ object CourseContentProvider {
             lessons = getCourse1Lessons()
         )
     }
-    
+
     private fun getCourse1Lessons(): List<Lesson> {
         return listOf(
             // День 1
@@ -389,7 +92,7 @@ object CourseContentProvider {
                 ),
                 estimatedMinutes = 10
             ),
-            
+
             // День 2
             Lesson(
                 id = "lesson_2",
@@ -435,7 +138,7 @@ object CourseContentProvider {
                 ),
                 estimatedMinutes = 10
             ),
-            
+
             // День 3
             Lesson(
                 id = "lesson_3",
@@ -481,7 +184,7 @@ object CourseContentProvider {
                 ),
                 estimatedMinutes = 10
             ),
-            
+
             // День 4
             Lesson(
                 id = "lesson_4",
@@ -527,7 +230,7 @@ object CourseContentProvider {
                 ),
                 estimatedMinutes = 10
             ),
-            
+
             // День 5
             Lesson(
                 id = "lesson_5",
@@ -573,7 +276,7 @@ object CourseContentProvider {
                 ),
                 estimatedMinutes = 10
             ),
-            
+
             // День 6
             Lesson(
                 id = "lesson_6",
@@ -619,7 +322,7 @@ object CourseContentProvider {
                 ),
                 estimatedMinutes = 10
             ),
-            
+
             // День 7
             Lesson(
                 id = "lesson_7",
@@ -670,9 +373,9 @@ object CourseContentProvider {
             )
         )
     }
-    
+
     // ========== КУРС 2: Магія інтонації ==========
-    
+
     private fun getCourse2(): Course {
         return Course(
             id = "course_2",
@@ -687,7 +390,7 @@ object CourseContentProvider {
             lessons = getCourse2LessonsPlaceholder()
         )
     }
-    
+
     private fun getCourse2LessonsPlaceholder(): List<Lesson> {
         // TODO: Phase 8 — додати повний контент
         return (1..7).map { day ->
@@ -719,9 +422,9 @@ object CourseContentProvider {
             )
         }
     }
-    
+
     // ========== КУРС 3: Впевнений спікер ==========
-    
+
     private fun getCourse3(): Course {
         return Course(
             id = "course_3",
@@ -736,7 +439,7 @@ object CourseContentProvider {
             lessons = getCourse3LessonsPlaceholder()
         )
     }
-    
+
     private fun getCourse3LessonsPlaceholder(): List<Lesson> {
         // TODO: Phase 8 — додати повний контент
         return (1..7).map { day ->
@@ -765,9 +468,9 @@ object CourseContentProvider {
             )
         }
     }
-    
+
     // ========== КУРС 4-6: Placeholder ==========
-    
+
     private fun getCourse4(): Course {
         return Course(
             id = "course_4",
@@ -782,7 +485,7 @@ object CourseContentProvider {
             lessons = getPlaceholderLessons("course_4", 7)
         )
     }
-    
+
     private fun getCourse5(): Course {
         return Course(
             id = "course_5",
@@ -797,7 +500,7 @@ object CourseContentProvider {
             lessons = getPlaceholderLessons("course_5", 7)
         )
     }
-    
+
     private fun getCourse6(): Course {
         return Course(
             id = "course_6",
@@ -812,7 +515,7 @@ object CourseContentProvider {
             lessons = getPlaceholderLessons("course_6", 7)
         )
     }
-    
+
     private fun getPlaceholderLessons(courseId: String, count: Int): List<Lesson> {
         return (1..count).map { day ->
             Lesson(
@@ -840,153 +543,3 @@ object CourseContentProvider {
         }
     }
 }
-```
-
-### 4. Repository Implementation
-
-#### data/repository/CourseRepositoryImpl.kt
-
-```kotlin
-package com.aivoicepower.data.repository
-
-import com.aivoicepower.data.content.CourseContentProvider
-import com.aivoicepower.data.local.database.dao.CourseProgressDao
-import com.aivoicepower.domain.model.course.Course
-import com.aivoicepower.domain.model.course.Lesson
-import com.aivoicepower.domain.repository.CourseRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flow
-import javax.inject.Inject
-
-class CourseRepositoryImpl @Inject constructor(
-    private val courseProgressDao: CourseProgressDao
-) : CourseRepository {
-    
-    override fun getAllCourses(): Flow<List<Course>> = flow {
-        val courses = CourseContentProvider.getAllCourses()
-        emit(courses)
-    }
-    
-    override fun getCourseById(courseId: String): Flow<Course?> = flow {
-        val course = CourseContentProvider.getCourseById(courseId)
-        emit(course)
-    }
-    
-    override fun getLessonById(courseId: String, lessonId: String): Flow<Lesson?> = flow {
-        val lesson = CourseContentProvider.getLessonById(courseId, lessonId)
-        emit(lesson)
-    }
-    
-    override fun searchCourses(query: String): Flow<List<Course>> = flow {
-        val allCourses = CourseContentProvider.getAllCourses()
-        val filtered = allCourses.filter { course ->
-            course.title.contains(query, ignoreCase = true) ||
-            course.description.contains(query, ignoreCase = true)
-        }
-        emit(filtered)
-    }
-    
-    override fun getRecommendedCourses(userGoal: String): Flow<List<Course>> = flow {
-        val allCourses = CourseContentProvider.getAllCourses()
-        
-        val recommended = when (userGoal) {
-            "CLEAR_SPEECH" -> listOf("course_1", "course_4")
-            "PUBLIC_SPEAKING" -> listOf("course_3", "course_6")
-            "BETTER_VOICE" -> listOf("course_2", "course_1")
-            "PERSUASION" -> listOf("course_5", "course_3")
-            "INTERVIEW_PREP" -> listOf("course_5", "course_3")
-            else -> listOf("course_1", "course_2")
-        }
-        
-        val courses = allCourses.filter { it.id in recommended }
-        emit(courses)
-    }
-}
-```
-
-### 5. Hilt Module
-
-#### di/RepositoryModule.kt (оновити)
-
-```kotlin
-package com.aivoicepower.di
-
-import com.aivoicepower.data.repository.CourseRepositoryImpl
-import com.aivoicepower.domain.repository.CourseRepository
-import dagger.Binds
-import dagger.Module
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
-
-@Module
-@InstallIn(SingletonComponent::class)
-abstract class RepositoryModule {
-    
-    @Binds
-    @Singleton
-    abstract fun bindCourseRepository(
-        impl: CourseRepositoryImpl
-    ): CourseRepository
-    
-    // Інші репозиторії будуть додані пізніше
-}
-```
-
----
-
-## Перевірка
-
-### 1. Компіляція
-```bash
-./gradlew assembleDebug
-```
-
-### 2. Testing (Unit Tests — optional)
-
-```kotlin
-@Test
-fun `getAllCourses returns 6 courses`() {
-    val courses = CourseContentProvider.getAllCourses()
-    assertEquals(6, courses.size)
-}
-
-@Test
-fun `course_1 has 7 lessons`() {
-    val course = CourseContentProvider.getCourseById("course_1")
-    assertNotNull(course)
-    assertEquals(7, course?.lessons?.size)
-}
-
-@Test
-fun `course_1_lesson_1 has 2 exercises`() {
-    val lesson = CourseContentProvider.getLessonById("course_1", "lesson_1")
-    assertNotNull(lesson)
-    assertEquals(2, lesson?.exercises?.size)
-}
-```
-
----
-
-## Очікуваний результат
-
-✅ Domain models (Course, Lesson, Exercise) створені
-✅ Repository interface + implementation
-✅ CourseContentProvider з 6 курсами
-✅ Курс 1 "Чітке мовлення" — повний контент (7 днів)
-✅ Курси 2-6 — placeholder (7 днів кожен)
-✅ Hilt integration
-✅ Проект компілюється
-
----
-
-## Наступний крок
-
-**Phase 4.2: Courses List + Detail** — UI екрани для перегляду курсів.
-
----
-
-**Час на Phase 4.1:** ~2 години
-
-**Примітка:** Курси 2-6 мають placeholder контент. Повний контент буде додано в Phase 8.
