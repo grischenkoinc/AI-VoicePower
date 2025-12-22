@@ -1,151 +1,320 @@
 package com.aivoicepower.ui.screens.courses
 
+import android.content.Context
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aivoicepower.domain.model.course.Lesson
-import com.aivoicepower.domain.model.exercise.Exercise
+import com.aivoicepower.data.local.database.dao.CourseProgressDao
+import com.aivoicepower.data.local.database.dao.RecordingDao
+import com.aivoicepower.data.local.database.entity.CourseProgressEntity
+import com.aivoicepower.data.local.database.entity.RecordingEntity
 import com.aivoicepower.domain.repository.CourseRepository
-import com.aivoicepower.domain.repository.VoiceAnalysisRepository
+import com.aivoicepower.utils.audio.AudioPlayerUtil
+import com.aivoicepower.utils.audio.AudioRecorderUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.File
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class LessonViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
+    savedStateHandle: SavedStateHandle,
     private val courseRepository: CourseRepository,
-    private val voiceAnalysisRepository: VoiceAnalysisRepository,
-    savedStateHandle: SavedStateHandle
+    private val courseProgressDao: CourseProgressDao,
+    private val recordingDao: RecordingDao
 ) : ViewModel() {
 
+    private val courseId: String = savedStateHandle["courseId"] ?: ""
     private val lessonId: String = savedStateHandle["lessonId"] ?: ""
 
-    private val _uiState = MutableStateFlow<LessonUiState>(LessonUiState.Loading)
-    val uiState: StateFlow<LessonUiState> = _uiState.asStateFlow()
+    private val _state = MutableStateFlow(LessonState())
+    val state: StateFlow<LessonState> = _state.asStateFlow()
 
-    private val _recordingState = MutableStateFlow<RecordingState>(RecordingState.Idle)
-    val recordingState: StateFlow<RecordingState> = _recordingState.asStateFlow()
-
-    private var currentExerciseIndex = 0
-    private var currentStepIndex = 0
+    private val audioRecorder = AudioRecorderUtil(context)
+    private val audioPlayer = AudioPlayerUtil(context)
 
     init {
         loadLesson()
     }
 
-    private fun loadLesson() {
-        viewModelScope.launch {
-            try {
-                // TODO: Phase 4.2 - Implement lesson loading with course ID
-                _uiState.value = LessonUiState.Error("Lesson UI буде реалізовано в Phase 4.2")
-            } catch (e: Exception) {
-                _uiState.value = LessonUiState.Error(e.message ?: "Помилка завантаження уроку")
+    override fun onCleared() {
+        super.onCleared()
+        audioRecorder.release()
+        audioPlayer.release()
+    }
+
+    fun onEvent(event: LessonEvent) {
+        when (event) {
+            LessonEvent.StartExercisesClicked -> startExercises()
+            LessonEvent.StartRecordingClicked -> startRecording()
+            LessonEvent.StopRecordingClicked -> stopRecording()
+            LessonEvent.PlayRecordingClicked -> playRecording()
+            LessonEvent.StopPlaybackClicked -> stopPlayback()
+            LessonEvent.ReRecordClicked -> reRecord()
+            LessonEvent.CompleteExerciseClicked -> completeCurrentExercise()
+            LessonEvent.NextExerciseClicked -> moveToNextExercise()
+            LessonEvent.PreviousExerciseClicked -> moveToPreviousExercise()
+            LessonEvent.SkipExerciseClicked -> skipCurrentExercise()
+            LessonEvent.FinishLessonClicked -> {
+                // Navigation handled in Screen
             }
         }
     }
 
-    fun startRecording() {
-        _recordingState.value = RecordingState.Recording
-    }
-
-    fun stopRecording(audioFile: File?) {
-        _recordingState.value = RecordingState.Processing
-
-        if (audioFile == null) {
-            _recordingState.value = RecordingState.Error("Помилка запису аудіо")
-            return
-        }
-
+    private fun loadLesson() {
         viewModelScope.launch {
-            val currentState = _uiState.value
-            if (currentState is LessonUiState.Success) {
-                val exercise = currentState.currentExercise
-                if (exercise != null) {
-                    val context = "${exercise.title}: ${exercise.instruction}"
-                    val result = voiceAnalysisRepository.analyzeVoice(audioFile, context)
+            _state.update { it.copy(isLoading = true) }
 
-                    result.onSuccess { analysis ->
-                        _recordingState.value = RecordingState.Completed(analysis)
-                    }.onFailure { error ->
-                        _recordingState.value = RecordingState.Error(
-                            error.message ?: "Помилка аналізу"
-                        )
+            try {
+                courseRepository.getLessonById(courseId, lessonId)
+                    .collect { lesson ->
+                        if (lesson == null) {
+                            _state.update {
+                                it.copy(
+                                    isLoading = false,
+                                    error = "Урок не знайдено"
+                                )
+                            }
+                            return@collect
+                        }
+
+                        val exerciseStates = lesson.exercises.map { exercise ->
+                            ExerciseState(
+                                exercise = exercise,
+                                status = ExerciseStatus.NotStarted
+                            )
+                        }
+
+                        _state.update {
+                            it.copy(
+                                lesson = lesson,
+                                currentPhase = if (lesson.theory != null) {
+                                    LessonPhase.Theory
+                                } else {
+                                    LessonPhase.Exercise
+                                },
+                                exerciseStates = exerciseStates,
+                                isLoading = false,
+                                error = null
+                            )
+                        }
                     }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Не вдалось завантажити урок: ${e.message}"
+                    )
                 }
             }
         }
     }
 
-    fun resetRecording() {
-        _recordingState.value = RecordingState.Idle
+    private fun startExercises() {
+        _state.update { it.copy(currentPhase = LessonPhase.Exercise) }
     }
 
-    fun moveToNextExercise() {
-        val currentState = _uiState.value
-        if (currentState is LessonUiState.Success) {
-            currentExerciseIndex++
-            currentStepIndex = 0
-            if (currentExerciseIndex < currentState.lesson.exercises.size) {
-                _uiState.value = currentState.copy(
-                    currentExercise = currentState.lesson.exercises[currentExerciseIndex],
-                    currentStepIndex = 0
+    private fun startRecording() {
+        viewModelScope.launch {
+            try {
+                val outputFile = context.filesDir.resolve("recordings/${UUID.randomUUID()}.m4a")
+                outputFile.parentFile?.mkdirs()
+
+                audioRecorder.startRecording(outputFile.absolutePath)
+
+                updateCurrentExerciseState { it.copy(status = ExerciseStatus.Recording) }
+            } catch (e: Exception) {
+                _state.update { it.copy(error = "Помилка запису: ${e.message}") }
+            }
+        }
+    }
+
+    private fun stopRecording() {
+        viewModelScope.launch {
+            try {
+                val result = audioRecorder.stopRecording()
+
+                if (result != null) {
+                    updateCurrentExerciseState {
+                        it.copy(
+                            status = ExerciseStatus.Recorded,
+                            recordingPath = result.filePath,
+                            recordingDurationMs = result.durationMs
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                _state.update { it.copy(error = "Помилка зупинки запису: ${e.message}") }
+            }
+        }
+    }
+
+    private fun playRecording() {
+        val recordingPath = getCurrentExerciseState()?.recordingPath ?: return
+
+        viewModelScope.launch {
+            try {
+                _state.update { it.copy(isPlaying = true) }
+                audioPlayer.play(recordingPath) {
+                    _state.update { it.copy(isPlaying = false) }
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        error = "Помилка відтворення: ${e.message}",
+                        isPlaying = false
+                    )
+                }
+            }
+        }
+    }
+
+    private fun stopPlayback() {
+        audioPlayer.stop()
+        _state.update { it.copy(isPlaying = false) }
+    }
+
+    private fun reRecord() {
+        updateCurrentExerciseState {
+            it.copy(
+                status = ExerciseStatus.NotStarted,
+                recordingPath = null,
+                recordingDurationMs = 0
+            )
+        }
+    }
+
+    private fun completeCurrentExercise() {
+        val currentExerciseState = getCurrentExerciseState() ?: return
+        val lesson = _state.value.lesson ?: return
+
+        viewModelScope.launch {
+            try {
+                // Save recording to database
+                if (currentExerciseState.recordingPath != null) {
+                    val recordingEntity = RecordingEntity(
+                        id = UUID.randomUUID().toString(),
+                        filePath = currentExerciseState.recordingPath,
+                        durationMs = currentExerciseState.recordingDurationMs,
+                        type = "exercise",
+                        contextId = "${courseId}_${lessonId}",
+                        exerciseId = currentExerciseState.exercise.id,
+                        isAnalyzed = false
+                    )
+                    recordingDao.insert(recordingEntity)
+                }
+
+                // Mark exercise as completed
+                updateCurrentExerciseState {
+                    it.copy(status = ExerciseStatus.Completed)
+                }
+
+                // Check if all exercises completed
+                val updatedStates = _state.value.exerciseStates.toMutableList()
+                val currentIndex = _state.value.currentExerciseIndex
+                updatedStates[currentIndex] = updatedStates[currentIndex].copy(status = ExerciseStatus.Completed)
+
+                val allCompleted = updatedStates.all {
+                    it.status == ExerciseStatus.Completed
+                }
+
+                if (allCompleted) {
+                    // Mark lesson as completed
+                    val progressEntity = CourseProgressEntity(
+                        id = "${courseId}_${lessonId}",
+                        courseId = courseId,
+                        lessonId = lessonId,
+                        isCompleted = true,
+                        completedAt = System.currentTimeMillis(),
+                        bestScore = 100, // Placeholder - AI analysis will update this
+                        attemptsCount = 1,
+                        lastAttemptAt = System.currentTimeMillis()
+                    )
+                    courseProgressDao.insertOrUpdate(progressEntity)
+
+                    _state.update {
+                        it.copy(
+                            currentPhase = LessonPhase.Completed,
+                            exerciseStates = updatedStates
+                        )
+                    }
+                } else {
+                    // Move to next exercise
+                    _state.update { it.copy(exerciseStates = updatedStates) }
+                    moveToNextExercise()
+                }
+            } catch (e: Exception) {
+                _state.update { it.copy(error = "Помилка збереження: ${e.message}") }
+            }
+        }
+    }
+
+    private fun moveToNextExercise() {
+        val currentIndex = _state.value.currentExerciseIndex
+        val maxIndex = _state.value.exerciseStates.size - 1
+
+        if (currentIndex < maxIndex) {
+            _state.update { it.copy(currentExerciseIndex = currentIndex + 1) }
+        }
+    }
+
+    private fun moveToPreviousExercise() {
+        val currentIndex = _state.value.currentExerciseIndex
+
+        if (currentIndex > 0) {
+            _state.update { it.copy(currentExerciseIndex = currentIndex - 1) }
+        }
+    }
+
+    private fun skipCurrentExercise() {
+        updateCurrentExerciseState {
+            it.copy(status = ExerciseStatus.Completed)
+        }
+
+        val currentIndex = _state.value.currentExerciseIndex
+        val maxIndex = _state.value.exerciseStates.size - 1
+
+        if (currentIndex < maxIndex) {
+            moveToNextExercise()
+        } else {
+            // Last exercise skipped - complete lesson
+            viewModelScope.launch {
+                val progressEntity = CourseProgressEntity(
+                    id = "${courseId}_${lessonId}",
+                    courseId = courseId,
+                    lessonId = lessonId,
+                    isCompleted = true,
+                    completedAt = System.currentTimeMillis(),
+                    bestScore = 0, // Skipped exercises get 0 score
+                    attemptsCount = 1,
+                    lastAttemptAt = System.currentTimeMillis()
                 )
-                resetRecording()
+                courseProgressDao.insertOrUpdate(progressEntity)
+                _state.update { it.copy(currentPhase = LessonPhase.Completed) }
             }
         }
     }
 
-    fun nextStep() {
-        val currentState = _uiState.value
-        if (currentState is LessonUiState.Success) {
-            val exercise = currentState.currentExercise
-            // TODO: Phase 4.2 - Implement steps navigation when Exercise model is updated
-            if (exercise != null && currentStepIndex < 0) {
-                currentStepIndex++
-                _uiState.value = currentState.copy(currentStepIndex = currentStepIndex)
+    private fun getCurrentExerciseState() = _state.value.exerciseStates.getOrNull(
+        _state.value.currentExerciseIndex
+    )
+
+    private fun updateCurrentExerciseState(update: (ExerciseState) -> ExerciseState) {
+        _state.update { state ->
+            val updatedStates = state.exerciseStates.toMutableList()
+            val currentState = updatedStates.getOrNull(state.currentExerciseIndex)
+
+            if (currentState != null) {
+                updatedStates[state.currentExerciseIndex] = update(currentState)
             }
+
+            state.copy(exerciseStates = updatedStates)
         }
     }
-
-    fun previousStep() {
-        val currentState = _uiState.value
-        if (currentState is LessonUiState.Success && currentStepIndex > 0) {
-            currentStepIndex--
-            _uiState.value = currentState.copy(currentStepIndex = currentStepIndex)
-        }
-    }
-
-    fun skipToRecording() {
-        val currentState = _uiState.value
-        if (currentState is LessonUiState.Success) {
-            val exercise = currentState.currentExercise
-            if (exercise != null) {
-                // TODO: Phase 4.2 - Implement skip to recording when Exercise model is updated
-                currentStepIndex = 0 // Move past all steps (placeholder)
-                _uiState.value = currentState.copy(currentStepIndex = currentStepIndex)
-            }
-        }
-    }
-}
-
-sealed interface LessonUiState {
-    object Loading : LessonUiState
-    data class Success(
-        val lesson: Lesson,
-        val currentExercise: Exercise?,
-        val currentStepIndex: Int = 0
-    ) : LessonUiState
-    data class Error(val message: String) : LessonUiState
-}
-
-sealed interface RecordingState {
-    object Idle : RecordingState
-    object Recording : RecordingState
-    object Processing : RecordingState
-    data class Completed(val analysis: com.aivoicepower.domain.model.analysis.VoiceAnalysis) : RecordingState
-    data class Error(val message: String) : RecordingState
 }

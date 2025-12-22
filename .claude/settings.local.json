@@ -20,7 +20,8 @@
       "Bash(./gradlew.bat assembleDebug:*)",
       "Bash(Select-String -Pattern \"error:\" -Context 5,5)",
       "Bash(./gradlew.bat:*)",
-      "Bash(Select-String -Pattern \"(BUILD|error:)\" -Context 0,2)"
+      "Bash(Select-String -Pattern \"(BUILD|error:)\" -Context 0,2)",
+      "Bash(Select-String -Pattern \"\\(BUILD|error:|FAILED\\)\" -Context 0,2)"
     ]
   }
 }

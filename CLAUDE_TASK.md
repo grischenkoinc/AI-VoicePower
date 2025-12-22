@@ -1,4 +1,4 @@
-# Промпт для Claude Code — Phase 4.1: Courses Infrastructure
+# Промпт для Claude Code — Phase 4.4: Results Screen
 
 ## Контекст
 
@@ -7,930 +7,688 @@
 - ✅ Phase 1.1-1.4 — Onboarding + Diagnostic
 - ✅ Phase 2.1-2.5 — Warmup
 - ✅ Phase 3 — Home Screen
+- ✅ Phase 4.1 — Courses Infrastructure
+- ✅ Phase 4.2 — Courses List + Detail
+- ✅ Phase 4.3 — Lesson Screen (universal)
 
-Зараз **Phase 4.1 — Courses Infrastructure** — перша підфаза Phase 4.
+Зараз **Phase 4.4 — Results Screen** — остання підфаза Phase 4.
 
-**Згідно з PHASE_STRUCTURE_GUIDE.md**: Розбити на 4 підфази. 4.1 — Infrastructure.
+**Згідно з PHASE_STRUCTURE_GUIDE.md**: UI екран для показу результатів після вправи.
 
-**Специфікація:** `SPECIFICATION.md`, секції 5.2 (Course models) + 4.3.5 (Courses Screen).
+**Специфікація:** `SPECIFICATION.md`, секції 4.3.9 (Results Screen) + 5.6 (VoiceAnalysis).
 
 **Складність:** 🟡 СЕРЕДНЯ  
-**Час:** ⏱️ 2 години
+**Час:** ⏱️ 1.5-2 години
 
 ---
 
 ## Ключова ідея
 
-**Phase 4.1** — це **фундамент для курсів**:
-1. Domain models (якщо ще не з Phase 0.5)
-2. Repository interface + implementation
-3. **ContentProvider** — hardcoded дані 6 курсів (перші 7 уроків кожного)
-4. Database queries optimization
+**Phase 4.4** — це **екран результатів після вправи**:
 
-**БЕЗ UI** — тільки дані та бізнес-логіка.
+1. **Recording info** — показати збережений запис
+2. **Playback** — можливість прослухати
+3. **AI Feedback placeholder** — поки без реального аналізу (буде в Phase 6)
+4. **Actions** — "Спробувати знову" або "Далі"
+5. **Navigation** — до наступного уроку або до курсу
+
+**Phase 6** (AI Coach) додасть:
+- Реальний AI-аналіз через Gemini API
+- Метрики (diction, tempo, intonation)
+- Персональні поради
 
 ---
 
-## Задача Phase 4.1
+## Задача Phase 4.4
 
-### 1. Domain Models (якщо ще не створені)
-
-**6 курсів:**
-
-| ID | Назва | Уроків | Фокус | Difficulty | Premium |
-|----|-------|--------|-------|-----------|---------|
-| course_1 | Чітке мовлення за 21 день | 21 | Дикція, скоромовки | BEGINNER | Перші 7 free |
-| course_2 | Магія інтонації | 21 | Емоції, виразність | INTERMEDIATE | Перші 7 free |
-| course_3 | Впевнений спікер | 21 | Публічні виступи | INTERMEDIATE | Перші 7 free |
-| course_4 | Чисте мовлення | 14 | Слова-паразити | BEGINNER | Перші 7 free |
-| course_5 | Ділова комунікація | 20 | Переговори, співбесіди | ADVANCED | Перші 7 free |
-| course_6 | Харизматичний оратор | 21 | Просунутий рівень | ADVANCED | Перші 7 free |
-
-**Для Phase 4.1** створюємо тільки **перші 7 уроків кожного курсу** (решта в Phase 8).
-
-### 2. Repository Pattern
+### Results Screen Flow
 
 ```
-CourseRepository (interface)
-    ├── getAllCourses(): Flow<List<Course>>
-    ├── getCourseById(id): Flow<Course?>
-    ├── getLessonById(courseId, lessonId): Flow<Lesson?>
-    └── searchCourses(query): Flow<List<Course>>
-
-CourseRepositoryImpl
-    ├── Uses CourseContentProvider (hardcoded data)
-    └── Uses CourseProgressDao (progress tracking)
+┌────────────────────────────────────┐
+│  ← Результати                      │
+├────────────────────────────────────┤
+│                                    │
+│  🎤 Твій запис                     │
+│  ┌──────────────────────────────┐ │
+│  │ 📊 Вправа: Скоромовка        │ │
+│  │ ⏱️ Тривалість: 00:42          │ │
+│  │ 📅 12 груд. 2024, 14:30      │ │
+│  │                              │ │
+│  │ 🎧 [▶️ Прослухати]            │ │
+│  └──────────────────────────────┘ │
+│                                    │
+│  📊 Аналіз (placeholder)           │
+│  ┌──────────────────────────────┐ │
+│  │ Аналіз буде доступний після  │ │
+│  │ інтеграції AI в Phase 6      │ │
+│  │                              │ │
+│  │ 💡 Поради:                   │ │
+│  │ • Продовжуй тренуватися      │ │
+│  │ • Стеж за диханням           │ │
+│  └──────────────────────────────┘ │
+│                                    │
+│  [🔄 Спробувати знову]             │
+│  [→ Наступна вправа]               │
+│                                    │
+└────────────────────────────────────┘
 ```
-
-### 3. ContentProvider
-
-**CourseContentProvider** — клас з hardcoded даними:
-- 6 courses
-- Перші 7 lessons для кожного курсу
-- Exercises для кожного уроку
 
 ---
 
 ## Структура файлів
 
 ```
-domain/model/course/
-├── Course.kt (якщо ще не з Phase 0.5)
-├── Lesson.kt
-├── Exercise.kt
-├── ExerciseType.kt
-└── TheoryContent.kt
-
-domain/repository/
-└── CourseRepository.kt (interface)
-
-data/repository/
-└── CourseRepositoryImpl.kt
-
-data/content/
-└── CourseContentProvider.kt (hardcoded data)
-
-di/
-└── RepositoryModule.kt (оновити)
+ui/screens/results/
+├── ResultsScreen.kt
+├── ResultsViewModel.kt
+├── ResultsState.kt
+├── ResultsEvent.kt
+└── components/
+    ├── RecordingInfoCard.kt
+    ├── AnalysisPlaceholderCard.kt
+    └── ResultsActionsCard.kt
 ```
 
 ---
 
 ## Повний код
 
-### 1. Domain Models
-
-#### domain/model/course/Course.kt
+### 1. ResultsState.kt
 
 ```kotlin
-package com.aivoicepower.domain.model.course
+package com.aivoicepower.ui.screens.results
 
-data class Course(
+import com.aivoicepower.domain.model.course.Exercise
+
+data class ResultsState(
+    val recordingId: String = "",
+    val recording: RecordingInfo? = null,
+    val exercise: Exercise? = null,
+    val analysis: AnalysisResult? = null,
+    val isPlaying: Boolean = false,
+    val isLoading: Boolean = true,
+    val error: String? = null
+)
+
+data class RecordingInfo(
     val id: String,
-    val title: String,
-    val description: String,
-    val iconEmoji: String,           // Emoji замість iconRes для простоти
-    val totalLessons: Int,
-    val isPremium: Boolean,          // Чи потрібен Premium для уроків 8+
-    val estimatedDays: Int,
-    val difficulty: Difficulty,
-    val skills: List<SkillType>,     // Які навички розвиває
-    val lessons: List<Lesson>        // Перші 7 уроків завантажені
+    val filePath: String,
+    val durationMs: Long,
+    val createdAt: Long,
+    val exerciseTitle: String,
+    val exerciseType: String
 )
 
-enum class Difficulty {
-    BEGINNER,
-    INTERMEDIATE,
-    ADVANCED
-}
-
-enum class SkillType {
-    DICTION,
-    TEMPO,
-    INTONATION,
-    VOLUME,
-    STRUCTURE,
-    CONFIDENCE,
-    FILLER_WORDS
-}
-
-fun Difficulty.toDisplayString(): String {
-    return when (this) {
-        Difficulty.BEGINNER -> "Початковий"
-        Difficulty.INTERMEDIATE -> "Середній"
-        Difficulty.ADVANCED -> "Просунутий"
-    }
-}
-
-fun SkillType.toDisplayString(): String {
-    return when (this) {
-        SkillType.DICTION -> "Дикція"
-        SkillType.TEMPO -> "Темп"
-        SkillType.INTONATION -> "Інтонація"
-        SkillType.VOLUME -> "Гучність"
-        SkillType.STRUCTURE -> "Структура"
-        SkillType.CONFIDENCE -> "Впевненість"
-        SkillType.FILLER_WORDS -> "Без слів-паразитів"
-    }
-}
-```
-
-#### domain/model/course/Lesson.kt
-
-```kotlin
-package com.aivoicepower.domain.model.course
-
-data class Lesson(
-    val id: String,
-    val courseId: String,
-    val dayNumber: Int,
-    val title: String,
-    val description: String,
-    val theory: TheoryContent?,
-    val exercises: List<Exercise>,
-    val estimatedMinutes: Int
+data class AnalysisResult(
+    val isAnalyzed: Boolean,
+    val overallScore: Int?,
+    val feedback: FeedbackData?
 )
 
-data class TheoryContent(
-    val text: String,
-    val tips: List<String>
+data class FeedbackData(
+    val summary: String,
+    val strengths: List<String>,
+    val improvements: List<String>,
+    val tip: String
 )
 ```
 
-#### domain/model/course/Exercise.kt
+### 2. ResultsEvent.kt
 
 ```kotlin
-package com.aivoicepower.domain.model.course
+package com.aivoicepower.ui.screens.results
 
-data class Exercise(
-    val id: String,
-    val type: ExerciseType,
-    val title: String,
-    val instruction: String,
-    val content: ExerciseContent,
-    val durationSeconds: Int,
-    val targetMetrics: List<SkillType>
-)
-
-enum class ExerciseType {
-    TONGUE_TWISTER,     // Скоромовка
-    READING,            // Читання тексту
-    EMOTION_READING,    // Читання з емоцією
-    FREE_SPEECH,        // Вільне мовлення на тему
-    RETELLING,          // Переказ
-    DIALOGUE,           // Читання діалогу
-    PITCH,              // Презентація/pitch
-    QA                  // Відповіді на питання
-}
-
-sealed class ExerciseContent {
-    data class TongueTwister(
-        val text: String,
-        val difficulty: Int,       // 1-5
-        val targetSounds: List<String>
-    ) : ExerciseContent()
-    
-    data class ReadingText(
-        val text: String,
-        val emotion: Emotion? = null
-    ) : ExerciseContent()
-    
-    data class FreeSpeechTopic(
-        val topic: String,
-        val hints: List<String>
-    ) : ExerciseContent()
-    
-    data class Retelling(
-        val sourceText: String
-    ) : ExerciseContent()
-    
-    data class Dialogue(
-        val lines: List<DialogueLine>
-    ) : ExerciseContent()
-}
-
-data class DialogueLine(
-    val speaker: String,
-    val text: String
-)
-
-enum class Emotion {
-    NEUTRAL, JOY, SADNESS, ANGER, SURPRISE, FEAR
-}
-
-fun ExerciseType.toDisplayString(): String {
-    return when (this) {
-        ExerciseType.TONGUE_TWISTER -> "Скоромовка"
-        ExerciseType.READING -> "Читання"
-        ExerciseType.EMOTION_READING -> "Емоційне читання"
-        ExerciseType.FREE_SPEECH -> "Вільне мовлення"
-        ExerciseType.RETELLING -> "Переказ"
-        ExerciseType.DIALOGUE -> "Діалог"
-        ExerciseType.PITCH -> "Презентація"
-        ExerciseType.QA -> "Питання-відповіді"
-    }
+sealed class ResultsEvent {
+    object PlayRecordingClicked : ResultsEvent()
+    object StopPlaybackClicked : ResultsEvent()
+    object RetryExerciseClicked : ResultsEvent()
+    object NextExerciseClicked : ResultsEvent()
+    object BackToCourseClicked : ResultsEvent()
 }
 ```
 
-### 2. Repository Interface
-
-#### domain/repository/CourseRepository.kt
+### 3. ResultsViewModel.kt
 
 ```kotlin
-package com.aivoicepower.domain.repository
+package com.aivoicepower.ui.screens.results
 
-import com.aivoicepower.domain.model.course.Course
-import com.aivoicepower.domain.model.course.Lesson
-import kotlinx.coroutines.flow.Flow
-
-interface CourseRepository {
-    
-    /**
-     * Отримати всі доступні курси
-     */
-    fun getAllCourses(): Flow<List<Course>>
-    
-    /**
-     * Отримати курс за ID
-     */
-    fun getCourseById(courseId: String): Flow<Course?>
-    
-    /**
-     * Отримати урок за ID
-     */
-    fun getLessonById(courseId: String, lessonId: String): Flow<Lesson?>
-    
-    /**
-     * Пошук курсів за запитом
-     */
-    fun searchCourses(query: String): Flow<List<Course>>
-    
-    /**
-     * Отримати рекомендовані курси на основі цілі користувача
-     */
-    fun getRecommendedCourses(userGoal: String): Flow<List<Course>>
-}
-```
-
-### 3. Content Provider (Hardcoded Data)
-
-#### data/content/CourseContentProvider.kt
-
-```kotlin
-package com.aivoicepower.data.content
-
-import com.aivoicepower.domain.model.course.*
-
-/**
- * Hardcoded дані курсів
- * Phase 4.1: Тільки перші 7 уроків кожного курсу
- * Phase 8: Додати решту уроків (8-21)
- */
-object CourseContentProvider {
-    
-    fun getAllCourses(): List<Course> {
-        return listOf(
-            getCourse1(),
-            getCourse2(),
-            getCourse3(),
-            getCourse4(),
-            getCourse5(),
-            getCourse6()
-        )
-    }
-    
-    fun getCourseById(id: String): Course? {
-        return getAllCourses().find { it.id == id }
-    }
-    
-    fun getLessonById(courseId: String, lessonId: String): Lesson? {
-        return getCourseById(courseId)?.lessons?.find { it.id == lessonId }
-    }
-    
-    // ========== КУРС 1: Чітке мовлення за 21 день ==========
-    
-    private fun getCourse1(): Course {
-        return Course(
-            id = "course_1",
-            title = "Чітке мовлення за 21 день",
-            description = "Покращ дикцію та чіткість вимови за 3 тижні. Щоденні вправи зі скоромовками та артикуляцією.",
-            iconEmoji = "🗣️",
-            totalLessons = 21,
-            isPremium = true,  // Перші 7 free, 8-21 premium
-            estimatedDays = 21,
-            difficulty = Difficulty.BEGINNER,
-            skills = listOf(SkillType.DICTION, SkillType.TEMPO),
-            lessons = getCourse1Lessons()
-        )
-    }
-    
-    private fun getCourse1Lessons(): List<Lesson> {
-        return listOf(
-            // День 1
-            Lesson(
-                id = "lesson_1",
-                courseId = "course_1",
-                dayNumber = 1,
-                title = "Основи артикуляції",
-                description = "Знайомство з артикуляційним апаратом та базовими вправами",
-                theory = TheoryContent(
-                    text = "Чітке мовлення починається з правильної роботи артикуляційного апарату: губ, язика, щелеп та м'якого піднебіння. Сьогодні ми познайомимося з базовими вправами, які допоможуть \"розігріти\" мовленнєвий апарат.",
-                    tips = listOf(
-                        "Виконуй вправи перед дзеркалом",
-                        "Не поспішай, важлива якість, а не швидкість",
-                        "Роби вправи щодня для кращого результату"
-                    )
-                ),
-                exercises = listOf(
-                    Exercise(
-                        id = "ex_1_1",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Скоромовка: П-Б-П",
-                        instruction = "Вимовляй повільно, чітко артикулюючи кожен звук. Поступово збільшуй швидкість.",
-                        content = ExerciseContent.TongueTwister(
-                            text = "Бик тупогуб, у бика губа тупа",
-                            difficulty = 1,
-                            targetSounds = listOf("Б", "П", "Г")
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.DICTION)
-                    ),
-                    Exercise(
-                        id = "ex_1_2",
-                        type = ExerciseType.READING,
-                        title = "Читання з паузами",
-                        instruction = "Читай текст, роблячи паузи після кожного речення. Контролюй дихання.",
-                        content = ExerciseContent.ReadingText(
-                            text = "Мистецтво красномовства — це не тільки вміння говорити, але й вміння бути почутим. Кожне слово має значення. Кожна пауза має свій сенс."
-                        ),
-                        durationSeconds = 90,
-                        targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
-                    )
-                ),
-                estimatedMinutes = 10
-            ),
-            
-            // День 2
-            Lesson(
-                id = "lesson_2",
-                courseId = "course_1",
-                dayNumber = 2,
-                title = "Губні звуки",
-                description = "Відпрацювання чіткої вимови губних приголосних",
-                theory = TheoryContent(
-                    text = "Губні звуки (П, Б, М, В, Ф) утворюються за допомогою губ. Для їх чіткої вимови важлива активна робота губних м'язів. Сьогодні будемо тренувати ці звуки через спеціальні скоромовки.",
-                    tips = listOf(
-                        "Відчуй напругу в губах при вимові",
-                        "Не допомагай собі язиком",
-                        "Контролюй рівномірність звучання"
-                    )
-                ),
-                exercises = listOf(
-                    Exercise(
-                        id = "ex_2_1",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Скоромовка: Б-П",
-                        instruction = "Чітко розрізняй Б та П. Вони відрізняються тільки вібрацією голосових зв'язок.",
-                        content = ExerciseContent.TongueTwister(
-                            text = "Купи кіп, купи кіп, купи кіп, купи кіп",
-                            difficulty = 2,
-                            targetSounds = listOf("П", "К")
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.DICTION)
-                    ),
-                    Exercise(
-                        id = "ex_2_2",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Скоромовка: М-Б",
-                        instruction = "Відчуй вібрацію в носі на звуці М.",
-                        content = ExerciseContent.TongueTwister(
-                            text = "Мамин мамін мамин мамі мамині макарони",
-                            difficulty = 2,
-                            targetSounds = listOf("М")
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.DICTION)
-                    )
-                ),
-                estimatedMinutes = 10
-            ),
-            
-            // День 3
-            Lesson(
-                id = "lesson_3",
-                courseId = "course_1",
-                dayNumber = 3,
-                title = "Язикові звуки",
-                description = "Тренування звуків, що утворюються язиком",
-                theory = TheoryContent(
-                    text = "Язик — найрухливіша частина артикуляційного апарату. Він відповідає за велику кількість звуків: Т, Д, Н, Л, Р та інші. Правильна позиція язика критично важлива для чіткості мовлення.",
-                    tips = listOf(
-                        "Відчуй кінчик язика",
-                        "Не напружуй язик надто сильно",
-                        "Контролюй положення язика"
-                    )
-                ),
-                exercises = listOf(
-                    Exercise(
-                        id = "ex_3_1",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Скоромовка: Т-Д",
-                        instruction = "Кінчик язика торкається верхніх зубів.",
-                        content = ExerciseContent.TongueTwister(
-                            text = "Ткач тче тканини на платтячко Тані",
-                            difficulty = 3,
-                            targetSounds = listOf("Т", "Д")
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.DICTION)
-                    ),
-                    Exercise(
-                        id = "ex_3_2",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Скоромовка: Л",
-                        instruction = "Кінчик язика притиснутий до альвеол (горбочки за верхніми зубами).",
-                        content = ExerciseContent.TongueTwister(
-                            text = "Летіла лелека коло млина, ловила лелека мелену",
-                            difficulty = 3,
-                            targetSounds = listOf("Л", "М")
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.DICTION)
-                    )
-                ),
-                estimatedMinutes = 10
-            ),
-            
-            // День 4
-            Lesson(
-                id = "lesson_4",
-                courseId = "course_1",
-                dayNumber = 4,
-                title = "Свистячі звуки",
-                description = "Відпрацювання С, З, Ц",
-                theory = TheoryContent(
-                    text = "Свистячі звуки (С, З, Ц) утворюються при проходженні повітря через вузьку щілину між язиком та верхніми зубами. Для чіткої вимови важлива правильна форма язика — він має бути широким та плоским.",
-                    tips = listOf(
-                        "Язик широкий та плоский",
-                        "Повітря проходить по центру язика",
-                        "Не затискай щелепи"
-                    )
-                ),
-                exercises = listOf(
-                    Exercise(
-                        id = "ex_4_1",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Скоромовка: С",
-                        instruction = "Повітря має йти плавним потоком, створюючи чистий свистячий звук.",
-                        content = ExerciseContent.TongueTwister(
-                            text = "Сім синиць на сосні сиділи, си-си-си співали",
-                            difficulty = 2,
-                            targetSounds = listOf("С")
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.DICTION)
-                    ),
-                    Exercise(
-                        id = "ex_4_2",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Скоромовка: З-С",
-                        instruction = "Розрізняй дзвінкий З та глухий С.",
-                        content = ExerciseContent.TongueTwister(
-                            text = "У лозі лози, у лузі лізе вуж",
-                            difficulty = 3,
-                            targetSounds = listOf("З", "С", "Л")
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.DICTION)
-                    )
-                ),
-                estimatedMinutes = 10
-            ),
-            
-            // День 5
-            Lesson(
-                id = "lesson_5",
-                courseId = "course_1",
-                dayNumber = 5,
-                title = "Шиплячі звуки",
-                description = "Відпрацювання Ш, Ж, Ч, Щ",
-                theory = TheoryContent(
-                    text = "Шиплячі звуки (Ш, Ж, Ч, Щ) вимагають підняття язика до піднебіння та створення ширшої щілини, ніж для свистячих. Ці звуки часто викликають труднощі, тому потребують особливої уваги.",
-                    tips = listOf(
-                        "Язик у формі \"чашечки\"",
-                        "Губи злегка витягнуті вперед",
-                        "Повітря виходить широким потоком"
-                    )
-                ),
-                exercises = listOf(
-                    Exercise(
-                        id = "ex_5_1",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Скоромовка: Ш",
-                        instruction = "Відчуй теплий потік повітря на долоні.",
-                        content = ExerciseContent.TongueTwister(
-                            text = "Шишки на сосні, шашки на столі",
-                            difficulty = 2,
-                            targetSounds = listOf("Ш", "С")
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.DICTION)
-                    ),
-                    Exercise(
-                        id = "ex_5_2",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Скоромовка: Ч-Щ",
-                        instruction = "Ч — короткий звук, Щ — довгий.",
-                        content = ExerciseContent.TongueTwister(
-                            text = "Чіпляла чечевиця чіпку чарку",
-                            difficulty = 4,
-                            targetSounds = listOf("Ч")
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.DICTION)
-                    )
-                ),
-                estimatedMinutes = 10
-            ),
-            
-            // День 6
-            Lesson(
-                id = "lesson_6",
-                courseId = "course_1",
-                dayNumber = 6,
-                title = "Звук Р",
-                description = "Особлива увага найскладнішому звуку",
-                theory = TheoryContent(
-                    text = "Звук Р — один з найскладніших в українській мові. Він утворюється за рахунок вібрації кінчика язика. Навіть якщо ви вимовляєте Р правильно, його відпрацювання покращить загальну чіткість мовлення.",
-                    tips = listOf(
-                        "Кінчик язика біля альвеол",
-                        "Язик розслаблений, але пружний",
-                        "Сильний потік повітря викликає вібрацію"
-                    )
-                ),
-                exercises = listOf(
-                    Exercise(
-                        id = "ex_6_1",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Скоромовка: Р простий",
-                        instruction = "Почни повільно, відчуваючи кожну вібрацію.",
-                        content = ExerciseContent.TongueTwister(
-                            text = "Рано-рано два барани барабанили в барабани",
-                            difficulty = 3,
-                            targetSounds = listOf("Р", "Б")
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.DICTION)
-                    ),
-                    Exercise(
-                        id = "ex_6_2",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Скоромовка: Р складний",
-                        instruction = "Контролюй силу потоку повітря.",
-                        content = ExerciseContent.TongueTwister(
-                            text = "Тчуть ткачі тканину в Тані на сорочку",
-                            difficulty = 4,
-                            targetSounds = listOf("Т", "Ч", "Р")
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.DICTION)
-                    )
-                ),
-                estimatedMinutes = 10
-            ),
-            
-            // День 7
-            Lesson(
-                id = "lesson_7",
-                courseId = "course_1",
-                dayNumber = 7,
-                title = "Комплексні вправи",
-                description = "Поєднання всіх звуків у складних скоромовках",
-                theory = TheoryContent(
-                    text = "Тиждень роботи позаду! Сьогодні закріплюємо все, що вивчили, через комплексні скоромовки, які поєднують різні групи звуків. Це виклик, але ви готові!",
-                    tips = listOf(
-                        "Не поспішай зі швидкістю",
-                        "Якщо збився — почни спочатку",
-                        "Записуй себе для самоконтролю"
-                    )
-                ),
-                exercises = listOf(
-                    Exercise(
-                        id = "ex_7_1",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Складна скоромовка 1",
-                        instruction = "Використовує всі групи звуків. Спочатку по складах!",
-                        content = ExerciseContent.TongueTwister(
-                            text = "Король — орел, орел — король",
-                            difficulty = 4,
-                            targetSounds = listOf("Р", "Л", "К", "О")
-                        ),
-                        durationSeconds = 90,
-                        targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
-                    ),
-                    Exercise(
-                        id = "ex_7_2",
-                        type = ExerciseType.FREE_SPEECH,
-                        title = "Вільна розповідь",
-                        instruction = "Розкажи про свій тиждень тренувань. Стеж за чіткістю.",
-                        content = ExerciseContent.FreeSpeechTopic(
-                            topic = "Мої успіхи за тиждень",
-                            hints = listOf(
-                                "Які вправи були найскладнішими?",
-                                "Що тобі вдалося покращити?",
-                                "Які звуки далися легко?"
-                            )
-                        ),
-                        durationSeconds = 120,
-                        targetMetrics = listOf(SkillType.DICTION, SkillType.STRUCTURE)
-                    )
-                ),
-                estimatedMinutes = 15
-            )
-        )
-    }
-    
-    // ========== КУРС 2: Магія інтонації ==========
-    
-    private fun getCourse2(): Course {
-        return Course(
-            id = "course_2",
-            title = "Магія інтонації",
-            description = "Навчись передавати емоції голосом. Виразність та інтонаційне різноманіття.",
-            iconEmoji = "🎭",
-            totalLessons = 21,
-            isPremium = true,
-            estimatedDays = 21,
-            difficulty = Difficulty.INTERMEDIATE,
-            skills = listOf(SkillType.INTONATION, SkillType.VOLUME),
-            lessons = getCourse2LessonsPlaceholder()
-        )
-    }
-    
-    private fun getCourse2LessonsPlaceholder(): List<Lesson> {
-        // TODO: Phase 8 — додати повний контент
-        return (1..7).map { day ->
-            Lesson(
-                id = "lesson_$day",
-                courseId = "course_2",
-                dayNumber = day,
-                title = "Урок $day: Інтонація (placeholder)",
-                description = "Детальний контент буде додано в Phase 8",
-                theory = TheoryContent(
-                    text = "Теорія про інтонацію та емоції. Буде додано в Phase 8.",
-                    tips = listOf("Слухай свій голос", "Експериментуй з емоціями")
-                ),
-                exercises = listOf(
-                    Exercise(
-                        id = "ex_${day}_1",
-                        type = ExerciseType.EMOTION_READING,
-                        title = "Емоційне читання",
-                        instruction = "Прочитай текст з емоцією радості.",
-                        content = ExerciseContent.ReadingText(
-                            text = "Сьогодні чудовий день! Я відчуваю себе чудово.",
-                            emotion = Emotion.JOY
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.INTONATION)
-                    )
-                ),
-                estimatedMinutes = 10
-            )
-        }
-    }
-    
-    // ========== КУРС 3: Впевнений спікер ==========
-    
-    private fun getCourse3(): Course {
-        return Course(
-            id = "course_3",
-            title = "Впевнений спікер",
-            description = "Публічні виступи без страху. Структура, аргументація, контакт з аудиторією.",
-            iconEmoji = "🎤",
-            totalLessons = 21,
-            isPremium = true,
-            estimatedDays = 21,
-            difficulty = Difficulty.INTERMEDIATE,
-            skills = listOf(SkillType.CONFIDENCE, SkillType.STRUCTURE),
-            lessons = getCourse3LessonsPlaceholder()
-        )
-    }
-    
-    private fun getCourse3LessonsPlaceholder(): List<Lesson> {
-        // TODO: Phase 8 — додати повний контент
-        return (1..7).map { day ->
-            Lesson(
-                id = "lesson_$day",
-                courseId = "course_3",
-                dayNumber = day,
-                title = "Урок $day: Публічні виступи (placeholder)",
-                description = "Детальний контент буде додано в Phase 8",
-                theory = null,
-                exercises = listOf(
-                    Exercise(
-                        id = "ex_${day}_1",
-                        type = ExerciseType.FREE_SPEECH,
-                        title = "Короткий виступ",
-                        instruction = "Розкажи про себе протягом 1 хвилини.",
-                        content = ExerciseContent.FreeSpeechTopic(
-                            topic = "Моя історія",
-                            hints = listOf("Хто ти?", "Чим займаєшся?", "Що тебе надихає?")
-                        ),
-                        durationSeconds = 90,
-                        targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.STRUCTURE)
-                    )
-                ),
-                estimatedMinutes = 10
-            )
-        }
-    }
-    
-    // ========== КУРС 4-6: Placeholder ==========
-    
-    private fun getCourse4(): Course {
-        return Course(
-            id = "course_4",
-            title = "Чисте мовлення",
-            description = "Позбався від слів-паразитів. \"Ну\", \"як би\", \"типу\" більше немає.",
-            iconEmoji = "🧹",
-            totalLessons = 14,
-            isPremium = true,
-            estimatedDays = 14,
-            difficulty = Difficulty.BEGINNER,
-            skills = listOf(SkillType.FILLER_WORDS, SkillType.STRUCTURE),
-            lessons = getPlaceholderLessons("course_4", 7)
-        )
-    }
-    
-    private fun getCourse5(): Course {
-        return Course(
-            id = "course_5",
-            title = "Ділова комунікація",
-            description = "Переговори, співбесіди, презентації. Мова професіонала.",
-            iconEmoji = "💼",
-            totalLessons = 20,
-            isPremium = true,
-            estimatedDays = 20,
-            difficulty = Difficulty.ADVANCED,
-            skills = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE),
-            lessons = getPlaceholderLessons("course_5", 7)
-        )
-    }
-    
-    private fun getCourse6(): Course {
-        return Course(
-            id = "course_6",
-            title = "Харизматичний оратор",
-            description = "Майстер-клас публічних виступів. Просунутий рівень.",
-            iconEmoji = "⭐",
-            totalLessons = 21,
-            isPremium = true,
-            estimatedDays = 21,
-            difficulty = Difficulty.ADVANCED,
-            skills = listOf(SkillType.CONFIDENCE, SkillType.INTONATION, SkillType.STRUCTURE),
-            lessons = getPlaceholderLessons("course_6", 7)
-        )
-    }
-    
-    private fun getPlaceholderLessons(courseId: String, count: Int): List<Lesson> {
-        return (1..count).map { day ->
-            Lesson(
-                id = "lesson_$day",
-                courseId = courseId,
-                dayNumber = day,
-                title = "Урок $day (placeholder)",
-                description = "Детальний контент буде додано в Phase 8",
-                theory = null,
-                exercises = listOf(
-                    Exercise(
-                        id = "ex_${day}_1",
-                        type = ExerciseType.READING,
-                        title = "Вправа placeholder",
-                        instruction = "Буде додано в Phase 8",
-                        content = ExerciseContent.ReadingText(
-                            text = "Placeholder текст для Phase 8"
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.DICTION)
-                    )
-                ),
-                estimatedMinutes = 10
-            )
-        }
-    }
-}
-```
-
-### 4. Repository Implementation
-
-#### data/repository/CourseRepositoryImpl.kt
-
-```kotlin
-package com.aivoicepower.data.repository
-
-import com.aivoicepower.data.content.CourseContentProvider
-import com.aivoicepower.data.local.database.dao.CourseProgressDao
-import com.aivoicepower.domain.model.course.Course
-import com.aivoicepower.domain.model.course.Lesson
+import android.content.Context
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.aivoicepower.data.local.database.dao.RecordingDao
 import com.aivoicepower.domain.repository.CourseRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flow
+import com.aivoicepower.utils.audio.AudioPlayerUtil
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class CourseRepositoryImpl @Inject constructor(
-    private val courseProgressDao: CourseProgressDao
-) : CourseRepository {
+@HiltViewModel
+class ResultsViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
+    savedStateHandle: SavedStateHandle,
+    private val recordingDao: RecordingDao,
+    private val courseRepository: CourseRepository
+) : ViewModel() {
     
-    override fun getAllCourses(): Flow<List<Course>> = flow {
-        val courses = CourseContentProvider.getAllCourses()
-        emit(courses)
+    private val recordingId: String = checkNotNull(savedStateHandle["recordingId"])
+    
+    private val _state = MutableStateFlow(ResultsState(recordingId = recordingId))
+    val state: StateFlow<ResultsState> = _state.asStateFlow()
+    
+    private val audioPlayer = AudioPlayerUtil(context)
+    
+    init {
+        loadResults()
     }
     
-    override fun getCourseById(courseId: String): Flow<Course?> = flow {
-        val course = CourseContentProvider.getCourseById(courseId)
-        emit(course)
+    override fun onCleared() {
+        super.onCleared()
+        audioPlayer.release()
     }
     
-    override fun getLessonById(courseId: String, lessonId: String): Flow<Lesson?> = flow {
-        val lesson = CourseContentProvider.getLessonById(courseId, lessonId)
-        emit(lesson)
-    }
-    
-    override fun searchCourses(query: String): Flow<List<Course>> = flow {
-        val allCourses = CourseContentProvider.getAllCourses()
-        val filtered = allCourses.filter { course ->
-            course.title.contains(query, ignoreCase = true) ||
-            course.description.contains(query, ignoreCase = true)
+    fun onEvent(event: ResultsEvent) {
+        when (event) {
+            ResultsEvent.PlayRecordingClicked -> {
+                playRecording()
+            }
+            ResultsEvent.StopPlaybackClicked -> {
+                stopPlayback()
+            }
+            ResultsEvent.RetryExerciseClicked -> {
+                // Navigation handled in Screen
+            }
+            ResultsEvent.NextExerciseClicked -> {
+                // Navigation handled in Screen
+            }
+            ResultsEvent.BackToCourseClicked -> {
+                // Navigation handled in Screen
+            }
         }
-        emit(filtered)
     }
     
-    override fun getRecommendedCourses(userGoal: String): Flow<List<Course>> = flow {
-        val allCourses = CourseContentProvider.getAllCourses()
-        
-        val recommended = when (userGoal) {
-            "CLEAR_SPEECH" -> listOf("course_1", "course_4")
-            "PUBLIC_SPEAKING" -> listOf("course_3", "course_6")
-            "BETTER_VOICE" -> listOf("course_2", "course_1")
-            "PERSUASION" -> listOf("course_5", "course_3")
-            "INTERVIEW_PREP" -> listOf("course_5", "course_3")
-            else -> listOf("course_1", "course_2")
+    private fun loadResults() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            
+            try {
+                recordingDao.getByIdFlow(recordingId)
+                    .collect { recordingEntity ->
+                        if (recordingEntity == null) {
+                            _state.update {
+                                it.copy(
+                                    isLoading = false,
+                                    error = "Запис не знайдено"
+                                )
+                            }
+                            return@collect
+                        }
+                        
+                        // Load exercise info
+                        val exercise = if (recordingEntity.exerciseId != null && 
+                                          recordingEntity.contextId != null) {
+                            val parts = recordingEntity.contextId.split("_")
+                            if (parts.size == 2) {
+                                val (courseId, lessonId) = parts
+                                courseRepository.getLessonById(courseId, lessonId)
+                                    .first()?.exercises?.find { it.id == recordingEntity.exerciseId }
+                            } else null
+                        } else null
+                        
+                        val recordingInfo = RecordingInfo(
+                            id = recordingEntity.id,
+                            filePath = recordingEntity.filePath,
+                            durationMs = recordingEntity.durationMs,
+                            createdAt = recordingEntity.createdAt,
+                            exerciseTitle = exercise?.title ?: "Вправа",
+                            exerciseType = exercise?.type?.name ?: "Unknown"
+                        )
+                        
+                        val analysis = if (recordingEntity.isAnalyzed) {
+                            // TODO Phase 6: Parse analysisJson
+                            AnalysisResult(
+                                isAnalyzed = true,
+                                overallScore = recordingEntity.overallScore,
+                                feedback = null // Will be parsed from analysisJson in Phase 6
+                            )
+                        } else {
+                            AnalysisResult(
+                                isAnalyzed = false,
+                                overallScore = null,
+                                feedback = null
+                            )
+                        }
+                        
+                        _state.update {
+                            it.copy(
+                                recording = recordingInfo,
+                                exercise = exercise,
+                                analysis = analysis,
+                                isLoading = false,
+                                error = null
+                            )
+                        }
+                    }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Не вдалось завантажити результати"
+                    )
+                }
+            }
         }
+    }
+    
+    private fun playRecording() {
+        val filePath = _state.value.recording?.filePath ?: return
         
-        val courses = allCourses.filter { it.id in recommended }
-        emit(courses)
+        viewModelScope.launch {
+            try {
+                audioPlayer.play(filePath)
+                _state.update { it.copy(isPlaying = true) }
+                
+                // Auto-stop after duration
+                kotlinx.coroutines.delay(_state.value.recording?.durationMs ?: 0)
+                _state.update { it.copy(isPlaying = false) }
+            } catch (e: Exception) {
+                _state.update { 
+                    it.copy(
+                        error = "Помилка відтворення: ${e.message}",
+                        isPlaying = false
+                    )
+                }
+            }
+        }
+    }
+    
+    private fun stopPlayback() {
+        audioPlayer.stop()
+        _state.update { it.copy(isPlaying = false) }
     }
 }
 ```
 
-### 5. Hilt Module
-
-#### di/RepositoryModule.kt (оновити)
+### 4. ResultsScreen.kt
 
 ```kotlin
-package com.aivoicepower.di
+package com.aivoicepower.ui.screens.results
 
-import com.aivoicepower.data.repository.CourseRepositoryImpl
-import com.aivoicepower.domain.repository.CourseRepository
-import dagger.Binds
-import dagger.Module
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.aivoicepower.ui.screens.results.components.*
 
-@Module
-@InstallIn(SingletonComponent::class)
-abstract class RepositoryModule {
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ResultsScreen(
+    recordingId: String,
+    viewModel: ResultsViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
     
-    @Binds
-    @Singleton
-    abstract fun bindCourseRepository(
-        impl: CourseRepositoryImpl
-    ): CourseRepository
-    
-    // Інші репозиторії будуть додані пізніше
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Результати") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        when {
+            state.isLoading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    contentAlignment = androidx.compose.ui.Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+            
+            state.error != null -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    contentAlignment = androidx.compose.ui.Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(state.error!!)
+                        Button(onClick = onNavigateBack) {
+                            Text("Повернутися")
+                        }
+                    }
+                }
+            }
+            
+            state.recording != null -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .verticalScroll(rememberScrollState())
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Recording info
+                    RecordingInfoCard(
+                        recording = state.recording!!,
+                        isPlaying = state.isPlaying,
+                        onPlayClicked = {
+                            if (state.isPlaying) {
+                                viewModel.onEvent(ResultsEvent.StopPlaybackClicked)
+                            } else {
+                                viewModel.onEvent(ResultsEvent.PlayRecordingClicked)
+                            }
+                        }
+                    )
+                    
+                    // Analysis section
+                    if (state.analysis?.isAnalyzed == true) {
+                        // TODO Phase 6: Real analysis card
+                        AnalysisPlaceholderCard(
+                            message = "AI-аналіз буде додано в Phase 6",
+                            score = state.analysis?.overallScore
+                        )
+                    } else {
+                        AnalysisPlaceholderCard(
+                            message = "Аналіз буде доступний після інтеграції AI в Phase 6"
+                        )
+                    }
+                    
+                    // Actions
+                    ResultsActionsCard(
+                        onRetry = {
+                            viewModel.onEvent(ResultsEvent.RetryExerciseClicked)
+                            onNavigateBack() // For now, just go back
+                        },
+                        onNext = {
+                            viewModel.onEvent(ResultsEvent.NextExerciseClicked)
+                            onNavigateBack() // For now, just go back
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+```
+
+### 5. Components
+
+#### components/RecordingInfoCard.kt
+
+```kotlin
+package com.aivoicepower.ui.screens.results.components
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.aivoicepower.ui.screens.results.RecordingInfo
+import java.text.SimpleDateFormat
+import java.util.*
+
+@Composable
+fun RecordingInfoCard(
+    recording: RecordingInfo,
+    isPlaying: Boolean,
+    onPlayClicked: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = "🎤 Твій запис",
+                style = MaterialTheme.typography.titleLarge
+            )
+            
+            HorizontalDivider()
+            
+            // Exercise info
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "📊 ${recording.exerciseTitle}",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    
+                    Text(
+                        text = "⏱️ ${formatDuration(recording.durationMs)}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    
+                    Text(
+                        text = "📅 ${formatDate(recording.createdAt)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            
+            // Play button
+            Button(
+                onClick = onPlayClicked,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = if (isPlaying) Icons.Default.Stop else Icons.Default.PlayArrow,
+                    contentDescription = null
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(if (isPlaying) "Зупинити" else "Прослухати")
+            }
+        }
+    }
+}
+
+private fun formatDuration(durationMs: Long): String {
+    val seconds = (durationMs / 1000).toInt()
+    val minutes = seconds / 60
+    val remainingSeconds = seconds % 60
+    return String.format("%02d:%02d", minutes, remainingSeconds)
+}
+
+private fun formatDate(timestamp: Long): String {
+    val sdf = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale("uk"))
+    return sdf.format(Date(timestamp))
+}
+```
+
+#### components/AnalysisPlaceholderCard.kt
+
+```kotlin
+package com.aivoicepower.ui.screens.results.components
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+
+@Composable
+fun AnalysisPlaceholderCard(
+    message: String,
+    score: Int? = null,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = "📊 Аналіз",
+                style = MaterialTheme.typography.titleLarge
+            )
+            
+            HorizontalDivider()
+            
+            if (score != null) {
+                // Show score if available
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "$score/100",
+                        style = MaterialTheme.typography.displayMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+            
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+            
+            // Generic tips (placeholder)
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "💡 Загальні поради:",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                    
+                    val genericTips = listOf(
+                        "Продовжуй регулярно практикуватися",
+                        "Стеж за диханням під час мовлення",
+                        "Записуй себе для самоконтролю",
+                        "Тренуйся перед дзеркалом"
+                    )
+                    
+                    genericTips.forEach { tip ->
+                        Text(
+                            text = "• $tip",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            }
+            
+            // Phase 6 note
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                )
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text("ℹ️")
+                    Text(
+                        text = "Детальний AI-аналіз (дикція, темп, інтонація) буде доступний після інтеграції Gemini API в Phase 6.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                }
+            }
+        }
+    }
+}
+```
+
+#### components/ResultsActionsCard.kt
+
+```kotlin
+package com.aivoicepower.ui.screens.results.components
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+
+@Composable
+fun ResultsActionsCard(
+    onRetry: () -> Unit,
+    onNext: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = "Що далі?",
+                style = MaterialTheme.typography.titleMedium
+            )
+            
+            // Retry button
+            OutlinedButton(
+                onClick = onRetry,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.Refresh, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Спробувати знову")
+            }
+            
+            // Next button
+            Button(
+                onClick = onNext,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.ArrowForward, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Повернутися до курсу")
+            }
+        }
+    }
 }
 ```
 
@@ -943,50 +701,79 @@ abstract class RepositoryModule {
 ./gradlew assembleDebug
 ```
 
-### 2. Testing (Unit Tests — optional)
+### 2. Testing Flow
 
-```kotlin
-@Test
-fun `getAllCourses returns 6 courses`() {
-    val courses = CourseContentProvider.getAllCourses()
-    assertEquals(6, courses.size)
-}
+**Тест 1: Loading**
+- [ ] Показує loading indicator
+- [ ] Завантажує recording з DB
+- [ ] Показує exercise info (якщо є)
 
-@Test
-fun `course_1 has 7 lessons`() {
-    val course = CourseContentProvider.getCourseById("course_1")
-    assertNotNull(course)
-    assertEquals(7, course?.lessons?.size)
-}
+**Тест 2: Recording Info**
+- [ ] Відображає правильний exerciseTitle
+- [ ] Показує тривалість у форматі MM:SS
+- [ ] Показує дату/час створення
 
-@Test
-fun `course_1_lesson_1 has 2 exercises`() {
-    val lesson = CourseContentProvider.getLessonById("course_1", "lesson_1")
-    assertNotNull(lesson)
-    assertEquals(2, lesson?.exercises?.size)
-}
-```
+**Тест 3: Playback**
+- [ ] Кнопка "Прослухати" → відтворення
+- [ ] Кнопка змінюється на "Зупинити"
+- [ ] Аудіо відтворюється
+- [ ] Auto-stop після завершення
+
+**Тест 4: Analysis Placeholder**
+- [ ] Показує placeholder message
+- [ ] Показує generic tips
+- [ ] Показує Phase 6 note
+
+**Тест 5: Actions**
+- [ ] "Спробувати знову" → navigation back
+- [ ] "Повернутися до курсу" → navigation back
+- [ ] Back button працює
+
+**Тест 6: Error Handling**
+- [ ] Показує error якщо recording не знайдено
+- [ ] "Повернутися" button працює
 
 ---
 
 ## Очікуваний результат
 
-✅ Domain models (Course, Lesson, Exercise) створені
-✅ Repository interface + implementation
-✅ CourseContentProvider з 6 курсами
-✅ Курс 1 "Чітке мовлення" — повний контент (7 днів)
-✅ Курси 2-6 — placeholder (7 днів кожен)
-✅ Hilt integration
-✅ Проект компілюється
+✅ ResultsScreen створено
+✅ Recording info відображається
+✅ Audio playback працює
+✅ Placeholder для AI analysis
+✅ Actions (Retry, Next)
+✅ Navigation готова
+✅ Phase 6 integration точки підготовлені
 
 ---
 
-## Наступний крок
+## 🎉 Phase 4 ЗАВЕРШЕНО!
 
-**Phase 4.2: Courses List + Detail** — UI екрани для перегляду курсів.
+```
+✅ Phase 4.1 — Courses Infrastructure
+✅ Phase 4.2 — Courses List + Detail
+✅ Phase 4.3 — Lesson Screen (universal)
+✅ Phase 4.4 — Results Screen
+```
+
+**Загальний час Phase 4:** ~8-10 годин (як і планувалося)
 
 ---
 
-**Час на Phase 4.1:** ~2 години
+## 🚀 Наступний крок: Phase 5
 
-**Примітка:** Курси 2-6 мають placeholder контент. Повний контент буде додано в Phase 8.
+**Phase 5: Improvisation** — розбити на 3 підфази:
+- **Phase 5.1**: Improvisation Hub + Random Topic (2-3 год) 🟡
+- **Phase 5.2**: Storytelling + Daily Challenge (2 год) 🟡
+- **Phase 5.3**: Debate + Sales Pitch (AI-interactive) (4-5 год) 🔴 складна
+
+**Загальний час Phase 5:** ~7-9 годин
+
+---
+
+**Час на Phase 4.4:** ~1.5-2 години
+
+**Примітка:** 
+- AI-аналіз буде додано в Phase 6 (Gemini API)
+- Зараз Results показує тільки recording info + placeholder
+- VoiceAnalysis domain model вже готовий з Phase 0.5

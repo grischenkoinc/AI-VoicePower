@@ -7,6 +7,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.aivoicepower.ui.screens.home.HomeScreen
+import com.aivoicepower.ui.screens.courses.CoursesListScreen
+import com.aivoicepower.ui.screens.courses.CourseDetailScreen
 import com.aivoicepower.ui.screens.courses.LessonScreen
 import com.aivoicepower.ui.screens.results.ResultsScreen
 import com.aivoicepower.ui.screens.onboarding.OnboardingScreen
@@ -55,20 +57,19 @@ fun NavGraph(
         composable(route = Screen.Home.route) {
             HomeScreen(
                 onNavigateToCourse = { courseId ->
-                    // TODO: Navigate to course detail when implemented
+                    navController.navigate(Screen.CourseDetail.createRoute(courseId))
                 },
                 onNavigateToAiCoach = {
                     // TODO: Navigate to AI Coach when implemented
                 },
                 onNavigateToLesson = { courseId, lessonId ->
-                    // TODO: Navigate to specific lesson when courses are implemented
-                    navController.navigate(Screen.Lesson.createRoute(lessonId))
+                    navController.navigate(Screen.Lesson.createRoute(courseId, lessonId))
                 },
                 onNavigateToWarmup = {
                     // TODO: Navigate to warmup when implemented
                 },
                 onNavigateToCourses = {
-                    // TODO: Navigate to courses list when implemented
+                    navController.navigate(Screen.Courses.route)
                 },
                 onNavigateToImprovisation = {
                     // TODO: Navigate to improvisation when implemented
@@ -85,40 +86,57 @@ fun NavGraph(
             )
         }
 
+        composable(route = Screen.Courses.route) {
+            CoursesListScreen(
+                onNavigateToCourse = { courseId ->
+                    navController.navigate(Screen.CourseDetail.createRoute(courseId))
+                }
+            )
+        }
+
+        composable(
+            route = Screen.CourseDetail.route,
+            arguments = listOf(navArgument("courseId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val courseId = backStackEntry.arguments?.getString("courseId") ?: ""
+            CourseDetailScreen(
+                courseId = courseId,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToLesson = { course, lessonId ->
+                    navController.navigate(Screen.Lesson.createRoute(course, lessonId))
+                },
+                onNavigateToPremium = {
+                    navController.navigate(Screen.Premium.route)
+                }
+            )
+        }
+
         composable(
             route = Screen.Lesson.route,
             arguments = listOf(
+                navArgument("courseId") { type = NavType.StringType },
                 navArgument("lessonId") { type = NavType.StringType }
             )
         ) { backStackEntry ->
+            val courseId = backStackEntry.arguments?.getString("courseId") ?: return@composable
             val lessonId = backStackEntry.arguments?.getString("lessonId") ?: return@composable
             LessonScreen(
+                courseId = courseId,
                 lessonId = lessonId,
-                onNavigateBack = { navController.popBackStack() },
-                onExerciseComplete = { exerciseId ->
-                    navController.navigate(Screen.Results.createRoute(lessonId, exerciseId))
-                }
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 
         composable(
             route = Screen.Results.route,
             arguments = listOf(
-                navArgument("lessonId") { type = NavType.StringType },
-                navArgument("exerciseId") { type = NavType.StringType }
+                navArgument("recordingId") { type = NavType.StringType }
             )
         ) { backStackEntry ->
-            val lessonId = backStackEntry.arguments?.getString("lessonId") ?: return@composable
-            val exerciseId = backStackEntry.arguments?.getString("exerciseId") ?: return@composable
+            val recordingId = backStackEntry.arguments?.getString("recordingId") ?: return@composable
             ResultsScreen(
-                lessonId = lessonId,
-                exerciseId = exerciseId,
-                onNavigateBack = { navController.popBackStack() },
-                onNextExercise = { nextExerciseId ->
-                    navController.navigate(Screen.Results.createRoute(lessonId, nextExerciseId)) {
-                        popUpTo(Screen.Results.createRoute(lessonId, exerciseId)) { inclusive = true }
-                    }
-                }
+                recordingId = recordingId,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }
