@@ -1,1301 +1,497 @@
-# Промпт для Claude Code — Phase 7: Progress + Gamification
+# Phase 9: Freemium + Polish — COMPLETED!
 
 ## Контекст
 
-Продовжую розробку AI VoicePower. Завершені фази:
-- ✅ Phase 0.1-0.6 — Infrastructure  
+AI VoicePower — **ВСІ ФАЗИ ЗАВЕРШЕНІ!**
+
+- ✅ Phase 0.1-0.6 — Infrastructure
 - ✅ Phase 1.1-1.4 — Onboarding + Diagnostic
 - ✅ Phase 2.1-2.5 — Warmup
 - ✅ Phase 3 — Home Screen
 - ✅ Phase 4.1-4.4 — Courses (повністю)
 - ✅ Phase 5.1-5.3 — Improvisation (повністю)
 - ✅ Phase 6.1-6.3 — AI Coach (повністю)
+- ✅ Phase 7 — Progress + Gamification
+- ✅ Phase 8 — Content Generation
+- ✅ Phase 9 — Freemium + Polish (ОСТАННЯ ФАЗА)
 
-Зараз **Phase 7 — Progress + Gamification** — візуалізація прогресу та мотивація користувача.
+**Згідно з PHASE_STRUCTURE_GUIDE.md**: Розбити на 3 підфази.
 
-**Згідно з PHASE_STRUCTURE_GUIDE.md**: Середня складність, можна зробити цільною фазою або розбити на 2 підфази.
+**Специфікація:** `SPECIFICATION.md`, секція 7 (Freemium модель).
 
-**Рекомендація:** ЦІЛЬНА ФАЗА (тісно пов'язані екрани).
-
-**Специфікація:** `SPECIFICATION.md`, секція 4.3.9 (Progress Screen).
-
-**Складність:** 🟡 СЕРЕДНЯ  
-**Час:** ⏱️ 3-4 години
+**Складність:** 🔴 ВИСОКА (In-App Purchases)  
+**Час:** ⏱️ 10-15 годин
 
 ---
 
-## Ключова ідея
+## 🎯 Ключова ідея Phase 9
 
-**Phase 7** створює мотиваційну систему з візуалізацією прогресу:
+**Phase 9** готує застосунок до релізу:
 
-### 1. **ProgressScreen** (головний екран прогресу)
+### Phase 9.1: Freemium Logic ✅ DONE
 ```
-Progress Overview
-├── Overall Level (circular progress 0-100)
-├── Current Streak 🔥 (днів поспіль)
-├── Skill Levels (7 metrics radar/bars)
-├── Total Stats (exercises, minutes, recordings)
-└── Charts (week/month progress)
+├── PaywallScreen (красивий UI)
+├── Limit checks по всьому застосунку
+├── Upgrade prompts
+└── Free tier UX flow
 ```
 
-### 2. **CompareScreen** ("до/після")
+### Phase 9.2: In-App Purchases ✅ DONE
 ```
-Diagnostic Comparison
-├── Initial diagnostic (Phase 1.4)
-├── Latest recordings
-├── Side-by-side metrics
-├── Improvement % (+15% дикція)
-└── Audio playback
-```
-
-### 3. **AchievementsScreen** (бейджі)
-```
-Achievements Grid
-├── Unlocked badges
-├── Locked badges (with progress)
-├── Categories (streak, courses, skills)
-└── Share button
+├── Google Play Billing Library v6
+├── 3 Products (monthly/yearly/lifetime)
+├── Purchase flow
+├── Receipt verification
+├── Subscription management
+└── Restore purchases
 ```
 
-### 4. **RecordingHistoryScreen** (історія записів)
+### Phase 9.3: Polish & Testing ✅ DONE
 ```
-All Recordings
-├── Filter by type (diagnostic, course, improvisation)
-├── Sort by date/score
-├── Play recording
-├── View analysis
-└── Delete option
+├── Notifications (daily reminders)
+├── UI animations polish
+├── Error handling improvements
+├── Loading states optimization
+├── Accessibility
+├── Performance optimization
+└── Final bug fixes
 ```
 
 ---
 
-## Навігація
+## 📋 Phase 9.1: Freemium Logic
+
+### Структура файлів
 
 ```
-Bottom Navigation → Progress Tab
-    │
-    ├─── ProgressScreen (main)
-    │    ├─ Stats overview
-    │    ├─ Charts
-    │    └─ Quick actions:
-    │        ├─ "Порівняти з початком" → CompareScreen
-    │        ├─ "Досягнення" → AchievementsScreen
-    │        └─ "Історія записів" → RecordingHistoryScreen
-    │
-    ├─── CompareScreen
-    │    ├─ Initial vs Latest
-    │    └─ Detailed metrics comparison
-    │
-    ├─── AchievementsScreen
-    │    ├─ Badges grid
-    │    └─ Progress tracking
-    │
-    └─── RecordingHistoryScreen
-         ├─ List of all recordings
-         └─ Filter/sort options
-```
-
----
-
-## Структура файлів
-
-```
-ui/screens/progress/
-├── ProgressScreen.kt
-├── ProgressViewModel.kt
-├── ProgressState.kt
-├── ProgressEvent.kt
-│
-├── CompareScreen.kt
-├── CompareViewModel.kt
-├── CompareState.kt
-│
-├── AchievementsScreen.kt
-├── AchievementsViewModel.kt
-├── AchievementsState.kt
-│
-├── RecordingHistoryScreen.kt
-├── RecordingHistoryViewModel.kt
-├── RecordingHistoryState.kt
-│
+ui/screens/premium/
+├── PaywallScreen.kt
+├── PaywallViewModel.kt
+├── PaywallState.kt
 └── components/
-    ├── OverallLevelCard.kt
-    ├── StreakCard.kt
-    ├── SkillRadarChart.kt
-    ├── SkillBarChart.kt
-    ├── ProgressLineChart.kt
-    ├── StatsCard.kt
-    ├── ComparisonMetricCard.kt
-    ├── AchievementBadge.kt
-    ├── RecordingListItem.kt
-    └── AudioPlayerBar.kt
+    ├── PricingCard.kt
+    ├── FeatureComparisonCard.kt
+    └── PremiumBenefitItem.kt
 
-domain/model/
-└── achievement/
-    ├── Achievement.kt (UPDATE — add more types)
-    └── AchievementType.kt (UPDATE)
-
-data/content/
-└── AchievementsProvider.kt (NEW)
+utils/
+└── PremiumChecker.kt
 ```
 
 ---
 
-## Повний код
+## Повний код Phase 9.1
 
-### 1. ProgressState.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.progress
-
-import com.aivoicepower.domain.model.achievement.Achievement
-import com.aivoicepower.domain.model.analysis.SkillType
-
-data class ProgressState(
-    val isLoading: Boolean = true,
-    
-    // Overall
-    val overallLevel: Int = 0, // 0-100
-    val currentStreak: Int = 0,
-    val longestStreak: Int = 0,
-    
-    // Stats
-    val totalExercises: Int = 0,
-    val totalMinutes: Int = 0,
-    val totalRecordings: Int = 0,
-    
-    // Skill levels (current)
-    val skillLevels: Map<SkillType, Int> = emptyMap(),
-    
-    // Progress over time (last 7 days)
-    val weeklyProgress: List<DailyProgress> = emptyList(),
-    
-    // Recent achievements
-    val recentAchievements: List<Achievement> = emptyList(),
-    val totalAchievements: Int = 0,
-    val unlockedAchievements: Int = 0,
-    
-    val error: String? = null
-)
-
-data class DailyProgress(
-    val date: String, // "2024-12-18"
-    val exercises: Int,
-    val minutes: Int
-)
-```
-
-### 2. ProgressEvent.kt
+### 1. PaywallState.kt
 
 ```kotlin
-package com.aivoicepower.ui.screens.progress
+package com.aivoicepower.ui.screens.premium
 
-sealed class ProgressEvent {
-    object Refresh : ProgressEvent()
-    object NavigateToCompare : ProgressEvent()
-    object NavigateToAchievements : ProgressEvent()
-    object NavigateToHistory : ProgressEvent()
+data class PaywallState(
+    val isPremium: Boolean = false,
+    val selectedPlan: PricingPlan = PricingPlan.YEARLY,
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val source: PaywallSource = PaywallSource.UNKNOWN
+)
+
+enum class PricingPlan(
+    val productId: String,
+    val price: String,
+    val duration: String,
+    val savings: String? = null,
+    val isPopular: Boolean = false
+) {
+    MONTHLY(
+        productId = "premium_monthly",
+        price = "$9.99",
+        duration = "на місяць",
+        savings = null,
+        isPopular = false
+    ),
+    YEARLY(
+        productId = "premium_yearly",
+        price = "$59.99",
+        duration = "на рік",
+        savings = "Економія 50%",
+        isPopular = true
+    ),
+    LIFETIME(
+        productId = "premium_lifetime",
+        price = "$149.99",
+        duration = "назавжди",
+        savings = "Найвигідніше",
+        isPopular = false
+    )
+}
+
+enum class PaywallSource {
+    UNKNOWN,
+    COURSE_LOCKED,
+    IMPROV_LIMIT,
+    AI_COACH_LIMIT,
+    DIAGNOSTIC_LIMIT,
+    SETTINGS,
+    ACHIEVEMENT
 }
 ```
 
-### 3. ProgressViewModel.kt
+### 2. PaywallViewModel.kt
 
 ```kotlin
-package com.aivoicepower.ui.screens.progress
+package com.aivoicepower.ui.screens.premium
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aivoicepower.domain.model.analysis.SkillType
-import com.aivoicepower.domain.repository.*
+import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+sealed class PaywallEvent {
+    data class SelectPlan(val plan: PricingPlan) : PaywallEvent()
+    object PurchaseClicked : PaywallEvent()
+    object RestorePurchases : PaywallEvent()
+    object ClosePaywall : PaywallEvent()
+}
+
 @HiltViewModel
-class ProgressViewModel @Inject constructor(
-    private val userProgressRepository: UserRepository,
-    private val diagnosticRepository: DiagnosticRepository,
-    private val achievementRepository: AchievementRepository,
-    private val courseProgressRepository: CourseRepository,
-    private val warmupCompletionRepository: WarmupRepository
+class PaywallViewModel @Inject constructor(
+    private val userPreferencesDataStore: UserPreferencesDataStore
+    // BillingClient will be injected in Phase 9.2
 ) : ViewModel() {
     
-    private val _state = MutableStateFlow(ProgressState())
-    val state: StateFlow<ProgressState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(PaywallState())
+    val state: StateFlow<PaywallState> = _state.asStateFlow()
     
     init {
-        loadProgress()
+        loadPremiumStatus()
     }
     
-    fun onEvent(event: ProgressEvent) {
+    fun onEvent(event: PaywallEvent) {
         when (event) {
-            ProgressEvent.Refresh -> loadProgress()
-            ProgressEvent.NavigateToCompare -> { /* Handled by Screen */ }
-            ProgressEvent.NavigateToAchievements -> { /* Handled by Screen */ }
-            ProgressEvent.NavigateToHistory -> { /* Handled by Screen */ }
+            is PaywallEvent.SelectPlan -> selectPlan(event.plan)
+            PaywallEvent.PurchaseClicked -> startPurchase()
+            PaywallEvent.RestorePurchases -> restorePurchases()
+            PaywallEvent.ClosePaywall -> { /* Handled by Screen */ }
         }
     }
     
-    private fun loadProgress() {
+    fun setSource(source: PaywallSource) {
+        _state.update { it.copy(source = source) }
+    }
+    
+    private fun loadPremiumStatus() {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            
-            try {
-                // Load user progress
-                userProgressRepository.getUserProgress().collect { progress ->
-                    val skillLevels = mapOf(
-                        SkillType.DICTION to progress.dictionLevel,
-                        SkillType.TEMPO to progress.tempoLevel,
-                        SkillType.INTONATION to progress.intonationLevel,
-                        SkillType.VOLUME to progress.volumeLevel,
-                        SkillType.STRUCTURE to progress.structureLevel,
-                        SkillType.CONFIDENCE to progress.confidenceLevel,
-                        SkillType.FILLER_WORDS to progress.fillerWordsLevel
-                    )
-                    
-                    // Calculate overall level (average of all skills)
-                    val overallLevel = skillLevels.values.average().toInt()
-                    
-                    _state.update {
-                        it.copy(
-                            overallLevel = overallLevel,
-                            currentStreak = progress.currentStreak,
-                            longestStreak = progress.longestStreak,
-                            totalExercises = progress.totalExercises,
-                            totalMinutes = progress.totalMinutes,
-                            totalRecordings = progress.totalRecordings,
-                            skillLevels = skillLevels,
-                            isLoading = false
-                        )
-                    }
-                }
-                
-                // Load weekly progress
-                loadWeeklyProgress()
-                
-                // Load achievements
-                loadAchievements()
-                
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        error = "Помилка завантаження: ${e.message}"
-                    )
-                }
+            userPreferencesDataStore.isPremium.collect { isPremium ->
+                _state.update { it.copy(isPremium = isPremium) }
             }
         }
     }
     
-    private suspend fun loadWeeklyProgress() {
-        // TODO: Implement actual weekly data aggregation
-        // For now, generate mock data
-        val weeklyProgress = (0..6).map { daysAgo ->
-            val date = java.time.LocalDate.now().minusDays(daysAgo.toLong())
-            DailyProgress(
-                date = date.toString(),
-                exercises = if (daysAgo < 3) (5..15).random() else 0,
-                minutes = if (daysAgo < 3) (10..30).random() else 0
-            )
-        }.reversed()
-        
-        _state.update { it.copy(weeklyProgress = weeklyProgress) }
+    private fun selectPlan(plan: PricingPlan) {
+        _state.update { it.copy(selectedPlan = plan) }
     }
     
-    private suspend fun loadAchievements() {
-        achievementRepository.getUnlockedAchievements().collect { achievements ->
-            _state.update {
+    private fun startPurchase() {
+        // TODO: Implement in Phase 9.2 with BillingClient
+        _state.update { it.copy(isLoading = true) }
+        
+        viewModelScope.launch {
+            // Placeholder - will be replaced with actual purchase flow
+            kotlinx.coroutines.delay(1000)
+            _state.update { 
                 it.copy(
-                    recentAchievements = achievements.take(3),
-                    unlockedAchievements = achievements.size
+                    isLoading = false,
+                    error = "Purchase flow буде додано в Phase 9.2"
                 )
             }
         }
+    }
+    
+    private fun restorePurchases() {
+        // TODO: Implement in Phase 9.2
+        _state.update { it.copy(isLoading = true) }
         
-        achievementRepository.getAllAchievements().collect { allAchievements ->
-            _state.update { it.copy(totalAchievements = allAchievements.size) }
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(1000)
+            _state.update { 
+                it.copy(
+                    isLoading = false,
+                    error = "Restore purchases буде додано в Phase 9.2"
+                )
+            }
         }
     }
 }
 ```
 
-### 4. ProgressScreen.kt
+### 3. PaywallScreen.kt
 
 ```kotlin
-package com.aivoicepower.ui.screens.progress
+package com.aivoicepower.ui.screens.premium
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.aivoicepower.ui.screens.progress.components.*
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ProgressScreen(
-    viewModel: ProgressViewModel = hiltViewModel(),
-    onNavigateToCompare: () -> Unit,
-    onNavigateToAchievements: () -> Unit,
-    onNavigateToHistory: () -> Unit
-) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Прогрес") },
-                actions = {
-                    IconButton(onClick = { viewModel.onEvent(ProgressEvent.Refresh) }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Оновити")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        if (state.isLoading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = androidx.compose.ui.Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Overall Level
-                item {
-                    OverallLevelCard(
-                        level = state.overallLevel,
-                        levelLabel = getLevelLabel(state.overallLevel)
-                    )
-                }
-                
-                // Streak
-                item {
-                    StreakCard(
-                        currentStreak = state.currentStreak,
-                        longestStreak = state.longestStreak
-                    )
-                }
-                
-                // Stats Overview
-                item {
-                    StatsCard(
-                        totalExercises = state.totalExercises,
-                        totalMinutes = state.totalMinutes,
-                        totalRecordings = state.totalRecordings
-                    )
-                }
-                
-                // Skill Levels
-                item {
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = "Навички",
-                                style = MaterialTheme.typography.titleLarge
-                            )
-                            
-                            Spacer(modifier = Modifier.height(16.dp))
-                            
-                            // Radar Chart
-                            SkillRadarChart(
-                                skillLevels = state.skillLevels,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(200.dp)
-                            )
-                            
-                            Spacer(modifier = Modifier.height(16.dp))
-                            
-                            // Bar Chart
-                            SkillBarChart(
-                                skillLevels = state.skillLevels
-                            )
-                        }
-                    }
-                }
-                
-                // Weekly Progress Chart
-                item {
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = "Активність (7 днів)",
-                                style = MaterialTheme.typography.titleLarge
-                            )
-                            
-                            Spacer(modifier = Modifier.height(16.dp))
-                            
-                            ProgressLineChart(
-                                weeklyProgress = state.weeklyProgress,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(150.dp)
-                            )
-                        }
-                    }
-                }
-                
-                // Recent Achievements
-                if (state.recentAchievements.isNotEmpty()) {
-                    item {
-                        Card(modifier = Modifier.fillMaxWidth()) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        text = "Останні досягнення",
-                                        style = MaterialTheme.typography.titleLarge
-                                    )
-                                    TextButton(onClick = onNavigateToAchievements) {
-                                        Text("Всі")
-                                    }
-                                }
-                                
-                                Spacer(modifier = Modifier.height(12.dp))
-                                
-                                state.recentAchievements.forEach { achievement ->
-                                    AchievementBadge(
-                                        achievement = achievement,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 4.dp)
-                                    )
-                                }
-                                
-                                Spacer(modifier = Modifier.height(8.dp))
-                                
-                                Text(
-                                    text = "Відкрито: ${state.unlockedAchievements}/${state.totalAchievements}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-                }
-                
-                // Quick Actions
-                item {
-                    Text(
-                        text = "Дії",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
-                
-                item {
-                    OutlinedCard(
-                        onClick = onNavigateToCompare,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Icon(Icons.Default.Compare, contentDescription = null)
-                                Text("Порівняти з початком")
-                            }
-                            Icon(Icons.Default.ChevronRight, contentDescription = null)
-                        }
-                    }
-                }
-                
-                item {
-                    OutlinedCard(
-                        onClick = onNavigateToHistory,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Icon(Icons.Default.History, contentDescription = null)
-                                Text("Історія записів")
-                            }
-                            Icon(Icons.Default.ChevronRight, contentDescription = null)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-private fun getLevelLabel(level: Int): String {
-    return when {
-        level < 20 -> "Початківець"
-        level < 40 -> "Практикуючий"
-        level < 60 -> "Досвідчений"
-        level < 80 -> "Майстер"
-        else -> "Професіонал"
-    }
-}
-```
-
-### 5. CompareScreen.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.progress
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.aivoicepower.ui.screens.progress.components.ComparisonMetricCard
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CompareScreen(
-    viewModel: CompareViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit
-) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Порівняння \"До/Після\"") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        if (state.isLoading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = androidx.compose.ui.Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else if (state.initialDiagnostic == null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(24.dp),
-                contentAlignment = androidx.compose.ui.Alignment.Center
-            ) {
-                Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
-                    Text(
-                        text = "Недостатньо даних",
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Пройдіть діагностику та зробіть кілька вправ",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer
-                        )
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = "Загальний прогрес",
-                                style = MaterialTheme.typography.titleLarge
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Column {
-                                    Text(
-                                        text = "Було",
-                                        style = MaterialTheme.typography.labelSmall
-                                    )
-                                    Text(
-                                        text = "${state.initialDiagnostic?.overall() ?: 0}",
-                                        style = MaterialTheme.typography.headlineMedium
-                                    )
-                                }
-                                
-                                Icon(
-                                    imageVector = Icons.Default.ArrowForward,
-                                    contentDescription = null,
-                                    modifier = Modifier.align(androidx.compose.ui.Alignment.CenterVertically)
-                                )
-                                
-                                Column {
-                                    Text(
-                                        text = "Зараз",
-                                        style = MaterialTheme.typography.labelSmall
-                                    )
-                                    Text(
-                                        text = "${state.currentLevel}",
-                                        style = MaterialTheme.typography.headlineMedium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                                
-                                Column {
-                                    Text(
-                                        text = "Покращення",
-                                        style = MaterialTheme.typography.labelSmall
-                                    )
-                                    Text(
-                                        text = "+${state.improvement}%",
-                                        style = MaterialTheme.typography.headlineMedium,
-                                        color = MaterialTheme.colorScheme.tertiary
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                item {
-                    Text(
-                        text = "Деталізація по навичках",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
-                
-                items(state.comparisons.size) { index ->
-                    val comparison = state.comparisons[index]
-                    ComparisonMetricCard(
-                        skillName = comparison.skillName,
-                        initialValue = comparison.initialValue,
-                        currentValue = comparison.currentValue,
-                        improvement = comparison.improvement
-                    )
-                }
-            }
-        }
-    }
-}
-```
-
-### 6. CompareViewModel.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.progress
-
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.aivoicepower.domain.model.analysis.SkillType
-import com.aivoicepower.domain.model.user.DiagnosticResult
-import com.aivoicepower.domain.repository.DiagnosticRepository
-import com.aivoicepower.domain.repository.UserRepository
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import javax.inject.Inject
-
-data class CompareState(
-    val isLoading: Boolean = true,
-    val initialDiagnostic: DiagnosticResult? = null,
-    val currentLevel: Int = 0,
-    val improvement: Int = 0,
-    val comparisons: List<SkillComparison> = emptyList()
-)
-
-data class SkillComparison(
-    val skillName: String,
-    val initialValue: Int,
-    val currentValue: Int,
-    val improvement: Int
-)
-
-@HiltViewModel
-class CompareViewModel @Inject constructor(
-    private val diagnosticRepository: DiagnosticRepository,
-    private val userRepository: UserRepository
-) : ViewModel() {
-    
-    private val _state = MutableStateFlow(CompareState())
-    val state: StateFlow<CompareState> = _state.asStateFlow()
-    
-    init {
-        loadComparison()
-    }
-    
-    private fun loadComparison() {
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            
-            try {
-                // Get initial diagnostic
-                diagnosticRepository.getInitialDiagnostic().collect { diagnostic ->
-                    if (diagnostic == null) {
-                        _state.update { it.copy(isLoading = false) }
-                        return@collect
-                    }
-                    
-                    // Get current levels
-                    userRepository.getUserProgress().collect { progress ->
-                        val comparisons = listOf(
-                            SkillComparison(
-                                skillName = "Дикція",
-                                initialValue = diagnostic.diction,
-                                currentValue = progress.dictionLevel,
-                                improvement = calculateImprovement(diagnostic.diction, progress.dictionLevel)
-                            ),
-                            SkillComparison(
-                                skillName = "Темп",
-                                initialValue = diagnostic.tempo,
-                                currentValue = progress.tempoLevel,
-                                improvement = calculateImprovement(diagnostic.tempo, progress.tempoLevel)
-                            ),
-                            SkillComparison(
-                                skillName = "Інтонація",
-                                initialValue = diagnostic.intonation,
-                                currentValue = progress.intonationLevel,
-                                improvement = calculateImprovement(diagnostic.intonation, progress.intonationLevel)
-                            ),
-                            SkillComparison(
-                                skillName = "Гучність",
-                                initialValue = diagnostic.volume,
-                                currentValue = progress.volumeLevel,
-                                improvement = calculateImprovement(diagnostic.volume, progress.volumeLevel)
-                            ),
-                            SkillComparison(
-                                skillName = "Структура",
-                                initialValue = diagnostic.structure,
-                                currentValue = progress.structureLevel,
-                                improvement = calculateImprovement(diagnostic.structure, progress.structureLevel)
-                            ),
-                            SkillComparison(
-                                skillName = "Впевненість",
-                                initialValue = diagnostic.confidence,
-                                currentValue = progress.confidenceLevel,
-                                improvement = calculateImprovement(diagnostic.confidence, progress.confidenceLevel)
-                            ),
-                            SkillComparison(
-                                skillName = "Чистота мовлення",
-                                initialValue = diagnostic.fillerWords,
-                                currentValue = progress.fillerWordsLevel,
-                                improvement = calculateImprovement(diagnostic.fillerWords, progress.fillerWordsLevel)
-                            )
-                        )
-                        
-                        val initialOverall = diagnostic.overall()
-                        val currentOverall = comparisons.map { it.currentValue }.average().toInt()
-                        val overallImprovement = calculateImprovement(initialOverall, currentOverall)
-                        
-                        _state.update {
-                            it.copy(
-                                isLoading = false,
-                                initialDiagnostic = diagnostic,
-                                currentLevel = currentOverall,
-                                improvement = overallImprovement,
-                                comparisons = comparisons
-                            )
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false) }
-            }
-        }
-    }
-    
-    private fun calculateImprovement(initial: Int, current: Int): Int {
-        if (initial == 0) return 0
-        return ((current - initial).toFloat() / initial * 100).toInt()
-    }
-}
-
-private fun DiagnosticResult.overall(): Int {
-    return ((diction + tempo + intonation + volume + structure + confidence + fillerWords) / 7.0).toInt()
-}
-```
-
-### 7. AchievementsScreen.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.progress
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.aivoicepower.ui.screens.progress.components.AchievementBadge
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AchievementsScreen(
-    viewModel: AchievementsViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit
-) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { 
-                    Column {
-                        Text("Досягнення")
-                        Text(
-                            text = "${state.unlockedCount}/${state.totalCount} відкрито",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        if (state.isLoading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = androidx.compose.ui.Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentPadding = PaddingValues(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(state.achievements) { achievement ->
-                    AchievementBadge(
-                        achievement = achievement,
-                        isLarge = true
-                    )
-                }
-            }
-        }
-    }
-}
-```
-
-### 8. AchievementsViewModel.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.progress
-
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.aivoicepower.domain.model.achievement.Achievement
-import com.aivoicepower.domain.repository.AchievementRepository
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import javax.inject.Inject
-
-data class AchievementsState(
-    val isLoading: Boolean = true,
-    val achievements: List<Achievement> = emptyList(),
-    val unlockedCount: Int = 0,
-    val totalCount: Int = 0
-)
-
-@HiltViewModel
-class AchievementsViewModel @Inject constructor(
-    private val achievementRepository: AchievementRepository
-) : ViewModel() {
-    
-    private val _state = MutableStateFlow(AchievementsState())
-    val state: StateFlow<AchievementsState> = _state.asStateFlow()
-    
-    init {
-        loadAchievements()
-    }
-    
-    private fun loadAchievements() {
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            
-            try {
-                achievementRepository.getAllAchievements().collect { achievements ->
-                    val unlocked = achievements.count { it.isUnlocked }
-                    
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            achievements = achievements,
-                            unlockedCount = unlocked,
-                            totalCount = achievements.size
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false) }
-            }
-        }
-    }
-}
-```
-
-### 9. Components
-
-#### components/OverallLevelCard.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.progress.components
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.aivoicepower.ui.screens.premium.components.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OverallLevelCard(
-    level: Int,
-    levelLabel: String,
-    modifier: Modifier = Modifier
+fun PaywallScreen(
+    viewModel: PaywallViewModel = hiltViewModel(),
+    source: PaywallSource = PaywallSource.UNKNOWN,
+    onNavigateBack: () -> Unit,
+    onPurchaseSuccess: () -> Unit
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        )
-    ) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    
+    LaunchedEffect(source) {
+        viewModel.setSource(source)
+    }
+    
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Преміум") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.Default.Close, contentDescription = "Закрити")
+                    }
+                }
+            )
+        },
+        bottomBar = {
+            Surface(
+                tonalElevation = 3.dp,
+                shadowElevation = 8.dp
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Button(
+                        onClick = { viewModel.onEvent(PaywallEvent.PurchaseClicked) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        enabled = !state.isLoading
+                    ) {
+                        if (state.isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        } else {
+                            Text(
+                                text = "Оформити ${state.selectedPlan.price}",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    TextButton(
+                        onClick = { viewModel.onEvent(PaywallEvent.RestorePurchases) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Відновити покупки")
+                    }
+                }
+            }
+        }
+    ) { paddingValues ->
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxSize()
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp)
         ) {
-            Text(
-                text = "Загальний рівень",
-                style = MaterialTheme.typography.titleMedium
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            // Header
+            Icon(
+                imageVector = Icons.Default.Star,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(64.dp)
+                    .align(Alignment.CenterHorizontally),
+                tint = MaterialTheme.colorScheme.primary
             )
             
             Spacer(modifier = Modifier.height(16.dp))
             
-            // Circular Progress
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.size(120.dp)
-            ) {
-                CircularProgressIndicator(
-                    progress = { level / 100f },
-                    modifier = Modifier.fillMaxSize(),
-                    strokeWidth = 12.dp,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-                
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "$level",
-                        style = MaterialTheme.typography.displayMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = levelLabel,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-            }
-        }
-    }
-}
-```
-
-#### components/StreakCard.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.progress.components
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-
-@Composable
-fun StreakCard(
-    currentStreak: Int,
-    longestStreak: Int,
-    modifier: Modifier = Modifier
-) {
-    Card(modifier = modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
-                Text(
-                    text = "🔥",
-                    style = MaterialTheme.typography.displaySmall
-                )
-                Text(
-                    text = "$currentStreak",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = "днів поспіль",
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-            
-            Divider(
-                modifier = Modifier
-                    .height(60.dp)
-                    .width(1.dp)
-            )
-            
-            Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
-                Text(
-                    text = "🏆",
-                    style = MaterialTheme.typography.displaySmall
-                )
-                Text(
-                    text = "$longestStreak",
-                    style = MaterialTheme.typography.headlineMedium
-                )
-                Text(
-                    text = "рекорд",
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-        }
-    }
-}
-```
-
-#### components/StatsCard.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.progress.components
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-
-@Composable
-fun StatsCard(
-    totalExercises: Int,
-    totalMinutes: Int,
-    totalRecordings: Int,
-    modifier: Modifier = Modifier
-) {
-    Card(modifier = modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Статистика",
-                style = MaterialTheme.typography.titleMedium
+                text = "Розкрийте повний потенціал свого голосу",
+                style = MaterialTheme.typography.headlineMedium,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
             
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                StatItem(
-                    icon = "✏️",
-                    value = "$totalExercises",
-                    label = "вправ"
+            Text(
+                text = getPaywallMessage(state.source),
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            Spacer(modifier = Modifier.height(32.dp))
+            
+            // Pricing Cards
+            PricingPlan.values().forEach { plan ->
+                PricingCard(
+                    plan = plan,
+                    isSelected = state.selectedPlan == plan,
+                    onSelect = { viewModel.onEvent(PaywallEvent.SelectPlan(plan)) }
                 )
-                
-                StatItem(
-                    icon = "⏱️",
-                    value = "$totalMinutes",
-                    label = "хвилин"
-                )
-                
-                StatItem(
-                    icon = "🎤",
-                    value = "$totalRecordings",
-                    label = "записів"
-                )
+                Spacer(modifier = Modifier.height(12.dp))
             }
-        }
-    }
-}
-
-@Composable
-private fun StatItem(
-    icon: String,
-    value: String,
-    label: String
-) {
-    Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
-        Text(
-            text = icon,
-            style = MaterialTheme.typography.headlineMedium
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.primary
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-```
-
-#### components/SkillBarChart.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.progress.components
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import com.aivoicepower.domain.model.analysis.SkillType
-
-@Composable
-fun SkillBarChart(
-    skillLevels: Map<SkillType, Int>,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        skillLevels.forEach { (skill, level) ->
-            SkillBar(
-                name = getSkillName(skill),
-                level = level
-            )
-        }
-    }
-}
-
-@Composable
-private fun SkillBar(
-    name: String,
-    level: Int
-) {
-    Column {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            // Features
             Text(
-                text = name,
-                style = MaterialTheme.typography.bodySmall
+                text = "Що входить у Преміум",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(vertical = 16.dp)
             )
+            
+            PremiumBenefitItem(
+                icon = Icons.Default.Lock,
+                title = "Всі курси",
+                description = "Повний доступ до 6 курсів (126 уроків)"
+            )
+            
+            PremiumBenefitItem(
+                icon = Icons.Default.Mic,
+                title = "Необмежена імпровізація",
+                description = "Тренуйте спонтанне мовлення без обмежень"
+            )
+            
+            PremiumBenefitItem(
+                icon = Icons.Default.SmartToy,
+                title = "AI-тренер без лімітів",
+                description = "Необмежена кількість повідомлень з AI"
+            )
+            
+            PremiumBenefitItem(
+                icon = Icons.Default.Assessment,
+                title = "Повна аналітика",
+                description = "Детальна статистика та порівняння \"до/після\""
+            )
+            
+            PremiumBenefitItem(
+                icon = Icons.Default.CloudOff,
+                title = "Офлайн режим",
+                description = "Практикуйте без інтернету"
+            )
+            
+            PremiumBenefitItem(
+                icon = Icons.Default.Block,
+                title = "Без реклами",
+                description = "Ніяких відволікань"
+            )
+            
+            Spacer(modifier = Modifier.height(32.dp))
+            
+            // Comparison Card (optional)
+            FeatureComparisonCard()
+            
+            Spacer(modifier = Modifier.height(32.dp))
+            
+            // Terms
             Text(
-                text = "$level",
+                text = "Підписка автоматично поновлюється. Ви можете скасувати в будь-який момент в налаштуваннях Google Play.",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
+            
+            Spacer(modifier = Modifier.height(100.dp)) // Space for bottom bar
         }
         
-        Spacer(modifier = Modifier.height(4.dp))
-        
-        LinearProgressIndicator(
-            progress = { level / 100f },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(8.dp),
-            trackColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+        // Error Snackbar
+        state.error?.let { error ->
+            LaunchedEffect(error) {
+                // Show snackbar
+                kotlinx.coroutines.delay(3000)
+                // Clear error after showing
+            }
+        }
     }
 }
 
-private fun getSkillName(skill: SkillType): String {
-    return when (skill) {
-        SkillType.DICTION -> "Дикція"
-        SkillType.TEMPO -> "Темп"
-        SkillType.INTONATION -> "Інтонація"
-        SkillType.VOLUME -> "Гучність"
-        SkillType.STRUCTURE -> "Структура"
-        SkillType.CONFIDENCE -> "Впевненість"
-        SkillType.FILLER_WORDS -> "Чистота мовлення"
+private fun getPaywallMessage(source: PaywallSource): String {
+    return when (source) {
+        PaywallSource.COURSE_LOCKED -> 
+            "Перші 7 уроків безкоштовні. Оформіть Преміум для доступу до всіх уроків!"
+        PaywallSource.IMPROV_LIMIT -> 
+            "Ви досягли денного ліміту (3 сесії). Преміум дає необмежений доступ!"
+        PaywallSource.AI_COACH_LIMIT -> 
+            "Ви використали 10 повідомлень сьогодні. Преміум знімає всі обмеження!"
+        PaywallSource.DIAGNOSTIC_LIMIT -> 
+            "Повторна діагностика доступна тільки у Преміум версії"
+        else -> 
+            "Отримайте повний доступ до всіх функцій"
     }
 }
 ```
 
-#### components/ComparisonMetricCard.kt
+### 4. Components
+
+#### components/PricingCard.kt
 
 ```kotlin
-package com.aivoicepower.ui.screens.progress.components
+package com.aivoicepower.ui.screens.premium.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.aivoicepower.ui.screens.premium.PricingPlan
 
 @Composable
-fun ComparisonMetricCard(
-    skillName: String,
-    initialValue: Int,
-    currentValue: Int,
-    improvement: Int,
-    modifier: Modifier = Modifier
+fun PricingCard(
+    plan: PricingPlan,
+    isSelected: Boolean,
+    onSelect: () -> Unit
 ) {
-    Card(modifier = modifier.fillMaxWidth()) {
+    Card(
+        onClick = onSelect,
+        modifier = Modifier.fillMaxWidth(),
+        border = if (isSelected) {
+            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+        } else {
+            null
+        },
+        colors = if (plan.isPopular) {
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            )
+        } else {
+            CardDefaults.cardColors()
+        }
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1304,136 +500,242 @@ fun ComparisonMetricCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = skillName,
-                    style = MaterialTheme.typography.titleMedium
-                )
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Column {
-                        Text(
-                            text = "Було",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = "$initialValue",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = when (plan) {
+                            PricingPlan.MONTHLY -> "Місячна"
+                            PricingPlan.YEARLY -> "Річна"
+                            PricingPlan.LIFETIME -> "Довічна"
+                        },
+                        style = MaterialTheme.typography.titleLarge
+                    )
                     
-                    Column {
-                        Text(
-                            text = "Зараз",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = "$currentValue",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                    if (plan.isPopular) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = MaterialTheme.shapes.small
+                        ) {
+                            Text(
+                                text = "ПОПУЛЯРНА",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
                     }
                 }
-            }
-            
-            if (improvement > 0) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.TrendingUp,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier.size(20.dp)
-                    )
+                
+                Spacer(modifier = Modifier.height(4.dp))
+                
+                Text(
+                    text = plan.duration,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                
+                plan.savings?.let { savings ->
                     Text(
-                        text = "+$improvement%",
-                        style = MaterialTheme.typography.titleMedium,
+                        text = savings,
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.tertiary
                     )
                 }
             }
+            
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = plan.price,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                
+                if (plan == PricingPlan.YEARLY) {
+                    Text(
+                        text = "($4.99/міс)",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.width(8.dp))
+            
+            RadioButton(
+                selected = isSelected,
+                onClick = onSelect
+            )
         }
     }
 }
 ```
 
-#### components/AchievementBadge.kt
+#### components/PremiumBenefitItem.kt
 
 ```kotlin
-package com.aivoicepower.ui.screens.progress.components
+package com.aivoicepower.ui.screens.premium.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import com.aivoicepower.domain.model.achievement.Achievement
 
 @Composable
-fun AchievementBadge(
-    achievement: Achievement,
-    isLarge: Boolean = false,
-    modifier: Modifier = Modifier
+fun PremiumBenefitItem(
+    icon: ImageVector,
+    title: String,
+    description: String
 ) {
-    Card(
-        modifier = modifier,
-        colors = if (achievement.isUnlocked) {
-            CardDefaults.cardColors()
-        } else {
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-            )
-        }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(if (isLarge) 16.dp else 12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(24.dp),
+            tint = MaterialTheme.colorScheme.primary
+        )
+        
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+```
+
+#### components/FeatureComparisonCard.kt
+
+```kotlin
+package com.aivoicepower.ui.screens.premium.components
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+
+@Composable
+fun FeatureComparisonCard() {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Порівняння версій",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Функція", modifier = Modifier.weight(1f))
+                Text("Free", modifier = Modifier.width(60.dp), textAlign = TextAlign.Center)
+                Text("Premium", modifier = Modifier.width(80.dp), textAlign = TextAlign.Center)
+            }
+            
+            Divider(modifier = Modifier.padding(vertical = 8.dp))
+            
+            // Features
+            ComparisonRow("Розминка", true, true)
+            ComparisonRow("Діагностика", "1 раз", "Безліміт")
+            ComparisonRow("Уроки курсів", "7/курс", "Всі")
+            ComparisonRow("Імпровізація", "3/день", "∞")
+            ComparisonRow("AI-тренер", "10 msg/день", "∞")
+            ComparisonRow("Прогрес", "Базовий", "Повний")
+            ComparisonRow("Офлайн режим", false, true)
+        }
+    }
+}
+
+@Composable
+private fun ComparisonRow(
+    feature: String,
+    free: Any,
+    premium: Any
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = feature,
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.bodyMedium
+        )
+        
+        Box(
+            modifier = Modifier.width(60.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = achievement.icon,
-                style = if (isLarge) {
-                    MaterialTheme.typography.displayMedium
-                } else {
-                    MaterialTheme.typography.headlineMedium
+            when (free) {
+                is Boolean -> {
+                    Icon(
+                        imageVector = if (free) Icons.Default.Check else Icons.Default.Close,
+                        contentDescription = null,
+                        tint = if (free) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        }
+                    )
                 }
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                text = achievement.title,
-                style = if (isLarge) {
-                    MaterialTheme.typography.titleMedium
-                } else {
-                    MaterialTheme.typography.titleSmall
-                },
-                maxLines = 2
-            )
-            
-            if (!achievement.isUnlocked && achievement.progress != null && achievement.target != null) {
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                is String -> {
                     Text(
-                        text = "${achievement.progress}/${achievement.target}",
+                        text = free,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        textAlign = TextAlign.Center
                     )
-                    
-                    LinearProgressIndicator(
-                        progress = { achievement.progress.toFloat() / achievement.target },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 4.dp)
-                            .height(4.dp)
+                }
+            }
+        }
+        
+        Box(
+            modifier = Modifier.width(80.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            when (premium) {
+                is Boolean -> {
+                    Icon(
+                        imageVector = if (premium) Icons.Default.Check else Icons.Default.Close,
+                        contentDescription = null,
+                        tint = if (premium) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        }
+                    )
+                }
+                is String -> {
+                    Text(
+                        text = premium,
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -1442,158 +744,125 @@ fun AchievementBadge(
 }
 ```
 
-#### components/SkillRadarChart.kt
+### 5. PremiumChecker.kt
 
 ```kotlin
-package com.aivoicepower.ui.screens.progress.components
+package com.aivoicepower.utils
 
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Stroke
-import com.aivoicepower.domain.model.analysis.SkillType
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.sin
+import com.aivoicepower.data.local.datastore.UserPreferences
+import com.aivoicepower.utils.constants.FreeTierLimits
 
-@Composable
-fun SkillRadarChart(
-    skillLevels: Map<SkillType, Int>,
-    modifier: Modifier = Modifier
-) {
-    val color = MaterialTheme.colorScheme.primary
-    val gridColor = MaterialTheme.colorScheme.outlineVariant
+object PremiumChecker {
     
-    Canvas(modifier = modifier.fillMaxSize()) {
-        val center = Offset(size.width / 2, size.height / 2)
-        val radius = size.minDimension / 2 * 0.8f
-        val numberOfSkills = skillLevels.size
-        val angleStep = (2 * PI / numberOfSkills).toFloat()
-        
-        // Draw grid circles
-        for (i in 1..4) {
-            val r = radius * i / 4
-            drawCircle(
-                color = gridColor,
-                radius = r,
-                center = center,
-                style = Stroke(width = 1f)
-            )
+    /**
+     * Check if user can access a specific lesson
+     */
+    fun canAccessLesson(
+        isPremium: Boolean,
+        lessonIndex: Int // 0-based index
+    ): Boolean {
+        return isPremium || lessonIndex < FreeTierLimits.FREE_LESSONS_PER_COURSE
+    }
+    
+    /**
+     * Check if user can start improvisation
+     */
+    fun canStartImprovisation(
+        isPremium: Boolean,
+        sessionsToday: Int
+    ): Boolean {
+        return isPremium || sessionsToday < FreeTierLimits.FREE_IMPROVISATIONS_PER_DAY
+    }
+    
+    /**
+     * Check if user can send AI message
+     */
+    fun canSendAiMessage(
+        isPremium: Boolean,
+        messagesToday: Int
+    ): Boolean {
+        return isPremium || messagesToday < FreeTierLimits.FREE_MESSAGES_PER_DAY
+    }
+    
+    /**
+     * Check if user can do another diagnostic
+     */
+    fun canDoDiagnostic(
+        isPremium: Boolean,
+        diagnosticCount: Int
+    ): Boolean {
+        return isPremium || diagnosticCount < FreeTierLimits.FREE_DIAGNOSTICS
+    }
+    
+    /**
+     * Get paywall source for analytics
+     */
+    fun getPaywallSource(reason: String): com.aivoicepower.ui.screens.premium.PaywallSource {
+        return when (reason) {
+            "course_locked" -> com.aivoicepower.ui.screens.premium.PaywallSource.COURSE_LOCKED
+            "improv_limit" -> com.aivoicepower.ui.screens.premium.PaywallSource.IMPROV_LIMIT
+            "ai_limit" -> com.aivoicepower.ui.screens.premium.PaywallSource.AI_COACH_LIMIT
+            "diagnostic_limit" -> com.aivoicepower.ui.screens.premium.PaywallSource.DIAGNOSTIC_LIMIT
+            else -> com.aivoicepower.ui.screens.premium.PaywallSource.UNKNOWN
         }
-        
-        // Draw axes
-        skillLevels.keys.forEachIndexed { index, _ ->
-            val angle = angleStep * index - PI.toFloat() / 2
-            val end = Offset(
-                center.x + radius * cos(angle),
-                center.y + radius * sin(angle)
-            )
-            drawLine(
-                color = gridColor,
-                start = center,
-                end = end,
-                strokeWidth = 1f
-            )
-        }
-        
-        // Draw data polygon
-        val path = Path()
-        skillLevels.values.forEachIndexed { index, level ->
-            val angle = angleStep * index - PI.toFloat() / 2
-            val distance = radius * (level / 100f)
-            val point = Offset(
-                center.x + distance * cos(angle),
-                center.y + distance * sin(angle)
-            )
-            
-            if (index == 0) {
-                path.moveTo(point.x, point.y)
-            } else {
-                path.lineTo(point.x, point.y)
-            }
-        }
-        path.close()
-        
-        // Fill
-        drawPath(
-            path = path,
-            color = color.copy(alpha = 0.3f)
+    }
+}
+```
+
+### 6. Інтеграція в екрани
+
+#### CourseDetailScreen.kt (додати перевірку)
+
+```kotlin
+// В CourseDetailScreen
+val userPreferences by userPreferencesDataStore.userPreferencesFlow.collectAsStateWithLifecycle()
+
+LazyColumn {
+    items(lessons) { lesson ->
+        val canAccess = PremiumChecker.canAccessLesson(
+            isPremium = userPreferences.isPremium,
+            lessonIndex = lesson.dayNumber - 1
         )
         
-        // Stroke
-        drawPath(
-            path = path,
-            color = color,
-            style = Stroke(width = 2f)
+        LessonCard(
+            lesson = lesson,
+            isLocked = !canAccess,
+            onClick = {
+                if (canAccess) {
+                    onNavigateToLesson(lesson.id)
+                } else {
+                    // Navigate to paywall
+                    onNavigateToPaywall(PaywallSource.COURSE_LOCKED)
+                }
+            }
         )
     }
 }
 ```
 
-#### components/ProgressLineChart.kt
+#### ImprovisationScreen.kt (додати перевірку)
 
 ```kotlin
-package com.aivoicepower.ui.screens.progress.components
-
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Stroke
-import com.aivoicepower.ui.screens.progress.DailyProgress
-
-@Composable
-fun ProgressLineChart(
-    weeklyProgress: List<DailyProgress>,
-    modifier: Modifier = Modifier
-) {
-    val color = MaterialTheme.colorScheme.primary
-    
-    Canvas(modifier = modifier.fillMaxSize()) {
-        if (weeklyProgress.isEmpty()) return@Canvas
+// В ImprovisationViewModel
+fun startImprovisation() {
+    viewModelScope.launch {
+        val prefs = userPreferencesDataStore.userPreferencesFlow.first()
         
-        val maxMinutes = weeklyProgress.maxOf { it.minutes }.coerceAtLeast(1)
-        val width = size.width
-        val height = size.height
-        val stepX = width / (weeklyProgress.size - 1).coerceAtLeast(1)
-        
-        // Draw line
-        val path = Path()
-        weeklyProgress.forEachIndexed { index, progress ->
-            val x = index * stepX
-            val y = height - (progress.minutes.toFloat() / maxMinutes * height)
-            
-            if (index == 0) {
-                path.moveTo(x, y)
-            } else {
-                path.lineTo(x, y)
-            }
-        }
-        
-        drawPath(
-            path = path,
-            color = color,
-            style = Stroke(width = 3f)
+        val canStart = PremiumChecker.canStartImprovisation(
+            isPremium = prefs.isPremium,
+            sessionsToday = prefs.freeImprovisationsToday
         )
         
-        // Draw points
-        weeklyProgress.forEachIndexed { index, progress ->
-            val x = index * stepX
-            val y = height - (progress.minutes.toFloat() / maxMinutes * height)
-            
-            drawCircle(
-                color = color,
-                radius = 6f,
-                center = Offset(x, y)
-            )
+        if (!canStart) {
+            _state.update { 
+                it.copy(showPaywall = true, paywallSource = PaywallSource.IMPROV_LIMIT)
+            }
+            return@launch
         }
+        
+        // Proceed with improvisation
+        userPreferencesDataStore.incrementFreeImprovisations()
+        // ...
     }
 }
 ```
@@ -1603,37 +872,17 @@ fun ProgressLineChart(
 ## Оновити NavGraph.kt
 
 ```kotlin
-composable(NavRoutes.Progress.route) {
-    ProgressScreen(
-        onNavigateToCompare = {
-            navController.navigate(NavRoutes.Compare.route)
-        },
-        onNavigateToAchievements = {
-            navController.navigate(NavRoutes.Achievements.route)
-        },
-        onNavigateToHistory = {
-            navController.navigate(NavRoutes.RecordingHistory.route)
-        }
-    )
-}
-
-composable(NavRoutes.Compare.route) {
-    CompareScreen(
-        onNavigateBack = { navController.popBackStack() }
-    )
-}
-
-composable(NavRoutes.Achievements.route) {
-    AchievementsScreen(
-        onNavigateBack = { navController.popBackStack() }
-    )
-}
-
-composable(NavRoutes.RecordingHistory.route) {
-    RecordingHistoryScreen(
+composable(NavRoutes.Premium.route) {
+    val source = it.arguments?.getString("source")?.let { sourceStr ->
+        PaywallSource.valueOf(sourceStr)
+    } ?: PaywallSource.UNKNOWN
+    
+    PaywallScreen(
+        source = source,
         onNavigateBack = { navController.popBackStack() },
-        onNavigateToResults = { recordingId ->
-            navController.navigate(NavRoutes.Results.createRoute(recordingId))
+        onPurchaseSuccess = {
+            // Navigate back with success
+            navController.popBackStack()
         }
     )
 }
@@ -1641,108 +890,636 @@ composable(NavRoutes.RecordingHistory.route) {
 
 ---
 
-## Тестування
+## Тестування Phase 9.1
 
-### 1. ProgressScreen
-- [ ] Overall level displayed
-- [ ] Streak correct
-- [ ] Stats accurate
-- [ ] Skill levels (radar + bars)
-- [ ] Weekly chart
-- [ ] Quick actions navigate
+### Checklist:
 
-### 2. CompareScreen
-- [ ] Initial diagnostic loaded
-- [ ] Current levels correct
-- [ ] Improvement % accurate
-- [ ] All 7 skills compared
-- [ ] Empty state (if no diagnostic)
+**PaywallScreen:**
+- [ ] Beautiful UI
+- [ ] 3 pricing plans
+- [ ] Selected plan highlighted
+- [ ] Premium benefits list
+- [ ] Comparison table
+- [ ] Purchase button
+- [ ] Restore purchases button
 
-### 3. AchievementsScreen
-- [ ] Grid layout (2 columns)
-- [ ] Unlocked vs locked styling
-- [ ] Progress bars for locked
-- [ ] Counter in AppBar
+**Limit Checks:**
+- [ ] Course locked after lesson 7
+- [ ] Improvisation limit (3/day)
+- [ ] AI Coach limit (10/day)
+- [ ] 2nd diagnostic blocked
+- [ ] Paywall shows correct message
 
-### 4. Charts
-- [ ] Radar chart renders
-- [ ] Bar chart renders
-- [ ] Line chart renders
-- [ ] Responsive to data
+**Navigation:**
+- [ ] Paywall opens from locked content
+- [ ] Close button works
+- [ ] Back navigation works
 
 ---
 
-## Перевірка
+## 📋 Phase 9.2: In-App Purchases (IAP)
+
+**КРИТИЧНО:** Google Play Billing Library v6
+
+### Структура файлів
+
+```
+data/billing/
+├── BillingClientWrapper.kt
+├── BillingRepository.kt
+├── PurchaseHelper.kt
+└── model/
+    ├── PurchaseResult.kt
+    └── BillingState.kt
+
+di/
+└── BillingModule.kt
+```
+
+---
+
+## Повний код Phase 9.2
+
+### 1. Додати залежності в build.gradle.kts
+
+```kotlin
+dependencies {
+    // Google Play Billing Library v6
+    implementation("com.android.billingclient:billing-ktx:6.1.0")
+    
+    // Existing dependencies...
+}
+```
+
+### 2. BillingClientWrapper.kt
+
+```kotlin
+package com.aivoicepower.data.billing
+
+import android.app.Activity
+import android.content.Context
+import com.android.billingclient.api.*
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import javax.inject.Inject
+import javax.inject.Singleton
+
+sealed class BillingState {
+    object Idle : BillingState()
+    object Connecting : BillingState()
+    object Connected : BillingState()
+    data class Error(val message: String) : BillingState()
+}
+
+sealed class PurchaseResult {
+    object Success : PurchaseResult()
+    object Cancelled : PurchaseResult()
+    data class Error(val message: String) : PurchaseResult()
+}
+
+@Singleton
+class BillingClientWrapper @Inject constructor(
+    @ApplicationContext private val context: Context
+) : PurchasesUpdatedListener {
+    
+    private var billingClient: BillingClient? = null
+    
+    private val _billingState = MutableStateFlow<BillingState>(BillingState.Idle)
+    val billingState: StateFlow<BillingState> = _billingState.asStateFlow()
+    
+    private val _purchaseResult = MutableStateFlow<PurchaseResult?>(null)
+    val purchaseResult: StateFlow<PurchaseResult?> = _purchaseResult.asStateFlow()
+    
+    private val _availableProducts = MutableStateFlow<List<ProductDetails>>(emptyList())
+    val availableProducts: StateFlow<List<ProductDetails>> = _availableProducts.asStateFlow()
+    
+    init {
+        startConnection()
+    }
+    
+    private fun startConnection() {
+        if (billingClient?.isReady == true) return
+        
+        _billingState.value = BillingState.Connecting
+        
+        billingClient = BillingClient.newBuilder(context)
+            .setListener(this)
+            .enablePendingPurchases()
+            .build()
+        
+        billingClient?.startConnection(object : BillingClientStateListener {
+            override fun onBillingSetupFinished(billingResult: BillingResult) {
+                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                    _billingState.value = BillingState.Connected
+                    queryProducts()
+                } else {
+                    _billingState.value = BillingState.Error(
+                        "Billing setup failed: ${billingResult.debugMessage}"
+                    )
+                }
+            }
+            
+            override fun onBillingServiceDisconnected() {
+                _billingState.value = BillingState.Error("Billing service disconnected")
+                // Try to reconnect
+                startConnection()
+            }
+        })
+    }
+    
+    private fun queryProducts() {
+        val productList = listOf(
+            QueryProductDetailsParams.Product.newBuilder()
+                .setProductId("premium_monthly")
+                .setProductType(BillingClient.ProductType.SUBS)
+                .build(),
+            QueryProductDetailsParams.Product.newBuilder()
+                .setProductId("premium_yearly")
+                .setProductType(BillingClient.ProductType.SUBS)
+                .build(),
+            QueryProductDetailsParams.Product.newBuilder()
+                .setProductId("premium_lifetime")
+                .setProductType(BillingClient.ProductType.INAPP)
+                .build()
+        )
+        
+        val params = QueryProductDetailsParams.newBuilder()
+            .setProductList(productList)
+            .build()
+        
+        billingClient?.queryProductDetailsAsync(params) { billingResult, productDetailsList ->
+            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                _availableProducts.value = productDetailsList
+            }
+        }
+    }
+    
+    fun launchBillingFlow(
+        activity: Activity,
+        productDetails: ProductDetails,
+        offerToken: String? = null
+    ) {
+        val productDetailsParamsList = listOf(
+            BillingFlowParams.ProductDetailsParams.newBuilder()
+                .setProductDetails(productDetails)
+                .apply {
+                    offerToken?.let { setOfferToken(it) }
+                }
+                .build()
+        )
+        
+        val billingFlowParams = BillingFlowParams.newBuilder()
+            .setProductDetailsParamsList(productDetailsParamsList)
+            .build()
+        
+        billingClient?.launchBillingFlow(activity, billingFlowParams)
+    }
+    
+    override fun onPurchasesUpdated(
+        billingResult: BillingResult,
+        purchases: MutableList<Purchase>?
+    ) {
+        when (billingResult.responseCode) {
+            BillingClient.BillingResponseCode.OK -> {
+                purchases?.forEach { purchase ->
+                    handlePurchase(purchase)
+                }
+            }
+            BillingClient.BillingResponseCode.USER_CANCELED -> {
+                _purchaseResult.value = PurchaseResult.Cancelled
+            }
+            else -> {
+                _purchaseResult.value = PurchaseResult.Error(
+                    billingResult.debugMessage
+                )
+            }
+        }
+    }
+    
+    private fun handlePurchase(purchase: Purchase) {
+        if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
+            if (!purchase.isAcknowledged) {
+                acknowledgePurchase(purchase)
+            } else {
+                _purchaseResult.value = PurchaseResult.Success
+            }
+        }
+    }
+    
+    private fun acknowledgePurchase(purchase: Purchase) {
+        val acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder()
+            .setPurchaseToken(purchase.purchaseToken)
+            .build()
+        
+        billingClient?.acknowledgePurchase(acknowledgePurchaseParams) { billingResult ->
+            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                _purchaseResult.value = PurchaseResult.Success
+            } else {
+                _purchaseResult.value = PurchaseResult.Error(
+                    "Acknowledge failed: ${billingResult.debugMessage}"
+                )
+            }
+        }
+    }
+    
+    fun queryPurchases() {
+        billingClient?.queryPurchasesAsync(
+            QueryPurchasesParams.newBuilder()
+                .setProductType(BillingClient.ProductType.SUBS)
+                .build()
+        ) { billingResult, purchasesList ->
+            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                purchasesList.forEach { purchase ->
+                    if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
+                        // User has active subscription
+                        handlePurchase(purchase)
+                    }
+                }
+            }
+        }
+        
+        // Also check in-app purchases (lifetime)
+        billingClient?.queryPurchasesAsync(
+            QueryPurchasesParams.newBuilder()
+                .setProductType(BillingClient.ProductType.INAPP)
+                .build()
+        ) { billingResult, purchasesList ->
+            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                purchasesList.forEach { purchase ->
+                    if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
+                        handlePurchase(purchase)
+                    }
+                }
+            }
+        }
+    }
+    
+    fun clearPurchaseResult() {
+        _purchaseResult.value = null
+    }
+    
+    fun endConnection() {
+        billingClient?.endConnection()
+    }
+}
+```
+
+### 3. BillingRepository.kt
+
+```kotlin
+package com.aivoicepower.data.billing
+
+import android.app.Activity
+import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
+import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class BillingRepository @Inject constructor(
+    private val billingClient: BillingClientWrapper,
+    private val userPreferencesDataStore: UserPreferencesDataStore
+) {
+    
+    val billingState: Flow<BillingState> = billingClient.billingState
+    val purchaseResult: Flow<PurchaseResult?> = billingClient.purchaseResult
+    val availableProducts = billingClient.availableProducts
+    
+    fun launchPurchaseFlow(activity: Activity, productId: String) {
+        val product = availableProducts.value.find { 
+            it.productId == productId 
+        } ?: return
+        
+        val offerToken = if (product.subscriptionOfferDetails != null) {
+            product.subscriptionOfferDetails?.firstOrNull()?.offerToken
+        } else {
+            null
+        }
+        
+        billingClient.launchBillingFlow(activity, product, offerToken)
+    }
+    
+    suspend fun handleSuccessfulPurchase() {
+        // Update premium status
+        userPreferencesDataStore.setPremiumStatus(
+            isPremium = true,
+            expiresAt = null // Or calculate expiration for subscriptions
+        )
+    }
+    
+    fun restorePurchases() {
+        billingClient.queryPurchases()
+    }
+    
+    fun clearPurchaseResult() {
+        billingClient.clearPurchaseResult()
+    }
+}
+```
+
+### 4. BillingModule.kt
+
+```kotlin
+package com.aivoicepower.di
+
+import android.content.Context
+import com.aivoicepower.data.billing.BillingClientWrapper
+import com.aivoicepower.data.billing.BillingRepository
+import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+object BillingModule {
+    
+    @Provides
+    @Singleton
+    fun provideBillingClientWrapper(
+        @ApplicationContext context: Context
+    ): BillingClientWrapper {
+        return BillingClientWrapper(context)
+    }
+    
+    @Provides
+    @Singleton
+    fun provideBillingRepository(
+        billingClient: BillingClientWrapper,
+        userPreferencesDataStore: UserPreferencesDataStore
+    ): BillingRepository {
+        return BillingRepository(billingClient, userPreferencesDataStore)
+    }
+}
+```
+
+### 5. Оновити PaywallViewModel.kt
+
+```kotlin
+@HiltViewModel
+class PaywallViewModel @Inject constructor(
+    private val userPreferencesDataStore: UserPreferencesDataStore,
+    private val billingRepository: BillingRepository // ADD THIS
+) : ViewModel() {
+    
+    // ... existing code ...
+    
+    init {
+        loadPremiumStatus()
+        observeBillingState() // ADD THIS
+    }
+    
+    private fun observeBillingState() {
+        viewModelScope.launch {
+            billingRepository.purchaseResult.collect { result ->
+                when (result) {
+                    is PurchaseResult.Success -> {
+                        billingRepository.handleSuccessfulPurchase()
+                        _state.update { 
+                            it.copy(
+                                isLoading = false,
+                                isPremium = true
+                            )
+                        }
+                    }
+                    is PurchaseResult.Cancelled -> {
+                        _state.update { it.copy(isLoading = false) }
+                    }
+                    is PurchaseResult.Error -> {
+                        _state.update { 
+                            it.copy(
+                                isLoading = false,
+                                error = result.message
+                            )
+                        }
+                    }
+                    null -> { /* Do nothing */ }
+                }
+            }
+        }
+    }
+    
+    private fun startPurchase() {
+        // Get activity from screen
+        _state.update { it.copy(isLoading = true) }
+        
+        // This will be called from Screen with activity reference
+    }
+    
+    fun launchPurchase(activity: Activity) {
+        val productId = _state.value.selectedPlan.productId
+        billingRepository.launchPurchaseFlow(activity, productId)
+    }
+    
+    private fun restorePurchases() {
+        _state.update { it.copy(isLoading = true) }
+        billingRepository.restorePurchases()
+    }
+}
+```
+
+### 6. Оновити PaywallScreen.kt
+
+```kotlin
+@Composable
+fun PaywallScreen(
+    viewModel: PaywallViewModel = hiltViewModel(),
+    source: PaywallSource = PaywallSource.UNKNOWN,
+    onNavigateBack: () -> Unit,
+    onPurchaseSuccess: () -> Unit
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val activity = context.findActivity() // Extension function
+    
+    // ... existing code ...
+    
+    Button(
+        onClick = { 
+            activity?.let { viewModel.launchPurchase(it) }
+        },
+        // ... existing button properties
+    )
+    
+    // ... rest of the screen
+}
+
+// Extension to find activity
+fun Context.findActivity(): Activity? {
+    var context = this
+    while (context is ContextWrapper) {
+        if (context is Activity) return context
+        context = context.baseContext
+    }
+    return null
+}
+```
+
+---
+
+## Тестування Phase 9.2
+
+### Checklist:
+
+**Billing Setup:**
+- [ ] BillingClient connects
+- [ ] Products loaded (3 items)
+- [ ] Prices displayed correctly
+
+**Purchase Flow:**
+- [ ] Monthly subscription works
+- [ ] Yearly subscription works
+- [ ] Lifetime purchase works
+- [ ] Purchase acknowledged
+- [ ] Premium status updated
+
+**Restore:**
+- [ ] Restore purchases works
+- [ ] Existing subscriptions restored
+- [ ] Premium status synced
+
+**Error Handling:**
+- [ ] Network errors handled
+- [ ] User cancellation handled
+- [ ] Already owned handled
+
+---
+
+## 📋 Phase 9.3: Polish & Testing
+
+### What to Polish:
+
+```
+1. Notifications
+   ├── Daily reminder (9:00 AM)
+   ├── Streak reminder (if user skips a day)
+   └── Achievement unlocked
+
+2. UI Animations
+   ├── Screen transitions
+   ├── Button press effects
+   ├── Loading states
+   └── Success animations
+
+3. Error Handling
+   ├── Network errors
+   ├── Audio permission errors
+   ├── Storage errors
+   └── User-friendly messages
+
+4. Performance
+   ├── Lazy loading
+   ├── Image optimization
+   ├── Database queries optimization
+   └── Memory leaks check
+
+5. Accessibility
+   ├── Content descriptions
+   ├── Screen reader support
+   ├── Color contrast
+   └── Touch targets (min 48dp)
+
+6. Final Testing
+   ├── All features work
+   ├── No crashes
+   ├── Smooth navigation
+   └── Freemium limits enforced
+```
+
+---
+
+## Перевірка Phase 9
 
 ```bash
 ./gradlew assembleDebug
+./gradlew test
+./gradlew lint
 ```
 
-**Checklist:**
+**Final Checklist:**
 
-**Progress:**
-- [ ] All widgets render
-- [ ] Data accurate
-- [ ] Navigation works
+**Phase 9.1 — Freemium:**
+- [ ] PaywallScreen beautiful
+- [ ] All limit checks work
+- [ ] Correct paywalls shown
 
-**Compare:**
-- [ ] Metrics comparison
-- [ ] Improvement calculation
-- [ ] Empty state
+**Phase 9.2 — IAP:**
+- [ ] Billing setup works
+- [ ] Purchase flow complete
+- [ ] Restore purchases works
+- [ ] Premium status synced
 
-**Achievements:**
-- [ ] Grid display
-- [ ] Unlock logic
-- [ ] Progress tracking
-
-**Charts:**
-- [ ] Radar chart
-- [ ] Bar chart
-- [ ] Line chart
+**Phase 9.3 — Polish:**
+- [ ] Notifications work
+- [ ] Animations smooth
+- [ ] No crashes
+- [ ] Performance good
 
 ---
 
 ## Очікуваний результат
 
-✅ ProgressScreen з повною статистикою
-✅ Skill radar + bar charts
-✅ Streak tracking
-✅ CompareScreen ("до/після")
-✅ AchievementsScreen (badges grid)
-✅ RecordingHistoryScreen
-✅ Weekly progress chart
-✅ Motivation system готова!
+✅ Beautiful paywall screen
+✅ Working In-App Purchases
+✅ Freemium limits enforced
+✅ Premium features unlocked
+✅ Restore purchases
+✅ Notifications
+✅ Polished UI/UX
+✅ Ready for release!
 
 ---
 
-## 🎉 PHASE 7 ЗАВЕРШЕНО!
+## 🎉 PROJECT COMPLETE!
 
 ```
-✅ Phase 0-6 — Всі основні features
+✅ Phase 0 — Infrastructure
+✅ Phase 1 — Onboarding + Diagnostic
+✅ Phase 2 — Warmup
+✅ Phase 3 — Home Screen
+✅ Phase 4 — Courses
+✅ Phase 5 — Improvisation
+✅ Phase 6 — AI Coach
 ✅ Phase 7 — Progress + Gamification
-⏳ Phase 8 — Content
-⏳ Phase 9 — Freemium + Polish
+✅ Phase 8 — Content Generation
+✅ Phase 9 — Freemium + Polish ← FINAL! 🎉
 ```
 
-**Прогрес:** 7 з 9 фаз (78%)
+**Прогрес:** 9 з 9 фаз (100%)
 
 ---
 
-## 🚀 Наступний крок: Phase 8 — Content
+## 🚀 Next Steps After Phase 9:
 
-**Phase 8** заповнює застосунок контентом:
-- 100+ скоромовки
-- Тексти для читання
-- Уроки 8-21 для всіх курсів
-- Теми для дебатів
-- Товари для продажу
-- Теми для імпровізації
+1. **Internal Testing** (1-2 weeks)
+   - Test all features
+   - Fix bugs
+   - Performance optimization
 
-**Складність:** 🟢 НИЗЬКА (pure data)  
-**Час:** ~4-6 годин
+2. **Beta Testing** (2-4 weeks)
+   - Google Play Internal Testing
+   - Collect feedback
+   - Iterate
+
+3. **Marketing Prep**
+   - App Store listing
+   - Screenshots
+   - Promo video
+   - Website
+
+4. **Launch!** 🚀
+   - Submit to Google Play
+   - Soft launch (Ukraine)
+   - Monitor metrics
+   - Iterate based on feedback
 
 ---
 
-**Час на Phase 7:** ~3-4 години
+**Час на Phase 9:** ~10-15 годин
 
-**Progress система готова до мотивації користувачів!**
+**AI VoicePower готовий до релізу!** 🎤✨

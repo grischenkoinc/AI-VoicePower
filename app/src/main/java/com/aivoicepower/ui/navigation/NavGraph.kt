@@ -18,6 +18,8 @@ import com.aivoicepower.ui.screens.progress.ProgressScreen
 import com.aivoicepower.ui.screens.progress.CompareScreen
 import com.aivoicepower.ui.screens.progress.AchievementsScreen
 import com.aivoicepower.ui.screens.progress.RecordingHistoryScreen
+import com.aivoicepower.ui.screens.premium.PaywallScreen
+import com.aivoicepower.ui.screens.premium.PaywallSource
 
 @Composable
 fun NavGraph(
@@ -176,6 +178,17 @@ fun NavGraph(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToResults = { recordingId ->
                     navController.navigate(Screen.Results.createRoute(recordingId))
+                }
+            )
+        }
+
+        // Premium/Paywall screen
+        composable(route = Screen.Premium.route) {
+            PaywallScreen(
+                source = PaywallSource.UNKNOWN,
+                onNavigateBack = { navController.popBackStack() },
+                onPurchaseSuccess = {
+                    navController.popBackStack()
                 }
             )
         }
