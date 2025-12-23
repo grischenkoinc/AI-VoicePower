@@ -24,6 +24,7 @@ import com.aivoicepower.ui.screens.lesson.LessonScreen
 import com.aivoicepower.ui.screens.results.ResultsScreen
 import com.aivoicepower.ui.screens.warmup.ArticulationScreen
 import com.aivoicepower.ui.screens.warmup.BreathingScreen
+import com.aivoicepower.ui.screens.warmup.VoiceWarmupScreen
 import com.aivoicepower.ui.screens.warmup.WarmupScreen
 
 @Composable
@@ -112,8 +113,11 @@ fun NavGraph(
             )
         }
 
+        // Phase 2.4 - Voice Warmup screen
         composable(route = Screen.WarmupVoice.route) {
-            PlaceholderScreen(title = "Розминка голосу", onBack = { navController.popBackStack() })
+            VoiceWarmupScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
 
         composable(route = Screen.WarmupQuick.route) {
