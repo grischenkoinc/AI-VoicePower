@@ -22,6 +22,7 @@ import androidx.navigation.navArgument
 import com.aivoicepower.ui.screens.home.HomeScreen
 import com.aivoicepower.ui.screens.lesson.LessonScreen
 import com.aivoicepower.ui.screens.results.ResultsScreen
+import com.aivoicepower.ui.screens.warmup.ArticulationScreen
 import com.aivoicepower.ui.screens.warmup.WarmupScreen
 
 @Composable
@@ -96,9 +97,11 @@ fun NavGraph(
             )
         }
 
-        // TODO: Phase 2.2-2.5 - Articulation, Breathing, Voice, Quick screens
+        // Phase 2.2 - Articulation screen
         composable(route = Screen.WarmupArticulation.route) {
-            PlaceholderScreen(title = "Артикуляційна гімнастика", onBack = { navController.popBackStack() })
+            ArticulationScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
 
         composable(route = Screen.WarmupBreathing.route) {
