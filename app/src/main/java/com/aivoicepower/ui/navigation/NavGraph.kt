@@ -23,6 +23,7 @@ import com.aivoicepower.ui.screens.home.HomeScreen
 import com.aivoicepower.ui.screens.lesson.LessonScreen
 import com.aivoicepower.ui.screens.results.ResultsScreen
 import com.aivoicepower.ui.screens.warmup.ArticulationScreen
+import com.aivoicepower.ui.screens.warmup.BreathingScreen
 import com.aivoicepower.ui.screens.warmup.WarmupScreen
 
 @Composable
@@ -104,8 +105,11 @@ fun NavGraph(
             )
         }
 
+        // Phase 2.3 - Breathing screen
         composable(route = Screen.WarmupBreathing.route) {
-            PlaceholderScreen(title = "Дихальні вправи", onBack = { navController.popBackStack() })
+            BreathingScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
 
         composable(route = Screen.WarmupVoice.route) {
