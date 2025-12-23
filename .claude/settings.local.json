@@ -5,7 +5,9 @@
       "Bash(gradlew.bat assembleDebug:*)",
       "Bash(./gradlew assembleDebug:*)",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(./gradlew clean:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nPhase 2.1: Warmup Hub \\(aicoach temporarily disabled\\)\n\n- Add WarmupScreen with stats, quick warmup, and category cards\n- Add WarmupViewModel, WarmupState, WarmupEvent\n- Add WarmupCompletionDao/Entity, UserProgressDao/Entity\n- Add UserPreferencesDataStore for app preferences\n- Add DatabaseModule for Room DI\n- Add Room dependencies to build.gradle.kts\n- Update navigation with Warmup routes and placeholders\n- Temporarily move aicoach files to _backup_aicoach \\(missing deps\\)\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   }
 }
