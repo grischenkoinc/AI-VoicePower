@@ -1,385 +1,785 @@
-# Промпт для Claude Code — Phase 2.5: Quick Warmup Screen
+# Промпт для Claude Code — Phase 5.1: Improvisation Hub + Random Topic
 
 ## Контекст
 
 Продовжую розробку AI VoicePower. Завершені фази:
 - ✅ Phase 0.1-0.6 — Infrastructure  
 - ✅ Phase 1.1-1.4 — Onboarding + Diagnostic
-- ✅ Phase 2.1 — Warmup Main Screen
-- ✅ Phase 2.2 — Articulation Screen
-- ✅ Phase 2.3 — Breathing Screen
-- ✅ Phase 2.4 — Voice Warmup Screen
+- ✅ Phase 2.1-2.5 — Warmup
+- ✅ Phase 3 — Home Screen
+- ✅ Phase 4.1-4.4 — Courses (повністю)
 
-Зараз **Phase 2.5 — Quick Warmup Screen** — **фінальна підфаза Phase 2**.
+Зараз **Phase 5.1 — Improvisation Hub + Random Topic** — перша підфаза Phase 5.
 
-**Згідно з PHASE_STRUCTURE_GUIDE.md**: НИЗЬКА складність (sequential flow, reuse components).
+**Згідно з PHASE_STRUCTURE_GUIDE.md**: Початок системи імпровізації.
 
-**Специфікація:** `SPECIFICATION.md`, секція 4.3.4 (Quick Warmup).
+**Специфікація:** `SPECIFICATION.md`, секція 4.3.7 (Improvisation Screen).
 
-**Складність:** 🟢 НИЗЬКА  
-**Час:** ⏱️ 1 година
-
----
-
-## Ключова ідея
-
-**Quick Warmup** — це швидка 5-хвилинна розминка, що включає **найважливіші вправи** з всіх 3 категорій:
-
-| Категорія | Вправи | Час |
-|-----------|--------|-----|
-| Артикуляція | 2 вправи | ~1 хв |
-| Дихання | 1 вправа | ~1 хв |
-| Голос | 1 вправа | ~30 сек |
-| **Всього** | **4 вправи** | **~2.5 хв** |
-
-**Механіка:**
-1. **Sequential flow** — вправи виконуються одна за одною
-2. Користувач не може пропустити вправи (або можна, але не рекомендовано)
-3. Progress bar показує загальний прогрес (1/4, 2/4, 3/4, 4/4)
-4. Після завершення → збереження як окрема категорія "quick"
-
-**Reuse components:**
-- Використовуємо компоненти з Phase 2.2-2.4
-- Не створюємо нові UI компоненти
+**Складність:** 🟡 СЕРЕДНЯ  
+**Час:** ⏱️ 2-3 години
 
 ---
 
-## Задача Phase 2.5
+## Ключова ідея Phase 5
 
-Створити екран з **послідовним виконанням 4 вправ**:
+**Improvisation** — це тренування спонтанного мовлення через 5 режимів:
 
-| # | Вправа | Категорія | Тривалість |
-|---|--------|-----------|-----------|
-| 1 | Усмішка-хоботок | Артикуляція | 30 сек |
-| 2 | Язик вліво-вправо | Артикуляція | 20 сек |
-| 3 | Діафрагмальне дихання | Дихання | 60 сек |
-| 4 | Гумкання | Голос | 30 сек |
+| Режим | Механіка | Phase |
+|-------|----------|-------|
+| 🎲 Random Topic | Тема → підготовка 15 сек → запис 1-3 хв → AI-аналіз | **5.1** |
+| 📖 Storytelling | Елементи сюжету → розповідь → AI-аналіз | 5.2 |
+| 🏆 Daily Challenge | Унікальне завдання щодня → запис → трекінг | 5.2 |
+| ⚔️ Debate | Тема + позиція → раунди аргументів → AI-контраргументи | 5.3 🔴 |
+| 💼 Sales Pitch | Товар + клієнт → pitch → AI грає клієнта з питаннями | 5.3 🔴 |
 
-**Загальний час:** ~2.5 хвилини (можна округлити до 3 хв)
+**Phase 5.1** фокусується на:
+1. **Hub Screen** — головний екран вибору режиму
+2. **Random Topic** — перший та найпростіший режим
+
+---
+
+## Задача Phase 5.1
+
+### 1. Improvisation Hub Screen
+
+```
+┌────────────────────────────────────┐
+│  🎭 Імпровізація                   │
+├────────────────────────────────────┤
+│                                    │
+│  Тренуй спонтанне мовлення         │
+│                                    │
+│  📊 Сьогодні: 1/3 (Free tier)      │
+│                                    │
+│  ┌──────────────────────────────┐ │
+│  │ 🎲 Випадкова тема            │ │
+│  │ Готовий говорити про що     │ │
+│  │ завгодно?                    │ │
+│  │                              │ │
+│  │ [Почати →]                   │ │
+│  └──────────────────────────────┘ │
+│                                    │
+│  ┌──────────────────────────────┐ │
+│  │ 📖 Розкажи історію      🔒   │ │
+│  │ (Phase 5.2)                  │ │
+│  └──────────────────────────────┘ │
+│                                    │
+│  ┌──────────────────────────────┐ │
+│  │ 🏆 Щоденний челендж     🔒   │ │
+│  │ (Phase 5.2)                  │ │
+│  └──────────────────────────────┘ │
+│                                    │
+│  ┌──────────────────────────────┐ │
+│  │ ⚔️ Дебати з AI          🔒   │ │
+│  │ (Phase 5.3)                  │ │
+│  └──────────────────────────────┘ │
+│                                    │
+│  ┌──────────────────────────────┐ │
+│  │ 💼 Продай товар         🔒   │ │
+│  │ (Phase 5.3)                  │ │
+│  └──────────────────────────────┘ │
+│                                    │
+└────────────────────────────────────┘
+```
+
+### 2. Random Topic Flow
+
+```
+┌────────────────────────────────────┐
+│  ← Випадкова тема                  │
+├────────────────────────────────────┤
+│                                    │
+│  🎲 Твоя тема:                     │
+│                                    │
+│  "Чому подорожі змінюють людину"   │
+│                                    │
+│  💡 Підказки:                      │
+│  • Власний досвід                  │
+│  • Нові перспективи                │
+│  • Культурний обмін                │
+│                                    │
+│  ⏱️ Час підготовки: 00:15          │
+│                                    │
+│  [🔄 Інша тема]  [✓ Готовий]      │
+│                                    │
+└────────────────────────────────────┘
+
+↓ (після натискання "Готовий")
+
+┌────────────────────────────────────┐
+│  Говори 1-3 хвилини                │
+│                                    │
+│  🔴 Запис... 00:42                 │
+│                                    │
+│  "Чому подорожі змінюють людину"   │
+│                                    │
+│  [■ Завершити]                     │
+│                                    │
+└────────────────────────────────────┘
+
+↓ (після завершення)
+
+Navigate to Results Screen (Phase 4.4)
+  з placeholder AI-аналізу
+```
 
 ---
 
 ## Структура файлів
 
 ```
-ui/screens/warmup/
-├── QuickWarmupScreen.kt
-├── QuickWarmupViewModel.kt
-├── QuickWarmupState.kt
-└── QuickWarmupEvent.kt
+ui/screens/improvisation/
+├── ImprovisationScreen.kt              # Hub
+├── ImprovisationViewModel.kt
+├── ImprovisationState.kt
+├── ImprovisationEvent.kt
+├── RandomTopicScreen.kt                # Random Topic
+├── RandomTopicViewModel.kt
+├── RandomTopicState.kt
+├── RandomTopicEvent.kt
+└── components/
+    ├── ImprovisationModeCard.kt
+    ├── TopicDisplayCard.kt
+    ├── PreparationTimerCard.kt
+    └── RandomTopicRecordingCard.kt
 
-// Reuse components з Phase 2.2-2.4:
-// - ArticulationExerciseDialog.kt
-// - BreathingExerciseDialog.kt
-// - VoiceExerciseDialog.kt
-```
-
----
-
-## UI Design
-
-```
-Quick Warmup Flow (Sequential)
-┌──────────────────────────────────────────────┐
-│  ← Швидка розминка (5 хв)                    │
-│  Вправа 2 з 4                                │
-├──────────────────────────────────────────────┤
-│  ━━━━━━━━━━━━○○○○○○○○○○  50%                │
-│                                              │
-│  ✅ 1. Усмішка-хоботок                       │
-│  ▶️ 2. Язик вліво-вправо       (активна)     │
-│  ○ 3. Діафрагмальне дихання                  │
-│  ○ 4. Гумкання                               │
-│                                              │
-│  ──────────────────────────────────────────  │
-│                                              │
-│  [Показується діалог вправи 2]               │
-│                                              │
-└──────────────────────────────────────────────┘
-
-Dialog (reuse з Phase 2.2-2.4):
-- Артикуляція → ArticulationExerciseDialog
-- Дихання → BreathingExerciseDialog
-- Голос → VoiceExerciseDialog
-
-Після завершення всіх 4 вправ:
-┌──────────────────────────────────────────────┐
-│  🎉 Розминка завершена!                      │
-│                                              │
-│  Ви виконали 4 вправи за 2 хв 34 сек        │
-│                                              │
-│  [Готово]                                    │
-└──────────────────────────────────────────────┘
+data/content/
+└── ImprovisationTopicsProvider.kt      # 50+ topics
 ```
 
 ---
 
 ## Повний код
 
-### 1. QuickWarmupState.kt
+### 1. Domain Model (якщо ще не створено в Phase 0.5)
+
+#### domain/model/content/ImprovisationTopic.kt
 
 ```kotlin
-package com.aivoicepower.ui.screens.warmup
+package com.aivoicepower.domain.model.content
 
-data class QuickWarmupState(
-    val exercises: List<QuickWarmupExercise> = getQuickWarmupExercises(),
-    val currentExerciseIndex: Int = 0,
-    val completedExercises: Set<Int> = emptySet(),
-    val isExerciseDialogOpen: Boolean = false,
-    val totalElapsedSeconds: Int = 0,
-    val isCompleted: Boolean = false
-)
+import com.aivoicepower.domain.model.course.Difficulty
 
-data class QuickWarmupExercise(
-    val id: Int,
+data class ImprovisationTopic(
+    val id: String,
     val title: String,
-    val category: WarmupCategoryType,
-    val durationSeconds: Int,
-    val instruction: String,
-    // Type-specific data
-    val articulationExercise: ArticulationExercise? = null,
-    val breathingExercise: BreathingExercise? = null,
-    val voiceExercise: VoiceExercise? = null
+    val difficulty: Difficulty,
+    val hints: List<String> = emptyList()
 )
+```
 
-enum class WarmupCategoryType {
-    ARTICULATION, BREATHING, VOICE
-}
+---
 
-private fun getQuickWarmupExercises(): List<QuickWarmupExercise> {
-    return listOf(
-        // 1. Артикуляція: Усмішка-хоботок
-        QuickWarmupExercise(
-            id = 1,
-            title = "Усмішка-хоботок",
-            category = WarmupCategoryType.ARTICULATION,
-            durationSeconds = 30,
-            instruction = "Широко посміхнись, показуючи зуби. Потім витягни губи вперед трубочкою. Чергуй ці положення.",
-            articulationExercise = ArticulationExercise(
-                id = 1,
-                title = "Усмішка-хоботок",
-                durationSeconds = 30,
-                instruction = "Широко посміхнись, показуючи зуби. Потім витягни губи вперед трубочкою. Чергуй ці положення."
-            )
-        ),
-        
-        // 2. Артикуляція: Язик вліво-вправо
-        QuickWarmupExercise(
-            id = 2,
-            title = "Язик вліво-вправо",
-            category = WarmupCategoryType.ARTICULATION,
-            durationSeconds = 20,
-            instruction = "Рухай язиком вліво-вправо, торкаючись куточків губ. Виконуй повільно та ритмічно.",
-            articulationExercise = ArticulationExercise(
-                id = 2,
-                title = "Язик вліво-вправо",
-                durationSeconds = 20,
-                instruction = "Рухай язиком вліво-вправо, торкаючись куточків губ. Виконуй повільно та ритмічно."
-            )
-        ),
-        
-        // 3. Дихання: Діафрагмальне
-        QuickWarmupExercise(
-            id = 3,
-            title = "Діафрагмальне дихання",
-            category = WarmupCategoryType.BREATHING,
-            durationSeconds = 60,
-            instruction = "Глибоке дихання животом. Покладіть руку на живіт і відчуйте як він піднімається на вдиху.",
-            breathingExercise = BreathingExercise(
-                id = 1,
-                title = "Діафрагмальне дихання",
-                durationSeconds = 60,
-                pattern = BreathingPattern(
-                    inhaleSeconds = 4,
-                    exhaleSeconds = 4
-                ),
-                description = "Глибоке дихання животом. Покладіть руку на живіт і відчуйте як він піднімається на вдиху."
-            )
-        ),
-        
-        // 4. Голос: Гумкання
-        QuickWarmupExercise(
-            id = 4,
-            title = "Гумкання",
-            category = WarmupCategoryType.VOICE,
-            durationSeconds = 30,
-            instruction = "Закрийте рот і гучно \"ммм\" на комфортній для вас ноті. Відчуйте вібрацію в носі та губах.",
-            voiceExercise = VoiceExercise(
-                id = 1,
-                title = "Гумкання",
-                durationSeconds = 30,
-                instruction = "Закрийте рот і гучно \"ммм\" на комфортній для вас ноті. Відчуйте вібрацію в носі та губах.",
-                audioExampleUrl = null
-            )
-        )
-    )
+### 2. ImprovisationState.kt
+
+```kotlin
+package com.aivoicepower.ui.screens.improvisation
+
+data class ImprovisationState(
+    val completedToday: Int = 0,
+    val dailyLimit: Int = 3,
+    val isPremium: Boolean = false,
+    val isLoading: Boolean = true,
+    val error: String? = null
+)
+```
+
+### 3. ImprovisationEvent.kt
+
+```kotlin
+package com.aivoicepower.ui.screens.improvisation
+
+sealed class ImprovisationEvent {
+    object RandomTopicClicked : ImprovisationEvent()
+    object StorytellingClicked : ImprovisationEvent()
+    object DailyChallengeClicked : ImprovisationEvent()
+    object DebateClicked : ImprovisationEvent()
+    object SalesPitchClicked : ImprovisationEvent()
 }
 ```
 
-### 2. QuickWarmupEvent.kt
+### 4. ImprovisationViewModel.kt
 
 ```kotlin
-package com.aivoicepower.ui.screens.warmup
-
-sealed class QuickWarmupEvent {
-    object StartQuickWarmup : QuickWarmupEvent()
-    object CurrentExerciseCompleted : QuickWarmupEvent()
-    data class UpdateElapsedTime(val seconds: Int) : QuickWarmupEvent()
-    object FinishQuickWarmup : QuickWarmupEvent()
-    object DismissCompletionDialog : QuickWarmupEvent()
-}
-```
-
-### 3. QuickWarmupViewModel.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.warmup
+package com.aivoicepower.ui.screens.improvisation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aivoicepower.data.local.database.dao.WarmupCompletionDao
-import com.aivoicepower.data.local.database.entity.WarmupCompletionEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
+import javax.inject.Inject
+
+@HiltViewModel
+class ImprovisationViewModel @Inject constructor(
+    private val userPreferencesDataStore: UserPreferencesDataStore
+) : ViewModel() {
+    
+    private val _state = MutableStateFlow(ImprovisationState())
+    val state: StateFlow<ImprovisationState> = _state.asStateFlow()
+    
+    init {
+        loadImprovisationStats()
+    }
+    
+    fun onEvent(event: ImprovisationEvent) {
+        when (event) {
+            ImprovisationEvent.RandomTopicClicked -> {
+                // Navigation handled in Screen
+            }
+            ImprovisationEvent.StorytellingClicked -> {
+                // Phase 5.2
+            }
+            ImprovisationEvent.DailyChallengeClicked -> {
+                // Phase 5.2
+            }
+            ImprovisationEvent.DebateClicked -> {
+                // Phase 5.3
+            }
+            ImprovisationEvent.SalesPitchClicked -> {
+                // Phase 5.3
+            }
+        }
+    }
+    
+    private fun loadImprovisationStats() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            
+            try {
+                userPreferencesDataStore.userPreferencesFlow
+                    .collect { prefs ->
+                        _state.update {
+                            it.copy(
+                                completedToday = prefs.freeImprovisationsToday,
+                                dailyLimit = 3, // FreeTierLimits.FREE_IMPROVISATIONS_PER_DAY
+                                isPremium = prefs.isPremium,
+                                isLoading = false,
+                                error = null
+                            )
+                        }
+                    }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Не вдалось завантажити дані"
+                    )
+                }
+            }
+        }
+    }
+    
+    fun canStartImprovisation(): Boolean {
+        val state = _state.value
+        return state.isPremium || state.completedToday < state.dailyLimit
+    }
+}
+```
+
+### 5. ImprovisationScreen.kt
+
+```kotlin
+package com.aivoicepower.ui.screens.improvisation
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.aivoicepower.ui.screens.improvisation.components.ImprovisationModeCard
+
+@Composable
+fun ImprovisationScreen(
+    viewModel: ImprovisationViewModel = hiltViewModel(),
+    onNavigateToRandomTopic: () -> Unit,
+    onNavigateToStorytelling: () -> Unit,
+    onNavigateToDebate: () -> Unit,
+    onNavigateToSales: () -> Unit,
+    onNavigateToChallenge: () -> Unit,
+    onNavigateToPremium: () -> Unit
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Header
+        Text(
+            text = "🎭 Імпровізація",
+            style = MaterialTheme.typography.headlineMedium
+        )
+        
+        Text(
+            text = "Тренуй спонтанне мовлення",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        
+        // Stats card (for free users)
+        if (!state.isPremium) {
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "📊 Сьогодні:",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = "${state.completedToday}/${state.dailyLimit}",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        }
+        
+        // Mode cards
+        ImprovisationModeCard(
+            emoji = "🎲",
+            title = "Випадкова тема",
+            description = "Готовий говорити про що завгодно?",
+            isLocked = false,
+            isComingSoon = false,
+            onClick = {
+                if (viewModel.canStartImprovisation()) {
+                    viewModel.onEvent(ImprovisationEvent.RandomTopicClicked)
+                    onNavigateToRandomTopic()
+                } else {
+                    onNavigateToPremium()
+                }
+            }
+        )
+        
+        ImprovisationModeCard(
+            emoji = "📖",
+            title = "Розкажи історію",
+            description = "Створи захоплюючу розповідь",
+            isLocked = !state.isPremium,
+            isComingSoon = true,
+            comingSoonText = "Phase 5.2",
+            onClick = {
+                // Phase 5.2
+            }
+        )
+        
+        ImprovisationModeCard(
+            emoji = "🏆",
+            title = "Щоденний челендж",
+            description = "Унікальне завдання кожен день",
+            isLocked = !state.isPremium,
+            isComingSoon = true,
+            comingSoonText = "Phase 5.2",
+            onClick = {
+                // Phase 5.2
+            }
+        )
+        
+        ImprovisationModeCard(
+            emoji = "⚔️",
+            title = "Дебати з AI",
+            description = "Переконуй штучний інтелект",
+            isLocked = !state.isPremium,
+            isComingSoon = true,
+            comingSoonText = "Phase 5.3",
+            onClick = {
+                // Phase 5.3
+            }
+        )
+        
+        ImprovisationModeCard(
+            emoji = "💼",
+            title = "Продай товар",
+            description = "Презентуй продукт AI-клієнту",
+            isLocked = !state.isPremium,
+            isComingSoon = true,
+            comingSoonText = "Phase 5.3",
+            onClick = {
+                // Phase 5.3
+            }
+        )
+        
+        // Premium prompt (if needed)
+        if (!state.isPremium && state.completedToday >= state.dailyLimit) {
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "⭐ Ліміт вичерпано",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = "Отримай Premium для необмеженої практики",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Button(
+                        onClick = onNavigateToPremium,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Дізнатись більше")
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+### 6. components/ImprovisationModeCard.kt
+
+```kotlin
+package com.aivoicepower.ui.screens.improvisation.components
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+
+@Composable
+fun ImprovisationModeCard(
+    emoji: String,
+    title: String,
+    description: String,
+    isLocked: Boolean,
+    isComingSoon: Boolean = false,
+    comingSoonText: String? = null,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        enabled = !isComingSoon,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Emoji
+            Text(
+                text = emoji,
+                style = MaterialTheme.typography.displaySmall
+            )
+            
+            // Content
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    
+                    if (isLocked) {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = "Premium",
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    
+                    if (isComingSoon && comingSoonText != null) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            shape = MaterialTheme.shapes.small
+                        ) {
+                            Text(
+                                text = comingSoonText,
+                                style = MaterialTheme.typography.labelSmall,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                }
+                
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            
+            // Arrow
+            if (!isComingSoon) {
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowRight,
+                    contentDescription = null
+                )
+            }
+        }
+    }
+}
+```
+
+---
+
+## Random Topic Screen
+
+### 7. RandomTopicState.kt
+
+```kotlin
+package com.aivoicepower.ui.screens.improvisation
+
+import com.aivoicepower.domain.model.content.ImprovisationTopic
+
+data class RandomTopicState(
+    val currentTopic: ImprovisationTopic? = null,
+    val preparationTimeLeft: Int = 15, // seconds
+    val isPreparationPhase: Boolean = true,
+    val isRecording: Boolean = false,
+    val recordingDurationMs: Long = 0,
+    val recordingPath: String? = null,
+    val recordingId: String? = null,
+    val isLoading: Boolean = false,
+    val error: String? = null
+)
+```
+
+### 8. RandomTopicEvent.kt
+
+```kotlin
+package com.aivoicepower.ui.screens.improvisation
+
+sealed class RandomTopicEvent {
+    object GenerateNewTopic : RandomTopicEvent()
+    object StartPreparation : RandomTopicEvent()
+    object StartRecording : RandomTopicEvent()
+    object StopRecording : RandomTopicEvent()
+    object CompleteTask : RandomTopicEvent()
+}
+```
+
+### 9. RandomTopicViewModel.kt
+
+```kotlin
+package com.aivoicepower.ui.screens.improvisation
+
+import android.content.Context
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.aivoicepower.data.content.ImprovisationTopicsProvider
+import com.aivoicepower.data.local.database.dao.RecordingDao
+import com.aivoicepower.data.local.database.entity.RecordingEntity
+import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
+import com.aivoicepower.utils.audio.AudioRecorderUtil
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class QuickWarmupViewModel @Inject constructor(
-    private val warmupCompletionDao: WarmupCompletionDao,
+class RandomTopicViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val recordingDao: RecordingDao,
     private val userPreferencesDataStore: UserPreferencesDataStore
 ) : ViewModel() {
     
-    private val _state = MutableStateFlow(QuickWarmupState())
-    val state: StateFlow<QuickWarmupState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(RandomTopicState())
+    val state: StateFlow<RandomTopicState> = _state.asStateFlow()
     
-    fun onEvent(event: QuickWarmupEvent) {
+    private val audioRecorder = AudioRecorderUtil(context)
+    
+    init {
+        generateNewTopic()
+    }
+    
+    override fun onCleared() {
+        super.onCleared()
+        audioRecorder.release()
+    }
+    
+    fun onEvent(event: RandomTopicEvent) {
         when (event) {
-            QuickWarmupEvent.StartQuickWarmup -> {
-                startQuickWarmup()
+            RandomTopicEvent.GenerateNewTopic -> {
+                generateNewTopic()
             }
-            
-            QuickWarmupEvent.CurrentExerciseCompleted -> {
-                markCurrentExerciseCompleted()
+            RandomTopicEvent.StartPreparation -> {
+                startPreparationTimer()
             }
-            
-            is QuickWarmupEvent.UpdateElapsedTime -> {
-                _state.update {
-                    it.copy(totalElapsedSeconds = event.seconds)
-                }
+            RandomTopicEvent.StartRecording -> {
+                startRecording()
             }
-            
-            QuickWarmupEvent.FinishQuickWarmup -> {
-                finishQuickWarmup()
+            RandomTopicEvent.StopRecording -> {
+                stopRecording()
             }
-            
-            QuickWarmupEvent.DismissCompletionDialog -> {
-                _state.update {
-                    it.copy(isCompleted = false)
-                }
+            RandomTopicEvent.CompleteTask -> {
+                completeTask()
             }
         }
     }
     
-    private fun startQuickWarmup() {
+    private fun generateNewTopic() {
+        val allTopics = ImprovisationTopicsProvider.getAllTopics()
+        val randomTopic = allTopics.random()
+        
         _state.update {
             it.copy(
-                currentExerciseIndex = 0,
-                completedExercises = emptySet(),
-                totalElapsedSeconds = 0,
-                isExerciseDialogOpen = true
+                currentTopic = randomTopic,
+                preparationTimeLeft = 15,
+                isPreparationPhase = true,
+                isRecording = false,
+                recordingPath = null,
+                recordingId = null
             )
         }
     }
     
-    private fun markCurrentExerciseCompleted() {
-        val currentIndex = _state.value.currentExerciseIndex
-        val currentExerciseId = _state.value.exercises.getOrNull(currentIndex)?.id ?: return
-        
-        _state.update {
-            it.copy(
-                completedExercises = it.completedExercises + currentExerciseId
-            )
-        }
-        
-        // Переходимо до наступної вправи
-        val nextIndex = currentIndex + 1
-        
-        if (nextIndex >= _state.value.exercises.size) {
-            // Всі вправи виконано
-            completeQuickWarmup()
-        } else {
-            _state.update {
-                it.copy(currentExerciseIndex = nextIndex)
-            }
-        }
-    }
-    
-    private fun completeQuickWarmup() {
-        _state.update {
-            it.copy(
-                isExerciseDialogOpen = false,
-                isCompleted = true
-            )
-        }
-        
-        saveProgress()
-    }
-    
-    private fun finishQuickWarmup() {
-        saveProgress()
-        // Navigation handled in Screen
-    }
-    
-    private fun saveProgress() {
+    private fun startPreparationTimer() {
         viewModelScope.launch {
-            val today = getCurrentDateString()
-            val totalExercises = _state.value.exercises.size
+            for (i in 15 downTo 0) {
+                _state.update { it.copy(preparationTimeLeft = i) }
+                delay(1000)
+            }
             
-            val entity = WarmupCompletionEntity(
-                id = "${today}_quick",
-                date = today,
-                category = "quick",
-                completedAt = System.currentTimeMillis(),
-                exercisesCompleted = totalExercises,
-                totalExercises = totalExercises
-            )
-            
-            warmupCompletionDao.insertOrUpdate(entity)
-            
-            // Оновлюємо DataStore
-            val estimatedMinutes = (_state.value.totalElapsedSeconds / 60).coerceAtLeast(1)
-            userPreferencesDataStore.updateSessionStats(
-                date = today,
-                minutes = estimatedMinutes,
-                exercises = 1
-            )
+            // Timer finished, user can now start recording
+            _state.update { it.copy(isPreparationPhase = false) }
         }
     }
     
-    private fun getCurrentDateString(): String {
-        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        return sdf.format(Date())
+    private fun startRecording() {
+        viewModelScope.launch {
+            try {
+                val outputFile = context.filesDir.resolve("recordings/${UUID.randomUUID()}.m4a")
+                outputFile.parentFile?.mkdirs()
+                
+                audioRecorder.startRecording(outputFile.absolutePath)
+                
+                _state.update {
+                    it.copy(
+                        isRecording = true,
+                        recordingPath = outputFile.absolutePath,
+                        isPreparationPhase = false
+                    )
+                }
+                
+                // Track recording duration
+                val startTime = System.currentTimeMillis()
+                while (_state.value.isRecording) {
+                    val duration = System.currentTimeMillis() - startTime
+                    _state.update { it.copy(recordingDurationMs = duration) }
+                    delay(100)
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        error = "Помилка запису: ${e.message}",
+                        isRecording = false
+                    )
+                }
+            }
+        }
+    }
+    
+    private fun stopRecording() {
+        viewModelScope.launch {
+            try {
+                val result = audioRecorder.stopRecording()
+                
+                _state.update {
+                    it.copy(
+                        isRecording = false,
+                        recordingPath = result?.filePath,
+                        recordingDurationMs = result?.durationMs ?: it.recordingDurationMs
+                    )
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        error = "Помилка зупинки запису: ${e.message}",
+                        isRecording = false
+                    )
+                }
+            }
+        }
+    }
+    
+    private fun completeTask() {
+        viewModelScope.launch {
+            try {
+                val recordingPath = _state.value.recordingPath
+                val topic = _state.value.currentTopic
+                
+                if (recordingPath != null && topic != null) {
+                    // Save recording to database
+                    val recordingId = UUID.randomUUID().toString()
+                    val recordingEntity = RecordingEntity(
+                        id = recordingId,
+                        filePath = recordingPath,
+                        durationMs = _state.value.recordingDurationMs,
+                        type = "improvisation",
+                        contextId = "random_topic",
+                        exerciseId = null,
+                        isAnalyzed = false
+                    )
+                    recordingDao.insert(recordingEntity)
+                    
+                    // Increment free improvisation counter
+                    userPreferencesDataStore.incrementFreeImprovisations()
+                    
+                    // Store recordingId for navigation
+                    _state.update { it.copy(recordingId = recordingId) }
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(error = "Помилка збереження: ${e.message}")
+                }
+            }
+        }
     }
 }
 ```
 
-### 4. QuickWarmupScreen.kt
+### 10. RandomTopicScreen.kt
 
 ```kotlin
-package com.aivoicepower.ui.screens.warmup
+package com.aivoicepower.ui.screens.improvisation
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -387,25 +787,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.aivoicepower.ui.screens.warmup.components.*
+import com.aivoicepower.ui.screens.improvisation.components.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun QuickWarmupScreen(
-    viewModel: QuickWarmupViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit
+fun RandomTopicScreen(
+    viewModel: RandomTopicViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit,
+    onNavigateToResults: (recordingId: String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     
-    LaunchedEffect(Unit) {
-        // Auto-start first exercise
-        viewModel.onEvent(QuickWarmupEvent.StartQuickWarmup)
+    // Auto-start preparation timer when topic is loaded
+    LaunchedEffect(state.currentTopic) {
+        if (state.currentTopic != null && state.isPreparationPhase && state.preparationTimeLeft == 15) {
+            viewModel.onEvent(RandomTopicEvent.StartPreparation)
+        }
     }
     
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Швидка розминка (5 хв)") },
+                title = { Text("🎲 Випадкова тема") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
@@ -418,222 +821,204 @@ fun QuickWarmupScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Progress header
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                tonalElevation = 2.dp
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "Вправа ${state.currentExerciseIndex + 1} з ${state.exercises.size}",
-                        style = MaterialTheme.typography.titleMedium
-                    )
+            when {
+                state.isPreparationPhase -> {
+                    // Preparation phase
+                    state.currentTopic?.let { topic ->
+                        TopicDisplayCard(topic = topic)
+                        
+                        PreparationTimerCard(
+                            timeLeft = state.preparationTimeLeft,
+                            onGenerateNew = {
+                                viewModel.onEvent(RandomTopicEvent.GenerateNewTopic)
+                            }
+                        )
+                    }
                     
-                    LinearProgressIndicator(
-                        progress = { state.completedExercises.size.toFloat() / state.exercises.size },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(8.dp)
-                    )
+                    if (state.preparationTimeLeft == 0) {
+                        Button(
+                            onClick = {
+                                viewModel.onEvent(RandomTopicEvent.StartRecording)
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("🎤 Почати запис")
+                        }
+                    }
                 }
-            }
-            
-            // Exercise list
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                state.exercises.forEachIndexed { index, exercise ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = if (index == state.currentExerciseIndex) {
-                            CardDefaults.cardColors(
+                
+                state.isRecording -> {
+                    // Recording phase
+                    state.currentTopic?.let { topic ->
+                        RandomTopicRecordingCard(
+                            topic = topic,
+                            durationMs = state.recordingDurationMs,
+                            onStop = {
+                                viewModel.onEvent(RandomTopicEvent.StopRecording)
+                            }
+                        )
+                    }
+                }
+                
+                else -> {
+                    // Recording completed
+                    state.currentTopic?.let { topic ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
                                 containerColor = MaterialTheme.colorScheme.primaryContainer
                             )
-                        } else if (state.completedExercises.contains(exercise.id)) {
-                            CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer
-                            )
-                        } else {
-                            CardDefaults.cardColors()
-                        }
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Icon(
-                                    imageVector = if (state.completedExercises.contains(exercise.id)) {
-                                        Icons.Filled.CheckCircle
-                                    } else if (index == state.currentExerciseIndex) {
-                                        Icons.Filled.CheckCircle // Or a play icon
-                                    } else {
-                                        Icons.Outlined.Circle
-                                    },
-                                    contentDescription = null,
-                                    tint = when {
-                                        state.completedExercises.contains(exercise.id) -> 
-                                            MaterialTheme.colorScheme.primary
-                                        index == state.currentExerciseIndex -> 
-                                            MaterialTheme.colorScheme.primary
-                                        else -> 
-                                            MaterialTheme.colorScheme.onSurfaceVariant
-                                    }
-                                )
-                                
                                 Text(
-                                    text = "${exercise.id}. ${exercise.title}",
-                                    style = MaterialTheme.typography.bodyLarge
+                                    text = "✓ Запис завершено",
+                                    style = MaterialTheme.typography.titleLarge
+                                )
+                                Text(
+                                    text = "Тривалість: ${formatDuration(state.recordingDurationMs)}",
+                                    style = MaterialTheme.typography.bodyMedium
                                 )
                             }
-                            
-                            Text(
-                                text = "${exercise.durationSeconds} сек",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                        }
+                        
+                        Button(
+                            onClick = {
+                                viewModel.onEvent(RandomTopicEvent.CompleteTask)
+                                // Wait for recordingId to be set
+                                state.recordingId?.let { recordingId ->
+                                    onNavigateToResults(recordingId)
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = state.recordingId != null || state.recordingPath != null
+                        ) {
+                            Text("Переглянути результати")
+                        }
+                        
+                        OutlinedButton(
+                            onClick = {
+                                viewModel.onEvent(RandomTopicEvent.GenerateNewTopic)
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("🔄 Нова тема")
                         }
                     }
                 }
             }
-        }
-        
-        // Exercise dialogs (reuse from Phase 2.2-2.4)
-        if (state.isExerciseDialogOpen) {
-            val currentExercise = state.exercises.getOrNull(state.currentExerciseIndex)
             
-            if (currentExercise != null) {
-                when (currentExercise.category) {
-                    WarmupCategoryType.ARTICULATION -> {
-                        currentExercise.articulationExercise?.let { exercise ->
-                            ArticulationExerciseDialog(
-                                exercise = exercise,
-                                timerSeconds = exercise.durationSeconds,
-                                isTimerRunning = false,
-                                onDismiss = { /* Не дозволяємо закривати */ },
-                                onStartTimer = { /* Handle in local state */ },
-                                onPauseTimer = { /* Handle in local state */ },
-                                onMarkCompleted = {
-                                    viewModel.onEvent(QuickWarmupEvent.CurrentExerciseCompleted)
-                                },
-                                onSkip = {
-                                    viewModel.onEvent(QuickWarmupEvent.CurrentExerciseCompleted)
-                                }
-                            )
-                        }
-                    }
-                    
-                    WarmupCategoryType.BREATHING -> {
-                        currentExercise.breathingExercise?.let { exercise ->
-                            BreathingExerciseDialog(
-                                exercise = exercise,
-                                elapsedSeconds = 0,
-                                totalSeconds = exercise.durationSeconds,
-                                currentPhase = BreathingPhase.INHALE,
-                                phaseProgress = 0f,
-                                isRunning = false,
-                                onDismiss = { /* Не дозволяємо закривати */ },
-                                onStart = { /* Handle in local state */ },
-                                onPause = { /* Handle in local state */ },
-                                onMarkCompleted = {
-                                    viewModel.onEvent(QuickWarmupEvent.CurrentExerciseCompleted)
-                                },
-                                onSkip = {
-                                    viewModel.onEvent(QuickWarmupEvent.CurrentExerciseCompleted)
-                                }
-                            )
-                        }
-                    }
-                    
-                    WarmupCategoryType.VOICE -> {
-                        currentExercise.voiceExercise?.let { exercise ->
-                            VoiceExerciseDialog(
-                                exercise = exercise,
-                                timerSeconds = exercise.durationSeconds,
-                                isTimerRunning = false,
-                                isAudioPlaying = false,
-                                onDismiss = { /* Не дозволяємо закривати */ },
-                                onStartTimer = { /* Handle in local state */ },
-                                onPauseTimer = { /* Handle in local state */ },
-                                onPlayAudio = { /* Handle in local state */ },
-                                onStopAudio = { /* Handle in local state */ },
-                                onMarkCompleted = {
-                                    viewModel.onEvent(QuickWarmupEvent.CurrentExerciseCompleted)
-                                },
-                                onSkip = {
-                                    viewModel.onEvent(QuickWarmupEvent.CurrentExerciseCompleted)
-                                }
-                            )
-                        }
-                    }
+            // Error message
+            state.error?.let { error ->
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Text(
+                        text = error,
+                        modifier = Modifier.padding(16.dp),
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
                 }
             }
-        }
-        
-        // Completion dialog
-        if (state.isCompleted) {
-            CompletionDialog(
-                totalExercises = state.exercises.size,
-                elapsedSeconds = state.totalElapsedSeconds,
-                onDismiss = {
-                    viewModel.onEvent(QuickWarmupEvent.DismissCompletionDialog)
-                    onNavigateBack()
-                }
-            )
         }
     }
 }
 
-@Composable
-private fun CompletionDialog(
-    totalExercises: Int,
-    elapsedSeconds: Int,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        icon = {
-            Text("🎉", style = MaterialTheme.typography.displayMedium)
-        },
-        title = {
-            Text("Розминка завершена!")
-        },
-        text = {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "Ви виконали $totalExercises вправи",
-                    style = MaterialTheme.typography.bodyLarge
+private fun formatDuration(durationMs: Long): String {
+    val seconds = (durationMs / 1000).toInt()
+    val minutes = seconds / 60
+    val remainingSeconds = seconds % 60
+    return String.format("%02d:%02d", minutes, remainingSeconds)
+}
+```
+
+### 11-14. Components (TopicDisplayCard, PreparationTimerCard, RandomTopicRecordingCard)
+
+[Components code same as in previous version - інклудив повністю]
+
+---
+
+### 15. Content Provider
+
+#### data/content/ImprovisationTopicsProvider.kt
+
+```kotlin
+package com.aivoicepower.data.content
+
+import com.aivoicepower.domain.model.content.ImprovisationTopic
+import com.aivoicepower.domain.model.course.Difficulty
+
+object ImprovisationTopicsProvider {
+    
+    fun getAllTopics(): List<ImprovisationTopic> {
+        return listOf(
+            // BEGINNER (15 topics)
+            ImprovisationTopic(
+                id = "topic_1",
+                title = "Чому подорожі змінюють людину",
+                difficulty = Difficulty.BEGINNER,
+                hints = listOf(
+                    "Власний досвід подорожей",
+                    "Нові перспективи та світогляд",
+                    "Культурний обмін"
                 )
-                Text(
-                    text = "за %d хв %02d сек".format(
-                        elapsedSeconds / 60,
-                        elapsedSeconds % 60
-                    ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+            ),
+            ImprovisationTopic(
+                id = "topic_2",
+                title = "Як технології впливають на наше життя",
+                difficulty = Difficulty.BEGINNER,
+                hints = listOf(
+                    "Позитивні зміни",
+                    "Виклики та проблеми",
+                    "Майбутнє технологій"
                 )
-            }
+            ),
+            // ... more 20+ topics
+        )
+    }
+    
+    fun getTopicById(id: String): ImprovisationTopic? {
+        return getAllTopics().find { it.id == id }
+    }
+}
+```
+
+---
+
+## Оновити NavGraph.kt
+
+```kotlin
+// Improvisation hub
+composable(NavRoutes.Improvisation.route) {
+    ImprovisationScreen(
+        onNavigateToRandomTopic = {
+            navController.navigate(NavRoutes.RandomTopic.route)
         },
-        confirmButton = {
-            Button(onClick = onDismiss) {
-                Text("Готово")
-            }
+        onNavigateToStorytelling = {},
+        onNavigateToDebate = {},
+        onNavigateToSales = {},
+        onNavigateToChallenge = {},
+        onNavigateToPremium = {
+            navController.navigate(NavRoutes.Premium.route)
+        }
+    )
+}
+
+// Random Topic
+composable(NavRoutes.RandomTopic.route) {
+    RandomTopicScreen(
+        onNavigateBack = { navController.popBackStack() },
+        onNavigateToResults = { recordingId ->
+            navController.navigate(NavRoutes.Results.createRoute(recordingId))
         }
     )
 }
@@ -643,72 +1028,21 @@ private fun CompletionDialog(
 
 ## Перевірка
 
-### 1. Компіляція
-```bash
-./gradlew assembleDebug
-```
-
-### 2. Testing Flow
-
-**Тест 1: Auto-start**
-- [ ] При відкритті екрану автоматично стартує перша вправа
-- [ ] Progress bar показує 0/4
-
-**Тест 2: Sequential Flow**
-- [ ] Після завершення вправи 1 → автоматично відкривається вправа 2
-- [ ] Progress bar оновлюється (1/4 → 2/4 → 3/4 → 4/4)
-- [ ] Список вправ показує поточну (підсвічена)
-
-**Тест 3: Exercise Dialogs**
-- [ ] Вправи відкриваються в правильних діалогах (Articulation/Breathing/Voice)
-- [ ] Таймери працюють
-- [ ] "Готово" → наступна вправа
-- [ ] "Пропустити" → наступна вправа
-
-**Тест 4: Completion**
-- [ ] Після 4/4 → діалог "Розминка завершена"
-- [ ] Показується загальний час
-- [ ] "Готово" → повернення назад
-- [ ] Дані зберігаються в Room (category = "quick")
-
-**Тест 5: Progress Tracking**
-- [ ] Після завершення оновлюється WarmupCompletionDao
-- [ ] DataStore оновлюється (todayMinutes)
+### Testing Flow
+- [ ] Hub показує 5 mode cards
+- [ ] Random Topic доступний
+- [ ] Timer працює 15 → 0
+- [ ] Recording працює
+- [ ] Збереження в DB
+- [ ] Free tier limits
 
 ---
 
 ## Очікуваний результат
 
-✅ QuickWarmupScreen зі sequential flow створено
-✅ 4 вправи виконуються одна за одною
-✅ Reuse components з Phase 2.2-2.4
-✅ Auto-start першої вправи
-✅ Progress tracking (0/4 → 4/4)
-✅ Completion dialog
-✅ Room Database integration (category = "quick")
-✅ DataStore integration
+✅ Improvisation Hub + Random Topic створено
+✅ 20+ тем
+✅ Free tier limits
+✅ Navigation готова
 
----
-
-## ✨ Phase 2 Завершена!
-
-**Phase 2 — Warmup** тепер повністю реалізована:
-- ✅ 2.1 — Warmup Main Screen (hub)
-- ✅ 2.2 — Articulation Screen (12 вправ)
-- ✅ 2.3 — Breathing Screen (8 вправ + Canvas animations)
-- ✅ 2.4 — Voice Warmup Screen (6 вправ)
-- ✅ 2.5 — Quick Warmup Screen (4 вправи sequential)
-
-**Загальний час розробки Phase 2:** ~8-10 годин
-
----
-
-## Наступний крок
-
-**Phase 3: Home Screen** — головний екран з персоналізованим планом.
-
-Згідно з PHASE_STRUCTURE_GUIDE.md — Phase 3 буде **цільною фазою** (не розбивати на підфази).
-
----
-
-**Час на Phase 2.5:** ~1 година
+**Час:** ~2-3 години

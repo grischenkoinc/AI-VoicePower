@@ -22,6 +22,8 @@ import androidx.navigation.navArgument
 import com.aivoicepower.ui.screens.home.HomeScreen
 import com.aivoicepower.ui.screens.lesson.LessonScreen
 import com.aivoicepower.ui.screens.results.ResultsScreen
+import com.aivoicepower.ui.screens.improvisation.ImprovisationScreen
+import com.aivoicepower.ui.screens.improvisation.RandomTopicScreen
 import com.aivoicepower.ui.screens.warmup.ArticulationScreen
 import com.aivoicepower.ui.screens.warmup.BreathingScreen
 import com.aivoicepower.ui.screens.warmup.QuickWarmupScreen
@@ -125,6 +127,41 @@ fun NavGraph(
         composable(route = Screen.WarmupQuick.route) {
             QuickWarmupScreen(
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Phase 5.1 - Improvisation Hub
+        composable(route = Screen.Improvisation.route) {
+            ImprovisationScreen(
+                onNavigateToRandomTopic = {
+                    navController.navigate(Screen.RandomTopic.route)
+                },
+                onNavigateToStorytelling = {
+                    // Phase 5.2
+                },
+                onNavigateToDebate = {
+                    // Phase 5.3
+                },
+                onNavigateToSales = {
+                    // Phase 5.3
+                },
+                onNavigateToChallenge = {
+                    // Phase 5.2
+                },
+                onNavigateToPremium = {
+                    // TODO: Navigate to Premium screen when implemented
+                }
+            )
+        }
+
+        // Phase 5.1 - Random Topic
+        composable(route = Screen.RandomTopic.route) {
+            RandomTopicScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToResults = { recordingId ->
+                    // TODO: Navigate to Results screen when ready for improvisation
+                    navController.popBackStack()
+                }
             )
         }
     }

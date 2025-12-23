@@ -22,7 +22,8 @@ data class UserPreferences(
     val hasCompletedDiagnostic: Boolean = false,
     val userName: String? = null,
     val userGoal: String? = null,
-    val dailyGoalMinutes: Int = 15
+    val dailyGoalMinutes: Int = 15,
+    val freeImprovisationsToday: Int = 0
 )
 
 @Singleton
@@ -39,6 +40,7 @@ class UserPreferencesDataStore @Inject constructor(
         val USER_GOAL = stringPreferencesKey("user_goal")
         val DAILY_GOAL_MINUTES = intPreferencesKey("daily_goal_minutes")
         val LAST_ACTIVITY_DATE = stringPreferencesKey("last_activity_date")
+        val FREE_IMPROVISATIONS_TODAY = intPreferencesKey("free_improvisations_today")
     }
 
     val userPreferencesFlow: Flow<UserPreferences> = context.dataStore.data
@@ -58,7 +60,8 @@ class UserPreferencesDataStore @Inject constructor(
                 hasCompletedDiagnostic = preferences[PreferencesKeys.HAS_COMPLETED_DIAGNOSTIC] ?: false,
                 userName = preferences[PreferencesKeys.USER_NAME],
                 userGoal = preferences[PreferencesKeys.USER_GOAL],
-                dailyGoalMinutes = preferences[PreferencesKeys.DAILY_GOAL_MINUTES] ?: 15
+                dailyGoalMinutes = preferences[PreferencesKeys.DAILY_GOAL_MINUTES] ?: 15,
+                freeImprovisationsToday = preferences[PreferencesKeys.FREE_IMPROVISATIONS_TODAY] ?: 0
             )
         }
 
@@ -120,6 +123,19 @@ class UserPreferencesDataStore @Inject constructor(
     suspend fun resetDailyProgress() {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.TODAY_MINUTES] = 0
+        }
+    }
+
+    suspend fun incrementFreeImprovisations() {
+        context.dataStore.edit { preferences ->
+            val current = preferences[PreferencesKeys.FREE_IMPROVISATIONS_TODAY] ?: 0
+            preferences[PreferencesKeys.FREE_IMPROVISATIONS_TODAY] = current + 1
+        }
+    }
+
+    suspend fun resetFreeImprovisations() {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.FREE_IMPROVISATIONS_TODAY] = 0
         }
     }
 }
