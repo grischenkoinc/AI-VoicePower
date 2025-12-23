@@ -1,4 +1,4 @@
-# Промпт для Claude Code — Phase 2.2: Articulation Screen
+# Промпт для Claude Code — Phase 2.3: Breathing Screen
 
 ## Контекст
 
@@ -6,51 +6,50 @@
 - ✅ Phase 0.1-0.6 — Infrastructure  
 - ✅ Phase 1.1-1.4 — Onboarding + Diagnostic
 - ✅ Phase 2.1 — Warmup Main Screen
+- ✅ Phase 2.2 — Articulation Screen
 
-Зараз **Phase 2.2 — Articulation Screen** — артикуляційна гімнастика (12 вправ).
+Зараз **Phase 2.3 — Breathing Screen** — дихальні вправи з **Canvas animations**.
 
-**Згідно з PHASE_STRUCTURE_GUIDE.md**: СЕРЕДНЯ складність (UI + timer + checklist).
+**Згідно з PHASE_STRUCTURE_GUIDE.md**: ВИСОКА складність (Canvas animations, haptic feedback).
 
-**Специфікація:** `SPECIFICATION.md`, секція 4.3.4 + 5.4 (Warmup Exercise).
+**Специфікація:** `SPECIFICATION.md`, секція 4.3.4 + 5.4 (Warmup Exercise, Breathing).
 
-**Складність:** 🟡 СЕРЕДНЯ  
-**Час:** ⏱️ 2 години
+**Складність:** 🔴 ВИСОКА  
+**Час:** ⏱️ 3-4 години
 
 ---
 
 ## Ключова ідея
 
-⚠️ **БЕЗ запису аудіо!** Артикуляція — це фізичні вправи (як розтяжка).
+⚠️ **БЕЗ запису аудіо!** Дихання — це фізична вправа.
 
 **Механіка:**
-1. Показати список 12 вправ
-2. Клік на вправу → діалог з інструкцією + таймер
-3. Користувач робить вправу
-4. Позначає як виконано ✅
-5. Прогрес зберігається в Room (WarmupCompletionDao)
+1. Показати список 8 дихальних вправ
+2. Клік на вправу → повноекранний діалог з **анімацією дихання**
+3. Анімація керує ритмом (вдих/видих/затримка)
+4. **Вібрація** на переходах (вдих → видих)
+5. Користувач слідує анімації
+6. Після завершення → позначається як виконано ✅
+7. Прогрес зберігається в Room
 
 ---
 
-## Задача Phase 2.2
+## Задача Phase 2.3
 
-Створити екран з **12 артикуляційними вправами**:
+Створити екран з **8 дихальними вправами**:
 
-| # | Назва | Тривалість | Опис |
-|---|-------|-----------|------|
-| 1 | Усмішка-хоботок | 30 сек | Змінюй положення губ |
-| 2 | Язик вліво-вправо | 20 сек | Рухи язиком в сторони |
-| 3 | Язик вгору-вниз | 20 сек | Рухи язиком вверх-вниз |
-| 4 | Коло язиком | 30 сек | Обертання навколо губ |
-| 5 | Клацання язиком | 15 сек | Звук цокання |
-| 6 | Масаж щік | 20 сек | Надувай і розслаблюй |
-| 7 | Губи-трубочка | 20 сек | Витягни губи вперед |
-| 8 | Широкий язик | 15 сек | Плоский язик на нижній губі |
-| 9 | Гострий язик | 15 сек | Напружений вузький язик |
-| 10 | Чашечка | 20 сек | Підняти боки язика |
-| 11 | Гойдалка | 25 сек | Язик то вверх то вниз |
-| 12 | Годинник | 30 сек | Рухи язиком як стрілки |
+| # | Назва | Тривалість | Паттерн дихання |
+|---|-------|-----------|-----------------|
+| 1 | Діафрагмальне дихання | 60 сек | 4 сек вдих, 4 сек видих |
+| 2 | Квадратне дихання | 60 сек | 4-4-4-4 (вдих-затримка-видих-затримка) |
+| 3 | 4-7-8 дихання | 60 сек | 4 сек вдих, 7 сек затримка, 8 сек видих |
+| 4 | Спокійне дихання | 45 сек | 3 сек вдих, 5 сек видих |
+| 5 | Енергійне дихання | 30 сек | 2 сек вдих, 2 сек видих (швидко) |
+| 6 | Глибоке дихання | 60 сек | 6 сек вдих, 6 сек видих |
+| 7 | Розслаблююче дихання | 60 сек | 4 сек вдих, 8 сек видих |
+| 8 | Ритмічне дихання | 45 сек | 3-3-3-3 |
 
-**Загальний час:** ~3 хвилини
+**Загальний час:** ~7 хвилин (якщо виконувати всі)
 
 ---
 
@@ -58,16 +57,21 @@
 
 ```
 ui/screens/warmup/
-├── ArticulationScreen.kt
-├── ArticulationViewModel.kt
-├── ArticulationState.kt
-├── ArticulationEvent.kt
+├── BreathingScreen.kt
+├── BreathingViewModel.kt
+├── BreathingState.kt
+├── BreathingEvent.kt
 └── components/
-    ├── ArticulationExerciseItem.kt (картка вправи)
-    └── ArticulationExerciseDialog.kt (діалог з таймером)
+    ├── BreathingExerciseItem.kt (картка вправи)
+    └── BreathingExerciseDialog.kt (повноекранний з анімацією)
 
-ui/components/timer/ (якщо ще немає з Phase 0.6)
-└── CountdownTimer.kt (reusable timer component)
+ui/components/breathing/ (нові компоненти)
+├── BreathingAnimation.kt (Canvas коло що розширюється/стискається)
+├── BreathingCircle.kt (Canvas implementation)
+└── BreathingPhaseText.kt ("Вдих...", "Видих...", "Затримка...")
+
+utils/
+└── HapticFeedbackUtil.kt (вібрація)
 ```
 
 ---
@@ -75,178 +79,214 @@ ui/components/timer/ (якщо ще немає з Phase 0.6)
 ## UI Design
 
 ```
-Step 1: Exercise List
+Step 1: Exercise List (як в Phase 2.2)
 ┌──────────────────────────────────────────────┐
-│  ← Артикуляційна гімнастика                  │
-│  Виконано: 7/12                              │
+│  ← Дихальні вправи                           │
+│  Виконано: 3/8                               │
 ├──────────────────────────────────────────────┤
-│  ━━━━━━━━━━━━━━○○○○○○○  58%                  │
+│  ━━━━━━━○○○○○○○○○○○○○○  38%                  │
 │                                              │
 │  ┌────────────────────────────────────────┐ │
-│  │ ✅ 1. Усмішка-хоботок        30 сек    │ │
+│  │ ✅ 1. Діафрагмальне дихання   60 сек   │ │
 │  └────────────────────────────────────────┘ │
 │  ┌────────────────────────────────────────┐ │
-│  │ ✅ 2. Язик вліво-вправо      20 сек    │ │
-│  └────────────────────────────────────────┘ │
-│  ┌────────────────────────────────────────┐ │
-│  │ ⏸️ 3. Язик вгору-вниз        20 сек    │ │  ← Активна
-│  └────────────────────────────────────────┘ │
-│  ┌────────────────────────────────────────┐ │
-│  │ ○ 4. Коло язиком             30 сек    │ │
+│  │ ○ 2. Квадратне дихання        60 сек   │ │
 │  └────────────────────────────────────────┘ │
 │  ...                                        │
-│                                              │
-│  [Завершити розминку]                       │
 └──────────────────────────────────────────────┘
 
-Step 2: Exercise Dialog
+Step 2: Breathing Dialog (FULLSCREEN)
 ┌──────────────────────────────────────────────┐
-│  3. Язик вгору-вниз                    [X]   │
+│  Квадратне дихання                     [X]   │
 ├──────────────────────────────────────────────┤
 │                                              │
-│  📝 Інструкція:                              │
-│  Рухай язиком вгору-вниз, торкаючись верхньої│
-│  та нижньої губи. Виконуй повільно та       │
-│  контрольовано.                              │
 │                                              │
-│  ⏱️ Тривалість: 20 секунд                    │
+│              ╭─────────────╮                 │
+│             ╱               ╲                │
+│            │     ВДИХ...     │               │  ← Animated
+│            │                 │               │     Circle
+│            │    00:04 / 60   │               │
+│             ╲               ╱                │
+│              ╰─────────────╯                 │
 │                                              │
-│  ┌────────────────────────────────────────┐ │
-│  │                                        │ │
-│  │              00:15                     │ │
-│  │                                        │ │
-│  │    ━━━━━━━━━━━━━━━○○○○○  75%          │ │
-│  │                                        │ │
-│  │         [⏸️ Пауза]                      │ │
-│  │                                        │ │
-│  └────────────────────────────────────────┘ │
+│                                              │
+│          ━━━━━━━━━━━━━━○○○○○  60%            │
+│                                              │
+│                                              │
+│  Паттерн: 4 сек вдих → 4 сек затримка →     │
+│           4 сек видих → 4 сек затримка       │
+│                                              │
+│              [⏸️ Пауза]                       │
 │                                              │
 │  [Пропустити]          [Готово ✓]           │
 │                                              │
 └──────────────────────────────────────────────┘
+
+Анімація кола:
+- Вдих: коло розширюється (scale 1.0 → 1.5)
+- Затримка: коло статичне
+- Видих: коло стискається (scale 1.5 → 1.0)
+- Затримка: коло статичне
+
+Вібрація:
+- На початку вдиху (короткий пульс)
+- На початку видиху (короткий пульс)
 ```
 
 ---
 
 ## Повний код
 
-### 1. ArticulationState.kt
+### 1. BreathingState.kt
 
 ```kotlin
 package com.aivoicepower.ui.screens.warmup
 
-data class ArticulationState(
-    val exercises: List<ArticulationExercise> = getArticulationExercises(),
-    val completedToday: Set<Int> = emptySet(), // Індекси виконаних вправ
-    val selectedExercise: ArticulationExercise? = null,
+data class BreathingState(
+    val exercises: List<BreathingExercise> = getBreathingExercises(),
+    val completedToday: Set<Int> = emptySet(),
+    val selectedExercise: BreathingExercise? = null,
     val isExerciseDialogOpen: Boolean = false,
-    val timerSeconds: Int = 0,
-    val isTimerRunning: Boolean = false
+    val totalSeconds: Int = 0,
+    val elapsedSeconds: Int = 0,
+    val currentPhase: BreathingPhase = BreathingPhase.INHALE,
+    val phaseProgress: Float = 0f, // 0.0 - 1.0
+    val isRunning: Boolean = false
 )
 
-data class ArticulationExercise(
+data class BreathingExercise(
     val id: Int,
     val title: String,
     val durationSeconds: Int,
-    val instruction: String
+    val pattern: BreathingPattern,
+    val description: String
 )
 
-private fun getArticulationExercises(): List<ArticulationExercise> {
+data class BreathingPattern(
+    val inhaleSeconds: Int,
+    val inhaleHoldSeconds: Int = 0,
+    val exhaleSeconds: Int,
+    val exhaleHoldSeconds: Int = 0
+) {
+    val cycleDurationSeconds: Int
+        get() = inhaleSeconds + inhaleHoldSeconds + exhaleSeconds + exhaleHoldSeconds
+}
+
+enum class BreathingPhase {
+    INHALE,        // Вдих
+    INHALE_HOLD,   // Затримка після вдиху
+    EXHALE,        // Видих
+    EXHALE_HOLD    // Затримка після видиху
+}
+
+private fun getBreathingExercises(): List<BreathingExercise> {
     return listOf(
-        ArticulationExercise(
+        BreathingExercise(
             id = 1,
-            title = "Усмішка-хоботок",
-            durationSeconds = 30,
-            instruction = "Широко посміхнись, показуючи зуби. Потім витягни губи вперед трубочкою. Чергуй ці положення."
+            title = "Діафрагмальне дихання",
+            durationSeconds = 60,
+            pattern = BreathingPattern(
+                inhaleSeconds = 4,
+                exhaleSeconds = 4
+            ),
+            description = "Глибоке дихання животом. Покладіть руку на живіт і відчуйте як він піднімається на вдиху."
         ),
-        ArticulationExercise(
+        BreathingExercise(
             id = 2,
-            title = "Язик вліво-вправо",
-            durationSeconds = 20,
-            instruction = "Рухай язиком вліво-вправо, торкаючись куточків губ. Виконуй повільно та ритмічно."
+            title = "Квадратне дихання",
+            durationSeconds = 60,
+            pattern = BreathingPattern(
+                inhaleSeconds = 4,
+                inhaleHoldSeconds = 4,
+                exhaleSeconds = 4,
+                exhaleHoldSeconds = 4
+            ),
+            description = "Рівні інтервали для кожної фази. Допомагає зосередитися та заспокоїтися."
         ),
-        ArticulationExercise(
+        BreathingExercise(
             id = 3,
-            title = "Язик вгору-вниз",
-            durationSeconds = 20,
-            instruction = "Рухай язиком вгору-вниз, торкаючись верхньої та нижньої губи. Виконуй повільно та контрольовано."
+            title = "4-7-8 дихання",
+            durationSeconds = 60,
+            pattern = BreathingPattern(
+                inhaleSeconds = 4,
+                inhaleHoldSeconds = 7,
+                exhaleSeconds = 8
+            ),
+            description = "Техніка для швидкого заспокоєння. Довгий видих активує парасимпатичну нервову систему."
         ),
-        ArticulationExercise(
+        BreathingExercise(
             id = 4,
-            title = "Коло язиком",
-            durationSeconds = 30,
-            instruction = "Проводь кінчиком язика по зовнішньому боці зубів, роблячи коло. Спочатку за годинниковою, потім проти."
+            title = "Спокійне дихання",
+            durationSeconds = 45,
+            pattern = BreathingPattern(
+                inhaleSeconds = 3,
+                exhaleSeconds = 5
+            ),
+            description = "Довший видих допомагає розслабитися. Ідеально перед сном."
         ),
-        ArticulationExercise(
+        BreathingExercise(
             id = 5,
-            title = "Клацання язиком",
-            durationSeconds = 15,
-            instruction = "Клацай язиком, як коник цокає копитами. Робіт чіткі, голосні звуки."
-        ),
-        ArticulationExercise(
-            id = 6,
-            title = "Масаж щік",
-            durationSeconds = 20,
-            instruction = "Надувай щоки, затримуй повітря на 2-3 секунди, потім розслабляй. Повтори кілька разів."
-        ),
-        ArticulationExercise(
-            id = 7,
-            title = "Губи-трубочка",
-            durationSeconds = 20,
-            instruction = "Витягни губи вперед трубочкою і затримай на кілька секунд. Розслабся і повтори."
-        ),
-        ArticulationExercise(
-            id = 8,
-            title = "Широкий язик",
-            durationSeconds = 15,
-            instruction = "Розслаб язик і поклади його плоско на нижню губу. Утримуй позицію."
-        ),
-        ArticulationExercise(
-            id = 9,
-            title = "Гострий язик",
-            durationSeconds = 15,
-            instruction = "Напружи язик і зроби його вузьким та гострим. Витягни вперед."
-        ),
-        ArticulationExercise(
-            id = 10,
-            title = "Чашечка",
-            durationSeconds = 20,
-            instruction = "Підніми боки язика вгору, формуючи чашечку. Утримуй позицію."
-        ),
-        ArticulationExercise(
-            id = 11,
-            title = "Гойдалка",
-            durationSeconds = 25,
-            instruction = "Рухай язиком вверх (до носа) і вниз (до підборіддя), як на гойдалці."
-        ),
-        ArticulationExercise(
-            id = 12,
-            title = "Годинник",
+            title = "Енергійне дихання",
             durationSeconds = 30,
-            instruction = "Рухай язиком по колу, ніби стрілки годинника. Спочатку повільно, потім трохи швидше."
+            pattern = BreathingPattern(
+                inhaleSeconds = 2,
+                exhaleSeconds = 2
+            ),
+            description = "Швидке ритмічне дихання для підвищення енергії. Будьте обережні, не перестарайтеся."
+        ),
+        BreathingExercise(
+            id = 6,
+            title = "Глибоке дихання",
+            durationSeconds = 60,
+            pattern = BreathingPattern(
+                inhaleSeconds = 6,
+                exhaleSeconds = 6
+            ),
+            description = "Повільне глибоке дихання насичує організм киснем. Дихайте через ніс."
+        ),
+        BreathingExercise(
+            id = 7,
+            title = "Розслаблююче дихання",
+            durationSeconds = 60,
+            pattern = BreathingPattern(
+                inhaleSeconds = 4,
+                exhaleSeconds = 8
+            ),
+            description = "Подвійна тривалість видиху максимально розслабляє. Відчуйте напругу що йде."
+        ),
+        BreathingExercise(
+            id = 8,
+            title = "Ритмічне дихання",
+            durationSeconds = 45,
+            pattern = BreathingPattern(
+                inhaleSeconds = 3,
+                inhaleHoldSeconds = 3,
+                exhaleSeconds = 3,
+                exhaleHoldSeconds = 3
+            ),
+            description = "Рівний ритм створює медитативний стан. Зосередьтеся на рахунку."
         )
     )
 }
 ```
 
-### 2. ArticulationEvent.kt
+### 2. BreathingEvent.kt
 
 ```kotlin
 package com.aivoicepower.ui.screens.warmup
 
-sealed class ArticulationEvent {
-    data class ExerciseClicked(val exercise: ArticulationExercise) : ArticulationEvent()
-    object ExerciseDialogDismissed : ArticulationEvent()
-    object StartTimer : ArticulationEvent()
-    object PauseTimer : ArticulationEvent()
-    data class TimerTick(val secondsRemaining: Int) : ArticulationEvent()
-    object MarkAsCompleted : ArticulationEvent()
-    object SkipExercise : ArticulationEvent()
-    object FinishWarmup : ArticulationEvent()
+sealed class BreathingEvent {
+    data class ExerciseClicked(val exercise: BreathingExercise) : BreathingEvent()
+    object ExerciseDialogDismissed : BreathingEvent()
+    object StartBreathing : BreathingEvent()
+    object PauseBreathing : BreathingEvent()
+    data class Tick(val elapsedSeconds: Int, val phase: BreathingPhase, val phaseProgress: Float) : BreathingEvent()
+    object MarkAsCompleted : BreathingEvent()
+    object SkipExercise : BreathingEvent()
 }
 ```
 
-### 3. ArticulationViewModel.kt
+### 3. BreathingViewModel.kt
 
 ```kotlin
 package com.aivoicepower.ui.screens.warmup
@@ -269,68 +309,38 @@ import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class ArticulationViewModel @Inject constructor(
+class BreathingViewModel @Inject constructor(
     private val warmupCompletionDao: WarmupCompletionDao,
     private val userPreferencesDataStore: UserPreferencesDataStore
 ) : ViewModel() {
     
-    private val _state = MutableStateFlow(ArticulationState())
-    val state: StateFlow<ArticulationState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(BreathingState())
+    val state: StateFlow<BreathingState> = _state.asStateFlow()
     
-    private var timerJob: Job? = null
+    private var breathingJob: Job? = null
     
     init {
         loadTodayProgress()
     }
     
-    fun onEvent(event: ArticulationEvent) {
+    fun onEvent(event: BreathingEvent) {
         when (event) {
-            is ArticulationEvent.ExerciseClicked -> {
+            is BreathingEvent.ExerciseClicked -> {
                 _state.update {
                     it.copy(
                         selectedExercise = event.exercise,
                         isExerciseDialogOpen = true,
-                        timerSeconds = event.exercise.durationSeconds,
-                        isTimerRunning = false
+                        totalSeconds = event.exercise.durationSeconds,
+                        elapsedSeconds = 0,
+                        currentPhase = BreathingPhase.INHALE,
+                        phaseProgress = 0f,
+                        isRunning = false
                     )
                 }
             }
             
-            ArticulationEvent.ExerciseDialogDismissed -> {
-                stopTimer()
-                _state.update {
-                    it.copy(
-                        selectedExercise = null,
-                        isExerciseDialogOpen = false,
-                        timerSeconds = 0,
-                        isTimerRunning = false
-                    )
-                }
-            }
-            
-            ArticulationEvent.StartTimer -> {
-                startTimer()
-            }
-            
-            ArticulationEvent.PauseTimer -> {
-                stopTimer()
-            }
-            
-            is ArticulationEvent.TimerTick -> {
-                _state.update { it.copy(timerSeconds = event.secondsRemaining) }
-                
-                if (event.secondsRemaining <= 0) {
-                    stopTimer()
-                    // Auto-mark as completed
-                    markCurrentAsCompleted()
-                }
-            }
-            
-            ArticulationEvent.MarkAsCompleted -> {
-                markCurrentAsCompleted()
-            }
-            
-            ArticulationEvent.SkipExercise -> {
+            BreathingEvent.ExerciseDialogDismissed -> {
+                stopBreathing()
                 _state.update {
                     it.copy(
                         selectedExercise = null,
@@ -339,8 +349,42 @@ class ArticulationViewModel @Inject constructor(
                 }
             }
             
-            ArticulationEvent.FinishWarmup -> {
-                finishWarmup()
+            BreathingEvent.StartBreathing -> {
+                startBreathing()
+            }
+            
+            BreathingEvent.PauseBreathing -> {
+                stopBreathing()
+            }
+            
+            is BreathingEvent.Tick -> {
+                _state.update {
+                    it.copy(
+                        elapsedSeconds = event.elapsedSeconds,
+                        currentPhase = event.phase,
+                        phaseProgress = event.phaseProgress
+                    )
+                }
+                
+                // Auto-complete when done
+                if (event.elapsedSeconds >= _state.value.totalSeconds) {
+                    stopBreathing()
+                    markCurrentAsCompleted()
+                }
+            }
+            
+            BreathingEvent.MarkAsCompleted -> {
+                markCurrentAsCompleted()
+            }
+            
+            BreathingEvent.SkipExercise -> {
+                stopBreathing()
+                _state.update {
+                    it.copy(
+                        selectedExercise = null,
+                        isExerciseDialogOpen = false
+                    )
+                }
             }
         }
     }
@@ -348,34 +392,79 @@ class ArticulationViewModel @Inject constructor(
     private fun loadTodayProgress() {
         viewModelScope.launch {
             val today = getCurrentDateString()
-            val completion = warmupCompletionDao.getCompletion(today, "articulation")
+            val completion = warmupCompletionDao.getCompletion(today, "breathing")
             
             if (completion != null) {
-                // Парсимо які вправи виконано (можна зберігати як JSON або bitmap)
-                // Поки що просто вважаємо exercisesCompleted = кількість
                 val completed = (1..completion.exercisesCompleted).toSet()
                 _state.update { it.copy(completedToday = completed) }
             }
         }
     }
     
-    private fun startTimer() {
-        stopTimer() // Зупиняємо попередній таймер
+    private fun startBreathing() {
+        stopBreathing()
         
-        _state.update { it.copy(isTimerRunning = true) }
+        _state.update { it.copy(isRunning = true) }
         
-        timerJob = viewModelScope.launch {
-            while (_state.value.isTimerRunning && _state.value.timerSeconds > 0) {
-                delay(1000)
-                val newSeconds = _state.value.timerSeconds - 1
-                onEvent(ArticulationEvent.TimerTick(newSeconds))
+        val pattern = _state.value.selectedExercise?.pattern ?: return
+        
+        breathingJob = viewModelScope.launch {
+            var elapsed = _state.value.elapsedSeconds
+            var cycleStart = elapsed % pattern.cycleDurationSeconds
+            
+            while (_state.value.isRunning && elapsed < _state.value.totalSeconds) {
+                delay(100) // Оновлюємо кожні 100ms для плавної анімації
+                
+                elapsed += 0.1f.toInt()
+                cycleStart += 0.1f.toInt()
+                
+                val (phase, progress) = calculatePhaseAndProgress(cycleStart, pattern)
+                
+                onEvent(BreathingEvent.Tick(elapsed, phase, progress))
+                
+                // Reset cycle
+                if (cycleStart >= pattern.cycleDurationSeconds) {
+                    cycleStart = 0
+                }
             }
         }
     }
     
-    private fun stopTimer() {
-        timerJob?.cancel()
-        _state.update { it.copy(isTimerRunning = false) }
+    private fun stopBreathing() {
+        breathingJob?.cancel()
+        _state.update { it.copy(isRunning = false) }
+    }
+    
+    private fun calculatePhaseAndProgress(
+        secondsInCycle: Int,
+        pattern: BreathingPattern
+    ): Pair<BreathingPhase, Float> {
+        var remaining = secondsInCycle
+        
+        // INHALE
+        if (remaining < pattern.inhaleSeconds) {
+            return BreathingPhase.INHALE to (remaining.toFloat() / pattern.inhaleSeconds)
+        }
+        remaining -= pattern.inhaleSeconds
+        
+        // INHALE_HOLD
+        if (pattern.inhaleHoldSeconds > 0 && remaining < pattern.inhaleHoldSeconds) {
+            return BreathingPhase.INHALE_HOLD to (remaining.toFloat() / pattern.inhaleHoldSeconds)
+        }
+        remaining -= pattern.inhaleHoldSeconds
+        
+        // EXHALE
+        if (remaining < pattern.exhaleSeconds) {
+            return BreathingPhase.EXHALE to (remaining.toFloat() / pattern.exhaleSeconds)
+        }
+        remaining -= pattern.exhaleSeconds
+        
+        // EXHALE_HOLD
+        if (pattern.exhaleHoldSeconds > 0 && remaining < pattern.exhaleHoldSeconds) {
+            return BreathingPhase.EXHALE_HOLD to (remaining.toFloat() / pattern.exhaleHoldSeconds)
+        }
+        
+        return BreathingPhase.INHALE to 0f
     }
     
     private fun markCurrentAsCompleted() {
@@ -399,9 +488,9 @@ class ArticulationViewModel @Inject constructor(
             val completedCount = _state.value.completedToday.size
             
             val entity = WarmupCompletionEntity(
-                id = "${today}_articulation",
+                id = "${today}_breathing",
                 date = today,
-                category = "articulation",
+                category = "breathing",
                 completedAt = System.currentTimeMillis(),
                 exercisesCompleted = completedCount,
                 totalExercises = totalExercises
@@ -409,8 +498,8 @@ class ArticulationViewModel @Inject constructor(
             
             warmupCompletionDao.insertOrUpdate(entity)
             
-            // Оновлюємо todayMinutes в DataStore
-            val estimatedMinutes = 3 // Артикуляція ~3 хв
+            // Оновлюємо DataStore
+            val estimatedMinutes = 2
             if (completedCount == totalExercises) {
                 userPreferencesDataStore.updateSessionStats(
                     date = today,
@@ -421,11 +510,6 @@ class ArticulationViewModel @Inject constructor(
         }
     }
     
-    private fun finishWarmup() {
-        saveProgress()
-        // Navigation handled in Screen
-    }
-    
     private fun getCurrentDateString(): String {
         val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         return sdf.format(Date())
@@ -433,7 +517,7 @@ class ArticulationViewModel @Inject constructor(
 }
 ```
 
-### 4. ArticulationScreen.kt
+### 4. BreathingScreen.kt
 
 ```kotlin
 package com.aivoicepower.ui.screens.warmup
@@ -445,7 +529,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -454,8 +537,8 @@ import com.aivoicepower.ui.screens.warmup.components.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ArticulationScreen(
-    viewModel: ArticulationViewModel = hiltViewModel(),
+fun BreathingScreen(
+    viewModel: BreathingViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -463,7 +546,7 @@ fun ArticulationScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Артикуляційна гімнастика") },
+                title = { Text("Дихальні вправи") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
@@ -486,15 +569,10 @@ fun ArticulationScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "Виконано: ${state.completedToday.size}/${state.exercises.size}",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                    }
+                    Text(
+                        text = "Виконано: ${state.completedToday.size}/${state.exercises.size}",
+                        style = MaterialTheme.typography.titleMedium
+                    )
                     
                     LinearProgressIndicator(
                         progress = { state.completedToday.size.toFloat() / state.exercises.size },
@@ -512,11 +590,11 @@ fun ArticulationScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 itemsIndexed(state.exercises) { index, exercise ->
-                    ArticulationExerciseItem(
+                    BreathingExerciseItem(
                         exercise = exercise,
                         isCompleted = state.completedToday.contains(exercise.id),
                         onClick = {
-                            viewModel.onEvent(ArticulationEvent.ExerciseClicked(exercise))
+                            viewModel.onEvent(BreathingEvent.ExerciseClicked(exercise))
                         }
                     )
                 }
@@ -527,10 +605,7 @@ fun ArticulationScreen(
                         Spacer(modifier = Modifier.height(8.dp))
                         
                         Button(
-                            onClick = {
-                                viewModel.onEvent(ArticulationEvent.FinishWarmup)
-                                onNavigateBack()
-                            },
+                            onClick = onNavigateBack,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text("Завершити розминку ✓")
@@ -540,26 +615,29 @@ fun ArticulationScreen(
             }
         }
         
-        // Exercise dialog
+        // Exercise dialog (fullscreen)
         if (state.isExerciseDialogOpen && state.selectedExercise != null) {
-            ArticulationExerciseDialog(
+            BreathingExerciseDialog(
                 exercise = state.selectedExercise!!,
-                timerSeconds = state.timerSeconds,
-                isTimerRunning = state.isTimerRunning,
+                elapsedSeconds = state.elapsedSeconds,
+                totalSeconds = state.totalSeconds,
+                currentPhase = state.currentPhase,
+                phaseProgress = state.phaseProgress,
+                isRunning = state.isRunning,
                 onDismiss = {
-                    viewModel.onEvent(ArticulationEvent.ExerciseDialogDismissed)
+                    viewModel.onEvent(BreathingEvent.ExerciseDialogDismissed)
                 },
-                onStartTimer = {
-                    viewModel.onEvent(ArticulationEvent.StartTimer)
+                onStart = {
+                    viewModel.onEvent(BreathingEvent.StartBreathing)
                 },
-                onPauseTimer = {
-                    viewModel.onEvent(ArticulationEvent.PauseTimer)
+                onPause = {
+                    viewModel.onEvent(BreathingEvent.PauseBreathing)
                 },
                 onMarkCompleted = {
-                    viewModel.onEvent(ArticulationEvent.MarkAsCompleted)
+                    viewModel.onEvent(BreathingEvent.MarkAsCompleted)
                 },
                 onSkip = {
-                    viewModel.onEvent(ArticulationEvent.SkipExercise)
+                    viewModel.onEvent(BreathingEvent.SkipExercise)
                 }
             )
         }
@@ -567,7 +645,7 @@ fun ArticulationScreen(
 }
 ```
 
-### 5. components/ArticulationExerciseItem.kt
+### 5. components/BreathingExerciseItem.kt
 
 ```kotlin
 package com.aivoicepower.ui.screens.warmup.components
@@ -581,11 +659,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.aivoicepower.ui.screens.warmup.ArticulationExercise
+import com.aivoicepower.ui.screens.warmup.BreathingExercise
 
 @Composable
-fun ArticulationExerciseItem(
-    exercise: ArticulationExercise,
+fun BreathingExerciseItem(
+    exercise: BreathingExercise,
     isCompleted: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -623,10 +701,17 @@ fun ArticulationExerciseItem(
                     }
                 )
                 
-                Text(
-                    text = "${exercise.id}. ${exercise.title}",
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                Column {
+                    Text(
+                        text = "${exercise.id}. ${exercise.title}",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Text(
+                        text = formatPattern(exercise.pattern),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
             
             Text(
@@ -637,43 +722,85 @@ fun ArticulationExerciseItem(
         }
     }
 }
+
+private fun formatPattern(pattern: com.aivoicepower.ui.screens.warmup.BreathingPattern): String {
+    val parts = mutableListOf<String>()
+    
+    parts.add("${pattern.inhaleSeconds}с вдих")
+    if (pattern.inhaleHoldSeconds > 0) parts.add("${pattern.inhaleHoldSeconds}с затримка")
+    parts.add("${pattern.exhaleSeconds}с видих")
+    if (pattern.exhaleHoldSeconds > 0) parts.add("${pattern.exhaleHoldSeconds}с затримка")
+    
+    return parts.joinToString(", ")
+}
 ```
 
-### 6. components/ArticulationExerciseDialog.kt
+### 6. components/BreathingExerciseDialog.kt
 
 ```kotlin
 package com.aivoicepower.ui.screens.warmup.components
 
+import android.content.Context
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.aivoicepower.ui.screens.warmup.ArticulationExercise
+import androidx.compose.ui.window.DialogProperties
+import com.aivoicepower.ui.screens.warmup.BreathingExercise
+import com.aivoicepower.ui.screens.warmup.BreathingPhase
+import com.aivoicepower.ui.components.breathing.BreathingAnimation
 
 @Composable
-fun ArticulationExerciseDialog(
-    exercise: ArticulationExercise,
-    timerSeconds: Int,
-    isTimerRunning: Boolean,
+fun BreathingExerciseDialog(
+    exercise: BreathingExercise,
+    elapsedSeconds: Int,
+    totalSeconds: Int,
+    currentPhase: BreathingPhase,
+    phaseProgress: Float,
+    isRunning: Boolean,
     onDismiss: () -> Unit,
-    onStartTimer: () -> Unit,
-    onPauseTimer: () -> Unit,
+    onStart: () -> Unit,
+    onPause: () -> Unit,
     onMarkCompleted: () -> Unit,
     onSkip: () -> Unit
 ) {
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            modifier = Modifier.fillMaxWidth()
+    val context = LocalContext.current
+    
+    // Haptic feedback on phase change
+    var lastPhase by remember { mutableStateOf(currentPhase) }
+    
+    LaunchedEffect(currentPhase) {
+        if (currentPhase != lastPhase && isRunning) {
+            triggerHapticFeedback(context)
+            lastPhase = currentPhase
+        }
+    }
+    
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false
+        )
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
         ) {
             Column(
-                modifier = Modifier.padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
                 // Header
                 Row(
@@ -682,8 +809,8 @@ fun ArticulationExerciseDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "${exercise.id}. ${exercise.title}",
-                        style = MaterialTheme.typography.titleLarge,
+                        text = exercise.title,
+                        style = MaterialTheme.typography.headlineSmall,
                         modifier = Modifier.weight(1f)
                     )
                     
@@ -692,85 +819,229 @@ fun ArticulationExerciseDialog(
                     }
                 }
                 
-                Divider()
-                
-                // Instruction
-                Text(
-                    text = "📝 Інструкція:",
-                    style = MaterialTheme.typography.titleMedium
-                )
-                
-                Text(
-                    text = exercise.instruction,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                
-                Text(
-                    text = "⏱️ Тривалість: ${exercise.durationSeconds} секунд",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                
-                // Timer
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                    )
+                // Breathing Animation (CENTER)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
                 ) {
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        // Time display
+                        // Animated Circle
+                        BreathingAnimation(
+                            phase = currentPhase,
+                            progress = phaseProgress,
+                            modifier = Modifier.size(250.dp)
+                        )
+                        
+                        // Phase text
                         Text(
-                            text = "%02d:%02d".format(timerSeconds / 60, timerSeconds % 60),
-                            style = MaterialTheme.typography.displayLarge,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                            text = getPhaseText(currentPhase),
+                            style = MaterialTheme.typography.headlineLarge,
+                            color = MaterialTheme.colorScheme.primary
                         )
                         
-                        // Progress
-                        LinearProgressIndicator(
-                            progress = { 1f - (timerSeconds.toFloat() / exercise.durationSeconds) },
-                            modifier = Modifier.fillMaxWidth()
+                        // Timer
+                        Text(
+                            text = "%02d:%02d / %02d:%02d".format(
+                                elapsedSeconds / 60,
+                                elapsedSeconds % 60,
+                                totalSeconds / 60,
+                                totalSeconds % 60
+                            ),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        
-                        // Timer button
-                        Button(
-                            onClick = if (isTimerRunning) onPauseTimer else onStartTimer,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(if (isTimerRunning) "⏸️ Пауза" else "▶️ Старт")
-                        }
                     }
                 }
                 
-                // Action buttons
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                // Bottom controls
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    OutlinedButton(
-                        onClick = onSkip,
-                        modifier = Modifier.weight(1f)
+                    // Progress
+                    LinearProgressIndicator(
+                        progress = { elapsedSeconds.toFloat() / totalSeconds },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    
+                    // Pattern description
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        )
                     ) {
-                        Text("Пропустити")
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "Паттерн:",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                            Text(
+                                text = formatPatternDescription(exercise.pattern),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
                     }
                     
+                    // Start/Pause button
                     Button(
-                        onClick = onMarkCompleted,
-                        modifier = Modifier.weight(1f)
+                        onClick = if (isRunning) onPause else onStart,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Готово ✓")
+                        Text(if (isRunning) "⏸️ Пауза" else "▶️ Старт")
+                    }
+                    
+                    // Action buttons
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = onSkip,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Пропустити")
+                        }
+                        
+                        Button(
+                            onClick = onMarkCompleted,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Готово ✓")
+                        }
                     }
                 }
             }
         }
     }
 }
+
+private fun getPhaseText(phase: BreathingPhase): String {
+    return when (phase) {
+        BreathingPhase.INHALE -> "Вдих..."
+        BreathingPhase.INHALE_HOLD -> "Затримка..."
+        BreathingPhase.EXHALE -> "Видих..."
+        BreathingPhase.EXHALE_HOLD -> "Затримка..."
+    }
+}
+
+private fun formatPatternDescription(pattern: com.aivoicepower.ui.screens.warmup.BreathingPattern): String {
+    val parts = mutableListOf<String>()
+    
+    parts.add("${pattern.inhaleSeconds} сек вдих")
+    if (pattern.inhaleHoldSeconds > 0) parts.add("${pattern.inhaleHoldSeconds} сек затримка")
+    parts.add("${pattern.exhaleSeconds} сек видих")
+    if (pattern.exhaleHoldSeconds > 0) parts.add("${pattern.exhaleHoldSeconds} сек затримка")
+    
+    return parts.joinToString(" → ")
+}
+
+@Suppress("DEPRECATION")
+private fun triggerHapticFeedback(context: Context) {
+    try {
+        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.defaultVibrator
+        } else {
+            context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
+        } else {
+            vibrator.vibrate(50)
+        }
+    } catch (e: Exception) {
+        // Ignore vibration errors
+    }
+}
+```
+
+### 7. ui/components/breathing/BreathingAnimation.kt
+
+```kotlin
+package com.aivoicepower.ui.components.breathing
+
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import com.aivoicepower.ui.screens.warmup.BreathingPhase
+
+@Composable
+fun BreathingAnimation(
+    phase: BreathingPhase,
+    progress: Float,
+    modifier: Modifier = Modifier
+) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val secondaryColor = MaterialTheme.colorScheme.secondary
+    
+    // Calculate scale based on phase
+    val targetScale = when (phase) {
+        BreathingPhase.INHALE -> 0.5f + (progress * 0.5f) // 0.5 → 1.0
+        BreathingPhase.INHALE_HOLD -> 1.0f
+        BreathingPhase.EXHALE -> 1.0f - (progress * 0.5f) // 1.0 → 0.5
+        BreathingPhase.EXHALE_HOLD -> 0.5f
+    }
+    
+    val animatedScale by animateFloatAsState(
+        targetValue = targetScale,
+        animationSpec = tween(durationMillis = 300, easing = LinearEasing),
+        label = "breathing_scale"
+    )
+    
+    Canvas(modifier = modifier.fillMaxSize()) {
+        val center = Offset(size.width / 2f, size.height / 2f)
+        val maxRadius = size.minDimension / 2f
+        val currentRadius = maxRadius * animatedScale
+        
+        // Gradient circle
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    primaryColor.copy(alpha = 0.3f),
+                    secondaryColor.copy(alpha = 0.1f)
+                ),
+                center = center,
+                radius = currentRadius
+            ),
+            radius = currentRadius,
+            center = center
+        )
+        
+        // Outer ring
+        drawCircle(
+            color = primaryColor.copy(alpha = 0.5f),
+            radius = currentRadius,
+            center = center,
+            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 4f)
+        )
+    }
+}
+```
+
+---
+
+## AndroidManifest.xml
+
+Додай дозвіл для вібрації:
+
+```xml
+<uses-permission android:name="android.permission.VIBRATE" />
 ```
 
 ---
@@ -785,43 +1056,52 @@ fun ArticulationExerciseDialog(
 ### 2. Testing Flow
 
 **Тест 1: Exercise List**
-- [ ] 12 вправ відображаються
-- [ ] Progress bar показує 0/12
-- [ ] Completed exercises позначені ✅
+- [ ] 8 вправ відображаються з паттернами
+- [ ] Progress bar показує 0/8
 
-**Тест 2: Exercise Dialog**
-- [ ] Клік на вправу → діалог з інструкцією
-- [ ] Таймер показує правильну тривалість
-- [ ] "Старт" → таймер працює
-- [ ] "Пауза" → таймер зупиняється
+**Тест 2: Breathing Animation**
+- [ ] Клік на вправу → fullscreen dialog
+- [ ] Коло розширюється на вдиху
+- [ ] Коло стискається на видиху
+- [ ] Коло статичне при затримці
+- [ ] Анімація плавна (60 FPS)
+
+**Тест 3: Phase Transitions**
+- [ ] Текст міняється: "Вдих..." → "Затримка..." → "Видих..."
+- [ ] Вібрація спрацьовує на переходах
+- [ ] Progress bar оновлюється
+
+**Тест 4: Timer**
+- [ ] Таймер йде від 00:00 до XX:XX
+- [ ] "Старт" → анімація починається
+- [ ] "Пауза" → анімація зупиняється
+- [ ] Auto-complete коли час закінчується
+
+**Тест 5: Completion**
 - [ ] "Готово" → вправа позначається ✅
-- [ ] "Пропустити" → закриває діалог
-
-**Тест 3: Progress Tracking**
-- [ ] Progress bar оновлюється після кожної вправи
-- [ ] Після 12/12 з'являється кнопка "Завершити"
 - [ ] Дані зберігаються в Room
-
-**Тест 4: Auto-complete**
-- [ ] Коли таймер досягає 0 → auto-mark as completed
+- [ ] Progress оновлюється
 
 ---
 
 ## Очікуваний результат
 
-✅ ArticulationScreen з 12 вправами створено
-✅ Exercise dialog з таймером працює
+✅ BreathingScreen з 8 вправами створено
+✅ Canvas animation (коло що дихає)
+✅ Haptic feedback на переходах
+✅ Fullscreen breathing dialog
+✅ Phase text ("Вдих", "Видих", "Затримка")
 ✅ Progress tracking з Room
-✅ Checklist механіка
 ✅ Auto-complete по таймеру
-✅ Завершення розминки оновлює DataStore
 
 ---
 
 ## Наступний крок
 
-**Phase 2.3: Breathing Screen** — 8 вправ з Canvas animations та haptic feedback.
+**Phase 2.4: Voice Warmup Screen** — 6 вправ з аудіо прикладами (optional).
 
 ---
 
-**Час на Phase 2.2:** ~2 години
+**Час на Phase 2.3:** ~3-4 години
+
+**⚠️ Це найскладніша підфаза Phase 2** — Canvas animations, haptic feedback, складна логіка фаз.
