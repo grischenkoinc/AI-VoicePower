@@ -24,6 +24,7 @@ import com.aivoicepower.ui.screens.lesson.LessonScreen
 import com.aivoicepower.ui.screens.results.ResultsScreen
 import com.aivoicepower.ui.screens.warmup.ArticulationScreen
 import com.aivoicepower.ui.screens.warmup.BreathingScreen
+import com.aivoicepower.ui.screens.warmup.QuickWarmupScreen
 import com.aivoicepower.ui.screens.warmup.VoiceWarmupScreen
 import com.aivoicepower.ui.screens.warmup.WarmupScreen
 
@@ -120,8 +121,11 @@ fun NavGraph(
             )
         }
 
+        // Phase 2.5 - Quick Warmup screen
         composable(route = Screen.WarmupQuick.route) {
-            PlaceholderScreen(title = "Швидка розминка", onBack = { navController.popBackStack() })
+            QuickWarmupScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
     }
 }

@@ -1,4 +1,4 @@
-# Промпт для Claude Code — Phase 2.4: Voice Warmup Screen
+# Промпт для Claude Code — Phase 2.5: Quick Warmup Screen
 
 ## Контекст
 
@@ -8,48 +8,54 @@
 - ✅ Phase 2.1 — Warmup Main Screen
 - ✅ Phase 2.2 — Articulation Screen
 - ✅ Phase 2.3 — Breathing Screen
+- ✅ Phase 2.4 — Voice Warmup Screen
 
-Зараз **Phase 2.4 — Voice Warmup Screen** — розминка голосу (6 вокальних вправ).
+Зараз **Phase 2.5 — Quick Warmup Screen** — **фінальна підфаза Phase 2**.
 
-**Згідно з PHASE_STRUCTURE_GUIDE.md**: НИЗЬКА-СЕРЕДНЯ складність (UI + timer + optional audio).
+**Згідно з PHASE_STRUCTURE_GUIDE.md**: НИЗЬКА складність (sequential flow, reuse components).
 
-**Специфікація:** `SPECIFICATION.md`, секція 4.3.4 + 5.4 (Warmup Exercise, Voice).
+**Специфікація:** `SPECIFICATION.md`, секція 4.3.4 (Quick Warmup).
 
-**Складність:** 🟡 НИЗЬКА-СЕРЕДНЯ  
-**Час:** ⏱️ 1.5 години
+**Складність:** 🟢 НИЗЬКА  
+**Час:** ⏱️ 1 година
 
 ---
 
 ## Ключова ідея
 
-⚠️ **БЕЗ запису аудіо!** Розминка голосу — це вокальні вправи (гумкання, розспівки).
+**Quick Warmup** — це швидка 5-хвилинна розминка, що включає **найважливіші вправи** з всіх 3 категорій:
+
+| Категорія | Вправи | Час |
+|-----------|--------|-----|
+| Артикуляція | 2 вправи | ~1 хв |
+| Дихання | 1 вправа | ~1 хв |
+| Голос | 1 вправа | ~30 сек |
+| **Всього** | **4 вправи** | **~2.5 хв** |
 
 **Механіка:**
-1. Показати список 6 вправ
-2. Клік на вправу → діалог з інструкцією + **аудіо-приклад (опціонально)**
-3. Користувач слухає приклад (якщо є) та повторює
-4. Таймер відраховує час вправи
-5. Позначає як виконано ✅
-6. Прогрес зберігається в Room
+1. **Sequential flow** — вправи виконуються одна за одною
+2. Користувач не може пропустити вправи (або можна, але не рекомендовано)
+3. Progress bar показує загальний прогрес (1/4, 2/4, 3/4, 4/4)
+4. Після завершення → збереження як окрема категорія "quick"
 
-**Audio примітка:** Аудіо-приклади можуть бути placeholder (текстове пояснення замість реального аудіо).
+**Reuse components:**
+- Використовуємо компоненти з Phase 2.2-2.4
+- Не створюємо нові UI компоненти
 
 ---
 
-## Задача Phase 2.4
+## Задача Phase 2.5
 
-Створити екран з **6 вправами для розминки голосу**:
+Створити екран з **послідовним виконанням 4 вправ**:
 
-| # | Назва | Тривалість | Опис |
-|---|-------|-----------|------|
-| 1 | Гумкання | 30 сек | "Ммм" на різних нотах |
-| 2 | Сирена | 20 сек | Голос від низького до високого |
-| 3 | Губні трелі | 20 сек | "Брррр" як мотор |
-| 4 | Розспівка "Ма-ме-мі-мо-му" | 30 сек | Вокалізи на голосні |
-| 5 | Співання на одній ноті | 25 сек | Утримання звуку |
-| 6 | Глісандо | 20 сек | Плавний перехід між нотами |
+| # | Вправа | Категорія | Тривалість |
+|---|--------|-----------|-----------|
+| 1 | Усмішка-хоботок | Артикуляція | 30 сек |
+| 2 | Язик вліво-вправо | Артикуляція | 20 сек |
+| 3 | Діафрагмальне дихання | Дихання | 60 сек |
+| 4 | Гумкання | Голос | 30 сек |
 
-**Загальний час:** ~2 хвилини
+**Загальний час:** ~2.5 хвилини (можна округлити до 3 хв)
 
 ---
 
@@ -57,16 +63,15 @@
 
 ```
 ui/screens/warmup/
-├── VoiceWarmupScreen.kt
-├── VoiceWarmupViewModel.kt
-├── VoiceWarmupState.kt
-├── VoiceWarmupEvent.kt
-└── components/
-    ├── VoiceExerciseItem.kt (картка вправи)
-    └── VoiceExerciseDialog.kt (діалог з таймером + audio)
+├── QuickWarmupScreen.kt
+├── QuickWarmupViewModel.kt
+├── QuickWarmupState.kt
+└── QuickWarmupEvent.kt
 
-ui/components/audio/ (опціонально, якщо ще немає з Phase 0.6)
-└── AudioPlayer.kt (placeholder для майбутнього)
+// Reuse components з Phase 2.2-2.4:
+// - ArticulationExerciseDialog.kt
+// - BreathingExerciseDialog.kt
+// - VoiceExerciseDialog.kt
 ```
 
 ---
@@ -74,45 +79,36 @@ ui/components/audio/ (опціонально, якщо ще немає з Phase 
 ## UI Design
 
 ```
-Step 1: Exercise List (як в Phase 2.2)
+Quick Warmup Flow (Sequential)
 ┌──────────────────────────────────────────────┐
-│  ← Розминка голосу                           │
-│  Виконано: 2/6                               │
+│  ← Швидка розминка (5 хв)                    │
+│  Вправа 2 з 4                                │
 ├──────────────────────────────────────────────┤
-│  ━━━━━━━○○○○○○○○○○○○○○  33%                  │
+│  ━━━━━━━━━━━━○○○○○○○○○○  50%                │
 │                                              │
-│  ┌────────────────────────────────────────┐ │
-│  │ ✅ 1. Гумкання               30 сек    │ │
-│  └────────────────────────────────────────┘ │
-│  ┌────────────────────────────────────────┐ │
-│  │ ○ 2. Сирена                  20 сек    │ │
-│  └────────────────────────────────────────┘ │
-│  ...                                        │
+│  ✅ 1. Усмішка-хоботок                       │
+│  ▶️ 2. Язик вліво-вправо       (активна)     │
+│  ○ 3. Діафрагмальне дихання                  │
+│  ○ 4. Гумкання                               │
+│                                              │
+│  ──────────────────────────────────────────  │
+│                                              │
+│  [Показується діалог вправи 2]               │
+│                                              │
 └──────────────────────────────────────────────┘
 
-Step 2: Exercise Dialog
+Dialog (reuse з Phase 2.2-2.4):
+- Артикуляція → ArticulationExerciseDialog
+- Дихання → BreathingExerciseDialog
+- Голос → VoiceExerciseDialog
+
+Після завершення всіх 4 вправ:
 ┌──────────────────────────────────────────────┐
-│  2. Сирена                             [X]   │
-├──────────────────────────────────────────────┤
+│  🎉 Розминка завершена!                      │
 │                                              │
-│  📝 Інструкція:                              │
-│  Ведіть голос від найнижчої ноти до          │
-│  найвищої, як сирена. Плавно без стрибків.   │
-│  Використовуйте звук "У-у-у".                │
+│  Ви виконали 4 вправи за 2 хв 34 сек        │
 │                                              │
-│  🔊 Аудіо-приклад:                           │
-│  [▶️ Послухати]  (placeholder)               │
-│                                              │
-│  ⏱️ Тривалість: 20 секунд                    │
-│                                              │
-│  ┌────────────────────────────────────────┐ │
-│  │              00:12                     │ │
-│  │    ━━━━━━━━━━━━━━━○○○○○  60%          │ │
-│  │         [⏸️ Пауза]                      │ │
-│  └────────────────────────────────────────┘ │
-│                                              │
-│  [Пропустити]          [Готово ✓]           │
-│                                              │
+│  [Готово]                                    │
 └──────────────────────────────────────────────┘
 ```
 
@@ -120,96 +116,121 @@ Step 2: Exercise Dialog
 
 ## Повний код
 
-### 1. VoiceWarmupState.kt
+### 1. QuickWarmupState.kt
 
 ```kotlin
 package com.aivoicepower.ui.screens.warmup
 
-data class VoiceWarmupState(
-    val exercises: List<VoiceExercise> = getVoiceExercises(),
-    val completedToday: Set<Int> = emptySet(),
-    val selectedExercise: VoiceExercise? = null,
+data class QuickWarmupState(
+    val exercises: List<QuickWarmupExercise> = getQuickWarmupExercises(),
+    val currentExerciseIndex: Int = 0,
+    val completedExercises: Set<Int> = emptySet(),
     val isExerciseDialogOpen: Boolean = false,
-    val timerSeconds: Int = 0,
-    val isTimerRunning: Boolean = false,
-    val isAudioPlaying: Boolean = false
+    val totalElapsedSeconds: Int = 0,
+    val isCompleted: Boolean = false
 )
 
-data class VoiceExercise(
+data class QuickWarmupExercise(
     val id: Int,
     val title: String,
+    val category: WarmupCategoryType,
     val durationSeconds: Int,
     val instruction: String,
-    val audioExampleUrl: String? = null // Placeholder for future
+    // Type-specific data
+    val articulationExercise: ArticulationExercise? = null,
+    val breathingExercise: BreathingExercise? = null,
+    val voiceExercise: VoiceExercise? = null
 )
 
-private fun getVoiceExercises(): List<VoiceExercise> {
+enum class WarmupCategoryType {
+    ARTICULATION, BREATHING, VOICE
+}
+
+private fun getQuickWarmupExercises(): List<QuickWarmupExercise> {
     return listOf(
-        VoiceExercise(
+        // 1. Артикуляція: Усмішка-хоботок
+        QuickWarmupExercise(
             id = 1,
-            title = "Гумкання",
+            title = "Усмішка-хоботок",
+            category = WarmupCategoryType.ARTICULATION,
             durationSeconds = 30,
-            instruction = "Закрийте рот і гучно \"ммм\" на комфортній для вас ноті. Відчуйте вібрацію в носі та губах. Спробуйте на різних нотах.",
-            audioExampleUrl = null // TODO: Add audio in Phase 8
+            instruction = "Широко посміхнись, показуючи зуби. Потім витягни губи вперед трубочкою. Чергуй ці положення.",
+            articulationExercise = ArticulationExercise(
+                id = 1,
+                title = "Усмішка-хоботок",
+                durationSeconds = 30,
+                instruction = "Широко посміхнись, показуючи зуби. Потім витягни губи вперед трубочкою. Чергуй ці положення."
+            )
         ),
-        VoiceExercise(
+        
+        // 2. Артикуляція: Язик вліво-вправо
+        QuickWarmupExercise(
             id = 2,
-            title = "Сирена",
+            title = "Язик вліво-вправо",
+            category = WarmupCategoryType.ARTICULATION,
             durationSeconds = 20,
-            instruction = "Ведіть голос від найнижчої ноти до найвищої, як сирена. Плавно без стрибків. Використовуйте звук \"У-у-у\".",
-            audioExampleUrl = null
+            instruction = "Рухай язиком вліво-вправо, торкаючись куточків губ. Виконуй повільно та ритмічно.",
+            articulationExercise = ArticulationExercise(
+                id = 2,
+                title = "Язик вліво-вправо",
+                durationSeconds = 20,
+                instruction = "Рухай язиком вліво-вправо, торкаючись куточків губ. Виконуй повільно та ритмічно."
+            )
         ),
-        VoiceExercise(
+        
+        // 3. Дихання: Діафрагмальне
+        QuickWarmupExercise(
             id = 3,
-            title = "Губні трелі",
-            durationSeconds = 20,
-            instruction = "Робіть звук \"Брррр\" губами, як мотор. Спробуйте на різних висотах. Це розслабляє голосові зв'язки.",
-            audioExampleUrl = null
+            title = "Діафрагмальне дихання",
+            category = WarmupCategoryType.BREATHING,
+            durationSeconds = 60,
+            instruction = "Глибоке дихання животом. Покладіть руку на живіт і відчуйте як він піднімається на вдиху.",
+            breathingExercise = BreathingExercise(
+                id = 1,
+                title = "Діафрагмальне дихання",
+                durationSeconds = 60,
+                pattern = BreathingPattern(
+                    inhaleSeconds = 4,
+                    exhaleSeconds = 4
+                ),
+                description = "Глибоке дихання животом. Покладіть руку на живіт і відчуйте як він піднімається на вдиху."
+            )
         ),
-        VoiceExercise(
+        
+        // 4. Голос: Гумкання
+        QuickWarmupExercise(
             id = 4,
-            title = "Розспівка \"Ма-ме-мі-мо-му\"",
+            title = "Гумкання",
+            category = WarmupCategoryType.VOICE,
             durationSeconds = 30,
-            instruction = "Співайте склади \"Ма-ме-мі-мо-му\" на одній ноті, потім підвищуйте. Чітко артикулюйте кожен склад.",
-            audioExampleUrl = null
-        ),
-        VoiceExercise(
-            id = 5,
-            title = "Співання на одній ноті",
-            durationSeconds = 25,
-            instruction = "Виберіть комфортну ноту і співайте \"А-а-а\" якомога довше. Тримайте звук рівним і стабільним.",
-            audioExampleUrl = null
-        ),
-        VoiceExercise(
-            id = 6,
-            title = "Глісандо",
-            durationSeconds = 20,
-            instruction = "Плавно ведіть голос вгору і вниз, як ковзанка. Звук \"О-о-о\". Без різких переходів.",
-            audioExampleUrl = null
+            instruction = "Закрийте рот і гучно \"ммм\" на комфортній для вас ноті. Відчуйте вібрацію в носі та губах.",
+            voiceExercise = VoiceExercise(
+                id = 1,
+                title = "Гумкання",
+                durationSeconds = 30,
+                instruction = "Закрийте рот і гучно \"ммм\" на комфортній для вас ноті. Відчуйте вібрацію в носі та губах.",
+                audioExampleUrl = null
+            )
         )
     )
 }
 ```
 
-### 2. VoiceWarmupEvent.kt
+### 2. QuickWarmupEvent.kt
 
 ```kotlin
 package com.aivoicepower.ui.screens.warmup
 
-sealed class VoiceWarmupEvent {
-    data class ExerciseClicked(val exercise: VoiceExercise) : VoiceWarmupEvent()
-    object ExerciseDialogDismissed : VoiceWarmupEvent()
-    object StartTimer : VoiceWarmupEvent()
-    object PauseTimer : VoiceWarmupEvent()
-    data class TimerTick(val secondsRemaining: Int) : VoiceWarmupEvent()
-    object PlayAudioExample : VoiceWarmupEvent()
-    object StopAudioExample : VoiceWarmupEvent()
-    object MarkAsCompleted : VoiceWarmupEvent()
-    object SkipExercise : VoiceWarmupEvent()
+sealed class QuickWarmupEvent {
+    object StartQuickWarmup : QuickWarmupEvent()
+    object CurrentExerciseCompleted : QuickWarmupEvent()
+    data class UpdateElapsedTime(val seconds: Int) : QuickWarmupEvent()
+    object FinishQuickWarmup : QuickWarmupEvent()
+    object DismissCompletionDialog : QuickWarmupEvent()
 }
 ```
 
-### 3. VoiceWarmupViewModel.kt
+### 3. QuickWarmupViewModel.kt
 
 ```kotlin
 package com.aivoicepower.ui.screens.warmup
@@ -220,8 +241,6 @@ import com.aivoicepower.data.local.database.dao.WarmupCompletionDao
 import com.aivoicepower.data.local.database.entity.WarmupCompletionEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -232,173 +251,115 @@ import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class VoiceWarmupViewModel @Inject constructor(
+class QuickWarmupViewModel @Inject constructor(
     private val warmupCompletionDao: WarmupCompletionDao,
     private val userPreferencesDataStore: UserPreferencesDataStore
 ) : ViewModel() {
     
-    private val _state = MutableStateFlow(VoiceWarmupState())
-    val state: StateFlow<VoiceWarmupState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(QuickWarmupState())
+    val state: StateFlow<QuickWarmupState> = _state.asStateFlow()
     
-    private var timerJob: Job? = null
-    
-    init {
-        loadTodayProgress()
-    }
-    
-    fun onEvent(event: VoiceWarmupEvent) {
+    fun onEvent(event: QuickWarmupEvent) {
         when (event) {
-            is VoiceWarmupEvent.ExerciseClicked -> {
+            QuickWarmupEvent.StartQuickWarmup -> {
+                startQuickWarmup()
+            }
+            
+            QuickWarmupEvent.CurrentExerciseCompleted -> {
+                markCurrentExerciseCompleted()
+            }
+            
+            is QuickWarmupEvent.UpdateElapsedTime -> {
                 _state.update {
-                    it.copy(
-                        selectedExercise = event.exercise,
-                        isExerciseDialogOpen = true,
-                        timerSeconds = event.exercise.durationSeconds,
-                        isTimerRunning = false
-                    )
+                    it.copy(totalElapsedSeconds = event.seconds)
                 }
             }
             
-            VoiceWarmupEvent.ExerciseDialogDismissed -> {
-                stopTimer()
-                stopAudio()
+            QuickWarmupEvent.FinishQuickWarmup -> {
+                finishQuickWarmup()
+            }
+            
+            QuickWarmupEvent.DismissCompletionDialog -> {
                 _state.update {
-                    it.copy(
-                        selectedExercise = null,
-                        isExerciseDialogOpen = false,
-                        timerSeconds = 0,
-                        isTimerRunning = false
-                    )
-                }
-            }
-            
-            VoiceWarmupEvent.StartTimer -> {
-                startTimer()
-            }
-            
-            VoiceWarmupEvent.PauseTimer -> {
-                stopTimer()
-            }
-            
-            is VoiceWarmupEvent.TimerTick -> {
-                _state.update { it.copy(timerSeconds = event.secondsRemaining) }
-                
-                if (event.secondsRemaining <= 0) {
-                    stopTimer()
-                    markCurrentAsCompleted()
-                }
-            }
-            
-            VoiceWarmupEvent.PlayAudioExample -> {
-                playAudioExample()
-            }
-            
-            VoiceWarmupEvent.StopAudioExample -> {
-                stopAudio()
-            }
-            
-            VoiceWarmupEvent.MarkAsCompleted -> {
-                markCurrentAsCompleted()
-            }
-            
-            VoiceWarmupEvent.SkipExercise -> {
-                _state.update {
-                    it.copy(
-                        selectedExercise = null,
-                        isExerciseDialogOpen = false
-                    )
+                    it.copy(isCompleted = false)
                 }
             }
         }
     }
     
-    private fun loadTodayProgress() {
-        viewModelScope.launch {
-            val today = getCurrentDateString()
-            val completion = warmupCompletionDao.getCompletion(today, "voice")
-            
-            if (completion != null) {
-                val completed = (1..completion.exercisesCompleted).toSet()
-                _state.update { it.copy(completedToday = completed) }
-            }
+    private fun startQuickWarmup() {
+        _state.update {
+            it.copy(
+                currentExerciseIndex = 0,
+                completedExercises = emptySet(),
+                totalElapsedSeconds = 0,
+                isExerciseDialogOpen = true
+            )
         }
     }
     
-    private fun startTimer() {
-        stopTimer()
-        
-        _state.update { it.copy(isTimerRunning = true) }
-        
-        timerJob = viewModelScope.launch {
-            while (_state.value.isTimerRunning && _state.value.timerSeconds > 0) {
-                delay(1000)
-                val newSeconds = _state.value.timerSeconds - 1
-                onEvent(VoiceWarmupEvent.TimerTick(newSeconds))
-            }
-        }
-    }
-    
-    private fun stopTimer() {
-        timerJob?.cancel()
-        _state.update { it.copy(isTimerRunning = false) }
-    }
-    
-    private fun playAudioExample() {
-        // TODO: Implement audio playback in Phase 8 (Content)
-        // For now, just toggle the playing state
-        _state.update { it.copy(isAudioPlaying = true) }
-        
-        // Auto-stop after 3 seconds (placeholder)
-        viewModelScope.launch {
-            delay(3000)
-            stopAudio()
-        }
-    }
-    
-    private fun stopAudio() {
-        _state.update { it.copy(isAudioPlaying = false) }
-    }
-    
-    private fun markCurrentAsCompleted() {
-        val exerciseId = _state.value.selectedExercise?.id ?: return
+    private fun markCurrentExerciseCompleted() {
+        val currentIndex = _state.value.currentExerciseIndex
+        val currentExerciseId = _state.value.exercises.getOrNull(currentIndex)?.id ?: return
         
         _state.update {
             it.copy(
-                completedToday = it.completedToday + exerciseId,
-                selectedExercise = null,
-                isExerciseDialogOpen = false
+                completedExercises = it.completedExercises + currentExerciseId
+            )
+        }
+        
+        // Переходимо до наступної вправи
+        val nextIndex = currentIndex + 1
+        
+        if (nextIndex >= _state.value.exercises.size) {
+            // Всі вправи виконано
+            completeQuickWarmup()
+        } else {
+            _state.update {
+                it.copy(currentExerciseIndex = nextIndex)
+            }
+        }
+    }
+    
+    private fun completeQuickWarmup() {
+        _state.update {
+            it.copy(
+                isExerciseDialogOpen = false,
+                isCompleted = true
             )
         }
         
         saveProgress()
     }
     
+    private fun finishQuickWarmup() {
+        saveProgress()
+        // Navigation handled in Screen
+    }
+    
     private fun saveProgress() {
         viewModelScope.launch {
             val today = getCurrentDateString()
             val totalExercises = _state.value.exercises.size
-            val completedCount = _state.value.completedToday.size
             
             val entity = WarmupCompletionEntity(
-                id = "${today}_voice",
+                id = "${today}_quick",
                 date = today,
-                category = "voice",
+                category = "quick",
                 completedAt = System.currentTimeMillis(),
-                exercisesCompleted = completedCount,
+                exercisesCompleted = totalExercises,
                 totalExercises = totalExercises
             )
             
             warmupCompletionDao.insertOrUpdate(entity)
             
             // Оновлюємо DataStore
-            val estimatedMinutes = 2
-            if (completedCount == totalExercises) {
-                userPreferencesDataStore.updateSessionStats(
-                    date = today,
-                    minutes = estimatedMinutes,
-                    exercises = 1
-                )
-            }
+            val estimatedMinutes = (_state.value.totalElapsedSeconds / 60).coerceAtLeast(1)
+            userPreferencesDataStore.updateSessionStats(
+                date = today,
+                minutes = estimatedMinutes,
+                exercises = 1
+            )
         }
     }
     
@@ -409,18 +370,19 @@ class VoiceWarmupViewModel @Inject constructor(
 }
 ```
 
-### 4. VoiceWarmupScreen.kt
+### 4. QuickWarmupScreen.kt
 
 ```kotlin
 package com.aivoicepower.ui.screens.warmup
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -429,16 +391,21 @@ import com.aivoicepower.ui.screens.warmup.components.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VoiceWarmupScreen(
-    viewModel: VoiceWarmupViewModel = hiltViewModel(),
+fun QuickWarmupScreen(
+    viewModel: QuickWarmupViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     
+    LaunchedEffect(Unit) {
+        // Auto-start first exercise
+        viewModel.onEvent(QuickWarmupEvent.StartQuickWarmup)
+    }
+    
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Розминка голосу") },
+                title = { Text("Швидка розминка (5 хв)") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
@@ -462,12 +429,12 @@ fun VoiceWarmupScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "Виконано: ${state.completedToday.size}/${state.exercises.size}",
+                        text = "Вправа ${state.currentExerciseIndex + 1} з ${state.exercises.size}",
                         style = MaterialTheme.typography.titleMedium
                     )
                     
                     LinearProgressIndicator(
-                        progress = { state.completedToday.size.toFloat() / state.exercises.size },
+                        progress = { state.completedExercises.size.toFloat() / state.exercises.size },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(8.dp)
@@ -476,316 +443,199 @@ fun VoiceWarmupScreen(
             }
             
             // Exercise list
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(16.dp),
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                itemsIndexed(state.exercises) { index, exercise ->
-                    VoiceExerciseItem(
-                        exercise = exercise,
-                        isCompleted = state.completedToday.contains(exercise.id),
-                        onClick = {
-                            viewModel.onEvent(VoiceWarmupEvent.ExerciseClicked(exercise))
+                state.exercises.forEachIndexed { index, exercise ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = if (index == state.currentExerciseIndex) {
+                            CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer
+                            )
+                        } else if (state.completedExercises.contains(exercise.id)) {
+                            CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer
+                            )
+                        } else {
+                            CardDefaults.cardColors()
                         }
-                    )
-                }
-                
-                // Finish button
-                item {
-                    if (state.completedToday.size == state.exercises.size) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        
-                        Button(
-                            onClick = onNavigateBack,
-                            modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Завершити розминку ✓")
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = if (state.completedExercises.contains(exercise.id)) {
+                                        Icons.Filled.CheckCircle
+                                    } else if (index == state.currentExerciseIndex) {
+                                        Icons.Filled.CheckCircle // Or a play icon
+                                    } else {
+                                        Icons.Outlined.Circle
+                                    },
+                                    contentDescription = null,
+                                    tint = when {
+                                        state.completedExercises.contains(exercise.id) -> 
+                                            MaterialTheme.colorScheme.primary
+                                        index == state.currentExerciseIndex -> 
+                                            MaterialTheme.colorScheme.primary
+                                        else -> 
+                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                    }
+                                )
+                                
+                                Text(
+                                    text = "${exercise.id}. ${exercise.title}",
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                            
+                            Text(
+                                text = "${exercise.durationSeconds} сек",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 }
             }
         }
         
-        // Exercise dialog
-        if (state.isExerciseDialogOpen && state.selectedExercise != null) {
-            VoiceExerciseDialog(
-                exercise = state.selectedExercise!!,
-                timerSeconds = state.timerSeconds,
-                isTimerRunning = state.isTimerRunning,
-                isAudioPlaying = state.isAudioPlaying,
+        // Exercise dialogs (reuse from Phase 2.2-2.4)
+        if (state.isExerciseDialogOpen) {
+            val currentExercise = state.exercises.getOrNull(state.currentExerciseIndex)
+            
+            if (currentExercise != null) {
+                when (currentExercise.category) {
+                    WarmupCategoryType.ARTICULATION -> {
+                        currentExercise.articulationExercise?.let { exercise ->
+                            ArticulationExerciseDialog(
+                                exercise = exercise,
+                                timerSeconds = exercise.durationSeconds,
+                                isTimerRunning = false,
+                                onDismiss = { /* Не дозволяємо закривати */ },
+                                onStartTimer = { /* Handle in local state */ },
+                                onPauseTimer = { /* Handle in local state */ },
+                                onMarkCompleted = {
+                                    viewModel.onEvent(QuickWarmupEvent.CurrentExerciseCompleted)
+                                },
+                                onSkip = {
+                                    viewModel.onEvent(QuickWarmupEvent.CurrentExerciseCompleted)
+                                }
+                            )
+                        }
+                    }
+                    
+                    WarmupCategoryType.BREATHING -> {
+                        currentExercise.breathingExercise?.let { exercise ->
+                            BreathingExerciseDialog(
+                                exercise = exercise,
+                                elapsedSeconds = 0,
+                                totalSeconds = exercise.durationSeconds,
+                                currentPhase = BreathingPhase.INHALE,
+                                phaseProgress = 0f,
+                                isRunning = false,
+                                onDismiss = { /* Не дозволяємо закривати */ },
+                                onStart = { /* Handle in local state */ },
+                                onPause = { /* Handle in local state */ },
+                                onMarkCompleted = {
+                                    viewModel.onEvent(QuickWarmupEvent.CurrentExerciseCompleted)
+                                },
+                                onSkip = {
+                                    viewModel.onEvent(QuickWarmupEvent.CurrentExerciseCompleted)
+                                }
+                            )
+                        }
+                    }
+                    
+                    WarmupCategoryType.VOICE -> {
+                        currentExercise.voiceExercise?.let { exercise ->
+                            VoiceExerciseDialog(
+                                exercise = exercise,
+                                timerSeconds = exercise.durationSeconds,
+                                isTimerRunning = false,
+                                isAudioPlaying = false,
+                                onDismiss = { /* Не дозволяємо закривати */ },
+                                onStartTimer = { /* Handle in local state */ },
+                                onPauseTimer = { /* Handle in local state */ },
+                                onPlayAudio = { /* Handle in local state */ },
+                                onStopAudio = { /* Handle in local state */ },
+                                onMarkCompleted = {
+                                    viewModel.onEvent(QuickWarmupEvent.CurrentExerciseCompleted)
+                                },
+                                onSkip = {
+                                    viewModel.onEvent(QuickWarmupEvent.CurrentExerciseCompleted)
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Completion dialog
+        if (state.isCompleted) {
+            CompletionDialog(
+                totalExercises = state.exercises.size,
+                elapsedSeconds = state.totalElapsedSeconds,
                 onDismiss = {
-                    viewModel.onEvent(VoiceWarmupEvent.ExerciseDialogDismissed)
-                },
-                onStartTimer = {
-                    viewModel.onEvent(VoiceWarmupEvent.StartTimer)
-                },
-                onPauseTimer = {
-                    viewModel.onEvent(VoiceWarmupEvent.PauseTimer)
-                },
-                onPlayAudio = {
-                    viewModel.onEvent(VoiceWarmupEvent.PlayAudioExample)
-                },
-                onStopAudio = {
-                    viewModel.onEvent(VoiceWarmupEvent.StopAudioExample)
-                },
-                onMarkCompleted = {
-                    viewModel.onEvent(VoiceWarmupEvent.MarkAsCompleted)
-                },
-                onSkip = {
-                    viewModel.onEvent(VoiceWarmupEvent.SkipExercise)
+                    viewModel.onEvent(QuickWarmupEvent.DismissCompletionDialog)
+                    onNavigateBack()
                 }
             )
         }
     }
 }
-```
-
-### 5. components/VoiceExerciseItem.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.warmup.components
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.outlined.Circle
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import com.aivoicepower.ui.screens.warmup.VoiceExercise
 
 @Composable
-fun VoiceExerciseItem(
-    exercise: VoiceExercise,
-    isCompleted: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+private fun CompletionDialog(
+    totalExercises: Int,
+    elapsedSeconds: Int,
+    onDismiss: () -> Unit
 ) {
-    Card(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
-        colors = if (isCompleted) {
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            )
-        } else {
-            CardDefaults.cardColors()
-        }
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.weight(1f)
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Text("🎉", style = MaterialTheme.typography.displayMedium)
+        },
+        title = {
+            Text("Розминка завершена!")
+        },
+        text = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(
-                    imageVector = if (isCompleted) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
-                    contentDescription = null,
-                    tint = if (isCompleted) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    }
-                )
-                
                 Text(
-                    text = "${exercise.id}. ${exercise.title}",
+                    text = "Ви виконали $totalExercises вправи",
                     style = MaterialTheme.typography.bodyLarge
                 )
-            }
-            
-            Text(
-                text = "${exercise.durationSeconds} сек",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-```
-
-### 6. components/VoiceExerciseDialog.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.warmup.components
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import com.aivoicepower.ui.screens.warmup.VoiceExercise
-
-@Composable
-fun VoiceExerciseDialog(
-    exercise: VoiceExercise,
-    timerSeconds: Int,
-    isTimerRunning: Boolean,
-    isAudioPlaying: Boolean,
-    onDismiss: () -> Unit,
-    onStartTimer: () -> Unit,
-    onPauseTimer: () -> Unit,
-    onPlayAudio: () -> Unit,
-    onStopAudio: () -> Unit,
-    onMarkCompleted: () -> Unit,
-    onSkip: () -> Unit
-) {
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Header
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "${exercise.id}. ${exercise.title}",
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.weight(1f)
-                    )
-                    
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Закрити")
-                    }
-                }
-                
-                Divider()
-                
-                // Instruction
                 Text(
-                    text = "📝 Інструкція:",
-                    style = MaterialTheme.typography.titleMedium
-                )
-                
-                Text(
-                    text = exercise.instruction,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                
-                // Audio example (if available)
-                if (exercise.audioExampleUrl != null) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = "🔊 Аудіо-приклад:",
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                        
-                        OutlinedButton(
-                            onClick = if (isAudioPlaying) onStopAudio else onPlayAudio,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Icon(
-                                imageVector = if (isAudioPlaying) Icons.Default.Stop else Icons.Default.PlayArrow,
-                                contentDescription = null
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(if (isAudioPlaying) "Зупинити" else "Послухати")
-                        }
-                    }
-                } else {
-                    // Placeholder
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    ) {
-                        Text(
-                            text = "🔊 Аудіо-приклад буде доступний у наступних оновленнях",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(12.dp)
-                        )
-                    }
-                }
-                
-                Text(
-                    text = "⏱️ Тривалість: ${exercise.durationSeconds} секунд",
-                    style = MaterialTheme.typography.bodySmall,
+                    text = "за %d хв %02d сек".format(
+                        elapsedSeconds / 60,
+                        elapsedSeconds % 60
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                
-                // Timer
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        // Time display
-                        Text(
-                            text = "%02d:%02d".format(timerSeconds / 60, timerSeconds % 60),
-                            style = MaterialTheme.typography.displayLarge,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                        
-                        // Progress
-                        LinearProgressIndicator(
-                            progress = { 1f - (timerSeconds.toFloat() / exercise.durationSeconds) },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        
-                        // Timer button
-                        Button(
-                            onClick = if (isTimerRunning) onPauseTimer else onStartTimer,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(if (isTimerRunning) "⏸️ Пауза" else "▶️ Старт")
-                        }
-                    }
-                }
-                
-                // Action buttons
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = onSkip,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Пропустити")
-                    }
-                    
-                    Button(
-                        onClick = onMarkCompleted,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Готово ✓")
-                    }
-                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text("Готово")
             }
         }
-    }
+    )
 }
 ```
 
@@ -800,53 +650,65 @@ fun VoiceExerciseDialog(
 
 ### 2. Testing Flow
 
-**Тест 1: Exercise List**
-- [ ] 6 вправ відображаються
-- [ ] Progress bar показує 0/6
-- [ ] Completed exercises позначені ✅
+**Тест 1: Auto-start**
+- [ ] При відкритті екрану автоматично стартує перша вправа
+- [ ] Progress bar показує 0/4
 
-**Тест 2: Exercise Dialog**
-- [ ] Клік на вправу → діалог з інструкцією
-- [ ] "Послухати" button показується (placeholder)
-- [ ] Таймер показує правильну тривалість
-- [ ] "Старт" → таймер працює
-- [ ] "Пауза" → таймер зупиняється
-- [ ] "Готово" → вправа позначається ✅
-- [ ] "Пропустити" → закриває діалог
+**Тест 2: Sequential Flow**
+- [ ] Після завершення вправи 1 → автоматично відкривається вправа 2
+- [ ] Progress bar оновлюється (1/4 → 2/4 → 3/4 → 4/4)
+- [ ] Список вправ показує поточну (підсвічена)
 
-**Тест 3: Audio Placeholder**
-- [ ] Якщо audioExampleUrl == null → показується placeholder текст
-- [ ] Якщо audioExampleUrl != null → показується кнопка "Послухати"
+**Тест 3: Exercise Dialogs**
+- [ ] Вправи відкриваються в правильних діалогах (Articulation/Breathing/Voice)
+- [ ] Таймери працюють
+- [ ] "Готово" → наступна вправа
+- [ ] "Пропустити" → наступна вправа
 
-**Тест 4: Progress Tracking**
-- [ ] Progress bar оновлюється
-- [ ] Після 6/6 з'являється кнопка "Завершити"
-- [ ] Дані зберігаються в Room
+**Тест 4: Completion**
+- [ ] Після 4/4 → діалог "Розминка завершена"
+- [ ] Показується загальний час
+- [ ] "Готово" → повернення назад
+- [ ] Дані зберігаються в Room (category = "quick")
+
+**Тест 5: Progress Tracking**
+- [ ] Після завершення оновлюється WarmupCompletionDao
 - [ ] DataStore оновлюється (todayMinutes)
-
-**Тест 5: Auto-complete**
-- [ ] Коли таймер досягає 0 → auto-mark as completed
 
 ---
 
 ## Очікуваний результат
 
-✅ VoiceWarmupScreen з 6 вправами створено
-✅ Exercise dialog з таймером працює
-✅ Audio player placeholder (ready for Phase 8)
-✅ Progress tracking з Room
-✅ Checklist механіка
-✅ Auto-complete по таймеру
+✅ QuickWarmupScreen зі sequential flow створено
+✅ 4 вправи виконуються одна за одною
+✅ Reuse components з Phase 2.2-2.4
+✅ Auto-start першої вправи
+✅ Progress tracking (0/4 → 4/4)
+✅ Completion dialog
+✅ Room Database integration (category = "quick")
 ✅ DataStore integration
+
+---
+
+## ✨ Phase 2 Завершена!
+
+**Phase 2 — Warmup** тепер повністю реалізована:
+- ✅ 2.1 — Warmup Main Screen (hub)
+- ✅ 2.2 — Articulation Screen (12 вправ)
+- ✅ 2.3 — Breathing Screen (8 вправ + Canvas animations)
+- ✅ 2.4 — Voice Warmup Screen (6 вправ)
+- ✅ 2.5 — Quick Warmup Screen (4 вправи sequential)
+
+**Загальний час розробки Phase 2:** ~8-10 годин
 
 ---
 
 ## Наступний крок
 
-**Phase 2.5: Quick Warmup Screen** — швидка 5-хвилинна розминка (комбінація вправ з 2.2-2.4).
+**Phase 3: Home Screen** — головний екран з персоналізованим планом.
+
+Згідно з PHASE_STRUCTURE_GUIDE.md — Phase 3 буде **цільною фазою** (не розбивати на підфази).
 
 ---
 
-**Час на Phase 2.4:** ~1.5 години
-
-**Примітка:** Аудіо-приклади будуть додані в Phase 8 (Content). Зараз використовуємо placeholder.
+**Час на Phase 2.5:** ~1 година
