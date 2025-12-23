@@ -89,20 +89,32 @@ fun ImprovisationScreen(
             emoji = "📖",
             title = "Розкажи історію",
             description = "Створи захоплюючу розповідь",
-            isLocked = !state.isPremium,
-            isComingSoon = true,
-            comingSoonText = "Phase 5.2",
-            onClick = { /* Phase 5.2 */ }
+            isLocked = false,
+            isComingSoon = false,
+            onClick = {
+                if (viewModel.canStartImprovisation()) {
+                    viewModel.onEvent(ImprovisationEvent.StorytellingClicked)
+                    onNavigateToStorytelling()
+                } else {
+                    onNavigateToPremium()
+                }
+            }
         )
 
         ImprovisationModeCard(
             emoji = "🏆",
             title = "Щоденний челендж",
             description = "Унікальне завдання кожен день",
-            isLocked = !state.isPremium,
-            isComingSoon = true,
-            comingSoonText = "Phase 5.2",
-            onClick = { /* Phase 5.2 */ }
+            isLocked = false,
+            isComingSoon = false,
+            onClick = {
+                if (viewModel.canStartImprovisation()) {
+                    viewModel.onEvent(ImprovisationEvent.DailyChallengeClicked)
+                    onNavigateToChallenge()
+                } else {
+                    onNavigateToPremium()
+                }
+            }
         )
 
         ImprovisationModeCard(

@@ -3,6 +3,7 @@ package com.aivoicepower.di
 import android.content.Context
 import androidx.room.Room
 import com.aivoicepower.data.local.database.AppDatabase
+import com.aivoicepower.data.local.database.dao.DailyChallengeDao
 import com.aivoicepower.data.local.database.dao.MessageDao
 import com.aivoicepower.data.local.database.dao.UserProgressDao
 import com.aivoicepower.data.local.database.dao.WarmupCompletionDao
@@ -47,5 +48,11 @@ object DatabaseModule {
     @Singleton
     fun provideWarmupCompletionDao(database: AppDatabase): WarmupCompletionDao {
         return database.warmupCompletionDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideDailyChallengeDao(database: AppDatabase): DailyChallengeDao {
+        return database.dailyChallengeDao()
     }
 }

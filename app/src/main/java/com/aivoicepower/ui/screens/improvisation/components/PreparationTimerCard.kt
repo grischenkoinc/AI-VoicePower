@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun PreparationTimerCard(
     timeLeft: Int,
-    onGenerateNew: () -> Unit,
+    onGenerateNew: (() -> Unit)?,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -35,11 +35,13 @@ fun PreparationTimerCard(
                 color = MaterialTheme.colorScheme.primary
             )
 
-            OutlinedButton(
-                onClick = onGenerateNew,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("🔄 Інша тема")
+            onGenerateNew?.let { callback ->
+                OutlinedButton(
+                    onClick = callback,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("🔄 Інша тема")
+                }
             }
         }
     }

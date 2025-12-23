@@ -1,4 +1,4 @@
-# Промпт для Claude Code — Phase 5.1: Improvisation Hub + Random Topic
+# Промпт для Claude Code — Phase 5.2: Storytelling + Daily Challenge
 
 ## Контекст
 
@@ -8,119 +8,101 @@
 - ✅ Phase 2.1-2.5 — Warmup
 - ✅ Phase 3 — Home Screen
 - ✅ Phase 4.1-4.4 — Courses (повністю)
+- ✅ Phase 5.1 — Improvisation Hub + Random Topic
 
-Зараз **Phase 5.1 — Improvisation Hub + Random Topic** — перша підфаза Phase 5.
+Зараз **Phase 5.2 — Storytelling + Daily Challenge** — друга підфаза Phase 5.
 
-**Згідно з PHASE_STRUCTURE_GUIDE.md**: Початок системи імпровізації.
+**Згідно з PHASE_STRUCTURE_GUIDE.md**: Середньої складності, креативні формати імпровізації.
 
-**Специфікація:** `SPECIFICATION.md`, секція 4.3.7 (Improvisation Screen).
+**Специфікація:** `SPECIFICATION.md`, секції 4.3.7 (Improvisation Screen) + 5.5 (ImprovisationTask).
 
 **Складність:** 🟡 СЕРЕДНЯ  
-**Час:** ⏱️ 2-3 години
+**Час:** ⏱️ 2 години
 
 ---
 
-## Ключова ідея Phase 5
+## Ключова ідея
 
-**Improvisation** — це тренування спонтанного мовлення через 5 режимів:
+**Phase 5.2** додає 2 нові режими імпровізації:
 
-| Режим | Механіка | Phase |
-|-------|----------|-------|
-| 🎲 Random Topic | Тема → підготовка 15 сек → запис 1-3 хв → AI-аналіз | **5.1** |
-| 📖 Storytelling | Елементи сюжету → розповідь → AI-аналіз | 5.2 |
-| 🏆 Daily Challenge | Унікальне завдання щодня → запис → трекінг | 5.2 |
-| ⚔️ Debate | Тема + позиція → раунди аргументів → AI-контраргументи | 5.3 🔴 |
-| 💼 Sales Pitch | Товар + клієнт → pitch → AI грає клієнта з питаннями | 5.3 🔴 |
+### 1. Storytelling (Розповідь історій)
+4 формати:
+- **З підказками** — герой, місце, предмет, твіст
+- **За картинкою** — опис згенерованої сцени (поки текст)
+- **Продовж історію** — початок історії, треба завершити
+- **3 випадкові слова** — включити слова в розповідь
 
-**Phase 5.1** фокусується на:
-1. **Hub Screen** — головний екран вибору режиму
-2. **Random Topic** — перший та найпростіший режим
+### 2. Daily Challenge (Щоденний челендж)
+- Унікальне завдання кожен день
+- Різні типи: тема, storytelling, емоція, обмеження
+- Tracking completion у DailyChallengeEntity
+- Badge за виконання
 
 ---
 
-## Задача Phase 5.1
-
-### 1. Improvisation Hub Screen
+## Storytelling Flow
 
 ```
-┌────────────────────────────────────┐
-│  🎭 Імпровізація                   │
-├────────────────────────────────────┤
-│                                    │
-│  Тренуй спонтанне мовлення         │
-│                                    │
-│  📊 Сьогодні: 1/3 (Free tier)      │
-│                                    │
-│  ┌──────────────────────────────┐ │
-│  │ 🎲 Випадкова тема            │ │
-│  │ Готовий говорити про що     │ │
-│  │ завгодно?                    │ │
-│  │                              │ │
-│  │ [Почати →]                   │ │
-│  └──────────────────────────────┘ │
-│                                    │
-│  ┌──────────────────────────────┐ │
-│  │ 📖 Розкажи історію      🔒   │ │
-│  │ (Phase 5.2)                  │ │
-│  └──────────────────────────────┘ │
-│                                    │
-│  ┌──────────────────────────────┐ │
-│  │ 🏆 Щоденний челендж     🔒   │ │
-│  │ (Phase 5.2)                  │ │
-│  └──────────────────────────────┘ │
-│                                    │
-│  ┌──────────────────────────────┐ │
-│  │ ⚔️ Дебати з AI          🔒   │ │
-│  │ (Phase 5.3)                  │ │
-│  └──────────────────────────────┘ │
-│                                    │
-│  ┌──────────────────────────────┐ │
-│  │ 💼 Продай товар         🔒   │ │
-│  │ (Phase 5.3)                  │ │
-│  └──────────────────────────────┘ │
-│                                    │
-└────────────────────────────────────┘
+ImprovisationScreen
+    │
+    ▼
+Click "Storytelling"
+    │
+    ▼
+StorytellingScreen
+    │
+    ├─ Вибір формату (4 варіанти)
+    │
+    ▼
+Генерація елементів історії
+    │
+    ├─ WITH_PROMPTS: герой, місце, предмет, твіст
+    ├─ FROM_IMAGE: опис сцени
+    ├─ CONTINUE: початок історії
+    ├─ RANDOM_WORDS: 3 слова
+    │
+    ▼
+30 секунд підготовка
+    │
+    ▼
+Запис 2-4 хв
+    │
+    ▼
+Збереження → RecordingDao
+    │
+    ▼
+Navigate → Results Screen
 ```
 
-### 2. Random Topic Flow
+---
+
+## Daily Challenge Flow
 
 ```
-┌────────────────────────────────────┐
-│  ← Випадкова тема                  │
-├────────────────────────────────────┤
-│                                    │
-│  🎲 Твоя тема:                     │
-│                                    │
-│  "Чому подорожі змінюють людину"   │
-│                                    │
-│  💡 Підказки:                      │
-│  • Власний досвід                  │
-│  • Нові перспективи                │
-│  • Культурний обмін                │
-│                                    │
-│  ⏱️ Час підготовки: 00:15          │
-│                                    │
-│  [🔄 Інша тема]  [✓ Готовий]      │
-│                                    │
-└────────────────────────────────────┘
-
-↓ (після натискання "Готовий")
-
-┌────────────────────────────────────┐
-│  Говори 1-3 хвилини                │
-│                                    │
-│  🔴 Запис... 00:42                 │
-│                                    │
-│  "Чому подорожі змінюють людину"   │
-│                                    │
-│  [■ Завершити]                     │
-│                                    │
-└────────────────────────────────────┘
-
-↓ (після завершення)
-
-Navigate to Results Screen (Phase 4.4)
-  з placeholder AI-аналізу
+ImprovisationScreen
+    │
+    ▼
+Click "Щоденний челендж"
+    │
+    ▼
+DailyChallengeScreen
+    │
+    ├─ Перевірка: чи є челендж на сьогодні?
+    │
+    ├─ Якщо НІ → генерувати новий (based on date seed)
+    ├─ Якщо ТАК → показати існуючий
+    │
+    ▼
+Показати челендж (з типом та інструкціями)
+    │
+    ▼
+Виконання (підготовка + запис)
+    │
+    ▼
+Mark completed в DailyChallengeDao
+    │
+    ▼
+Navigate → Results Screen
 ```
 
 ---
@@ -129,465 +111,349 @@ Navigate to Results Screen (Phase 4.4)
 
 ```
 ui/screens/improvisation/
-├── ImprovisationScreen.kt              # Hub
-├── ImprovisationViewModel.kt
-├── ImprovisationState.kt
-├── ImprovisationEvent.kt
-├── RandomTopicScreen.kt                # Random Topic
-├── RandomTopicViewModel.kt
-├── RandomTopicState.kt
-├── RandomTopicEvent.kt
+├── StorytellingScreen.kt
+├── StorytellingViewModel.kt
+├── StorytellingState.kt
+├── StorytellingEvent.kt
+│
+├── DailyChallengeScreen.kt
+├── DailyChallengeViewModel.kt
+├── DailyChallengeState.kt
+├── DailyChallengeEvent.kt
+│
 └── components/
-    ├── ImprovisationModeCard.kt
-    ├── TopicDisplayCard.kt
-    ├── PreparationTimerCard.kt
-    └── RandomTopicRecordingCard.kt
+    ├── StoryFormatCard.kt
+    ├── StoryElementsCard.kt
+    └── ChallengeCard.kt
 
 data/content/
-└── ImprovisationTopicsProvider.kt      # 50+ topics
+├── StoryElementsProvider.kt
+└── DailyChallengeProvider.kt
 ```
 
 ---
 
 ## Повний код
 
-### 1. Domain Model (якщо ще не створено в Phase 0.5)
-
-#### domain/model/content/ImprovisationTopic.kt
+### 1. StoryElementsProvider.kt
 
 ```kotlin
-package com.aivoicepower.domain.model.content
+package com.aivoicepower.data.content
 
-import com.aivoicepower.domain.model.course.Difficulty
+import com.aivoicepower.domain.model.exercise.StoryFormat
 
-data class ImprovisationTopic(
-    val id: String,
-    val title: String,
-    val difficulty: Difficulty,
-    val hints: List<String> = emptyList()
-)
-```
-
----
-
-### 2. ImprovisationState.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.improvisation
-
-data class ImprovisationState(
-    val completedToday: Int = 0,
-    val dailyLimit: Int = 3,
-    val isPremium: Boolean = false,
-    val isLoading: Boolean = true,
-    val error: String? = null
-)
-```
-
-### 3. ImprovisationEvent.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.improvisation
-
-sealed class ImprovisationEvent {
-    object RandomTopicClicked : ImprovisationEvent()
-    object StorytellingClicked : ImprovisationEvent()
-    object DailyChallengeClicked : ImprovisationEvent()
-    object DebateClicked : ImprovisationEvent()
-    object SalesPitchClicked : ImprovisationEvent()
-}
-```
-
-### 4. ImprovisationViewModel.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.improvisation
-
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import javax.inject.Inject
-
-@HiltViewModel
-class ImprovisationViewModel @Inject constructor(
-    private val userPreferencesDataStore: UserPreferencesDataStore
-) : ViewModel() {
+/**
+ * Provider для елементів історій
+ */
+object StoryElementsProvider {
     
-    private val _state = MutableStateFlow(ImprovisationState())
-    val state: StateFlow<ImprovisationState> = _state.asStateFlow()
+    data class StoryElements(
+        val format: StoryFormat,
+        val hero: String? = null,
+        val place: String? = null,
+        val item: String? = null,
+        val twist: String? = null,
+        val sceneDescription: String? = null,
+        val storyBeginning: String? = null,
+        val randomWords: List<String>? = null
+    )
     
-    init {
-        loadImprovisationStats()
-    }
+    private val heroes = listOf(
+        "детектив", "вчитель", "програміст", "космонавт", "шеф-кухар",
+        "художник", "лікар", "музикант", "блогер", "археолог",
+        "піцабот", "таксист", "письменник", "дизайнер", "спортсмен"
+    )
     
-    fun onEvent(event: ImprovisationEvent) {
-        when (event) {
-            ImprovisationEvent.RandomTopicClicked -> {
-                // Navigation handled in Screen
-            }
-            ImprovisationEvent.StorytellingClicked -> {
-                // Phase 5.2
-            }
-            ImprovisationEvent.DailyChallengeClicked -> {
-                // Phase 5.2
-            }
-            ImprovisationEvent.DebateClicked -> {
-                // Phase 5.3
-            }
-            ImprovisationEvent.SalesPitchClicked -> {
-                // Phase 5.3
-            }
-        }
-    }
+    private val places = listOf(
+        "покинута бібліотека", "космічна станція", "старовинний замок",
+        "сучасний офіс", "таємничий ліс", "підводна база", "дах хмарочосу",
+        "антикварна крамниця", "метро о 3 ночі", "парк атракціонів",
+        "пекарня в маленькому місті", "музей природознавства", "recording studio"
+    )
     
-    private fun loadImprovisationStats() {
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            
-            try {
-                userPreferencesDataStore.userPreferencesFlow
-                    .collect { prefs ->
-                        _state.update {
-                            it.copy(
-                                completedToday = prefs.freeImprovisationsToday,
-                                dailyLimit = 3, // FreeTierLimits.FREE_IMPROVISATIONS_PER_DAY
-                                isPremium = prefs.isPremium,
-                                isLoading = false,
-                                error = null
-                            )
-                        }
-                    }
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        error = "Не вдалось завантажити дані"
-                    )
-                }
-            }
-        }
-    }
+    private val items = listOf(
+        "стара карта", "загадковий ключ", "фотографія", "лист від незнайомця",
+        "зламаний годинник", "музична скринька", "старовинна книга",
+        "чарівний амулет", "планшет з дивними даними", "записка з координатами",
+        "старий мобільний телефон", "незвичайна монета", "пошкоджений диск"
+    )
     
-    fun canStartImprovisation(): Boolean {
-        val state = _state.value
-        return state.isPremium || state.completedToday < state.dailyLimit
-    }
-}
-```
-
-### 5. ImprovisationScreen.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.improvisation
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.aivoicepower.ui.screens.improvisation.components.ImprovisationModeCard
-
-@Composable
-fun ImprovisationScreen(
-    viewModel: ImprovisationViewModel = hiltViewModel(),
-    onNavigateToRandomTopic: () -> Unit,
-    onNavigateToStorytelling: () -> Unit,
-    onNavigateToDebate: () -> Unit,
-    onNavigateToSales: () -> Unit,
-    onNavigateToChallenge: () -> Unit,
-    onNavigateToPremium: () -> Unit
-) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
+    private val twists = listOf(
+        "раптом зник світ", "з'явилася людина з майбутнього",
+        "герой виявляє приховану здатність", "місце виявляється ілюзією",
+        "час починає йти назад", "герой зустрічає себе з минулого",
+        "реальність виявляється симуляцією", "герой розуміє що спить",
+        "всі люди навколо зникають", "починається несподівана подорож"
+    )
     
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Header
-        Text(
-            text = "🎭 Імпровізація",
-            style = MaterialTheme.typography.headlineMedium
-        )
-        
-        Text(
-            text = "Тренуй спонтанне мовлення",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        
-        // Stats card (for free users)
-        if (!state.isPremium) {
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                )
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "📊 Сьогодні:",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = "${state.completedToday}/${state.dailyLimit}",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-        }
-        
-        // Mode cards
-        ImprovisationModeCard(
-            emoji = "🎲",
-            title = "Випадкова тема",
-            description = "Готовий говорити про що завгодно?",
-            isLocked = false,
-            isComingSoon = false,
-            onClick = {
-                if (viewModel.canStartImprovisation()) {
-                    viewModel.onEvent(ImprovisationEvent.RandomTopicClicked)
-                    onNavigateToRandomTopic()
-                } else {
-                    onNavigateToPremium()
-                }
-            }
-        )
-        
-        ImprovisationModeCard(
-            emoji = "📖",
-            title = "Розкажи історію",
-            description = "Створи захоплюючу розповідь",
-            isLocked = !state.isPremium,
-            isComingSoon = true,
-            comingSoonText = "Phase 5.2",
-            onClick = {
-                // Phase 5.2
-            }
-        )
-        
-        ImprovisationModeCard(
-            emoji = "🏆",
-            title = "Щоденний челендж",
-            description = "Унікальне завдання кожен день",
-            isLocked = !state.isPremium,
-            isComingSoon = true,
-            comingSoonText = "Phase 5.2",
-            onClick = {
-                // Phase 5.2
-            }
-        )
-        
-        ImprovisationModeCard(
-            emoji = "⚔️",
-            title = "Дебати з AI",
-            description = "Переконуй штучний інтелект",
-            isLocked = !state.isPremium,
-            isComingSoon = true,
-            comingSoonText = "Phase 5.3",
-            onClick = {
-                // Phase 5.3
-            }
-        )
-        
-        ImprovisationModeCard(
-            emoji = "💼",
-            title = "Продай товар",
-            description = "Презентуй продукт AI-клієнту",
-            isLocked = !state.isPremium,
-            isComingSoon = true,
-            comingSoonText = "Phase 5.3",
-            onClick = {
-                // Phase 5.3
-            }
-        )
-        
-        // Premium prompt (if needed)
-        if (!state.isPremium && state.completedToday >= state.dailyLimit) {
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "⭐ Ліміт вичерпано",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = "Отримай Premium для необмеженої практики",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Button(
-                        onClick = onNavigateToPremium,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Дізнатись більше")
-                    }
-                }
-            }
-        }
-    }
-}
-```
-
-### 6. components/ImprovisationModeCard.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.improvisation.components
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-
-@Composable
-fun ImprovisationModeCard(
-    emoji: String,
-    title: String,
-    description: String,
-    isLocked: Boolean,
-    isComingSoon: Boolean = false,
-    comingSoonText: String? = null,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        onClick = onClick,
-        enabled = !isComingSoon,
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Emoji
-            Text(
-                text = emoji,
-                style = MaterialTheme.typography.displaySmall
+    private val sceneDescriptions = listOf(
+        "Порожній вагон метро, що мчить крізь тунель. На підлозі - загадкова сумка.",
+        "Дах хмарочосу на світанку. Вдалині - силует незнайомої людини.",
+        "Стара бібліотека після закриття. Одна книга світиться у темряві.",
+        "Кафе біля вікна під час грози. За столиком - незнайомець з твоїм фото.",
+        "Пустеля вночі під зоряним небом. Вдалині - таємничі вогні."
+    )
+    
+    private val storyBeginnings = listOf(
+        "Того ранку все почалося з дивного дзвінка на мобільний. Номер був невідомий, але голос здавався до болю знайомим...",
+        "Я знайшов цей ключ у кишені куртки, яку купив у секонд-хенді. На бирці було написано адресу, якої не існувало на картах...",
+        "Вона сказала мені три слова, які змінили все: 'У тебе є 24 години'. Тоді я ще не розумів, що це означає...",
+        "Коли я прокинувся того ранку, моя квартира була повністю порожня. Але найдивнішим було інше - на стіні висіла картина, якої я ніколи не бачив..."
+    )
+    
+    private val randomWordsSets = listOf(
+        listOf("парасолька", "дзеркало", "кава"),
+        listOf("блокнот", "світлофор", "мелодія"),
+        listOf("годинник", "вікно", "таємниця"),
+        listOf("телефон", "дощ", "спогад"),
+        listOf("ключ", "двері", "майбутнє"),
+        listOf("книга", "вогонь", "зустріч"),
+        listOf("листок", "вітер", "рішення")
+    )
+    
+    fun generateStoryElements(format: StoryFormat): StoryElements {
+        return when (format) {
+            StoryFormat.WITH_PROMPTS -> StoryElements(
+                format = format,
+                hero = heroes.random(),
+                place = places.random(),
+                item = items.random(),
+                twist = twists.random()
             )
-            
-            // Content
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    
-                    if (isLocked) {
-                        Icon(
-                            imageVector = Icons.Default.Lock,
-                            contentDescription = "Premium",
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    
-                    if (isComingSoon && comingSoonText != null) {
-                        Surface(
-                            color = MaterialTheme.colorScheme.secondaryContainer,
-                            shape = MaterialTheme.shapes.small
-                        ) {
-                            Text(
-                                text = comingSoonText,
-                                style = MaterialTheme.typography.labelSmall,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                            )
-                        }
-                    }
-                }
-                
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            
-            // Arrow
-            if (!isComingSoon) {
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowRight,
-                    contentDescription = null
-                )
-            }
+            StoryFormat.FROM_IMAGE -> StoryElements(
+                format = format,
+                sceneDescription = sceneDescriptions.random()
+            )
+            StoryFormat.CONTINUE -> StoryElements(
+                format = format,
+                storyBeginning = storyBeginnings.random()
+            )
+            StoryFormat.RANDOM_WORDS -> StoryElements(
+                format = format,
+                randomWords = randomWordsSets.random()
+            )
         }
     }
 }
 ```
 
----
-
-## Random Topic Screen
-
-### 7. RandomTopicState.kt
+### 2. DailyChallengeProvider.kt
 
 ```kotlin
-package com.aivoicepower.ui.screens.improvisation
+package com.aivoicepower.data.content
 
-import com.aivoicepower.domain.model.content.ImprovisationTopic
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.random.Random
 
-data class RandomTopicState(
-    val currentTopic: ImprovisationTopic? = null,
-    val preparationTimeLeft: Int = 15, // seconds
-    val isPreparationPhase: Boolean = true,
-    val isRecording: Boolean = false,
-    val recordingDurationMs: Long = 0,
-    val recordingPath: String? = null,
-    val recordingId: String? = null,
-    val isLoading: Boolean = false,
-    val error: String? = null
-)
-```
-
-### 8. RandomTopicEvent.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.improvisation
-
-sealed class RandomTopicEvent {
-    object GenerateNewTopic : RandomTopicEvent()
-    object StartPreparation : RandomTopicEvent()
-    object StartRecording : RandomTopicEvent()
-    object StopRecording : RandomTopicEvent()
-    object CompleteTask : RandomTopicEvent()
+/**
+ * Provider для щоденних челенджів
+ */
+object DailyChallengeProvider {
+    
+    data class DailyChallenge(
+        val id: String,
+        val date: String,
+        val type: ChallengeType,
+        val title: String,
+        val description: String,
+        val instruction: String,
+        val duration: Int,
+        val difficulty: String
+    )
+    
+    enum class ChallengeType {
+        TOPIC,          // Тема для обговорення
+        STORYTELLING,   // Розповідь історії
+        EMOTION,        // Говорити з емоцією
+        CONSTRAINT,     // З обмеженням (без "я", без пауз)
+        SPEED,          // Швидко/повільно
+        PERSUASION      // Переконання
+    }
+    
+    private val topicChallenges = listOf(
+        "Розкажи про найважливіший урок, який ти отримав/отримала цього року",
+        "Опиши ідеальний день з погляду продуктивності",
+        "Переконай слухачів, чому варто вивчати нову навичку після 30",
+        "Розкажи про технологію майбутнього, яку ти б хотів/хотіла побачити",
+        "Опиши місце, де ти відчуваєш себе найщасливішим/найщасливішою"
+    )
+    
+    private val storytellingChallenges = listOf(
+        "Розкажи історію про випадкову зустріч, що змінила чиєсь життя",
+        "Створи детективну історію про зниклий артефакт",
+        "Розкажи казку для дорослих про пошук сенсу життя",
+        "Опиши день з життя звичайного предмета (чашка, телефон, ключ)"
+    )
+    
+    private val emotionChallenges = listOf(
+        "Розкажи про свій день надзвичайно ентузіазним тоном",
+        "Опиши рецепт страви драматичним шекспірівським стилем",
+        "Поясни, як користуватися смартфоном, наче це найскладніша річ",
+        "Розкажи про похід до магазину як про епічну пригоду"
+    )
+    
+    private val constraintChallenges = listOf(
+        "Говори 2 хвилини без використання слова 'я' та 'мені'",
+        "Опиши свій день без пауз довше 1 секунди",
+        "Розкажи історію, використовуючи тільки короткі речення (максимум 7 слів)",
+        "Говори про технології без використання англійських слів"
+    )
+    
+    private val speedChallenges = listOf(
+        "Розкажи про улюблений фільм дуже повільно та виразно",
+        "Опиши свій ранок максимально швидко, але чітко",
+        "Поясни складну концепцію повільно, наче дитині"
+    )
+    
+    private val persuasionChallenges = listOf(
+        "Переконай слухачів, що 4-денний робочий тиждень - це майбутнє",
+        "Доведи, що книги кращі за фільми (або навпаки)",
+        "Аргументуй, чому варто відмовитися від соцмереж на місяць",
+        "Переконай скептика спробувати нову активність"
+    )
+    
+    /**
+     * Генерує челендж на основі дати (детермінований)
+     */
+    fun getChallengeForDate(date: String): DailyChallenge {
+        // Use date as seed for deterministic randomness
+        val seed = date.hashCode().toLong()
+        val random = Random(seed)
+        
+        val type = ChallengeType.values()[random.nextInt(ChallengeType.values().size)]
+        
+        val (title, description, instruction) = when (type) {
+            ChallengeType.TOPIC -> {
+                val challenge = topicChallenges[random.nextInt(topicChallenges.size)]
+                Triple(
+                    "Тематичний виступ",
+                    challenge,
+                    "Структуруй свою розповідь: вступ, основна частина, висновок"
+                )
+            }
+            ChallengeType.STORYTELLING -> {
+                val challenge = storytellingChallenges[random.nextInt(storytellingChallenges.size)]
+                Triple(
+                    "Storytelling",
+                    challenge,
+                    "Використай драматургічну структуру: зав'язка, розвиток, кульмінація, розв'язка"
+                )
+            }
+            ChallengeType.EMOTION -> {
+                val challenge = emotionChallenges[random.nextInt(emotionChallenges.size)]
+                Triple(
+                    "Емоційний виклик",
+                    challenge,
+                    "Використовуй інтонацію, паузи та емоційні акценти"
+                )
+            }
+            ChallengeType.CONSTRAINT -> {
+                val challenge = constraintChallenges[random.nextInt(constraintChallenges.size)]
+                Triple(
+                    "Виклик з обмеженням",
+                    challenge,
+                    "Дотримуйся правил, але говори природно"
+                )
+            }
+            ChallengeType.SPEED -> {
+                val challenge = speedChallenges[random.nextInt(speedChallenges.size)]
+                Triple(
+                    "Темп мовлення",
+                    challenge,
+                    "Стеж за темпом, але не втрачай чіткості"
+                )
+            }
+            ChallengeType.PERSUASION -> {
+                val challenge = persuasionChallenges[random.nextInt(persuasionChallenges.size)]
+                Triple(
+                    "Переконання",
+                    challenge,
+                    "Використовуй факти, логіку та емоційний зв'язок"
+                )
+            }
+        }
+        
+        val duration = when (type) {
+            ChallengeType.CONSTRAINT, ChallengeType.SPEED -> 120 // 2 min
+            else -> 180 // 3 min
+        }
+        
+        val difficulty = when (type) {
+            ChallengeType.TOPIC -> "Середня"
+            ChallengeType.STORYTELLING -> "Середня"
+            ChallengeType.EMOTION -> "Легка"
+            ChallengeType.CONSTRAINT -> "Складна"
+            ChallengeType.SPEED -> "Середня"
+            ChallengeType.PERSUASION -> "Складна"
+        }
+        
+        return DailyChallenge(
+            id = "challenge_$date",
+            date = date,
+            type = type,
+            title = title,
+            description = description,
+            instruction = instruction,
+            duration = duration,
+            difficulty = difficulty
+        )
+    }
+    
+    fun getTodayChallenge(): DailyChallenge {
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        return getChallengeForDate(today)
+    }
 }
 ```
 
-### 9. RandomTopicViewModel.kt
+### 3. StorytellingState.kt
+
+```kotlin
+package com.aivoicepower.ui.screens.improvisation
+
+import com.aivoicepower.data.content.StoryElementsProvider
+import com.aivoicepower.domain.model.exercise.StoryFormat
+
+data class StorytellingState(
+    val selectedFormat: StoryFormat? = null,
+    val storyElements: StoryElementsProvider.StoryElements? = null,
+    val phase: StorytellingPhase = StorytellingPhase.FormatSelection,
+    val preparationSecondsLeft: Int = 30,
+    val recordingSecondsElapsed: Int = 0,
+    val maxDuration: Int = 180,
+    val recordingPath: String? = null,
+    val isRecording: Boolean = false,
+    val error: String? = null
+)
+
+sealed class StorytellingPhase {
+    object FormatSelection : StorytellingPhase()
+    object Elements : StorytellingPhase()
+    object Preparation : StorytellingPhase()
+    object Recording : StorytellingPhase()
+    object Completed : StorytellingPhase()
+}
+```
+
+### 4. StorytellingEvent.kt
+
+```kotlin
+package com.aivoicepower.ui.screens.improvisation
+
+import com.aivoicepower.domain.model.exercise.StoryFormat
+
+sealed class StorytellingEvent {
+    data class FormatSelected(val format: StoryFormat) : StorytellingEvent()
+    object GenerateElementsClicked : StorytellingEvent()
+    object StartPreparationClicked : StorytellingEvent()
+    object StartRecordingClicked : StorytellingEvent()
+    object StopRecordingClicked : StorytellingEvent()
+    object SaveAndFinishClicked : StorytellingEvent()
+}
+```
+
+### 5. StorytellingViewModel.kt
 
 ```kotlin
 package com.aivoicepower.ui.screens.improvisation
@@ -595,10 +461,11 @@ package com.aivoicepower.ui.screens.improvisation
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aivoicepower.data.content.ImprovisationTopicsProvider
+import com.aivoicepower.data.content.StoryElementsProvider
 import com.aivoicepower.data.local.database.dao.RecordingDao
 import com.aivoicepower.data.local.database.entity.RecordingEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
+import com.aivoicepower.domain.model.exercise.StoryFormat
 import com.aivoicepower.utils.audio.AudioRecorderUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -609,71 +476,65 @@ import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class RandomTopicViewModel @Inject constructor(
+class StorytellingViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val recordingDao: RecordingDao,
     private val userPreferencesDataStore: UserPreferencesDataStore
 ) : ViewModel() {
     
-    private val _state = MutableStateFlow(RandomTopicState())
-    val state: StateFlow<RandomTopicState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(StorytellingState())
+    val state: StateFlow<StorytellingState> = _state.asStateFlow()
     
     private val audioRecorder = AudioRecorderUtil(context)
-    
-    init {
-        generateNewTopic()
-    }
     
     override fun onCleared() {
         super.onCleared()
         audioRecorder.release()
     }
     
-    fun onEvent(event: RandomTopicEvent) {
+    fun onEvent(event: StorytellingEvent) {
         when (event) {
-            RandomTopicEvent.GenerateNewTopic -> {
-                generateNewTopic()
+            is StorytellingEvent.FormatSelected -> {
+                _state.update { it.copy(selectedFormat = event.format) }
             }
-            RandomTopicEvent.StartPreparation -> {
-                startPreparationTimer()
+            StorytellingEvent.GenerateElementsClicked -> {
+                generateElements()
             }
-            RandomTopicEvent.StartRecording -> {
+            StorytellingEvent.StartPreparationClicked -> {
+                startPreparation()
+            }
+            StorytellingEvent.StartRecordingClicked -> {
                 startRecording()
             }
-            RandomTopicEvent.StopRecording -> {
+            StorytellingEvent.StopRecordingClicked -> {
                 stopRecording()
             }
-            RandomTopicEvent.CompleteTask -> {
-                completeTask()
+            StorytellingEvent.SaveAndFinishClicked -> {
+                saveRecording()
             }
         }
     }
     
-    private fun generateNewTopic() {
-        val allTopics = ImprovisationTopicsProvider.getAllTopics()
-        val randomTopic = allTopics.random()
-        
+    private fun generateElements() {
+        val format = _state.value.selectedFormat ?: return
+        val elements = StoryElementsProvider.generateStoryElements(format)
         _state.update {
             it.copy(
-                currentTopic = randomTopic,
-                preparationTimeLeft = 15,
-                isPreparationPhase = true,
-                isRecording = false,
-                recordingPath = null,
-                recordingId = null
+                storyElements = elements,
+                phase = StorytellingPhase.Elements
             )
         }
     }
     
-    private fun startPreparationTimer() {
+    private fun startPreparation() {
+        _state.update { it.copy(phase = StorytellingPhase.Preparation, preparationSecondsLeft = 30) }
+        
         viewModelScope.launch {
-            for (i in 15 downTo 0) {
-                _state.update { it.copy(preparationTimeLeft = i) }
+            repeat(30) {
                 delay(1000)
+                _state.update { it.copy(preparationSecondsLeft = it.preparationSecondsLeft - 1) }
             }
-            
-            // Timer finished, user can now start recording
-            _state.update { it.copy(isPreparationPhase = false) }
+            _state.update { it.copy(phase = StorytellingPhase.Recording) }
         }
     }
     
@@ -688,17 +549,22 @@ class RandomTopicViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         isRecording = true,
-                        recordingPath = outputFile.absolutePath,
-                        isPreparationPhase = false
+                        recordingSecondsElapsed = 0,
+                        recordingPath = outputFile.absolutePath
                     )
                 }
                 
-                // Track recording duration
-                val startTime = System.currentTimeMillis()
-                while (_state.value.isRecording) {
-                    val duration = System.currentTimeMillis() - startTime
-                    _state.update { it.copy(recordingDurationMs = duration) }
-                    delay(100)
+                // Timer
+                val maxSeconds = _state.value.maxDuration
+                var elapsed = 0
+                while (elapsed < maxSeconds && _state.value.isRecording) {
+                    delay(1000)
+                    elapsed++
+                    _state.update { it.copy(recordingSecondsElapsed = elapsed) }
+                }
+                
+                if (elapsed >= maxSeconds) {
+                    stopRecording()
                 }
             } catch (e: Exception) {
                 _state.update {
@@ -714,19 +580,17 @@ class RandomTopicViewModel @Inject constructor(
     private fun stopRecording() {
         viewModelScope.launch {
             try {
-                val result = audioRecorder.stopRecording()
-                
+                audioRecorder.stopRecording()
                 _state.update {
                     it.copy(
                         isRecording = false,
-                        recordingPath = result?.filePath,
-                        recordingDurationMs = result?.durationMs ?: it.recordingDurationMs
+                        phase = StorytellingPhase.Completed
                     )
                 }
             } catch (e: Exception) {
                 _state.update {
                     it.copy(
-                        error = "Помилка зупинки запису: ${e.message}",
+                        error = "Помилка зупинки: ${e.message}",
                         isRecording = false
                     )
                 }
@@ -734,32 +598,23 @@ class RandomTopicViewModel @Inject constructor(
         }
     }
     
-    private fun completeTask() {
+    private fun saveRecording() {
         viewModelScope.launch {
             try {
-                val recordingPath = _state.value.recordingPath
-                val topic = _state.value.currentTopic
+                val recordingPath = _state.value.recordingPath ?: return@launch
+                val format = _state.value.selectedFormat ?: return@launch
                 
-                if (recordingPath != null && topic != null) {
-                    // Save recording to database
-                    val recordingId = UUID.randomUUID().toString()
-                    val recordingEntity = RecordingEntity(
-                        id = recordingId,
-                        filePath = recordingPath,
-                        durationMs = _state.value.recordingDurationMs,
-                        type = "improvisation",
-                        contextId = "random_topic",
-                        exerciseId = null,
-                        isAnalyzed = false
-                    )
-                    recordingDao.insert(recordingEntity)
-                    
-                    // Increment free improvisation counter
-                    userPreferencesDataStore.incrementFreeImprovisations()
-                    
-                    // Store recordingId for navigation
-                    _state.update { it.copy(recordingId = recordingId) }
-                }
+                val recordingEntity = RecordingEntity(
+                    id = UUID.randomUUID().toString(),
+                    filePath = recordingPath,
+                    durationMs = _state.value.recordingSecondsElapsed * 1000L,
+                    type = "improvisation",
+                    contextId = "storytelling_${format.name}",
+                    isAnalyzed = false
+                )
+                
+                recordingDao.insert(recordingEntity)
+                userPreferencesDataStore.incrementFreeImprovisations()
             } catch (e: Exception) {
                 _state.update {
                     it.copy(error = "Помилка збереження: ${e.message}")
@@ -770,7 +625,7 @@ class RandomTopicViewModel @Inject constructor(
 }
 ```
 
-### 10. RandomTopicScreen.kt
+### 6. StorytellingScreen.kt
 
 ```kotlin
 package com.aivoicepower.ui.screens.improvisation
@@ -782,33 +637,26 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.aivoicepower.domain.model.exercise.StoryFormat
 import com.aivoicepower.ui.screens.improvisation.components.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RandomTopicScreen(
-    viewModel: RandomTopicViewModel = hiltViewModel(),
+fun StorytellingScreen(
+    viewModel: StorytellingViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
     onNavigateToResults: (recordingId: String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     
-    // Auto-start preparation timer when topic is loaded
-    LaunchedEffect(state.currentTopic) {
-        if (state.currentTopic != null && state.isPreparationPhase && state.preparationTimeLeft == 15) {
-            viewModel.onEvent(RandomTopicEvent.StartPreparation)
-        }
-    }
-    
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("🎲 Випадкова тема") },
+                title = { Text("Storytelling") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
@@ -817,205 +665,516 @@ fun RandomTopicScreen(
             )
         }
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            when {
-                state.isPreparationPhase -> {
-                    // Preparation phase
-                    state.currentTopic?.let { topic ->
-                        TopicDisplayCard(topic = topic)
-                        
-                        PreparationTimerCard(
-                            timeLeft = state.preparationTimeLeft,
-                            onGenerateNew = {
-                                viewModel.onEvent(RandomTopicEvent.GenerateNewTopic)
-                            }
-                        )
-                    }
-                    
-                    if (state.preparationTimeLeft == 0) {
-                        Button(
-                            onClick = {
-                                viewModel.onEvent(RandomTopicEvent.StartRecording)
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("🎤 Почати запис")
-                        }
-                    }
-                }
-                
-                state.isRecording -> {
-                    // Recording phase
-                    state.currentTopic?.let { topic ->
-                        RandomTopicRecordingCard(
-                            topic = topic,
-                            durationMs = state.recordingDurationMs,
-                            onStop = {
-                                viewModel.onEvent(RandomTopicEvent.StopRecording)
-                            }
-                        )
-                    }
-                }
-                
-                else -> {
-                    // Recording completed
-                    state.currentTopic?.let { topic ->
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer
-                            )
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Text(
-                                    text = "✓ Запис завершено",
-                                    style = MaterialTheme.typography.titleLarge
-                                )
-                                Text(
-                                    text = "Тривалість: ${formatDuration(state.recordingDurationMs)}",
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                            }
-                        }
-                        
-                        Button(
-                            onClick = {
-                                viewModel.onEvent(RandomTopicEvent.CompleteTask)
-                                // Wait for recordingId to be set
-                                state.recordingId?.let { recordingId ->
-                                    onNavigateToResults(recordingId)
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            enabled = state.recordingId != null || state.recordingPath != null
-                        ) {
-                            Text("Переглянути результати")
-                        }
-                        
-                        OutlinedButton(
-                            onClick = {
-                                viewModel.onEvent(RandomTopicEvent.GenerateNewTopic)
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("🔄 Нова тема")
-                        }
-                    }
-                }
-            }
-            
-            // Error message
-            state.error?.let { error ->
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer
+            when (state.phase) {
+                StorytellingPhase.FormatSelection -> {
+                    FormatSelectionContent(
+                        selectedFormat = state.selectedFormat,
+                        onFormatSelected = { viewModel.onEvent(StorytellingEvent.FormatSelected(it)) },
+                        onGenerate = { viewModel.onEvent(StorytellingEvent.GenerateElementsClicked) }
                     )
-                ) {
-                    Text(
-                        text = error,
-                        modifier = Modifier.padding(16.dp),
-                        color = MaterialTheme.colorScheme.onErrorContainer
+                }
+                
+                StorytellingPhase.Elements -> {
+                    StoryElementsContent(
+                        storyElements = state.storyElements!!,
+                        onStart = { viewModel.onEvent(StorytellingEvent.StartPreparationClicked) },
+                        onRegenerate = { viewModel.onEvent(StorytellingEvent.GenerateElementsClicked) }
+                    )
+                }
+                
+                StorytellingPhase.Preparation -> {
+                    com.aivoicepower.ui.screens.improvisation.components.PreparationTimer(
+                        title = "Підготовка до розповіді",
+                        secondsLeft = state.preparationSecondsLeft,
+                        hint = "Продумай структуру своєї історії"
+                    )
+                }
+                
+                StorytellingPhase.Recording -> {
+                    StoryRecordingContent(
+                        isRecording = state.isRecording,
+                        secondsElapsed = state.recordingSecondsElapsed,
+                        maxSeconds = state.maxDuration,
+                        onStart = { viewModel.onEvent(StorytellingEvent.StartRecordingClicked) },
+                        onStop = { viewModel.onEvent(StorytellingEvent.StopRecordingClicked) }
+                    )
+                }
+                
+                StorytellingPhase.Completed -> {
+                    com.aivoicepower.ui.screens.improvisation.components.CompletedPhaseContent(
+                        durationSeconds = state.recordingSecondsElapsed,
+                        onSave = {
+                            viewModel.onEvent(StorytellingEvent.SaveAndFinishClicked)
+                            onNavigateBack()
+                        }
                     )
                 }
             }
         }
     }
 }
-
-private fun formatDuration(durationMs: Long): String {
-    val seconds = (durationMs / 1000).toInt()
-    val minutes = seconds / 60
-    val remainingSeconds = seconds % 60
-    return String.format("%02d:%02d", minutes, remainingSeconds)
-}
 ```
 
-### 11-14. Components (TopicDisplayCard, PreparationTimerCard, RandomTopicRecordingCard)
-
-[Components code same as in previous version - інклудив повністю]
-
----
-
-### 15. Content Provider
-
-#### data/content/ImprovisationTopicsProvider.kt
+### 7. DailyChallengeState.kt
 
 ```kotlin
-package com.aivoicepower.data.content
+package com.aivoicepower.ui.screens.improvisation
 
-import com.aivoicepower.domain.model.content.ImprovisationTopic
-import com.aivoicepower.domain.model.course.Difficulty
+import com.aivoicepower.data.content.DailyChallengeProvider
 
-object ImprovisationTopicsProvider {
+data class DailyChallengeState(
+    val challenge: DailyChallengeProvider.DailyChallenge? = null,
+    val isCompleted: Boolean = false,
+    val phase: ChallengePhase = ChallengePhase.Loading,
+    val preparationSecondsLeft: Int = 30,
+    val recordingSecondsElapsed: Int = 0,
+    val recordingPath: String? = null,
+    val isRecording: Boolean = false,
+    val error: String? = null
+)
+
+sealed class ChallengePhase {
+    object Loading : ChallengePhase()
+    object Challenge : ChallengePhase()
+    object AlreadyCompleted : ChallengePhase()
+    object Preparation : ChallengePhase()
+    object Recording : ChallengePhase()
+    object Completed : ChallengePhase()
+}
+```
+
+### 8. DailyChallengeEvent.kt
+
+```kotlin
+package com.aivoicepower.ui.screens.improvisation
+
+sealed class DailyChallengeEvent {
+    object StartPreparationClicked : DailyChallengeEvent()
+    object StartRecordingClicked : DailyChallengeEvent()
+    object StopRecordingClicked : DailyChallengeEvent()
+    object SaveAndFinishClicked : DailyChallengeEvent()
+}
+```
+
+### 9. DailyChallengeViewModel.kt
+
+```kotlin
+package com.aivoicepower.ui.screens.improvisation
+
+import android.content.Context
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.aivoicepower.data.content.DailyChallengeProvider
+import com.aivoicepower.data.local.database.dao.DailyChallengeDao
+import com.aivoicepower.data.local.database.dao.RecordingDao
+import com.aivoicepower.data.local.database.entity.DailyChallengeEntity
+import com.aivoicepower.data.local.database.entity.RecordingEntity
+import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
+import com.aivoicepower.utils.audio.AudioRecorderUtil
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
+import javax.inject.Inject
+
+@HiltViewModel
+class DailyChallengeViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val dailyChallengeDao: DailyChallengeDao,
+    private val recordingDao: RecordingDao,
+    private val userPreferencesDataStore: UserPreferencesDataStore
+) : ViewModel() {
     
-    fun getAllTopics(): List<ImprovisationTopic> {
-        return listOf(
-            // BEGINNER (15 topics)
-            ImprovisationTopic(
-                id = "topic_1",
-                title = "Чому подорожі змінюють людину",
-                difficulty = Difficulty.BEGINNER,
-                hints = listOf(
-                    "Власний досвід подорожей",
-                    "Нові перспективи та світогляд",
-                    "Культурний обмін"
-                )
-            ),
-            ImprovisationTopic(
-                id = "topic_2",
-                title = "Як технології впливають на наше життя",
-                difficulty = Difficulty.BEGINNER,
-                hints = listOf(
-                    "Позитивні зміни",
-                    "Виклики та проблеми",
-                    "Майбутнє технологій"
-                )
-            ),
-            // ... more 20+ topics
-        )
+    private val _state = MutableStateFlow(DailyChallengeState())
+    val state: StateFlow<DailyChallengeState> = _state.asStateFlow()
+    
+    private val audioRecorder = AudioRecorderUtil(context)
+    
+    init {
+        loadTodayChallenge()
     }
     
-    fun getTopicById(id: String): ImprovisationTopic? {
-        return getAllTopics().find { it.id == id }
+    override fun onCleared() {
+        super.onCleared()
+        audioRecorder.release()
+    }
+    
+    fun onEvent(event: DailyChallengeEvent) {
+        when (event) {
+            DailyChallengeEvent.StartPreparationClicked -> {
+                startPreparation()
+            }
+            DailyChallengeEvent.StartRecordingClicked -> {
+                startRecording()
+            }
+            DailyChallengeEvent.StopRecordingClicked -> {
+                stopRecording()
+            }
+            DailyChallengeEvent.SaveAndFinishClicked -> {
+                saveRecording()
+            }
+        }
+    }
+    
+    private fun loadTodayChallenge() {
+        viewModelScope.launch {
+            val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+            
+            try {
+                // Check if already completed
+                val existing = dailyChallengeDao.getChallengeForDateOnce(today)
+                
+                if (existing != null && existing.isCompleted) {
+                    // Already completed today
+                    val challenge = DailyChallengeProvider.getChallengeForDate(today)
+                    _state.update {
+                        it.copy(
+                            challenge = challenge,
+                            isCompleted = true,
+                            phase = ChallengePhase.AlreadyCompleted
+                        )
+                    }
+                } else {
+                    // New challenge or not completed
+                    val challenge = DailyChallengeProvider.getTodayChallenge()
+                    
+                    // Save to DB if not exists
+                    if (existing == null) {
+                        dailyChallengeDao.insertOrUpdate(
+                            DailyChallengeEntity(
+                                date = today,
+                                challengeId = challenge.id,
+                                isCompleted = false
+                            )
+                        )
+                    }
+                    
+                    _state.update {
+                        it.copy(
+                            challenge = challenge,
+                            isCompleted = false,
+                            phase = ChallengePhase.Challenge
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        error = "Помилка завантаження: ${e.message}",
+                        phase = ChallengePhase.Challenge
+                    )
+                }
+            }
+        }
+    }
+    
+    private fun startPreparation() {
+        _state.update { it.copy(phase = ChallengePhase.Preparation, preparationSecondsLeft = 30) }
+        
+        viewModelScope.launch {
+            repeat(30) {
+                delay(1000)
+                _state.update { it.copy(preparationSecondsLeft = it.preparationSecondsLeft - 1) }
+            }
+            _state.update { it.copy(phase = ChallengePhase.Recording) }
+        }
+    }
+    
+    private fun startRecording() {
+        viewModelScope.launch {
+            try {
+                val outputFile = context.filesDir.resolve("recordings/${UUID.randomUUID()}.m4a")
+                outputFile.parentFile?.mkdirs()
+                
+                audioRecorder.startRecording(outputFile.absolutePath)
+                
+                _state.update {
+                    it.copy(
+                        isRecording = true,
+                        recordingSecondsElapsed = 0,
+                        recordingPath = outputFile.absolutePath
+                    )
+                }
+                
+                // Timer
+                val maxSeconds = _state.value.challenge?.duration ?: 180
+                var elapsed = 0
+                while (elapsed < maxSeconds && _state.value.isRecording) {
+                    delay(1000)
+                    elapsed++
+                    _state.update { it.copy(recordingSecondsElapsed = elapsed) }
+                }
+                
+                if (elapsed >= maxSeconds) {
+                    stopRecording()
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        error = "Помилка запису: ${e.message}",
+                        isRecording = false
+                    )
+                }
+            }
+        }
+    }
+    
+    private fun stopRecording() {
+        viewModelScope.launch {
+            try {
+                audioRecorder.stopRecording()
+                _state.update {
+                    it.copy(
+                        isRecording = false,
+                        phase = ChallengePhase.Completed
+                    )
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        error = "Помилка зупинки: ${e.message}",
+                        isRecording = false
+                    )
+                }
+            }
+        }
+    }
+    
+    private fun saveRecording() {
+        viewModelScope.launch {
+            try {
+                val recordingPath = _state.value.recordingPath ?: return@launch
+                val challenge = _state.value.challenge ?: return@launch
+                val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+                
+                val recordingId = UUID.randomUUID().toString()
+                
+                val recordingEntity = RecordingEntity(
+                    id = recordingId,
+                    filePath = recordingPath,
+                    durationMs = _state.value.recordingSecondsElapsed * 1000L,
+                    type = "improvisation",
+                    contextId = "daily_challenge",
+                    exerciseId = challenge.id,
+                    isAnalyzed = false
+                )
+                
+                recordingDao.insert(recordingEntity)
+                
+                // Mark challenge as completed
+                dailyChallengeDao.markCompleted(today, recordingId)
+                
+                userPreferencesDataStore.incrementFreeImprovisations()
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(error = "Помилка збереження: ${e.message}")
+                }
+            }
+        }
     }
 }
 ```
+
+### 10. DailyChallengeScreen.kt
+
+```kotlin
+package com.aivoicepower.ui.screens.improvisation
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.aivoicepower.ui.screens.improvisation.components.*
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DailyChallengeScreen(
+    viewModel: DailyChallengeViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit,
+    onNavigateToResults: (recordingId: String) -> Unit
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Щоденний челендж") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            when (state.phase) {
+                ChallengePhase.Loading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = androidx.compose.ui.Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+                
+                ChallengePhase.Challenge -> {
+                    ChallengeContent(
+                        challenge = state.challenge!!,
+                        onStart = { viewModel.onEvent(DailyChallengeEvent.StartPreparationClicked) }
+                    )
+                }
+                
+                ChallengePhase.AlreadyCompleted -> {
+                    AlreadyCompletedContent(
+                        challenge = state.challenge!!,
+                        onBack = onNavigateBack
+                    )
+                }
+                
+                ChallengePhase.Preparation -> {
+                    PreparationTimer(
+                        title = "Підготовка",
+                        secondsLeft = state.preparationSecondsLeft,
+                        hint = state.challenge?.instruction ?: ""
+                    )
+                }
+                
+                ChallengePhase.Recording -> {
+                    ChallengeRecordingContent(
+                        challenge = state.challenge!!,
+                        isRecording = state.isRecording,
+                        secondsElapsed = state.recordingSecondsElapsed,
+                        maxSeconds = state.challenge?.duration ?: 180,
+                        onStart = { viewModel.onEvent(DailyChallengeEvent.StartRecordingClicked) },
+                        onStop = { viewModel.onEvent(DailyChallengeEvent.StopRecordingClicked) }
+                    )
+                }
+                
+                ChallengePhase.Completed -> {
+                    CompletedPhaseContent(
+                        durationSeconds = state.recordingSecondsElapsed,
+                        onSave = {
+                            viewModel.onEvent(DailyChallengeEvent.SaveAndFinishClicked)
+                            onNavigateBack()
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+```
+
+### 11. Компоненти (скорочена версія - основні)
+
+#### components/StoryFormatCard.kt
+
+```kotlin
+package com.aivoicepower.ui.screens.improvisation.components
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.aivoicepower.domain.model.exercise.StoryFormat
+
+@Composable
+fun FormatSelectionContent(
+    selectedFormat: StoryFormat?,
+    onFormatSelected: (StoryFormat) -> Unit,
+    onGenerate: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text(
+            text = "Обери формат історії",
+            style = MaterialTheme.typography.titleLarge
+        )
+        
+        StoryFormat.values().forEach { format ->
+            FilterChip(
+                selected = selectedFormat == format,
+                onClick = { onFormatSelected(format) },
+                label = {
+                    Column {
+                        Text(
+                            text = when (format) {
+                                StoryFormat.WITH_PROMPTS -> "🎭 З підказками"
+                                StoryFormat.FROM_IMAGE -> "🖼️ За сценою"
+                                StoryFormat.CONTINUE -> "📝 Продовж історію"
+                                StoryFormat.RANDOM_WORDS -> "🎲 3 випадкові слова"
+                            },
+                            style = MaterialTheme.typography.titleSmall
+                        )
+                        Text(
+                            text = when (format) {
+                                StoryFormat.WITH_PROMPTS -> "Герой, місце, предмет, твіст"
+                                StoryFormat.FROM_IMAGE -> "Опиши сцену та розкажи історію"
+                                StoryFormat.CONTINUE -> "Завер��и історію, що почалася"
+                                StoryFormat.RANDOM_WORDS -> "Використай слова в розповіді"
+                            },
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+        
+        Spacer(modifier = Modifier.weight(1f))
+        
+        Button(
+            onClick = onGenerate,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = selectedFormat != null
+        ) {
+            Text("Згенерувати елементи")
+        }
+    }
+}
+```
+
+#### components/StoryElementsCard.kt & ChallengeCard.kt - створити аналогічно TopicCard з Phase 5.1
 
 ---
 
 ## Оновити NavGraph.kt
 
 ```kotlin
-// Improvisation hub
-composable(NavRoutes.Improvisation.route) {
-    ImprovisationScreen(
-        onNavigateToRandomTopic = {
-            navController.navigate(NavRoutes.RandomTopic.route)
-        },
-        onNavigateToStorytelling = {},
-        onNavigateToDebate = {},
-        onNavigateToSales = {},
-        onNavigateToChallenge = {},
-        onNavigateToPremium = {
-            navController.navigate(NavRoutes.Premium.route)
+composable(NavRoutes.Storytelling.route) {
+    StorytellingScreen(
+        onNavigateBack = { navController.popBackStack() },
+        onNavigateToResults = { recordingId ->
+            navController.navigate(NavRoutes.Results.createRoute(recordingId))
         }
     )
 }
 
-// Random Topic
-composable(NavRoutes.RandomTopic.route) {
-    RandomTopicScreen(
+composable(NavRoutes.DailyChallenge.route) {
+    DailyChallengeScreen(
         onNavigateBack = { navController.popBackStack() },
         onNavigateToResults = { recordingId ->
             navController.navigate(NavRoutes.Results.createRoute(recordingId))
@@ -1024,25 +1183,62 @@ composable(NavRoutes.RandomTopic.route) {
 }
 ```
 
+## Оновити ImprovisationScreen.kt
+
+Змінити `isEnabled` та `comingSoon`:
+
+```kotlin
+// Storytelling - тепер ready
+ImprovisationModeCard(
+    emoji = "📖",
+    title = "Storytelling",
+    description = "Розкажи історію за заданими елементами",
+    isEnabled = viewModel.canStartImprovisation(),
+    comingSoon = false,  // Змінено!
+    onClick = onNavigateToStorytelling
+)
+
+// Daily Challenge - тепер ready
+ImprovisationModeCard(
+    emoji = "🎯",
+    title = "Щоденний челендж",
+    description = "Унікальне завдання кожен день",
+    isEnabled = viewModel.canStartImprovisation(),
+    comingSoon = false,  // Змінено!
+    onClick = onNavigateToChallenge
+)
+```
+
 ---
 
 ## Перевірка
 
-### Testing Flow
-- [ ] Hub показує 5 mode cards
-- [ ] Random Topic доступний
-- [ ] Timer працює 15 → 0
-- [ ] Recording працює
-- [ ] Збереження в DB
-- [ ] Free tier limits
+### 1. Компіляція
+```bash
+./gradlew assembleDebug
+```
+
+### 2. Testing Flow
+
+**Storytelling:**
+- [ ] Format selection працює
+- [ ] Elements generation для кожного формату
+- [ ] Preparation 30 сек
+- [ ] Recording + save
+
+**Daily Challenge:**
+- [ ] Завантажує today challenge
+- [ ] Детермінований (той самий challenge для дати)
+- [ ] Mark completed працює
+- [ ] "Already completed" показується
 
 ---
 
 ## Очікуваний результат
 
-✅ Improvisation Hub + Random Topic створено
-✅ 20+ тем
-✅ Free tier limits
+✅ StorytellingScreen з 4 форматами
+✅ DailyChallengeScreen з tracking
+✅ Content providers
 ✅ Navigation готова
 
-**Час:** ~2-3 години
+**Час на Phase 5.2:** ~2 години
