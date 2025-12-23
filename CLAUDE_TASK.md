@@ -1,59 +1,73 @@
-# Промпт для Claude Code — Phase 2.1: Warmup Main Screen
+# Промпт для Claude Code — Phase 2.2: Articulation Screen
 
 ## Контекст
 
 Продовжую розробку AI VoicePower. Завершені фази:
-- ✅ Phase 0.1-0.6 — Infrastructure
+- ✅ Phase 0.1-0.6 — Infrastructure  
 - ✅ Phase 1.1-1.4 — Onboarding + Diagnostic
+- ✅ Phase 2.1 — Warmup Main Screen
 
-Зараз **Phase 2 — Warmup (Розминка)** — щоденні вправи для мовленнєвого апарату **БЕЗ AI-аналізу аудіо**.
+Зараз **Phase 2.2 — Articulation Screen** — артикуляційна гімнастика (12 вправ).
 
-**Phase 2.1 — Warmup Main Screen** — головний hub екран з навігацією до підрозділів.
+**Згідно з PHASE_STRUCTURE_GUIDE.md**: СЕРЕДНЯ складність (UI + timer + checklist).
 
-**Згідно з PHASE_STRUCTURE_GUIDE.md**: ПРОСТА підфаза (hub screen + navigation).
+**Специфікація:** `SPECIFICATION.md`, секція 4.3.4 + 5.4 (Warmup Exercise).
 
-**Специфікація:** `SPECIFICATION.md`, секція 4.3.4 (Warmup Screen).
-
-**Складність:** 🟢 НИЗЬКА  
-**Час:** ⏱️ 1 година
-
----
-
-## Ключова ідея Warmup
-
-⚠️ **ВАЖЛИВО:** Розминка **НЕ використовує AI-аналіз аудіо**!
-
-| Warmup (Розминка) | Exercises (Вправи курсів) |
-|-------------------|---------------------------|
-| ❌ БЕЗ запису аудіо | ✅ З записом аудіо |
-| ✅ Відео + таймер + чекліст | ✅ AI-аналіз запису |
-| ✅ Локальне збереження completion | ✅ Збереження recording + analysis |
-| 🎯 Фізичні вправи (артикуляція, дихання, голос) | 🎯 Практика з контентом |
-
-**Чому логічно?** Не має сенсу записувати дихання або артикуляційну гімнастику — це фізичні вправи, як розтяжка перед бігом.
+**Складність:** 🟡 СЕРЕДНЯ  
+**Час:** ⏱️ 2 години
 
 ---
 
-## Задача Phase 2.1
+## Ключова ідея
 
-Створити **головний екран Warmup** з:
-1. **3 категорії розминки** (Articulation, Breathing, Voice)
-2. **Quick Warmup** (експрес-розминка 5 хв)
-3. **Статистика** (скільки днів підряд, загальний час)
-4. **Навігація** до підекранів (Phase 2.2-2.5)
+⚠️ **БЕЗ запису аудіо!** Артикуляція — це фізичні вправи (як розтяжка).
 
-### Структура файлів
+**Механіка:**
+1. Показати список 12 вправ
+2. Клік на вправу → діалог з інструкцією + таймер
+3. Користувач робить вправу
+4. Позначає як виконано ✅
+5. Прогрес зберігається в Room (WarmupCompletionDao)
+
+---
+
+## Задача Phase 2.2
+
+Створити екран з **12 артикуляційними вправами**:
+
+| # | Назва | Тривалість | Опис |
+|---|-------|-----------|------|
+| 1 | Усмішка-хоботок | 30 сек | Змінюй положення губ |
+| 2 | Язик вліво-вправо | 20 сек | Рухи язиком в сторони |
+| 3 | Язик вгору-вниз | 20 сек | Рухи язиком вверх-вниз |
+| 4 | Коло язиком | 30 сек | Обертання навколо губ |
+| 5 | Клацання язиком | 15 сек | Звук цокання |
+| 6 | Масаж щік | 20 сек | Надувай і розслаблюй |
+| 7 | Губи-трубочка | 20 сек | Витягни губи вперед |
+| 8 | Широкий язик | 15 сек | Плоский язик на нижній губі |
+| 9 | Гострий язик | 15 сек | Напружений вузький язик |
+| 10 | Чашечка | 20 сек | Підняти боки язика |
+| 11 | Гойдалка | 25 сек | Язик то вверх то вниз |
+| 12 | Годинник | 30 сек | Рухи язиком як стрілки |
+
+**Загальний час:** ~3 хвилини
+
+---
+
+## Структура файлів
 
 ```
 ui/screens/warmup/
-├── WarmupScreen.kt (main hub)
-├── WarmupViewModel.kt
-├── WarmupState.kt
-├── WarmupEvent.kt
+├── ArticulationScreen.kt
+├── ArticulationViewModel.kt
+├── ArticulationState.kt
+├── ArticulationEvent.kt
 └── components/
-    ├── WarmupCategoryCard.kt (3 картки категорій)
-    ├── QuickWarmupCard.kt (експрес-розминка)
-    └── WarmupStatsCard.kt (статистика)
+    ├── ArticulationExerciseItem.kt (картка вправи)
+    └── ArticulationExerciseDialog.kt (діалог з таймером)
+
+ui/components/timer/ (якщо ще немає з Phase 0.6)
+└── CountdownTimer.kt (reusable timer component)
 ```
 
 ---
@@ -61,63 +75,53 @@ ui/screens/warmup/
 ## UI Design
 
 ```
+Step 1: Exercise List
 ┌──────────────────────────────────────────────┐
-│  Розминка                          [Settings]│
+│  ← Артикуляційна гімнастика                  │
+│  Виконано: 7/12                              │
 ├──────────────────────────────────────────────┤
-│  (scroll)                                    │
+│  ━━━━━━━━━━━━━━○○○○○○○  58%                  │
 │                                              │
 │  ┌────────────────────────────────────────┐ │
-│  │  🔥 Streak: 7 днів      ⏱️ Сьогодні: 0 хв│ │
-│  │  📊 Всього: 42 розминки  ⭐ Рівень: 3   │ │
+│  │ ✅ 1. Усмішка-хоботок        30 сек    │ │
 │  └────────────────────────────────────────┘ │
-│                                              │
-│  💨 Швидка розминка (5 хв)                  │
 │  ┌────────────────────────────────────────┐ │
-│  │  Комбінація найважливіших вправ        │ │
-│  │  Артикуляція + Дихання + Голос         │ │
-│  │                                        │ │
-│  │  [▶️ Почати →]                         │ │
+│  │ ✅ 2. Язик вліво-вправо      20 сек    │ │
 │  └────────────────────────────────────────┘ │
-│                                              │
-│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━    │
-│                                              │
-│  📚 Категорії розминки                      │
-│                                              │
 │  ┌────────────────────────────────────────┐ │
-│  │ 👅 Артикуляційна гімнастика            │ │
-│  │ 12 вправ • ~3 хвилини                  │ │
-│  │                                        │ │
-│  │ Розминка м'язів обличчя та язика      │ │
-│  │                                        │ │
-│  │ Останнє: вчора                         │ │
-│  │ ━━━━━━━━━━━○○○○○○○○○○  60%            │ │
+│  │ ⏸️ 3. Язик вгору-вниз        20 сек    │ │  ← Активна
 │  └────────────────────────────────────────┘ │
-│                                              │
 │  ┌────────────────────────────────────────┐ │
-│  │ 🫁 Дихальні вправи                     │ │
-│  │ 8 вправ • ~2 хвилини                   │ │
-│  │                                        │ │
-│  │ Розвиток діафрагмального дихання       │ │
-│  │                                        │ │
-│  │ Останнє: 3 дні тому                    │ │
-│  │ ━━━━━○○○○○○○○○○○○○○○○  25%            │ │
+│  │ ○ 4. Коло язиком             30 сек    │ │
 │  └────────────────────────────────────────┘ │
+│  ...                                        │
+│                                              │
+│  [Завершити розминку]                       │
+└──────────────────────────────────────────────┘
+
+Step 2: Exercise Dialog
+┌──────────────────────────────────────────────┐
+│  3. Язик вгору-вниз                    [X]   │
+├──────────────────────────────────────────────┤
+│                                              │
+│  📝 Інструкція:                              │
+│  Рухай язиком вгору-вниз, торкаючись верхньої│
+│  та нижньої губи. Виконуй повільно та       │
+│  контрольовано.                              │
+│                                              │
+│  ⏱️ Тривалість: 20 секунд                    │
 │                                              │
 │  ┌────────────────────────────────────────┐ │
-│  │ 🎵 Розминка голосу                     │ │
-│  │ 6 вправ • ~2 хвилини                   │ │
 │  │                                        │ │
-│  │ Вокальні вправи для розігріву          │ │
+│  │              00:15                     │ │
 │  │                                        │ │
-│  │ Останнє: ніколи                        │ │
-│  │ ○○○○○○○○○○○○○○○○○○○○○  0%             │ │
+│  │    ━━━━━━━━━━━━━━━○○○○○  75%          │ │
+│  │                                        │ │
+│  │         [⏸️ Пауза]                      │ │
+│  │                                        │ │
 │  └────────────────────────────────────────┘ │
 │                                              │
-│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━    │
-│                                              │
-│  💡 Підказка:                               │
-│  Виконуй розминку щодня перед основними    │
-│  вправами для кращих результатів!          │
+│  [Пропустити]          [Готово ✓]           │
 │                                              │
 └──────────────────────────────────────────────┘
 ```
@@ -126,57 +130,123 @@ ui/screens/warmup/
 
 ## Повний код
 
-### 1. WarmupState.kt
+### 1. ArticulationState.kt
 
 ```kotlin
 package com.aivoicepower.ui.screens.warmup
 
-data class WarmupState(
-    val isLoading: Boolean = true,
-    val stats: WarmupStats? = null,
-    val categories: List<WarmupCategory> = emptyList(),
-    val error: String? = null
+data class ArticulationState(
+    val exercises: List<ArticulationExercise> = getArticulationExercises(),
+    val completedToday: Set<Int> = emptySet(), // Індекси виконаних вправ
+    val selectedExercise: ArticulationExercise? = null,
+    val isExerciseDialogOpen: Boolean = false,
+    val timerSeconds: Int = 0,
+    val isTimerRunning: Boolean = false
 )
 
-data class WarmupStats(
-    val currentStreak: Int = 0,
-    val todayMinutes: Int = 0,
-    val totalCompletions: Int = 0,
-    val level: Int = 1
-)
-
-data class WarmupCategory(
-    val id: String,
-    val icon: String,
+data class ArticulationExercise(
+    val id: Int,
     val title: String,
-    val exerciseCount: Int,
-    val estimatedMinutes: Int,
-    val description: String,
-    val lastCompletedDate: String?, // "2024-12-15" або null
-    val completionRate: Float // 0.0 - 1.0
+    val durationSeconds: Int,
+    val instruction: String
 )
 
-enum class WarmupCategoryType {
-    ARTICULATION,  // Артикуляція
-    BREATHING,     // Дихання
-    VOICE,         // Голос
-    QUICK          // Швидка розминка
+private fun getArticulationExercises(): List<ArticulationExercise> {
+    return listOf(
+        ArticulationExercise(
+            id = 1,
+            title = "Усмішка-хоботок",
+            durationSeconds = 30,
+            instruction = "Широко посміхнись, показуючи зуби. Потім витягни губи вперед трубочкою. Чергуй ці положення."
+        ),
+        ArticulationExercise(
+            id = 2,
+            title = "Язик вліво-вправо",
+            durationSeconds = 20,
+            instruction = "Рухай язиком вліво-вправо, торкаючись куточків губ. Виконуй повільно та ритмічно."
+        ),
+        ArticulationExercise(
+            id = 3,
+            title = "Язик вгору-вниз",
+            durationSeconds = 20,
+            instruction = "Рухай язиком вгору-вниз, торкаючись верхньої та нижньої губи. Виконуй повільно та контрольовано."
+        ),
+        ArticulationExercise(
+            id = 4,
+            title = "Коло язиком",
+            durationSeconds = 30,
+            instruction = "Проводь кінчиком язика по зовнішньому боці зубів, роблячи коло. Спочатку за годинниковою, потім проти."
+        ),
+        ArticulationExercise(
+            id = 5,
+            title = "Клацання язиком",
+            durationSeconds = 15,
+            instruction = "Клацай язиком, як коник цокає копитами. Робіт чіткі, голосні звуки."
+        ),
+        ArticulationExercise(
+            id = 6,
+            title = "Масаж щік",
+            durationSeconds = 20,
+            instruction = "Надувай щоки, затримуй повітря на 2-3 секунди, потім розслабляй. Повтори кілька разів."
+        ),
+        ArticulationExercise(
+            id = 7,
+            title = "Губи-трубочка",
+            durationSeconds = 20,
+            instruction = "Витягни губи вперед трубочкою і затримай на кілька секунд. Розслабся і повтори."
+        ),
+        ArticulationExercise(
+            id = 8,
+            title = "Широкий язик",
+            durationSeconds = 15,
+            instruction = "Розслаб язик і поклади його плоско на нижню губу. Утримуй позицію."
+        ),
+        ArticulationExercise(
+            id = 9,
+            title = "Гострий язик",
+            durationSeconds = 15,
+            instruction = "Напружи язик і зроби його вузьким та гострим. Витягни вперед."
+        ),
+        ArticulationExercise(
+            id = 10,
+            title = "Чашечка",
+            durationSeconds = 20,
+            instruction = "Підніми боки язика вгору, формуючи чашечку. Утримуй позицію."
+        ),
+        ArticulationExercise(
+            id = 11,
+            title = "Гойдалка",
+            durationSeconds = 25,
+            instruction = "Рухай язиком вверх (до носа) і вниз (до підборіддя), як на гойдалці."
+        ),
+        ArticulationExercise(
+            id = 12,
+            title = "Годинник",
+            durationSeconds = 30,
+            instruction = "Рухай язиком по колу, ніби стрілки годинника. Спочатку повільно, потім трохи швидше."
+        )
+    )
 }
 ```
 
-### 2. WarmupEvent.kt
+### 2. ArticulationEvent.kt
 
 ```kotlin
 package com.aivoicepower.ui.screens.warmup
 
-sealed class WarmupEvent {
-    data class CategoryClicked(val categoryId: String) : WarmupEvent()
-    object QuickWarmupClicked : WarmupEvent()
-    object Refresh : WarmupEvent()
+sealed class ArticulationEvent {
+    data class ExerciseClicked(val exercise: ArticulationExercise) : ArticulationEvent()
+    object ExerciseDialogDismissed : ArticulationEvent()
+    object StartTimer : ArticulationEvent()
+    object PauseTimer : ArticulationEvent()
+    data class TimerTick(val secondsRemaining: Int) : ArticulationEvent()
+    object MarkAsCompleted : ArticulationEvent()
+    object SkipExercise : ArticulationEvent()
+    object FinishWarmup : ArticulationEvent()
 }
 ```
 
-### 3. WarmupViewModel.kt
+### 3. ArticulationViewModel.kt
 
 ```kotlin
 package com.aivoicepower.ui.screens.warmup
@@ -184,146 +254,176 @@ package com.aivoicepower.ui.screens.warmup
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.local.database.dao.WarmupCompletionDao
+import com.aivoicepower.data.local.database.entity.WarmupCompletionEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class WarmupViewModel @Inject constructor(
+class ArticulationViewModel @Inject constructor(
     private val warmupCompletionDao: WarmupCompletionDao,
     private val userPreferencesDataStore: UserPreferencesDataStore
 ) : ViewModel() {
     
-    private val _state = MutableStateFlow(WarmupState())
-    val state: StateFlow<WarmupState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(ArticulationState())
+    val state: StateFlow<ArticulationState> = _state.asStateFlow()
+    
+    private var timerJob: Job? = null
     
     init {
-        loadWarmupData()
+        loadTodayProgress()
     }
     
-    fun onEvent(event: WarmupEvent) {
+    fun onEvent(event: ArticulationEvent) {
         when (event) {
-            is WarmupEvent.CategoryClicked -> {
-                // Navigation handled in Screen
-            }
-            WarmupEvent.QuickWarmupClicked -> {
-                // Navigation handled in Screen
-            }
-            WarmupEvent.Refresh -> {
-                loadWarmupData()
-            }
-        }
-    }
-    
-    private fun loadWarmupData() {
-        viewModelScope.launch {
-            try {
-                // Завантажуємо статистику + категорії
-                combine(
-                    loadStats(),
-                    loadCategories()
-                ) { stats, categories ->
-                    WarmupState(
-                        isLoading = false,
-                        stats = stats,
-                        categories = categories
-                    )
-                }.collect { newState ->
-                    _state.value = newState
-                }
-            } catch (e: Exception) {
+            is ArticulationEvent.ExerciseClicked -> {
                 _state.update {
                     it.copy(
-                        isLoading = false,
-                        error = "Не вдалося завантажити дані"
+                        selectedExercise = event.exercise,
+                        isExerciseDialogOpen = true,
+                        timerSeconds = event.exercise.durationSeconds,
+                        isTimerRunning = false
                     )
                 }
+            }
+            
+            ArticulationEvent.ExerciseDialogDismissed -> {
+                stopTimer()
+                _state.update {
+                    it.copy(
+                        selectedExercise = null,
+                        isExerciseDialogOpen = false,
+                        timerSeconds = 0,
+                        isTimerRunning = false
+                    )
+                }
+            }
+            
+            ArticulationEvent.StartTimer -> {
+                startTimer()
+            }
+            
+            ArticulationEvent.PauseTimer -> {
+                stopTimer()
+            }
+            
+            is ArticulationEvent.TimerTick -> {
+                _state.update { it.copy(timerSeconds = event.secondsRemaining) }
+                
+                if (event.secondsRemaining <= 0) {
+                    stopTimer()
+                    // Auto-mark as completed
+                    markCurrentAsCompleted()
+                }
+            }
+            
+            ArticulationEvent.MarkAsCompleted -> {
+                markCurrentAsCompleted()
+            }
+            
+            ArticulationEvent.SkipExercise -> {
+                _state.update {
+                    it.copy(
+                        selectedExercise = null,
+                        isExerciseDialogOpen = false
+                    )
+                }
+            }
+            
+            ArticulationEvent.FinishWarmup -> {
+                finishWarmup()
             }
         }
     }
     
-    private fun loadStats(): Flow<WarmupStats> = flow {
-        // Завантажуємо з DataStore + WarmupCompletionDao
-        userPreferencesDataStore.userPreferencesFlow.collect { prefs ->
-            val totalCompletions = warmupCompletionDao.getTotalWarmupDays().first()
+    private fun loadTodayProgress() {
+        viewModelScope.launch {
+            val today = getCurrentDateString()
+            val completion = warmupCompletionDao.getCompletion(today, "articulation")
             
-            emit(
-                WarmupStats(
-                    currentStreak = prefs.currentStreak,
-                    todayMinutes = prefs.todayMinutes,
-                    totalCompletions = totalCompletions,
-                    level = calculateLevel(totalCompletions)
-                )
-            )
+            if (completion != null) {
+                // Парсимо які вправи виконано (можна зберігати як JSON або bitmap)
+                // Поки що просто вважаємо exercisesCompleted = кількість
+                val completed = (1..completion.exercisesCompleted).toSet()
+                _state.update { it.copy(completedToday = completed) }
+            }
         }
     }
     
-    private fun loadCategories(): Flow<List<WarmupCategory>> = flow {
-        val today = getCurrentDateString()
+    private fun startTimer() {
+        stopTimer() // Зупиняємо попередній таймер
         
-        // Завантажуємо completion data для кожної категорії
-        val articulationCompletion = warmupCompletionDao.getCompletion(today, "articulation")
-        val breathingCompletion = warmupCompletionDao.getCompletion(today, "breathing")
-        val voiceCompletion = warmupCompletionDao.getCompletion(today, "voice")
+        _state.update { it.copy(isTimerRunning = true) }
         
-        // Завантажуємо останні дати
-        val recentCompletions = warmupCompletionDao.getRecentCompletions(30).first()
-        
-        val categories = listOf(
-            WarmupCategory(
-                id = "articulation",
-                icon = "👅",
-                title = "Артикуляційна гімнастика",
-                exerciseCount = 12,
-                estimatedMinutes = 3,
-                description = "Розминка м'язів обличчя та язика",
-                lastCompletedDate = recentCompletions
-                    .lastOrNull { it.category == "articulation" }
-                    ?.date,
-                completionRate = articulationCompletion?.let {
-                    it.exercisesCompleted.toFloat() / it.totalExercises
-                } ?: 0f
-            ),
-            WarmupCategory(
-                id = "breathing",
-                icon = "🫁",
-                title = "Дихальні вправи",
-                exerciseCount = 8,
-                estimatedMinutes = 2,
-                description = "Розвиток діафрагмального дихання",
-                lastCompletedDate = recentCompletions
-                    .lastOrNull { it.category == "breathing" }
-                    ?.date,
-                completionRate = breathingCompletion?.let {
-                    it.exercisesCompleted.toFloat() / it.totalExercises
-                } ?: 0f
-            ),
-            WarmupCategory(
-                id = "voice",
-                icon = "🎵",
-                title = "Розминка голосу",
-                exerciseCount = 6,
-                estimatedMinutes = 2,
-                description = "Вокальні вправи для розігріву",
-                lastCompletedDate = recentCompletions
-                    .lastOrNull { it.category == "voice" }
-                    ?.date,
-                completionRate = voiceCompletion?.let {
-                    it.exercisesCompleted.toFloat() / it.totalExercises
-                } ?: 0f
-            )
-        )
-        
-        emit(categories)
+        timerJob = viewModelScope.launch {
+            while (_state.value.isTimerRunning && _state.value.timerSeconds > 0) {
+                delay(1000)
+                val newSeconds = _state.value.timerSeconds - 1
+                onEvent(ArticulationEvent.TimerTick(newSeconds))
+            }
+        }
     }
     
-    private fun calculateLevel(totalCompletions: Int): Int {
-        // Простий рівень: кожні 10 розминок = +1 рівень
-        return (totalCompletions / 10) + 1
+    private fun stopTimer() {
+        timerJob?.cancel()
+        _state.update { it.copy(isTimerRunning = false) }
+    }
+    
+    private fun markCurrentAsCompleted() {
+        val exerciseId = _state.value.selectedExercise?.id ?: return
+        
+        _state.update {
+            it.copy(
+                completedToday = it.completedToday + exerciseId,
+                selectedExercise = null,
+                isExerciseDialogOpen = false
+            )
+        }
+        
+        saveProgress()
+    }
+    
+    private fun saveProgress() {
+        viewModelScope.launch {
+            val today = getCurrentDateString()
+            val totalExercises = _state.value.exercises.size
+            val completedCount = _state.value.completedToday.size
+            
+            val entity = WarmupCompletionEntity(
+                id = "${today}_articulation",
+                date = today,
+                category = "articulation",
+                completedAt = System.currentTimeMillis(),
+                exercisesCompleted = completedCount,
+                totalExercises = totalExercises
+            )
+            
+            warmupCompletionDao.insertOrUpdate(entity)
+            
+            // Оновлюємо todayMinutes в DataStore
+            val estimatedMinutes = 3 // Артикуляція ~3 хв
+            if (completedCount == totalExercises) {
+                userPreferencesDataStore.updateSessionStats(
+                    date = today,
+                    minutes = estimatedMinutes,
+                    exercises = 1
+                )
+            }
+        }
+    }
+    
+    private fun finishWarmup() {
+        saveProgress()
+        // Navigation handled in Screen
     }
     
     private fun getCurrentDateString(): String {
@@ -333,18 +433,19 @@ class WarmupViewModel @Inject constructor(
 }
 ```
 
-### 4. WarmupScreen.kt
+### 4. ArticulationScreen.kt
 
 ```kotlin
 package com.aivoicepower.ui.screens.warmup
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -353,394 +454,321 @@ import com.aivoicepower.ui.screens.warmup.components.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WarmupScreen(
-    viewModel: WarmupViewModel = hiltViewModel(),
-    onNavigateToArticulation: () -> Unit,
-    onNavigateToBreathing: () -> Unit,
-    onNavigateToVoice: () -> Unit,
-    onNavigateToQuick: () -> Unit
+fun ArticulationScreen(
+    viewModel: ArticulationViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Розминка") },
-                actions = {
-                    IconButton(onClick = { /* TODO: Settings */ }) {
-                        Icon(Icons.Default.Settings, contentDescription = "Налаштування")
+                title = { Text("Артикуляційна гімнастика") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
                     }
                 }
             )
         }
     ) { paddingValues ->
-        when {
-            state.isLoading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = androidx.compose.ui.Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
-            
-            state.error != null -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = androidx.compose.ui.Alignment.Center
-                ) {
-                    Text(state.error ?: "Помилка")
-                }
-            }
-            
-            else -> {
-                WarmupContent(
-                    state = state,
-                    onCategoryClick = { categoryId ->
-                        when (categoryId) {
-                            "articulation" -> onNavigateToArticulation()
-                            "breathing" -> onNavigateToBreathing()
-                            "voice" -> onNavigateToVoice()
-                        }
-                    },
-                    onQuickWarmupClick = onNavigateToQuick,
-                    modifier = Modifier.padding(paddingValues)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun WarmupContent(
-    state: WarmupState,
-    onCategoryClick: (String) -> Unit,
-    onQuickWarmupClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Stats Card
-        item {
-            if (state.stats != null) {
-                WarmupStatsCard(stats = state.stats)
-            }
-        }
-        
-        // Quick Warmup
-        item {
-            Text(
-                text = "💨 Швидка розминка (5 хв)",
-                style = MaterialTheme.typography.titleMedium
-            )
-        }
-        
-        item {
-            QuickWarmupCard(onClick = onQuickWarmupClick)
-        }
-        
-        item {
-            Divider()
-        }
-        
-        // Categories
-        item {
-            Text(
-                text = "📚 Категорії розминки",
-                style = MaterialTheme.typography.titleMedium
-            )
-        }
-        
-        items(state.categories) { category ->
-            WarmupCategoryCard(
-                category = category,
-                onClick = { onCategoryClick(category.id) }
-            )
-        }
-        
-        // Tip
-        item {
-            Divider()
-        }
-        
-        item {
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            // Progress header
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                tonalElevation = 2.dp
             ) {
-                Row(
+                Column(
                     modifier = Modifier.padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(
-                        text = "💡",
-                        style = MaterialTheme.typography.headlineSmall
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "Виконано: ${state.completedToday.size}/${state.exercises.size}",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                    
+                    LinearProgressIndicator(
+                        progress = { state.completedToday.size.toFloat() / state.exercises.size },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(8.dp)
                     )
-                    Column {
-                        Text(
-                            text = "Підказка:",
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                        Text(
-                            text = "Виконуй розминку щодня перед основними вправами для кращих результатів!",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
+                }
+            }
+            
+            // Exercise list
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                itemsIndexed(state.exercises) { index, exercise ->
+                    ArticulationExerciseItem(
+                        exercise = exercise,
+                        isCompleted = state.completedToday.contains(exercise.id),
+                        onClick = {
+                            viewModel.onEvent(ArticulationEvent.ExerciseClicked(exercise))
+                        }
+                    )
+                }
+                
+                // Finish button
+                item {
+                    if (state.completedToday.size == state.exercises.size) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        Button(
+                            onClick = {
+                                viewModel.onEvent(ArticulationEvent.FinishWarmup)
+                                onNavigateBack()
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Завершити розминку ✓")
+                        }
                     }
                 }
             }
+        }
+        
+        // Exercise dialog
+        if (state.isExerciseDialogOpen && state.selectedExercise != null) {
+            ArticulationExerciseDialog(
+                exercise = state.selectedExercise!!,
+                timerSeconds = state.timerSeconds,
+                isTimerRunning = state.isTimerRunning,
+                onDismiss = {
+                    viewModel.onEvent(ArticulationEvent.ExerciseDialogDismissed)
+                },
+                onStartTimer = {
+                    viewModel.onEvent(ArticulationEvent.StartTimer)
+                },
+                onPauseTimer = {
+                    viewModel.onEvent(ArticulationEvent.PauseTimer)
+                },
+                onMarkCompleted = {
+                    viewModel.onEvent(ArticulationEvent.MarkAsCompleted)
+                },
+                onSkip = {
+                    viewModel.onEvent(ArticulationEvent.SkipExercise)
+                }
+            )
         }
     }
 }
 ```
 
-### 5. components/WarmupStatsCard.kt
+### 5. components/ArticulationExerciseItem.kt
 
 ```kotlin
 package com.aivoicepower.ui.screens.warmup.components
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.aivoicepower.ui.screens.warmup.WarmupStats
+import com.aivoicepower.ui.screens.warmup.ArticulationExercise
 
 @Composable
-fun WarmupStatsCard(
-    stats: WarmupStats,
+fun ArticulationExerciseItem(
+    exercise: ArticulationExercise,
+    isCompleted: Boolean,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
+        onClick = onClick,
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        )
+        colors = if (isCompleted) {
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            )
+        } else {
+            CardDefaults.cardColors()
+        }
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Streak
-            StatItem(
-                icon = "🔥",
-                label = "Streak",
-                value = "${stats.currentStreak} днів"
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
+                Icon(
+                    imageVector = if (isCompleted) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
+                    contentDescription = null,
+                    tint = if (isCompleted) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+                )
+                
+                Text(
+                    text = "${exercise.id}. ${exercise.title}",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
             
-            VerticalDivider(modifier = Modifier.height(40.dp))
-            
-            // Today
-            StatItem(
-                icon = "⏱️",
-                label = "Сьогодні",
-                value = "${stats.todayMinutes} хв"
-            )
-            
-            VerticalDivider(modifier = Modifier.height(40.dp))
-            
-            // Total
-            StatItem(
-                icon = "📊",
-                label = "Всього",
-                value = "${stats.totalCompletions}"
-            )
-            
-            VerticalDivider(modifier = Modifier.height(40.dp))
-            
-            // Level
-            StatItem(
-                icon = "⭐",
-                label = "Рівень",
-                value = "${stats.level}"
+            Text(
+                text = "${exercise.durationSeconds} сек",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
 }
-
-@Composable
-private fun StatItem(
-    icon: String,
-    label: String,
-    value: String
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        Text(
-            text = icon,
-            style = MaterialTheme.typography.titleMedium
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onPrimaryContainer
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onPrimaryContainer
-        )
-    }
-}
 ```
 
-### 6. components/QuickWarmupCard.kt
+### 6. components/ArticulationExerciseDialog.kt
 
 ```kotlin
 package com.aivoicepower.ui.screens.warmup.components
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import com.aivoicepower.ui.screens.warmup.ArticulationExercise
 
 @Composable
-fun QuickWarmupCard(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+fun ArticulationExerciseDialog(
+    exercise: ArticulationExercise,
+    timerSeconds: Int,
+    isTimerRunning: Boolean,
+    onDismiss: () -> Unit,
+    onStartTimer: () -> Unit,
+    onPauseTimer: () -> Unit,
+    onMarkCompleted: () -> Unit,
+    onSkip: () -> Unit
 ) {
-    Card(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = "Комбінація найважливіших вправ",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            
-            Text(
-                text = "Артикуляція + Дихання + Голос",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            
-            Button(
-                onClick = onClick,
-                modifier = Modifier.fillMaxWidth()
+            Column(
+                modifier = Modifier.padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text("▶️ Почати →")
-            }
-        }
-    }
-}
-```
-
-### 7. components/WarmupCategoryCard.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.warmup.components
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import com.aivoicepower.ui.screens.warmup.WarmupCategory
-import java.text.SimpleDateFormat
-import java.util.*
-
-@Composable
-fun WarmupCategoryCard(
-    category: WarmupCategory,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            // Header
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+                // Header
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "${exercise.id}. ${exercise.title}",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.weight(1f)
+                    )
+                    
+                    IconButton(onClick = onDismiss) {
+                        Icon(Icons.Default.Close, contentDescription = "Закрити")
+                    }
+                }
+                
+                Divider()
+                
+                // Instruction
                 Text(
-                    text = category.icon,
-                    style = MaterialTheme.typography.headlineMedium
+                    text = "📝 Інструкція:",
+                    style = MaterialTheme.typography.titleMedium
                 )
-                Column {
-                    Text(
-                        text = category.title,
-                        style = MaterialTheme.typography.titleMedium
+                
+                Text(
+                    text = exercise.instruction,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                
+                Text(
+                    text = "⏱️ Тривалість: ${exercise.durationSeconds} секунд",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                
+                // Timer
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
                     )
-                    Text(
-                        text = "${category.exerciseCount} вправ • ~${category.estimatedMinutes} хвилини",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // Time display
+                        Text(
+                            text = "%02d:%02d".format(timerSeconds / 60, timerSeconds % 60),
+                            style = MaterialTheme.typography.displayLarge,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                        
+                        // Progress
+                        LinearProgressIndicator(
+                            progress = { 1f - (timerSeconds.toFloat() / exercise.durationSeconds) },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        
+                        // Timer button
+                        Button(
+                            onClick = if (isTimerRunning) onPauseTimer else onStartTimer,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(if (isTimerRunning) "⏸️ Пауза" else "▶️ Старт")
+                        }
+                    }
+                }
+                
+                // Action buttons
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onSkip,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Пропустити")
+                    }
+                    
+                    Button(
+                        onClick = onMarkCompleted,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Готово ✓")
+                    }
                 }
             }
-            
-            // Description
-            Text(
-                text = category.description,
-                style = MaterialTheme.typography.bodyMedium
-            )
-            
-            // Last completed
-            Text(
-                text = "Останнє: ${formatLastCompleted(category.lastCompletedDate)}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            
-            // Progress
-            Row(
-                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                LinearProgressIndicator(
-                    progress = { category.completionRate },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(8.dp)
-                )
-                Text(
-                    text = "${(category.completionRate * 100).toInt()}%",
-                    style = MaterialTheme.typography.labelSmall
-                )
-            }
         }
-    }
-}
-
-private fun formatLastCompleted(date: String?): String {
-    if (date == null) return "ніколи"
-    
-    val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-    val completedDate = sdf.parse(date) ?: return "невідомо"
-    val today = Date()
-    
-    val diffInDays = ((today.time - completedDate.time) / (1000 * 60 * 60 * 24)).toInt()
-    
-    return when (diffInDays) {
-        0 -> "сьогодні"
-        1 -> "вчора"
-        in 2..7 -> "$diffInDays дні тому"
-        else -> "$diffInDays днів тому"
     }
 }
 ```
@@ -756,50 +784,44 @@ private fun formatLastCompleted(date: String?): String {
 
 ### 2. Testing Flow
 
-**Тест 1: Stats Display**
-- [ ] Stats card показує streak, сьогодні хв, всього, рівень
-- [ ] Дані завантажуються з DataStore + Room
+**Тест 1: Exercise List**
+- [ ] 12 вправ відображаються
+- [ ] Progress bar показує 0/12
+- [ ] Completed exercises позначені ✅
 
-**Тест 2: Quick Warmup Card**
-- [ ] Показується опис
-- [ ] Кнопка "Почати" працює (navigation)
+**Тест 2: Exercise Dialog**
+- [ ] Клік на вправу → діалог з інструкцією
+- [ ] Таймер показує правильну тривалість
+- [ ] "Старт" → таймер працює
+- [ ] "Пауза" → таймер зупиняється
+- [ ] "Готово" → вправа позначається ✅
+- [ ] "Пропустити" → закриває діалог
 
-**Тест 3: Categories**
-- [ ] 3 категорії відображаються (Articulation, Breathing, Voice)
-- [ ] Іконки, назви, кількість вправ відображаються
-- [ ] "Останнє:" показує правильну дату або "ніколи"
-- [ ] Progress bar показує completion rate
-- [ ] Клік на картку → навігація до відповідного екрану
+**Тест 3: Progress Tracking**
+- [ ] Progress bar оновлюється після кожної вправи
+- [ ] Після 12/12 з'являється кнопка "Завершити"
+- [ ] Дані зберігаються в Room
 
-**Тест 4: Tip Card**
-- [ ] Підказка відображається внизу
+**Тест 4: Auto-complete**
+- [ ] Коли таймер досягає 0 → auto-mark as completed
 
 ---
 
 ## Очікуваний результат
 
-✅ WarmupScreen (hub) створено
-✅ Stats card працює з DataStore/Room
-✅ 3 category cards відображаються
-✅ Quick Warmup card створено
-✅ Navigation готова для Phase 2.2-2.5
-✅ Completion tracking підготовлено
-
----
-
-## Що НЕ робити
-
-❌ НЕ робити екрани Articulation/Breathing/Voice (Phase 2.2-2.5)
-❌ НЕ робити таймери для вправ
-❌ НЕ робити animations
-❌ НЕ робити контент вправ (12+8+6)
+✅ ArticulationScreen з 12 вправами створено
+✅ Exercise dialog з таймером працює
+✅ Progress tracking з Room
+✅ Checklist механіка
+✅ Auto-complete по таймеру
+✅ Завершення розминки оновлює DataStore
 
 ---
 
 ## Наступний крок
 
-**Phase 2.2: Articulation Screen** — 12 вправ з таймером та чеклістом.
+**Phase 2.3: Breathing Screen** — 8 вправ з Canvas animations та haptic feedback.
 
 ---
 
-**Час на Phase 2.1:** ~1 година
+**Час на Phase 2.2:** ~2 години
