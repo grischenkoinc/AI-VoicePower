@@ -26,6 +26,8 @@ import com.aivoicepower.ui.screens.improvisation.ImprovisationScreen
 import com.aivoicepower.ui.screens.improvisation.RandomTopicScreen
 import com.aivoicepower.ui.screens.improvisation.StorytellingScreen
 import com.aivoicepower.ui.screens.improvisation.DailyChallengeScreen
+import com.aivoicepower.ui.screens.improvisation.DebateScreen
+import com.aivoicepower.ui.screens.improvisation.SalesPitchScreen
 import com.aivoicepower.ui.screens.warmup.ArticulationScreen
 import com.aivoicepower.ui.screens.warmup.BreathingScreen
 import com.aivoicepower.ui.screens.warmup.QuickWarmupScreen
@@ -142,10 +144,10 @@ fun NavGraph(
                     navController.navigate(Screen.Storytelling.route)
                 },
                 onNavigateToDebate = {
-                    // Phase 5.3
+                    navController.navigate(Screen.Debate.route)
                 },
                 onNavigateToSales = {
-                    // Phase 5.3
+                    navController.navigate(Screen.SalesPitch.route)
                 },
                 onNavigateToChallenge = {
                     navController.navigate(Screen.DailyChallenge.route)
@@ -186,6 +188,20 @@ fun NavGraph(
                     // TODO: Navigate to Results screen when ready for improvisation
                     navController.popBackStack()
                 }
+            )
+        }
+
+        // Phase 5.3 - Debate
+        composable(route = Screen.Debate.route) {
+            DebateScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Phase 5.3 - Sales Pitch
+        composable(route = Screen.SalesPitch.route) {
+            SalesPitchScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

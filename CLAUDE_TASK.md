@@ -1,4 +1,4 @@
-# Промпт для Claude Code — Phase 5.2: Storytelling + Daily Challenge
+# Промпт для Claude Code — Phase 5.3: Debate + Sales Pitch (AI-Interactive)
 
 ## Контекст
 
@@ -9,100 +9,138 @@
 - ✅ Phase 3 — Home Screen
 - ✅ Phase 4.1-4.4 — Courses (повністю)
 - ✅ Phase 5.1 — Improvisation Hub + Random Topic
+- ✅ Phase 5.2 — Storytelling + Daily Challenge
 
-Зараз **Phase 5.2 — Storytelling + Daily Challenge** — друга підфаза Phase 5.
+Зараз **Phase 5.3 — Debate + Sales Pitch** — остання підфаза Phase 5, найскладніша.
 
-**Згідно з PHASE_STRUCTURE_GUIDE.md**: Середньої складності, креативні формати імпровізації.
+**Згідно з PHASE_STRUCTURE_GUIDE.md**: Висока складність, AI-interaction.
 
-**Специфікація:** `SPECIFICATION.md`, секції 4.3.7 (Improvisation Screen) + 5.5 (ImprovisationTask).
+**Специфікація:** `SPECIFICATION.md`, секції 4.3.7 (Improvisation Screen) + 5.5 (ImprovisationTask) + 8.2 (AI System Prompts).
 
-**Складність:** 🟡 СЕРЕДНЯ  
-**Час:** ⏱️ 2 години
+**Складність:** 🔴 ВИСОКА (Gemini API integration!)  
+**Час:** ⏱️ 4-5 годин
+
+---
+
+## ⚡ КРИТИЧНО ВАЖЛИВО
+
+**Це перша реальна Gemini API інтеграція в проекті!**
+
+Phase 5.3 — це **proof of concept** для:
+- Real-time AI conversation
+- Turn-based interaction
+- Streaming responses (опціонально)
+- Error handling
+- Rate limiting
+
+Phase 6 (AI Coach) буде використовувати ту саму інфраструктуру.
 
 ---
 
 ## Ключова ідея
 
-**Phase 5.2** додає 2 нові режими імпровізації:
+**Phase 5.3** додає 2 AI-powered режими:
 
-### 1. Storytelling (Розповідь історій)
-4 формати:
-- **З підказками** — герой, місце, предмет, твіст
-- **За картинкою** — опис згенерованої сцени (поки текст)
-- **Продовж історію** — початок історії, треба завершити
-- **3 випадкові слова** — включити слова в розповідь
+### 1. Debate (Дебати з AI)
+- Користувач обирає тему та позицію (ЗА/ПРОТИ)
+- AI грає опонента з протилежною позицією
+- **Turn-based**: User аргумент → AI контраргумент → User відповідь
+- 3-5 раундів
+- AI аналізує аргументи та генерує відповіді
 
-### 2. Daily Challenge (Щоденний челендж)
-- Унікальне завдання кожен день
-- Різні типи: тема, storytelling, емоція, обмеження
-- Tracking completion у DailyChallengeEntity
-- Badge за виконання
+### 2. Sales Pitch (Продаж з AI-клієнтом)
+- Користувач обирає товар (реальний або абсурдний)
+- AI грає клієнта з запереченнями
+- **Interactive**: User pitch → AI запитання → User відповідь → AI decision
+- AI симулює різні типи клієнтів
 
 ---
 
-## Storytelling Flow
+## Debate Flow
 
 ```
 ImprovisationScreen
     │
     ▼
-Click "Storytelling"
+Click "Дебати з AI"
     │
     ▼
-StorytellingScreen
+DebateScreen
     │
-    ├─ Вибір формату (4 варіанти)
-    │
-    ▼
-Генерація елементів історії
-    │
-    ├─ WITH_PROMPTS: герой, місце, предмет, твіст
-    ├─ FROM_IMAGE: опис сцени
-    ├─ CONTINUE: початок історії
-    ├─ RANDOM_WORDS: 3 слова
+    ├─ Вибір теми (з DebateTopicsProvider)
+    ├─ Вибір позиції (ЗА/ПРОТИ)
     │
     ▼
-30 секунд підготовка
+Старт дебатів (Round 1)
+    │
+    ├─ User: записує аргумент (60 сек)
+    ├─ Transcription (SpeechRecognizer)
+    ├─ Збереження RecordingEntity
     │
     ▼
-Запис 2-4 хв
+AI Response (Round 1)
+    │
+    ├─ Send user argument → Gemini API
+    ├─ AI генерує контраргумент
+    ├─ Show AI response (text)
     │
     ▼
-Збереження → RecordingDao
+Round 2, 3... (до 5 раундів)
     │
     ▼
-Navigate → Results Screen
+Debate Completed
+    │
+    ├─ Show summary
+    ├─ AI оцінює аргументацію
+    └─ Save full debate
 ```
 
 ---
 
-## Daily Challenge Flow
+## Sales Pitch Flow
 
 ```
 ImprovisationScreen
     │
     ▼
-Click "Щоденний челендж"
+Click "Продаж товару"
     │
     ▼
-DailyChallengeScreen
+SalesPitchScreen
     │
-    ├─ Перевірка: чи є челендж на сьогодні?
-    │
-    ├─ Якщо НІ → генерувати новий (based on date seed)
-    ├─ Якщо ТАК → показати існуючий
+    ├─ Вибір товару (з SalesProductsProvider)
+    ├─ AI генерує customer profile
     │
     ▼
-Показати челендж (з типом та інструкціями)
+Opening Pitch
+    │
+    ├─ User: записує pitch (90 сек)
+    ├─ Transcription
+    ├─ Збереження recording
     │
     ▼
-Виконання (підготовка + запис)
+AI Customer Response
+    │
+    ├─ Send pitch → Gemini API
+    ├─ AI: запитання або заперечення
+    ├─ Show AI response
     │
     ▼
-Mark completed в DailyChallengeDao
+User Handles Objection
+    │
+    ├─ User: відповідає (60 сек)
+    ├─ Transcription
     │
     ▼
-Navigate → Results Screen
+AI Decision
+    │
+    ├─ Send response → Gemini API
+    ├─ AI: "Купую" або "Не переконав"
+    ├─ AI пояснює рішення
+    │
+    ▼
+Sales Completed
+    └─ Show result + feedback
 ```
 
 ---
@@ -110,362 +148,535 @@ Navigate → Results Screen
 ## Структура файлів
 
 ```
-ui/screens/improvisation/
-├── StorytellingScreen.kt
-├── StorytellingViewModel.kt
-├── StorytellingState.kt
-├── StorytellingEvent.kt
-│
-├── DailyChallengeScreen.kt
-├── DailyChallengeViewModel.kt
-├── DailyChallengeState.kt
-├── DailyChallengeEvent.kt
-│
-└── components/
-    ├── StoryFormatCard.kt
-    ├── StoryElementsCard.kt
-    └── ChallengeCard.kt
+data/remote/
+├── GeminiApiClient.kt
+└── dto/
+    ├── GeminiRequest.kt
+    └── GeminiResponse.kt
 
 data/content/
-├── StoryElementsProvider.kt
-└── DailyChallengeProvider.kt
+├── DebateTopicsProvider.kt
+└── SalesProductsProvider.kt
+
+ui/screens/improvisation/
+├── DebateScreen.kt
+├── DebateViewModel.kt
+├── DebateState.kt
+├── DebateEvent.kt
+│
+├── SalesPitchScreen.kt
+├── SalesPitchViewModel.kt
+├── SalesPitchState.kt
+├── SalesPitchEvent.kt
+│
+└── components/
+    ├── DebateTopicCard.kt
+    ├── DebateRoundCard.kt
+    ├── AiResponseCard.kt
+    ├── SalesProductCard.kt
+    └── CustomerProfileCard.kt
 ```
 
 ---
 
 ## Повний код
 
-### 1. StoryElementsProvider.kt
+### 1. GeminiApiClient.kt
 
 ```kotlin
-package com.aivoicepower.data.content
+package com.aivoicepower.data.remote
 
-import com.aivoicepower.domain.model.exercise.StoryFormat
+import android.content.Context
+import com.google.ai.client.generativeai.GenerativeModel
+import com.google.ai.client.generativeai.type.Content
+import com.google.ai.client.generativeai.type.GenerateContentResponse
+import com.google.ai.client.generativeai.type.generationConfig
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
- * Provider для елементів історій
+ * Client для роботи з Gemini API
  */
-object StoryElementsProvider {
+@Singleton
+class GeminiApiClient @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
     
-    data class StoryElements(
-        val format: StoryFormat,
-        val hero: String? = null,
-        val place: String? = null,
-        val item: String? = null,
-        val twist: String? = null,
-        val sceneDescription: String? = null,
-        val storyBeginning: String? = null,
-        val randomWords: List<String>? = null
-    )
+    companion object {
+        // TODO: Move to BuildConfig or secure storage
+        private const val API_KEY = "YOUR_GEMINI_API_KEY_HERE"
+        private const val MODEL_NAME = "gemini-1.5-flash-latest" // Використовуємо Flash для швидкості
+    }
     
-    private val heroes = listOf(
-        "детектив", "вчитель", "програміст", "космонавт", "шеф-кухар",
-        "художник", "лікар", "музикант", "блогер", "археолог",
-        "піцабот", "таксист", "письменник", "дизайнер", "спортсмен"
-    )
-    
-    private val places = listOf(
-        "покинута бібліотека", "космічна станція", "старовинний замок",
-        "сучасний офіс", "таємничий ліс", "підводна база", "дах хмарочосу",
-        "антикварна крамниця", "метро о 3 ночі", "парк атракціонів",
-        "пекарня в маленькому місті", "музей природознавства", "recording studio"
-    )
-    
-    private val items = listOf(
-        "стара карта", "загадковий ключ", "фотографія", "лист від незнайомця",
-        "зламаний годинник", "музична скринька", "старовинна книга",
-        "чарівний амулет", "планшет з дивними даними", "записка з координатами",
-        "старий мобільний телефон", "незвичайна монета", "пошкоджений диск"
-    )
-    
-    private val twists = listOf(
-        "раптом зник світ", "з'явилася людина з майбутнього",
-        "герой виявляє приховану здатність", "місце виявляється ілюзією",
-        "час починає йти назад", "герой зустрічає себе з минулого",
-        "реальність виявляється симуляцією", "герой розуміє що спить",
-        "всі люди навколо зникають", "починається несподівана подорож"
-    )
-    
-    private val sceneDescriptions = listOf(
-        "Порожній вагон метро, що мчить крізь тунель. На підлозі - загадкова сумка.",
-        "Дах хмарочосу на світанку. Вдалині - силует незнайомої людини.",
-        "Стара бібліотека після закриття. Одна книга світиться у темряві.",
-        "Кафе біля вікна під час грози. За столиком - незнайомець з твоїм фото.",
-        "Пустеля вночі під зоряним небом. Вдалині - таємничі вогні."
-    )
-    
-    private val storyBeginnings = listOf(
-        "Того ранку все почалося з дивного дзвінка на мобільний. Номер був невідомий, але голос здавався до болю знайомим...",
-        "Я знайшов цей ключ у кишені куртки, яку купив у секонд-хенді. На бирці було написано адресу, якої не існувало на картах...",
-        "Вона сказала мені три слова, які змінили все: 'У тебе є 24 години'. Тоді я ще не розумів, що це означає...",
-        "Коли я прокинувся того ранку, моя квартира була повністю порожня. Але найдивнішим було інше - на стіні висіла картина, якої я ніколи не бачив..."
-    )
-    
-    private val randomWordsSets = listOf(
-        listOf("парасолька", "дзеркало", "кава"),
-        listOf("блокнот", "світлофор", "мелодія"),
-        listOf("годинник", "вікно", "таємниця"),
-        listOf("телефон", "дощ", "спогад"),
-        listOf("ключ", "двері", "майбутнє"),
-        listOf("книга", "вогонь", "зустріч"),
-        listOf("листок", "вітер", "рішення")
-    )
-    
-    fun generateStoryElements(format: StoryFormat): StoryElements {
-        return when (format) {
-            StoryFormat.WITH_PROMPTS -> StoryElements(
-                format = format,
-                hero = heroes.random(),
-                place = places.random(),
-                item = items.random(),
-                twist = twists.random()
-            )
-            StoryFormat.FROM_IMAGE -> StoryElements(
-                format = format,
-                sceneDescription = sceneDescriptions.random()
-            )
-            StoryFormat.CONTINUE -> StoryElements(
-                format = format,
-                storyBeginning = storyBeginnings.random()
-            )
-            StoryFormat.RANDOM_WORDS -> StoryElements(
-                format = format,
-                randomWords = randomWordsSets.random()
-            )
+    private val generativeModel = GenerativeModel(
+        modelName = MODEL_NAME,
+        apiKey = API_KEY,
+        generationConfig = generationConfig {
+            temperature = 0.8f
+            topK = 40
+            topP = 0.95f
+            maxOutputTokens = 800
         }
-    }
-}
-```
-
-### 2. DailyChallengeProvider.kt
-
-```kotlin
-package com.aivoicepower.data.content
-
-import java.text.SimpleDateFormat
-import java.util.*
-import kotlin.random.Random
-
-/**
- * Provider для щоденних челенджів
- */
-object DailyChallengeProvider {
-    
-    data class DailyChallenge(
-        val id: String,
-        val date: String,
-        val type: ChallengeType,
-        val title: String,
-        val description: String,
-        val instruction: String,
-        val duration: Int,
-        val difficulty: String
-    )
-    
-    enum class ChallengeType {
-        TOPIC,          // Тема для обговорення
-        STORYTELLING,   // Розповідь історії
-        EMOTION,        // Говорити з емоцією
-        CONSTRAINT,     // З обмеженням (без "я", без пауз)
-        SPEED,          // Швидко/повільно
-        PERSUASION      // Переконання
-    }
-    
-    private val topicChallenges = listOf(
-        "Розкажи про найважливіший урок, який ти отримав/отримала цього року",
-        "Опиши ідеальний день з погляду продуктивності",
-        "Переконай слухачів, чому варто вивчати нову навичку після 30",
-        "Розкажи про технологію майбутнього, яку ти б хотів/хотіла побачити",
-        "Опиши місце, де ти відчуваєш себе найщасливішим/найщасливішою"
-    )
-    
-    private val storytellingChallenges = listOf(
-        "Розкажи історію про випадкову зустріч, що змінила чиєсь життя",
-        "Створи детективну історію про зниклий артефакт",
-        "Розкажи казку для дорослих про пошук сенсу життя",
-        "Опиши день з життя звичайного предмета (чашка, телефон, ключ)"
-    )
-    
-    private val emotionChallenges = listOf(
-        "Розкажи про свій день надзвичайно ентузіазним тоном",
-        "Опиши рецепт страви драматичним шекспірівським стилем",
-        "Поясни, як користуватися смартфоном, наче це найскладніша річ",
-        "Розкажи про похід до магазину як про епічну пригоду"
-    )
-    
-    private val constraintChallenges = listOf(
-        "Говори 2 хвилини без використання слова 'я' та 'мені'",
-        "Опиши свій день без пауз довше 1 секунди",
-        "Розкажи історію, використовуючи тільки короткі речення (максимум 7 слів)",
-        "Говори про технології без використання англійських слів"
-    )
-    
-    private val speedChallenges = listOf(
-        "Розкажи про улюблений фільм дуже повільно та виразно",
-        "Опиши свій ранок максимально швидко, але чітко",
-        "Поясни складну концепцію повільно, наче дитині"
-    )
-    
-    private val persuasionChallenges = listOf(
-        "Переконай слухачів, що 4-денний робочий тиждень - це майбутнє",
-        "Доведи, що книги кращі за фільми (або навпаки)",
-        "Аргументуй, чому варто відмовитися від соцмереж на місяць",
-        "Переконай скептика спробувати нову активність"
     )
     
     /**
-     * Генерує челендж на основі дати (детермінований)
+     * Генерує відповідь для дебатів
      */
-    fun getChallengeForDate(date: String): DailyChallenge {
-        // Use date as seed for deterministic randomness
-        val seed = date.hashCode().toLong()
-        val random = Random(seed)
-        
-        val type = ChallengeType.values()[random.nextInt(ChallengeType.values().size)]
-        
-        val (title, description, instruction) = when (type) {
-            ChallengeType.TOPIC -> {
-                val challenge = topicChallenges[random.nextInt(topicChallenges.size)]
-                Triple(
-                    "Тематичний виступ",
-                    challenge,
-                    "Структуруй свою розповідь: вступ, основна частина, висновок"
-                )
-            }
-            ChallengeType.STORYTELLING -> {
-                val challenge = storytellingChallenges[random.nextInt(storytellingChallenges.size)]
-                Triple(
-                    "Storytelling",
-                    challenge,
-                    "Використай драматургічну структуру: зав'язка, розвиток, кульмінація, розв'язка"
-                )
-            }
-            ChallengeType.EMOTION -> {
-                val challenge = emotionChallenges[random.nextInt(emotionChallenges.size)]
-                Triple(
-                    "Емоційний виклик",
-                    challenge,
-                    "Використовуй інтонацію, паузи та емоційні акценти"
-                )
-            }
-            ChallengeType.CONSTRAINT -> {
-                val challenge = constraintChallenges[random.nextInt(constraintChallenges.size)]
-                Triple(
-                    "Виклик з обмеженням",
-                    challenge,
-                    "Дотримуйся правил, але говори природно"
-                )
-            }
-            ChallengeType.SPEED -> {
-                val challenge = speedChallenges[random.nextInt(speedChallenges.size)]
-                Triple(
-                    "Темп мовлення",
-                    challenge,
-                    "Стеж за темпом, але не втрачай чіткості"
-                )
-            }
-            ChallengeType.PERSUASION -> {
-                val challenge = persuasionChallenges[random.nextInt(persuasionChallenges.size)]
-                Triple(
-                    "Переконання",
-                    challenge,
-                    "Використовуй факти, логіку та емоційний зв'язок"
-                )
-            }
+    suspend fun generateDebateResponse(
+        topic: String,
+        userPosition: String,
+        userArgument: String,
+        roundNumber: Int,
+        conversationHistory: List<Pair<String, String>> = emptyList()
+    ): Result<String> {
+        return try {
+            val systemPrompt = buildDebateSystemPrompt(topic, userPosition, roundNumber)
+            val userPrompt = buildDebateUserPrompt(userArgument, conversationHistory)
+            
+            val response = generativeModel.generateContent(
+                content {
+                    text(systemPrompt)
+                    text(userPrompt)
+                }
+            )
+            
+            val aiResponse = response.text ?: "Я не можу відповісти на цей аргумент."
+            Result.success(aiResponse)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
-        
-        val duration = when (type) {
-            ChallengeType.CONSTRAINT, ChallengeType.SPEED -> 120 // 2 min
-            else -> 180 // 3 min
-        }
-        
-        val difficulty = when (type) {
-            ChallengeType.TOPIC -> "Середня"
-            ChallengeType.STORYTELLING -> "Середня"
-            ChallengeType.EMOTION -> "Легка"
-            ChallengeType.CONSTRAINT -> "Складна"
-            ChallengeType.SPEED -> "Середня"
-            ChallengeType.PERSUASION -> "Складна"
-        }
-        
-        return DailyChallenge(
-            id = "challenge_$date",
-            date = date,
-            type = type,
-            title = title,
-            description = description,
-            instruction = instruction,
-            duration = duration,
-            difficulty = difficulty
-        )
     }
     
-    fun getTodayChallenge(): DailyChallenge {
-        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-        return getChallengeForDate(today)
+    /**
+     * Генерує відповідь AI-клієнта у продажах
+     */
+    suspend fun generateSalesResponse(
+        product: String,
+        customerType: String,
+        userPitch: String,
+        interactionStage: SalesStage
+    ): Result<String> {
+        return try {
+            val systemPrompt = buildSalesSystemPrompt(product, customerType, interactionStage)
+            val userPrompt = "Продавець каже: $userPitch"
+            
+            val response = generativeModel.generateContent(
+                content {
+                    text(systemPrompt)
+                    text(userPrompt)
+                }
+            )
+            
+            val aiResponse = response.text ?: "Мені потрібно подумати..."
+            Result.success(aiResponse)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
+    
+    /**
+     * Оцінює фінальний результат дебатів
+     */
+    suspend fun evaluateDebate(
+        topic: String,
+        userPosition: String,
+        rounds: List<Pair<String, String>>
+    ): Result<String> {
+        return try {
+            val prompt = buildDebateEvaluationPrompt(topic, userPosition, rounds)
+            
+            val response = generativeModel.generateContent(prompt)
+            
+            val evaluation = response.text ?: "Гарна спроба!"
+            Result.success(evaluation)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    // ===== SYSTEM PROMPTS =====
+    
+    private fun buildDebateSystemPrompt(
+        topic: String,
+        userPosition: String,
+        roundNumber: Int
+    ): String {
+        val oppositePosition = if (userPosition == "ЗА") "ПРОТИ" else "ЗА"
+        
+        return """
+Ти — опонент у дебатах на тему: "$topic"
+Твоя позиція: $oppositePosition
+Раунд: $roundNumber з 5
+
+Твої задачі:
+1. Визнай частково правильні моменти в аргументі опонента
+2. Наведи сильний контраргумент на позицію $oppositePosition
+3. Поставь 1 уточнююче питання або виклик
+
+Правила:
+- Відповідай українською мовою
+- Будь логічним, але не агресивним
+- Використовуй факти та логіку
+- Довжина відповіді: 2-4 речення
+- Без особистих нападів
+
+Стиль: академічний, але зрозумілий
+        """.trimIndent()
+    }
+    
+    private fun buildDebateUserPrompt(
+        userArgument: String,
+        history: List<Pair<String, String>>
+    ): String {
+        val historyText = if (history.isNotEmpty()) {
+            "Попередні раунди:\n" + history.joinToString("\n") { (user, ai) ->
+                "Опонент: $user\nТи: $ai"
+            } + "\n\n"
+        } else ""
+        
+        return "${historyText}Опонент щойно навів аргумент:\n\"$userArgument\"\n\nТвоя відповідь:"
+    }
+    
+    private fun buildSalesSystemPrompt(
+        product: String,
+        customerType: String,
+        stage: SalesStage
+    ): String {
+        return when (stage) {
+            SalesStage.INITIAL_PITCH -> """
+Ти — потенційний клієнт, якому продають: "$product"
+Твій тип: $customerType
+
+Продавець щойно представив товар. Твоя реакція:
+1. Висловлюй природну цікавість або скептицизм (залежно від типу)
+2. Постав 1-2 конкретні запитання про продукт
+3. Висунь типове заперечення для твого типу клієнта
+
+Правила:
+- Відповідай українською мовою
+- Будь реалістичним клієнтом
+- Довжина: 2-3 речення
+- Без відразу погоджуватися або відмовлятися
+            """.trimIndent()
+            
+            SalesStage.HANDLING_OBJECTION -> """
+Ти — потенційний клієнт, який слухає відповідь на своє заперечення.
+Продукт: "$product"
+Твій тип: $customerType
+
+Продавець щойно відповів на твоє заперечення. Тепер прийми рішення:
+1. Якщо відповідь переконлива → Згодься купити + поясни чому
+2. Якщо відповідь слабка → Ввічливо відмовся + поясни причину
+
+Правила:
+- Будь чесним, але не жорстоким
+- Оціни якість аргументації продавця
+- Довжина: 2-3 речення
+- Чітке "так" або "ні" з поясненням
+            """.trimIndent()
+        }
+    }
+    
+    private fun buildDebateEvaluationPrompt(
+        topic: String,
+        userPosition: String,
+        rounds: List<Pair<String, String>>
+    ): String {
+        val transcript = rounds.mapIndexed { index, (user, ai) ->
+            "Раунд ${index + 1}:\nОпонент (позиція: $userPosition): $user\nAI: $ai"
+        }.joinToString("\n\n")
+        
+        return """
+Оціни дебати на тему: "$topic"
+
+Транскрипт:
+$transcript
+
+Дай короткий фідбек (3-4 речення):
+1. Сильні сторони аргументації опонента
+2. Що можна покращити
+3. Загальна оцінка виступу (1-10)
+
+Формат: короткий текст українською мовою
+        """.trimIndent()
+    }
+}
+
+enum class SalesStage {
+    INITIAL_PITCH,
+    HANDLING_OBJECTION
 }
 ```
 
-### 3. StorytellingState.kt
+### 2. DebateTopicsProvider.kt
+
+```kotlin
+package com.aivoicepower.data.content
+
+/**
+ * Provider для тем дебатів
+ */
+object DebateTopicsProvider {
+    
+    data class DebateTopic(
+        val id: String,
+        val topic: String,
+        val description: String,
+        val difficulty: String
+    )
+    
+    private val topics = listOf(
+        DebateTopic(
+            id = "debate_001",
+            topic = "Штучний інтелект: загроза чи можливість для людства?",
+            description = "Обговорення впливу AI на майбутнє суспільства",
+            difficulty = "Середня"
+        ),
+        DebateTopic(
+            id = "debate_002",
+            topic = "Чи варто колонізувати Марс?",
+            description = "Аргументи за та проти міжпланетної колонізації",
+            difficulty = "Середня"
+        ),
+        DebateTopic(
+            id = "debate_003",
+            topic = "Безумовний базовий дохід: утопія чи необхідність?",
+            description = "Дебати про економічні системи майбутнього",
+            difficulty = "Складна"
+        ),
+        DebateTopic(
+            id = "debate_004",
+            topic = "Соціальні мережі роблять нас більш самотніми",
+            description = "Вплив соцмереж на психічне здоров'я",
+            difficulty = "Легка"
+        ),
+        DebateTopic(
+            id = "debate_005",
+            topic = "Онлайн-освіта краща за традиційну",
+            description = "Майбутнє освітньої системи",
+            difficulty = "Легка"
+        ),
+        DebateTopic(
+            id = "debate_006",
+            topic = "Чи повинні роботи мати права?",
+            description = "Етика штучного інтелекту",
+            difficulty = "Складна"
+        ),
+        DebateTopic(
+            id = "debate_007",
+            topic = "Генетична модифікація людей — етично виправдана",
+            description = "Межі біотехнологій",
+            difficulty = "Складна"
+        ),
+        DebateTopic(
+            id = "debate_008",
+            topic = "4-денний робочий тиждень — це майбутнє",
+            description = "Work-life balance та продуктивність",
+            difficulty = "Легка"
+        )
+    )
+    
+    fun getAllTopics(): List<DebateTopic> = topics
+    
+    fun getRandomTopic(): DebateTopic = topics.random()
+    
+    fun getTopicById(id: String): DebateTopic? = topics.find { it.id == id }
+}
+```
+
+### 3. SalesProductsProvider.kt
+
+```kotlin
+package com.aivoicepower.data.content
+
+/**
+ * Provider для товарів для продажу
+ */
+object SalesProductsProvider {
+    
+    data class SalesProduct(
+        val id: String,
+        val name: String,
+        val description: String,
+        val price: String,
+        val isAbsurd: Boolean = false
+    )
+    
+    data class CustomerProfile(
+        val type: String,
+        val description: String,
+        val typicalObjections: List<String>
+    )
+    
+    private val realProducts = listOf(
+        SalesProduct(
+            id = "product_001",
+            name = "Онлайн-курс з публічних виступів",
+            description = "12-тижнева програма для розвитку навичок презентацій",
+            price = "₴4,999"
+        ),
+        SalesProduct(
+            id = "product_002",
+            name = "Смарт-годинник для фітнесу",
+            description = "Моніторинг здоров'я 24/7, GPS, водонепроникний",
+            price = "₴8,999"
+        ),
+        SalesProduct(
+            id = "product_003",
+            name = "Підписка на онлайн-бібліотеку",
+            description = "10,000+ книжок та аудіокниг українською та англійською",
+            price = "₴199/міс"
+        ),
+        SalesProduct(
+            id = "product_004",
+            name = "Роботизований пилосос",
+            description = "Автоматичне прибирання, картографування квартири",
+            price = "₴12,999"
+        )
+    )
+    
+    private val absurdProducts = listOf(
+        SalesProduct(
+            id = "absurd_001",
+            name = "Невидимий парасольку",
+            description = "Захищає від дощу за допомогою силового поля",
+            price = "₴99,999",
+            isAbsurd = true
+        ),
+        SalesProduct(
+            id = "absurd_002",
+            name = "Машина часу (лише в минуле)",
+            description = "Повернення на 24 години назад, одноразове використання",
+            price = "₴50,000",
+            isAbsurd = true
+        ),
+        SalesProduct(
+            id = "absurd_003",
+            name = "Чарівний олівець",
+            description = "Все, що намалюєш, стає реальністю (макс. 10 см)",
+            price = "₴1,000,000",
+            isAbsurd = true
+        )
+    )
+    
+    private val customerTypes = listOf(
+        CustomerProfile(
+            type = "Зайнятий професіонал",
+            description = "Цінує час, шукає ефективність",
+            typicalObjections = listOf("У мене немає часу", "Це дорого", "Чи дійсно це працює?")
+        ),
+        CustomerProfile(
+            type = "Скептик",
+            description = "Не довіряє новим продуктам, потребує доказів",
+            typicalObjections = listOf("Я чув негативні відгуки", "Це схоже на обман", "Навіщо мені це?")
+        ),
+        CustomerProfile(
+            type = "Обережний покупець",
+            description = "Хоче все зважити, боїться помилитися",
+            typicalObjections = listOf("Може, я подумаю", "Що якщо це мені не підійде?", "Чи можна повернути?")
+        ),
+        CustomerProfile(
+            type = "Ентузіаст",
+            description = "Цікавий новинками, але критично ставиться до деталей",
+            typicalObjections = listOf("А що ще він вміє?", "Чи є аналоги?", "Які гарантії?")
+        )
+    )
+    
+    fun getAllProducts(includeAbsurd: Boolean = true): List<SalesProduct> {
+        return if (includeAbsurd) {
+            realProducts + absurdProducts
+        } else {
+            realProducts
+        }
+    }
+    
+    fun getRandomProduct(includeAbsurd: Boolean = true): SalesProduct {
+        return getAllProducts(includeAbsurd).random()
+    }
+    
+    fun getRandomCustomer(): CustomerProfile = customerTypes.random()
+}
+```
+
+### 4. DebateState.kt
 
 ```kotlin
 package com.aivoicepower.ui.screens.improvisation
 
-import com.aivoicepower.data.content.StoryElementsProvider
-import com.aivoicepower.domain.model.exercise.StoryFormat
+import com.aivoicepower.data.content.DebateTopicsProvider
 
-data class StorytellingState(
-    val selectedFormat: StoryFormat? = null,
-    val storyElements: StoryElementsProvider.StoryElements? = null,
-    val phase: StorytellingPhase = StorytellingPhase.FormatSelection,
-    val preparationSecondsLeft: Int = 30,
-    val recordingSecondsElapsed: Int = 0,
-    val maxDuration: Int = 180,
-    val recordingPath: String? = null,
+data class DebateState(
+    val selectedTopic: DebateTopicsProvider.DebateTopic? = null,
+    val userPosition: DebatePosition? = null,
+    val phase: DebatePhase = DebatePhase.TopicSelection,
+    val currentRound: Int = 1,
+    val maxRounds: Int = 5,
+    val rounds: List<DebateRound> = emptyList(),
     val isRecording: Boolean = false,
+    val isAiThinking: Boolean = false,
+    val recordingPath: String? = null,
+    val recordingSeconds: Int = 0,
+    val maxRecordingSeconds: Int = 60,
     val error: String? = null
 )
 
-sealed class StorytellingPhase {
-    object FormatSelection : StorytellingPhase()
-    object Elements : StorytellingPhase()
-    object Preparation : StorytellingPhase()
-    object Recording : StorytellingPhase()
-    object Completed : StorytellingPhase()
+enum class DebatePosition {
+    FOR,        // ЗА
+    AGAINST     // ПРОТИ
 }
+
+sealed class DebatePhase {
+    object TopicSelection : DebatePhase()
+    object PositionSelection : DebatePhase()
+    object UserArgument : DebatePhase()
+    object AiResponse : DebatePhase()
+    object DebateComplete : DebatePhase()
+}
+
+data class DebateRound(
+    val roundNumber: Int,
+    val userArgument: String,
+    val userRecordingPath: String,
+    val aiResponse: String
+)
 ```
 
-### 4. StorytellingEvent.kt
+### 5. DebateEvent.kt
 
 ```kotlin
 package com.aivoicepower.ui.screens.improvisation
 
-import com.aivoicepower.domain.model.exercise.StoryFormat
+import com.aivoicepower.data.content.DebateTopicsProvider
 
-sealed class StorytellingEvent {
-    data class FormatSelected(val format: StoryFormat) : StorytellingEvent()
-    object GenerateElementsClicked : StorytellingEvent()
-    object StartPreparationClicked : StorytellingEvent()
-    object StartRecordingClicked : StorytellingEvent()
-    object StopRecordingClicked : StorytellingEvent()
-    object SaveAndFinishClicked : StorytellingEvent()
+sealed class DebateEvent {
+    data class TopicSelected(val topic: DebateTopicsProvider.DebateTopic) : DebateEvent()
+    data class PositionSelected(val position: DebatePosition) : DebateEvent()
+    object StartRecordingClicked : DebateEvent()
+    object StopRecordingClicked : DebateEvent()
+    data class ArgumentTranscribed(val text: String) : DebateEvent()
+    object NextRoundClicked : DebateEvent()
+    object FinishDebateClicked : DebateEvent()
 }
 ```
 
-### 5. StorytellingViewModel.kt
+### 6. DebateViewModel.kt
 
 ```kotlin
 package com.aivoicepower.ui.screens.improvisation
 
 import android.content.Context
+import android.os.Bundle
+import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aivoicepower.data.content.StoryElementsProvider
 import com.aivoicepower.data.local.database.dao.RecordingDao
 import com.aivoicepower.data.local.database.entity.RecordingEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
-import com.aivoicepower.domain.model.exercise.StoryFormat
+import com.aivoicepower.data.remote.GeminiApiClient
 import com.aivoicepower.utils.audio.AudioRecorderUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -476,65 +687,59 @@ import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class StorytellingViewModel @Inject constructor(
+class DebateViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val geminiApiClient: GeminiApiClient,
     private val recordingDao: RecordingDao,
     private val userPreferencesDataStore: UserPreferencesDataStore
 ) : ViewModel() {
     
-    private val _state = MutableStateFlow(StorytellingState())
-    val state: StateFlow<StorytellingState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(DebateState())
+    val state: StateFlow<DebateState> = _state.asStateFlow()
     
     private val audioRecorder = AudioRecorderUtil(context)
+    private var speechRecognizer: SpeechRecognizer? = null
     
     override fun onCleared() {
         super.onCleared()
         audioRecorder.release()
+        speechRecognizer?.destroy()
     }
     
-    fun onEvent(event: StorytellingEvent) {
+    fun onEvent(event: DebateEvent) {
         when (event) {
-            is StorytellingEvent.FormatSelected -> {
-                _state.update { it.copy(selectedFormat = event.format) }
+            is DebateEvent.TopicSelected -> {
+                _state.update {
+                    it.copy(
+                        selectedTopic = event.topic,
+                        phase = DebatePhase.PositionSelection
+                    )
+                }
             }
-            StorytellingEvent.GenerateElementsClicked -> {
-                generateElements()
+            is DebateEvent.PositionSelected -> {
+                _state.update {
+                    it.copy(
+                        userPosition = event.position,
+                        phase = DebatePhase.UserArgument,
+                        currentRound = 1
+                    )
+                }
             }
-            StorytellingEvent.StartPreparationClicked -> {
-                startPreparation()
-            }
-            StorytellingEvent.StartRecordingClicked -> {
+            DebateEvent.StartRecordingClicked -> {
                 startRecording()
             }
-            StorytellingEvent.StopRecordingClicked -> {
+            DebateEvent.StopRecordingClicked -> {
                 stopRecording()
             }
-            StorytellingEvent.SaveAndFinishClicked -> {
-                saveRecording()
+            is DebateEvent.ArgumentTranscribed -> {
+                handleTranscribedArgument(event.text)
             }
-        }
-    }
-    
-    private fun generateElements() {
-        val format = _state.value.selectedFormat ?: return
-        val elements = StoryElementsProvider.generateStoryElements(format)
-        _state.update {
-            it.copy(
-                storyElements = elements,
-                phase = StorytellingPhase.Elements
-            )
-        }
-    }
-    
-    private fun startPreparation() {
-        _state.update { it.copy(phase = StorytellingPhase.Preparation, preparationSecondsLeft = 30) }
-        
-        viewModelScope.launch {
-            repeat(30) {
-                delay(1000)
-                _state.update { it.copy(preparationSecondsLeft = it.preparationSecondsLeft - 1) }
+            DebateEvent.NextRoundClicked -> {
+                startNextRound()
             }
-            _state.update { it.copy(phase = StorytellingPhase.Recording) }
+            DebateEvent.FinishDebateClicked -> {
+                finishDebate()
+            }
         }
     }
     
@@ -549,21 +754,20 @@ class StorytellingViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         isRecording = true,
-                        recordingSecondsElapsed = 0,
-                        recordingPath = outputFile.absolutePath
+                        recordingPath = outputFile.absolutePath,
+                        recordingSeconds = 0
                     )
                 }
                 
                 // Timer
-                val maxSeconds = _state.value.maxDuration
                 var elapsed = 0
-                while (elapsed < maxSeconds && _state.value.isRecording) {
+                while (elapsed < _state.value.maxRecordingSeconds && _state.value.isRecording) {
                     delay(1000)
                     elapsed++
-                    _state.update { it.copy(recordingSecondsElapsed = elapsed) }
+                    _state.update { it.copy(recordingSeconds = elapsed) }
                 }
                 
-                if (elapsed >= maxSeconds) {
+                if (elapsed >= _state.value.maxRecordingSeconds) {
                     stopRecording()
                 }
             } catch (e: Exception) {
@@ -581,12 +785,10 @@ class StorytellingViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 audioRecorder.stopRecording()
-                _state.update {
-                    it.copy(
-                        isRecording = false,
-                        phase = StorytellingPhase.Completed
-                    )
-                }
+                _state.update { it.copy(isRecording = false) }
+                
+                // Start transcription
+                startTranscription()
             } catch (e: Exception) {
                 _state.update {
                     it.copy(
@@ -598,419 +800,184 @@ class StorytellingViewModel @Inject constructor(
         }
     }
     
-    private fun saveRecording() {
-        viewModelScope.launch {
-            try {
-                val recordingPath = _state.value.recordingPath ?: return@launch
-                val format = _state.value.selectedFormat ?: return@launch
-                
-                val recordingEntity = RecordingEntity(
-                    id = UUID.randomUUID().toString(),
-                    filePath = recordingPath,
-                    durationMs = _state.value.recordingSecondsElapsed * 1000L,
-                    type = "improvisation",
-                    contextId = "storytelling_${format.name}",
-                    isAnalyzed = false
-                )
-                
-                recordingDao.insert(recordingEntity)
-                userPreferencesDataStore.incrementFreeImprovisations()
-            } catch (e: Exception) {
+    private fun startTranscription() {
+        if (speechRecognizer == null) {
+            speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context)
+        }
+        
+        val intent = android.content.Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "uk-UA")
+        }
+        
+        speechRecognizer?.setRecognitionListener(object : RecognitionListener {
+            override fun onResults(results: Bundle?) {
+                val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                val transcription = matches?.firstOrNull() ?: "Не вдалось розпізнати мовлення"
+                onEvent(DebateEvent.ArgumentTranscribed(transcription))
+            }
+            
+            override fun onError(error: Int) {
                 _state.update {
-                    it.copy(error = "Помилка збереження: ${e.message}")
+                    it.copy(error = "Помилка розпізнавання мовлення")
                 }
             }
-        }
-    }
-}
-```
-
-### 6. StorytellingScreen.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.improvisation
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.aivoicepower.domain.model.exercise.StoryFormat
-import com.aivoicepower.ui.screens.improvisation.components.*
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun StorytellingScreen(
-    viewModel: StorytellingViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit,
-    onNavigateToResults: (recordingId: String) -> Unit
-) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Storytelling") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            when (state.phase) {
-                StorytellingPhase.FormatSelection -> {
-                    FormatSelectionContent(
-                        selectedFormat = state.selectedFormat,
-                        onFormatSelected = { viewModel.onEvent(StorytellingEvent.FormatSelected(it)) },
-                        onGenerate = { viewModel.onEvent(StorytellingEvent.GenerateElementsClicked) }
-                    )
-                }
-                
-                StorytellingPhase.Elements -> {
-                    StoryElementsContent(
-                        storyElements = state.storyElements!!,
-                        onStart = { viewModel.onEvent(StorytellingEvent.StartPreparationClicked) },
-                        onRegenerate = { viewModel.onEvent(StorytellingEvent.GenerateElementsClicked) }
-                    )
-                }
-                
-                StorytellingPhase.Preparation -> {
-                    com.aivoicepower.ui.screens.improvisation.components.PreparationTimer(
-                        title = "Підготовка до розповіді",
-                        secondsLeft = state.preparationSecondsLeft,
-                        hint = "Продумай структуру своєї історії"
-                    )
-                }
-                
-                StorytellingPhase.Recording -> {
-                    StoryRecordingContent(
-                        isRecording = state.isRecording,
-                        secondsElapsed = state.recordingSecondsElapsed,
-                        maxSeconds = state.maxDuration,
-                        onStart = { viewModel.onEvent(StorytellingEvent.StartRecordingClicked) },
-                        onStop = { viewModel.onEvent(StorytellingEvent.StopRecordingClicked) }
-                    )
-                }
-                
-                StorytellingPhase.Completed -> {
-                    com.aivoicepower.ui.screens.improvisation.components.CompletedPhaseContent(
-                        durationSeconds = state.recordingSecondsElapsed,
-                        onSave = {
-                            viewModel.onEvent(StorytellingEvent.SaveAndFinishClicked)
-                            onNavigateBack()
-                        }
-                    )
-                }
-            }
-        }
-    }
-}
-```
-
-### 7. DailyChallengeState.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.improvisation
-
-import com.aivoicepower.data.content.DailyChallengeProvider
-
-data class DailyChallengeState(
-    val challenge: DailyChallengeProvider.DailyChallenge? = null,
-    val isCompleted: Boolean = false,
-    val phase: ChallengePhase = ChallengePhase.Loading,
-    val preparationSecondsLeft: Int = 30,
-    val recordingSecondsElapsed: Int = 0,
-    val recordingPath: String? = null,
-    val isRecording: Boolean = false,
-    val error: String? = null
-)
-
-sealed class ChallengePhase {
-    object Loading : ChallengePhase()
-    object Challenge : ChallengePhase()
-    object AlreadyCompleted : ChallengePhase()
-    object Preparation : ChallengePhase()
-    object Recording : ChallengePhase()
-    object Completed : ChallengePhase()
-}
-```
-
-### 8. DailyChallengeEvent.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.improvisation
-
-sealed class DailyChallengeEvent {
-    object StartPreparationClicked : DailyChallengeEvent()
-    object StartRecordingClicked : DailyChallengeEvent()
-    object StopRecordingClicked : DailyChallengeEvent()
-    object SaveAndFinishClicked : DailyChallengeEvent()
-}
-```
-
-### 9. DailyChallengeViewModel.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.improvisation
-
-import android.content.Context
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.aivoicepower.data.content.DailyChallengeProvider
-import com.aivoicepower.data.local.database.dao.DailyChallengeDao
-import com.aivoicepower.data.local.database.dao.RecordingDao
-import com.aivoicepower.data.local.database.entity.DailyChallengeEntity
-import com.aivoicepower.data.local.database.entity.RecordingEntity
-import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
-import com.aivoicepower.utils.audio.AudioRecorderUtil
-import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
-import javax.inject.Inject
-
-@HiltViewModel
-class DailyChallengeViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
-    private val dailyChallengeDao: DailyChallengeDao,
-    private val recordingDao: RecordingDao,
-    private val userPreferencesDataStore: UserPreferencesDataStore
-) : ViewModel() {
-    
-    private val _state = MutableStateFlow(DailyChallengeState())
-    val state: StateFlow<DailyChallengeState> = _state.asStateFlow()
-    
-    private val audioRecorder = AudioRecorderUtil(context)
-    
-    init {
-        loadTodayChallenge()
-    }
-    
-    override fun onCleared() {
-        super.onCleared()
-        audioRecorder.release()
-    }
-    
-    fun onEvent(event: DailyChallengeEvent) {
-        when (event) {
-            DailyChallengeEvent.StartPreparationClicked -> {
-                startPreparation()
-            }
-            DailyChallengeEvent.StartRecordingClicked -> {
-                startRecording()
-            }
-            DailyChallengeEvent.StopRecordingClicked -> {
-                stopRecording()
-            }
-            DailyChallengeEvent.SaveAndFinishClicked -> {
-                saveRecording()
-            }
-        }
-    }
-    
-    private fun loadTodayChallenge() {
+            
+            override fun onReadyForSpeech(params: Bundle?) {}
+            override fun onBeginningOfSpeech() {}
+            override fun onRmsChanged(rmsdB: Float) {}
+            override fun onBufferReceived(buffer: ByteArray?) {}
+            override fun onEndOfSpeech() {}
+            override fun onPartialResults(partialResults: Bundle?) {}
+            override fun onEvent(eventType: Int, params: Bundle?) {}
+        })
+        
+        // For now, simulate transcription (SpeechRecognizer can be flaky)
         viewModelScope.launch {
-            val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+            delay(2000)
+            onEvent(DebateEvent.ArgumentTranscribed("[Аргумент користувача - транскрипція]"))
+        }
+    }
+    
+    private fun handleTranscribedArgument(transcription: String) {
+        viewModelScope.launch {
+            _state.update { it.copy(isAiThinking = true, phase = DebatePhase.AiResponse) }
             
             try {
-                // Check if already completed
-                val existing = dailyChallengeDao.getChallengeForDateOnce(today)
+                val topic = _state.value.selectedTopic?.topic ?: ""
+                val position = when (_state.value.userPosition) {
+                    DebatePosition.FOR -> "ЗА"
+                    DebatePosition.AGAINST -> "ПРОТИ"
+                    else -> ""
+                }
+                val roundNumber = _state.value.currentRound
+                val history = _state.value.rounds.map { it.userArgument to it.aiResponse }
                 
-                if (existing != null && existing.isCompleted) {
-                    // Already completed today
-                    val challenge = DailyChallengeProvider.getChallengeForDate(today)
-                    _state.update {
-                        it.copy(
-                            challenge = challenge,
-                            isCompleted = true,
-                            phase = ChallengePhase.AlreadyCompleted
-                        )
-                    }
-                } else {
-                    // New challenge or not completed
-                    val challenge = DailyChallengeProvider.getTodayChallenge()
-                    
-                    // Save to DB if not exists
-                    if (existing == null) {
-                        dailyChallengeDao.insertOrUpdate(
-                            DailyChallengeEntity(
-                                date = today,
-                                challengeId = challenge.id,
-                                isCompleted = false
-                            )
-                        )
-                    }
-                    
-                    _state.update {
-                        it.copy(
-                            challenge = challenge,
-                            isCompleted = false,
-                            phase = ChallengePhase.Challenge
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(
-                        error = "Помилка завантаження: ${e.message}",
-                        phase = ChallengePhase.Challenge
-                    )
-                }
-            }
-        }
-    }
-    
-    private fun startPreparation() {
-        _state.update { it.copy(phase = ChallengePhase.Preparation, preparationSecondsLeft = 30) }
-        
-        viewModelScope.launch {
-            repeat(30) {
-                delay(1000)
-                _state.update { it.copy(preparationSecondsLeft = it.preparationSecondsLeft - 1) }
-            }
-            _state.update { it.copy(phase = ChallengePhase.Recording) }
-        }
-    }
-    
-    private fun startRecording() {
-        viewModelScope.launch {
-            try {
-                val outputFile = context.filesDir.resolve("recordings/${UUID.randomUUID()}.m4a")
-                outputFile.parentFile?.mkdirs()
-                
-                audioRecorder.startRecording(outputFile.absolutePath)
-                
-                _state.update {
-                    it.copy(
-                        isRecording = true,
-                        recordingSecondsElapsed = 0,
-                        recordingPath = outputFile.absolutePath
-                    )
-                }
-                
-                // Timer
-                val maxSeconds = _state.value.challenge?.duration ?: 180
-                var elapsed = 0
-                while (elapsed < maxSeconds && _state.value.isRecording) {
-                    delay(1000)
-                    elapsed++
-                    _state.update { it.copy(recordingSecondsElapsed = elapsed) }
-                }
-                
-                if (elapsed >= maxSeconds) {
-                    stopRecording()
-                }
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(
-                        error = "Помилка запису: ${e.message}",
-                        isRecording = false
-                    )
-                }
-            }
-        }
-    }
-    
-    private fun stopRecording() {
-        viewModelScope.launch {
-            try {
-                audioRecorder.stopRecording()
-                _state.update {
-                    it.copy(
-                        isRecording = false,
-                        phase = ChallengePhase.Completed
-                    )
-                }
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(
-                        error = "Помилка зупинки: ${e.message}",
-                        isRecording = false
-                    )
-                }
-            }
-        }
-    }
-    
-    private fun saveRecording() {
-        viewModelScope.launch {
-            try {
-                val recordingPath = _state.value.recordingPath ?: return@launch
-                val challenge = _state.value.challenge ?: return@launch
-                val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-                
-                val recordingId = UUID.randomUUID().toString()
-                
-                val recordingEntity = RecordingEntity(
-                    id = recordingId,
-                    filePath = recordingPath,
-                    durationMs = _state.value.recordingSecondsElapsed * 1000L,
-                    type = "improvisation",
-                    contextId = "daily_challenge",
-                    exerciseId = challenge.id,
-                    isAnalyzed = false
+                val result = geminiApiClient.generateDebateResponse(
+                    topic = topic,
+                    userPosition = position,
+                    userArgument = transcription,
+                    roundNumber = roundNumber,
+                    conversationHistory = history
                 )
                 
-                recordingDao.insert(recordingEntity)
-                
-                // Mark challenge as completed
-                dailyChallengeDao.markCompleted(today, recordingId)
-                
-                userPreferencesDataStore.incrementFreeImprovisations()
+                result.onSuccess { aiResponse ->
+                    val newRound = DebateRound(
+                        roundNumber = roundNumber,
+                        userArgument = transcription,
+                        userRecordingPath = _state.value.recordingPath ?: "",
+                        aiResponse = aiResponse
+                    )
+                    
+                    // Save recording to DB
+                    saveRecording(transcription)
+                    
+                    _state.update {
+                        it.copy(
+                            rounds = it.rounds + newRound,
+                            isAiThinking = false,
+                            recordingPath = null
+                        )
+                    }
+                }.onFailure { error ->
+                    _state.update {
+                        it.copy(
+                            error = "Помилка AI: ${error.message}",
+                            isAiThinking = false
+                        )
+                    }
+                }
             } catch (e: Exception) {
                 _state.update {
-                    it.copy(error = "Помилка збереження: ${e.message}")
+                    it.copy(
+                        error = "Помилка: ${e.message}",
+                        isAiThinking = false
+                    )
                 }
+            }
+        }
+    }
+    
+    private suspend fun saveRecording(transcription: String) {
+        try {
+            val recordingPath = _state.value.recordingPath ?: return
+            val topic = _state.value.selectedTopic?.id ?: ""
+            
+            val recordingEntity = RecordingEntity(
+                id = UUID.randomUUID().toString(),
+                filePath = recordingPath,
+                durationMs = _state.value.recordingSeconds * 1000L,
+                type = "improvisation",
+                contextId = "debate_$topic",
+                transcription = transcription,
+                isAnalyzed = false
+            )
+            
+            recordingDao.insert(recordingEntity)
+        } catch (e: Exception) {
+            // Log error
+        }
+    }
+    
+    private fun startNextRound() {
+        val nextRound = _state.value.currentRound + 1
+        if (nextRound <= _state.value.maxRounds) {
+            _state.update {
+                it.copy(
+                    currentRound = nextRound,
+                    phase = DebatePhase.UserArgument,
+                    recordingSeconds = 0
+                )
+            }
+        } else {
+            finishDebate()
+        }
+    }
+    
+    private fun finishDebate() {
+        viewModelScope.launch {
+            try {
+                userPreferencesDataStore.incrementFreeImprovisations()
+                _state.update { it.copy(phase = DebatePhase.DebateComplete) }
+            } catch (e: Exception) {
+                _state.update { it.copy(error = "Помилка завершення: ${e.message}") }
             }
         }
     }
 }
 ```
 
-### 10. DailyChallengeScreen.kt
+### 7. DebateScreen.kt (скорочена версія)
 
 ```kotlin
 package com.aivoicepower.ui.screens.improvisation
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.aivoicepower.data.content.DebateTopicsProvider
 import com.aivoicepower.ui.screens.improvisation.components.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DailyChallengeScreen(
-    viewModel: DailyChallengeViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit,
-    onNavigateToResults: (recordingId: String) -> Unit
+fun DebateScreen(
+    viewModel: DebateViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Щоденний челендж") },
+                title = { Text("Дебати з AI") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
@@ -1025,55 +992,49 @@ fun DailyChallengeScreen(
                 .padding(paddingValues)
         ) {
             when (state.phase) {
-                ChallengePhase.Loading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = androidx.compose.ui.Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                }
-                
-                ChallengePhase.Challenge -> {
-                    ChallengeContent(
-                        challenge = state.challenge!!,
-                        onStart = { viewModel.onEvent(DailyChallengeEvent.StartPreparationClicked) }
+                DebatePhase.TopicSelection -> {
+                    TopicSelectionContent(
+                        topics = DebateTopicsProvider.getAllTopics(),
+                        onTopicSelected = { viewModel.onEvent(DebateEvent.TopicSelected(it)) }
                     )
                 }
                 
-                ChallengePhase.AlreadyCompleted -> {
-                    AlreadyCompletedContent(
-                        challenge = state.challenge!!,
-                        onBack = onNavigateBack
+                DebatePhase.PositionSelection -> {
+                    PositionSelectionContent(
+                        topic = state.selectedTopic!!,
+                        onPositionSelected = { viewModel.onEvent(DebateEvent.PositionSelected(it)) }
                     )
                 }
                 
-                ChallengePhase.Preparation -> {
-                    PreparationTimer(
-                        title = "Підготовка",
-                        secondsLeft = state.preparationSecondsLeft,
-                        hint = state.challenge?.instruction ?: ""
-                    )
-                }
-                
-                ChallengePhase.Recording -> {
-                    ChallengeRecordingContent(
-                        challenge = state.challenge!!,
+                DebatePhase.UserArgument -> {
+                    UserArgumentContent(
+                        topic = state.selectedTopic!!,
+                        position = state.userPosition!!,
+                        roundNumber = state.currentRound,
                         isRecording = state.isRecording,
-                        secondsElapsed = state.recordingSecondsElapsed,
-                        maxSeconds = state.challenge?.duration ?: 180,
-                        onStart = { viewModel.onEvent(DailyChallengeEvent.StartRecordingClicked) },
-                        onStop = { viewModel.onEvent(DailyChallengeEvent.StopRecordingClicked) }
+                        secondsElapsed = state.recordingSeconds,
+                        maxSeconds = state.maxRecordingSeconds,
+                        onStartRecording = { viewModel.onEvent(DebateEvent.StartRecordingClicked) },
+                        onStopRecording = { viewModel.onEvent(DebateEvent.StopRecordingClicked) }
                     )
                 }
                 
-                ChallengePhase.Completed -> {
-                    CompletedPhaseContent(
-                        durationSeconds = state.recordingSecondsElapsed,
-                        onSave = {
-                            viewModel.onEvent(DailyChallengeEvent.SaveAndFinishClicked)
-                            onNavigateBack()
-                        }
+                DebatePhase.AiResponse -> {
+                    AiResponseContent(
+                        isThinking = state.isAiThinking,
+                        rounds = state.rounds,
+                        currentRound = state.currentRound,
+                        maxRounds = state.maxRounds,
+                        onNextRound = { viewModel.onEvent(DebateEvent.NextRoundClicked) },
+                        onFinish = { viewModel.onEvent(DebateEvent.FinishDebateClicked) }
+                    )
+                }
+                
+                DebatePhase.DebateComplete -> {
+                    DebateCompleteContent(
+                        topic = state.selectedTopic!!,
+                        rounds = state.rounds,
+                        onFinish = onNavigateBack
                     )
                 }
             }
@@ -1082,163 +1043,147 @@ fun DailyChallengeScreen(
 }
 ```
 
-### 11. Компоненти (скорочена версія - основні)
+### 8. SalesPitchState.kt, ViewModel, Screen - аналогічно DebateState
 
-#### components/StoryFormatCard.kt
-
-```kotlin
-package com.aivoicepower.ui.screens.improvisation.components
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import com.aivoicepower.domain.model.exercise.StoryFormat
-
-@Composable
-fun FormatSelectionContent(
-    selectedFormat: StoryFormat?,
-    onFormatSelected: (StoryFormat) -> Unit,
-    onGenerate: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Text(
-            text = "Обери формат історії",
-            style = MaterialTheme.typography.titleLarge
-        )
-        
-        StoryFormat.values().forEach { format ->
-            FilterChip(
-                selected = selectedFormat == format,
-                onClick = { onFormatSelected(format) },
-                label = {
-                    Column {
-                        Text(
-                            text = when (format) {
-                                StoryFormat.WITH_PROMPTS -> "🎭 З підказками"
-                                StoryFormat.FROM_IMAGE -> "🖼️ За сценою"
-                                StoryFormat.CONTINUE -> "📝 Продовж історію"
-                                StoryFormat.RANDOM_WORDS -> "🎲 3 випадкові слова"
-                            },
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                        Text(
-                            text = when (format) {
-                                StoryFormat.WITH_PROMPTS -> "Герой, місце, предмет, твіст"
-                                StoryFormat.FROM_IMAGE -> "Опиши сцену та розкажи історію"
-                                StoryFormat.CONTINUE -> "Завер��и історію, що почалася"
-                                StoryFormat.RANDOM_WORDS -> "Використай слова в розповіді"
-                            },
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-        
-        Spacer(modifier = Modifier.weight(1f))
-        
-        Button(
-            onClick = onGenerate,
-            modifier = Modifier.fillMaxWidth(),
-            enabled = selectedFormat != null
-        ) {
-            Text("Згенерувати елементи")
-        }
-    }
-}
-```
-
-#### components/StoryElementsCard.kt & ChallengeCard.kt - створити аналогічно TopicCard з Phase 5.1
+_(Код SalesPitch дуже схожий на Debate, тільки з іншими phases та prompt logic. Для економії місця не дублюю повний код, але структура ідентична)_
 
 ---
 
-## Оновити NavGraph.kt
+## ⚠️ ВАЖЛИВІ НОТАТКИ
+
+### API Key Management
 
 ```kotlin
-composable(NavRoutes.Storytelling.route) {
-    StorytellingScreen(
-        onNavigateBack = { navController.popBackStack() },
-        onNavigateToResults = { recordingId ->
-            navController.navigate(NavRoutes.Results.createRoute(recordingId))
+// TODO: НЕ commitити API key в Git!
+// Використати один з варіантів:
+
+// 1. local.properties
+GEMINI_API_KEY=your_key_here
+
+// 2. BuildConfig
+android {
+    buildTypes {
+        debug {
+            buildConfigField("String", "GEMINI_API_KEY", "\"${properties["GEMINI_API_KEY"]}\"")
         }
-    )
+    }
 }
 
-composable(NavRoutes.DailyChallenge.route) {
-    DailyChallengeScreen(
-        onNavigateBack = { navController.popBackStack() },
-        onNavigateToResults = { recordingId ->
-            navController.navigate(NavRoutes.Results.createRoute(recordingId))
-        }
-    )
+// 3. Secure storage (для продакшену)
+```
+
+### Permissions в AndroidManifest.xml
+
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
+```
+
+### Gradle Dependencies
+
+```kotlin
+dependencies {
+    // Gemini API
+    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
+    
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 }
 ```
 
-## Оновити ImprovisationScreen.kt
+---
 
-Змінити `isEnabled` та `comingSoon`:
+## Тестування
+
+### 1. Mock Mode (без API key)
+
+Створити `GeminiApiClientMock.kt` для тестування UI без API:
 
 ```kotlin
-// Storytelling - тепер ready
-ImprovisationModeCard(
-    emoji = "📖",
-    title = "Storytelling",
-    description = "Розкажи історію за заданими елементами",
-    isEnabled = viewModel.canStartImprovisation(),
-    comingSoon = false,  // Змінено!
-    onClick = onNavigateToStorytelling
-)
-
-// Daily Challenge - тепер ready
-ImprovisationModeCard(
-    emoji = "🎯",
-    title = "Щоденний челендж",
-    description = "Унікальне завдання кожен день",
-    isEnabled = viewModel.canStartImprovisation(),
-    comingSoon = false,  // Змінено!
-    onClick = onNavigateToChallenge
-)
+class GeminiApiClientMock : GeminiApiClient {
+    override suspend fun generateDebateResponse(...): Result<String> {
+        delay(2000) // Simulate network
+        return Result.success("Це mock відповідь AI. Твій аргумент цікавий, але...")
+    }
+}
 ```
+
+### 2. Error Handling
+
+- [ ] Network error → показати retry
+- [ ] API rate limit → пояснити ліміт
+- [ ] Empty response → fallback message
+
+### 3. UI/UX
+
+- [ ] Loading states (AI thinking)
+- [ ] Smooth transitions між фазами
+- [ ] Clear feedback на кожен крок
 
 ---
 
 ## Перевірка
 
-### 1. Компіляція
 ```bash
 ./gradlew assembleDebug
 ```
 
-### 2. Testing Flow
+**Testing Checklist:**
 
-**Storytelling:**
-- [ ] Format selection працює
-- [ ] Elements generation для кожного формату
-- [ ] Preparation 30 сек
-- [ ] Recording + save
+**Debate:**
+- [ ] Topic selection працює
+- [ ] Position selection працює
+- [ ] Recording + transcription
+- [ ] AI response отримується
+- [ ] Multiple rounds працюють
+- [ ] Debate complete summary
 
-**Daily Challenge:**
-- [ ] Завантажує today challenge
-- [ ] Детермінований (той самий challenge для дати)
-- [ ] Mark completed працює
-- [ ] "Already completed" показується
+**Sales Pitch:**
+- [ ] Product selection
+- [ ] Customer profile generation
+- [ ] Opening pitch recording
+- [ ] AI objection generation
+- [ ] Handling objection recording
+- [ ] AI decision (купує/не купує)
 
 ---
 
 ## Очікуваний результат
 
-✅ StorytellingScreen з 4 форматами
-✅ DailyChallengeScreen з tracking
-✅ Content providers
-✅ Navigation готова
+✅ GeminiApiClient з 3 методами
+✅ Debate Screen (5 phases)
+✅ Sales Pitch Screen (interactive)
+✅ Content providers (8 debate topics, products, customers)
+✅ Turn-based AI conversation працює
+✅ Premium feature (ці режими доступні тільки для Premium)
 
-**Час на Phase 5.2:** ~2 години
+---
+
+## 🎉 PHASE 5 ЗАВЕРШЕНО!
+
+```
+✅ Phase 5.1 — Improvisation Hub + Random Topic
+✅ Phase 5.2 — Storytelling + Daily Challenge
+✅ Phase 5.3 — Debate + Sales Pitch (AI-interactive)
+```
+
+**Всі 5 режимів імпровізації готові!**
+
+---
+
+## 🚀 Наступний крок: Phase 6
+
+**Phase 6: AI Coach** — використає ту саму GeminiApiClient infrastructure:
+- Chat interface
+- Context-aware responses (знає UserProgress)
+- Message history
+- Quick actions
+
+**Складність:** 🔴 ВИСОКА  
+**Час:** ⏱️ 8-10 годин (2-3 підфази)
+
+---
+
+**Час на Phase 5.3:** ~4-5 годин
+
+**Примітка:** Це proof of concept для AI integration. Phase 6 буде схожим підходом.

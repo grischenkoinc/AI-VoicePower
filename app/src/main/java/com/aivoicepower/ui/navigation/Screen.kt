@@ -21,4 +21,6 @@ sealed class Screen(val route: String) {
     object RandomTopic : Screen("improvisation/random-topic")
     object Storytelling : Screen("improvisation/storytelling")
     object DailyChallenge : Screen("improvisation/daily-challenge")
+    object Debate : Screen("improvisation/debate")
+    object SalesPitch : Screen("improvisation/sales-pitch")
 }

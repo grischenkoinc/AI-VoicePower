@@ -122,9 +122,15 @@ fun ImprovisationScreen(
             title = "Дебати з AI",
             description = "Переконуй штучний інтелект",
             isLocked = !state.isPremium,
-            isComingSoon = true,
-            comingSoonText = "Phase 5.3",
-            onClick = { /* Phase 5.3 */ }
+            isComingSoon = false,
+            onClick = {
+                if (state.isPremium) {
+                    viewModel.onEvent(ImprovisationEvent.DebateClicked)
+                    onNavigateToDebate()
+                } else {
+                    onNavigateToPremium()
+                }
+            }
         )
 
         ImprovisationModeCard(
@@ -132,9 +138,15 @@ fun ImprovisationScreen(
             title = "Продай товар",
             description = "Презентуй продукт AI-клієнту",
             isLocked = !state.isPremium,
-            isComingSoon = true,
-            comingSoonText = "Phase 5.3",
-            onClick = { /* Phase 5.3 */ }
+            isComingSoon = false,
+            onClick = {
+                if (state.isPremium) {
+                    viewModel.onEvent(ImprovisationEvent.SalesPitchClicked)
+                    onNavigateToSales()
+                } else {
+                    onNavigateToPremium()
+                }
+            }
         )
 
         // Premium prompt (if needed)

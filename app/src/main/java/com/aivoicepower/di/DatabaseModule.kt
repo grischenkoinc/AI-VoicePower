@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.aivoicepower.data.local.database.AppDatabase
 import com.aivoicepower.data.local.database.dao.DailyChallengeDao
 import com.aivoicepower.data.local.database.dao.MessageDao
+import com.aivoicepower.data.local.database.dao.RecordingDao
 import com.aivoicepower.data.local.database.dao.UserProgressDao
 import com.aivoicepower.data.local.database.dao.WarmupCompletionDao
 import dagger.Module
@@ -54,5 +55,11 @@ object DatabaseModule {
     @Singleton
     fun provideDailyChallengeDao(database: AppDatabase): DailyChallengeDao {
         return database.dailyChallengeDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRecordingDao(database: AppDatabase): RecordingDao {
+        return database.recordingDao()
     }
 }
