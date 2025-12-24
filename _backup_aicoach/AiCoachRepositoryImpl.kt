@@ -1,37 +1,27 @@
 package com.aivoicepower.data.repository
 
-import com.aivoicepower.data.local.database.dao.DiagnosticResultDao
+import com.aivoicepower.data.chat.ConversationContext
+import com.aivoicepower.data.chat.Message
+import com.aivoicepower.data.chat.MessageRole
 import com.aivoicepower.data.local.database.dao.MessageDao
-import com.aivoicepower.data.local.database.dao.UserProfileDao
-import com.aivoicepower.data.local.database.dao.UserProgressDao
 import com.aivoicepower.data.local.database.entity.MessageEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.data.remote.GeminiApiClient
-import com.aivoicepower.domain.model.chat.ConversationContext
-import com.aivoicepower.domain.model.chat.Message
-import com.aivoicepower.domain.model.chat.MessageRole
-import com.aivoicepower.domain.model.user.DiagnosticResult
-import com.aivoicepower.domain.model.user.SkillType
-import com.aivoicepower.domain.model.user.UserGoal
-import com.aivoicepower.domain.model.user.UserProfile
-import com.aivoicepower.domain.model.user.UserProgress
-import com.aivoicepower.domain.model.user.toDisplayString
 import com.aivoicepower.domain.repository.AiCoachRepository
-import com.aivoicepower.utils.constants.FreeTierLimits
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * TODO Phase 6: Restore full implementation with domain models
+ * Simplified version for Phase 5.3 - only basic dependencies
+ */
 @Singleton
 class AiCoachRepositoryImpl @Inject constructor(
     private val messageDao: MessageDao,
-    private val userProfileDao: UserProfileDao,
-    private val userProgressDao: UserProgressDao,
-    private val diagnosticResultDao: DiagnosticResultDao,
     private val userPreferencesDataStore: UserPreferencesDataStore,
     private val geminiApiClient: GeminiApiClient
 ) : AiCoachRepository {
