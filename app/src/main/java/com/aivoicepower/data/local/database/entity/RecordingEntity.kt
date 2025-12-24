@@ -13,5 +13,6 @@ data class RecordingEntity(
     val contextId: String, // lesson_id, debate_topic_id, etc.
     val transcription: String? = null,
     val isAnalyzed: Boolean = false,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val exerciseId: String? = null  // Optional exercise ID for tracking
 )

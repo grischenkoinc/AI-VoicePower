@@ -65,6 +65,19 @@ class UserPreferencesDataStore @Inject constructor(
             )
         }
 
+    // Direct Flow for hasCompletedOnboarding (used by v2 ViewModels)
+    val hasCompletedOnboarding: Flow<Boolean> = context.dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.HAS_COMPLETED_ONBOARDING] ?: false
+        }
+
     suspend fun updatePremiumStatus(isPremium: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.IS_PREMIUM] = isPremium
@@ -118,6 +131,11 @@ class UserPreferencesDataStore @Inject constructor(
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.DAILY_GOAL_MINUTES] = minutes
         }
+    }
+
+    // Alias for v2 ViewModels compatibility
+    suspend fun setDailyTrainingMinutes(minutes: Int) {
+        setDailyGoalMinutes(minutes)
     }
 
     suspend fun resetDailyProgress() {

@@ -2,12 +2,16 @@ package com.aivoicepower.data.local.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import com.aivoicepower.data.local.database.dao.CourseProgressDao
 import com.aivoicepower.data.local.database.dao.DailyChallengeDao
+import com.aivoicepower.data.local.database.dao.DiagnosticResultDao
 import com.aivoicepower.data.local.database.dao.MessageDao
 import com.aivoicepower.data.local.database.dao.RecordingDao
 import com.aivoicepower.data.local.database.dao.UserProgressDao
 import com.aivoicepower.data.local.database.dao.WarmupCompletionDao
+import com.aivoicepower.data.local.database.entity.CourseProgressEntity
 import com.aivoicepower.data.local.database.entity.DailyChallengeEntity
+import com.aivoicepower.data.local.database.entity.DiagnosticResultEntity
 import com.aivoicepower.data.local.database.entity.MessageEntity
 import com.aivoicepower.data.local.database.entity.RecordingEntity
 import com.aivoicepower.data.local.database.entity.UserProgressEntity
@@ -19,9 +23,11 @@ import com.aivoicepower.data.local.database.entity.WarmupCompletionEntity
         UserProgressEntity::class,
         WarmupCompletionEntity::class,
         DailyChallengeEntity::class,
-        RecordingEntity::class
+        RecordingEntity::class,
+        CourseProgressEntity::class,
+        DiagnosticResultEntity::class
     ],
-    version = 5,
+    version = 7,  // Increment version for RecordingEntity exerciseId field
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -30,4 +36,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun warmupCompletionDao(): WarmupCompletionDao
     abstract fun dailyChallengeDao(): DailyChallengeDao
     abstract fun recordingDao(): RecordingDao
+    abstract fun courseProgressDao(): CourseProgressDao
+    abstract fun diagnosticResultDao(): DiagnosticResultDao
 }

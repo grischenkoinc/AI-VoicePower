@@ -7,6 +7,14 @@ import java.io.File
 import java.io.IOException
 
 /**
+ * Result of a recording operation
+ */
+data class RecordingResult(
+    val filePath: String,
+    val durationMs: Long
+)
+
+/**
  * Utility for recording audio
  */
 class AudioRecorderUtil(private val context: Context) {
@@ -14,6 +22,7 @@ class AudioRecorderUtil(private val context: Context) {
     private var mediaRecorder: MediaRecorder? = null
     private var isRecording: Boolean = false
     private var outputFilePath: String? = null
+    private var recordingStartTime: Long = 0L
 
     /**
      * Start recording to the specified output file path
@@ -41,6 +50,7 @@ class AudioRecorderUtil(private val context: Context) {
             }
 
             outputFilePath = outputPath
+            recordingStartTime = System.currentTimeMillis()
             isRecording = true
         } catch (e: IOException) {
             e.printStackTrace()
@@ -49,16 +59,23 @@ class AudioRecorderUtil(private val context: Context) {
     }
 
     /**
-     * Stop recording and return the output file path
+     * Stop recording and return the recording result with file path and duration
      */
-    fun stopRecording(): String? {
+    fun stopRecording(): RecordingResult? {
         return try {
             mediaRecorder?.apply {
                 stop()
                 reset()
             }
             isRecording = false
-            outputFilePath
+            val path = outputFilePath
+            val duration = System.currentTimeMillis() - recordingStartTime
+
+            if (path != null) {
+                RecordingResult(filePath = path, durationMs = duration)
+            } else {
+                null
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             null

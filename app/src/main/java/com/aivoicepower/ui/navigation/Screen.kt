@@ -1,7 +1,22 @@
 package com.aivoicepower.ui.navigation
 
 sealed class Screen(val route: String) {
+    // Onboarding flow
+    object Splash : Screen("splash")
+    object Onboarding : Screen("onboarding")
+    object Diagnostic : Screen("diagnostic")
+    object DiagnosticResult : Screen("diagnostic_result")
+
+    // Main screens (Bottom Navigation)
+    object Main : Screen("main")
     object Home : Screen("home")
+    object Courses : Screen("courses")
+    object Progress : Screen("progress")
+
+    // Course details
+    object CourseDetail : Screen("course/{courseId}") {
+        fun createRoute(courseId: String) = "course/$courseId"
+    }
     object Lesson : Screen("lesson/{lessonId}") {
         fun createRoute(lessonId: String) = "lesson/$lessonId"
     }
@@ -23,4 +38,15 @@ sealed class Screen(val route: String) {
     object DailyChallenge : Screen("improvisation/daily-challenge")
     object Debate : Screen("improvisation/debate")
     object SalesPitch : Screen("improvisation/sales-pitch")
+
+    // AI Coach (Phase 6)
+    object AiCoach : Screen("ai-coach")
+
+    // Premium
+    object Premium : Screen("premium")
+
+    // Progress sub-screens
+    object Achievements : Screen("progress/achievements")
+    object Compare : Screen("progress/compare")
+    object RecordingHistory : Screen("progress/recording-history")
 }

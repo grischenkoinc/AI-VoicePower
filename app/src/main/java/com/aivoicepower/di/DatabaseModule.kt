@@ -3,7 +3,9 @@ package com.aivoicepower.di
 import android.content.Context
 import androidx.room.Room
 import com.aivoicepower.data.local.database.AppDatabase
+import com.aivoicepower.data.local.database.dao.CourseProgressDao
 import com.aivoicepower.data.local.database.dao.DailyChallengeDao
+import com.aivoicepower.data.local.database.dao.DiagnosticResultDao
 import com.aivoicepower.data.local.database.dao.MessageDao
 import com.aivoicepower.data.local.database.dao.RecordingDao
 import com.aivoicepower.data.local.database.dao.UserProgressDao
@@ -61,5 +63,17 @@ object DatabaseModule {
     @Singleton
     fun provideRecordingDao(database: AppDatabase): RecordingDao {
         return database.recordingDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideCourseProgressDao(database: AppDatabase): CourseProgressDao {
+        return database.courseProgressDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideDiagnosticResultDao(database: AppDatabase): DiagnosticResultDao {
+        return database.diagnosticResultDao()
     }
 }
