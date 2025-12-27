@@ -5,10 +5,14 @@ import com.aivoicepower.BuildConfig
 import com.aivoicepower.data.chat.ConversationContext
 import com.aivoicepower.data.chat.Message
 import com.aivoicepower.data.chat.MessageRole
+import com.aivoicepower.domain.model.VoiceAnalysisResult
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
 import com.google.ai.client.generativeai.type.generationConfig
+import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -188,7 +192,7 @@ class GeminiApiClient @Inject constructor(
     }
 
     /**
-     * Аналізує голосовий запис та надає фідбек
+     * Аналізує голосовий запис та надає фідбек (текстовий варіант)
      */
     suspend fun analyzeVoice(
         transcription: String,
@@ -225,6 +229,141 @@ $transcription
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    /**
+     * Аналізує аудіо файл та повертає детальні метрики
+     * Використовує Gemini multimodal для прямого аналізу аудіо
+     */
+    suspend fun analyzeVoiceRecording(
+        audioFilePath: String,
+        expectedText: String? = null,
+        exerciseType: String,
+        additionalContext: String? = null
+    ): Result<VoiceAnalysisResult> {
+        return try {
+            val audioFile = File(audioFilePath)
+            if (!audioFile.exists()) {
+                return Result.failure(Exception("Аудіо файл не знайдено: $audioFilePath"))
+            }
+
+            val mimeType = getMimeType(audioFilePath)
+            val audioBytes = audioFile.readBytes()
+
+            val prompt = buildVoiceAnalysisPrompt(expectedText, exerciseType, additionalContext)
+
+            val response = generativeModel.generateContent(
+                content {
+                    text(prompt)
+                    blob(mimeType, audioBytes)
+                }
+            )
+
+            val responseText = response.text
+                ?: return Result.failure(Exception("Gemini не повернув відповідь"))
+
+            // Парсимо JSON відповідь
+            val analysisResult = parseVoiceAnalysisResponse(responseText)
+            Result.success(analysisResult)
+
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    private fun getMimeType(filePath: String): String {
+        return when {
+            filePath.endsWith(".m4a", ignoreCase = true) -> "audio/mp4"
+            filePath.endsWith(".mp4", ignoreCase = true) -> "audio/mp4"
+            filePath.endsWith(".wav", ignoreCase = true) -> "audio/wav"
+            filePath.endsWith(".mp3", ignoreCase = true) -> "audio/mpeg"
+            filePath.endsWith(".ogg", ignoreCase = true) -> "audio/ogg"
+            else -> "audio/mp4" // Default
+        }
+    }
+
+    private fun buildVoiceAnalysisPrompt(
+        expectedText: String?,
+        exerciseType: String,
+        additionalContext: String?
+    ): String {
+        return """
+Ти — професійний тренер з мовлення. Проаналізуй цей голосовий запис українською мовою.
+
+Тип вправи: $exerciseType
+${if (expectedText != null) "Очікуваний текст: $expectedText" else ""}
+${if (additionalContext != null) "Контекст: $additionalContext" else ""}
+
+Оціни за шкалою 0-100:
+1. diction (чіткість дикції) - наскільки чітко вимовляються звуки
+2. tempo (темп мовлення) - чи комфортний темп, не надто швидко/повільно
+3. intonation (інтонація) - виразність, емоційність
+4. volume (гучність) - стабільність гучності
+5. confidence (впевненість) - наскільки впевнено звучить голос
+6. fillerWords (слова-паразити) - 100 = немає паразитів, 0 = багато
+
+Також дай:
+- strengths: список 2-3 сильних сторін
+- improvements: список 2-3 зон для покращення
+- tip: одна конкретна порада
+- overallScore: загальна оцінка 0-100
+
+Відповідь ТІЛЬКИ у форматі JSON:
+{
+  "diction": 75,
+  "tempo": 80,
+  "intonation": 70,
+  "volume": 85,
+  "confidence": 72,
+  "fillerWords": 90,
+  "overallScore": 78,
+  "strengths": ["чітка вимова", "хороший темп"],
+  "improvements": ["додати емоційності", "менше пауз"],
+  "tip": "Спробуй читати з більшим ентузіазмом"
+}
+        """.trimIndent()
+    }
+
+    private fun parseVoiceAnalysisResponse(responseText: String): VoiceAnalysisResult {
+        return try {
+            val jsonText = extractJson(responseText)
+            val gson = Gson()
+            val parsed = gson.fromJson(jsonText, VoiceAnalysisJsonResponse::class.java)
+
+            VoiceAnalysisResult(
+                diction = parsed.diction ?: 50,
+                tempo = parsed.tempo ?: 50,
+                intonation = parsed.intonation ?: 50,
+                volume = parsed.volume ?: 50,
+                confidence = parsed.confidence ?: 50,
+                fillerWords = parsed.fillerWords ?: 50,
+                overallScore = parsed.overallScore ?: 50,
+                strengths = parsed.strengths ?: listOf("Гарний початок!"),
+                improvements = parsed.improvements ?: listOf("Продовжуй практикуватись"),
+                tip = parsed.tip ?: "Практикуй регулярно"
+            )
+        } catch (e: Exception) {
+            // Fallback if parsing fails
+            VoiceAnalysisResult.default()
+        }
+    }
+
+    private fun extractJson(text: String): String {
+        // Шукаємо JSON між ``` або просто весь текст
+        val jsonPattern = "```json\\s*([\\s\\S]*?)```".toRegex()
+        val match = jsonPattern.find(text)
+        if (match != null) {
+            return match.groupValues[1].trim()
+        }
+
+        // Якщо немає markdown, шукаємо { ... }
+        val jsonStart = text.indexOf('{')
+        val jsonEnd = text.lastIndexOf('}')
+        if (jsonStart != -1 && jsonEnd != -1 && jsonEnd > jsonStart) {
+            return text.substring(jsonStart, jsonEnd + 1)
+        }
+
+        return text
     }
 
     // ===== SYSTEM PROMPTS =====
@@ -421,3 +560,19 @@ enum class SalesStage {
     INITIAL_PITCH,
     HANDLING_OBJECTION
 }
+
+/**
+ * Data class для парсингу JSON відповіді від Gemini
+ */
+private data class VoiceAnalysisJsonResponse(
+    @SerializedName("diction") val diction: Int?,
+    @SerializedName("tempo") val tempo: Int?,
+    @SerializedName("intonation") val intonation: Int?,
+    @SerializedName("volume") val volume: Int?,
+    @SerializedName("confidence") val confidence: Int?,
+    @SerializedName("fillerWords") val fillerWords: Int?,
+    @SerializedName("overallScore") val overallScore: Int?,
+    @SerializedName("strengths") val strengths: List<String>?,
+    @SerializedName("improvements") val improvements: List<String>?,
+    @SerializedName("tip") val tip: String?
+)

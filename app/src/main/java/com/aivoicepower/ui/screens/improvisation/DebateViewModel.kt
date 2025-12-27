@@ -7,6 +7,7 @@ import com.aivoicepower.data.local.database.dao.RecordingDao
 import com.aivoicepower.data.local.database.entity.RecordingEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.data.remote.GeminiApiClient
+import com.aivoicepower.domain.repository.VoiceAnalysisRepository
 import com.aivoicepower.utils.audio.AudioRecorderUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -22,7 +23,8 @@ class DebateViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val geminiApiClient: GeminiApiClient,
     private val recordingDao: RecordingDao,
-    private val userPreferencesDataStore: UserPreferencesDataStore
+    private val userPreferencesDataStore: UserPreferencesDataStore,
+    private val voiceAnalysisRepository: VoiceAnalysisRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DebateState())
@@ -195,16 +197,24 @@ class DebateViewModel @Inject constructor(
     private suspend fun saveRecording(transcription: String) {
         try {
             val path = recordingPath ?: return
-            val topic = _state.value.selectedTopic?.id ?: ""
+            val topic = _state.value.selectedTopic
+
+            // Analyze recording with Gemini
+            voiceAnalysisRepository.analyzeRecording(
+                audioFilePath = path,
+                expectedText = null,
+                exerciseType = "debate",
+                context = "Дебати на тему: ${topic?.topic ?: ""}, позиція: ${_state.value.userPosition?.name}"
+            )
 
             val recordingEntity = RecordingEntity(
                 id = UUID.randomUUID().toString(),
                 filePath = path,
                 durationMs = _state.value.recordingSeconds * 1000L,
                 type = "improvisation",
-                contextId = "debate_$topic",
+                contextId = "debate_${topic?.id ?: ""}",
                 transcription = transcription,
-                isAnalyzed = false
+                isAnalyzed = true
             )
 
             recordingDao.insert(recordingEntity)

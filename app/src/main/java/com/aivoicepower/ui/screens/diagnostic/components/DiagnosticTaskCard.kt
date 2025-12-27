@@ -1,17 +1,22 @@
 package com.aivoicepower.ui.screens.diagnostic.components
 
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import com.aivoicepower.ui.screens.diagnostic.DiagnosticTask
 import com.aivoicepower.ui.screens.diagnostic.TaskStatus
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiagnosticTaskCard(
     task: DiagnosticTask,
@@ -20,17 +25,26 @@ fun DiagnosticTaskCard(
 ) {
     val isEnabled = task.status == TaskStatus.PENDING || task.status == TaskStatus.RECORDED
 
+    // Animation state with InteractionSource
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed && isEnabled) 0.96f else 1f,
+        animationSpec = tween(durationMillis = 100),
+        label = "cardScale"
+    )
+
     Card(
+        onClick = onClick,
+        enabled = isEnabled,
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .then(
-                if (isEnabled) {
-                    Modifier.clickable(onClick = onClick)
-                } else {
-                    Modifier
-                }
-            ),
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            },
+        interactionSource = interactionSource,
         colors = CardDefaults.cardColors(
             containerColor = when (task.status) {
                 TaskStatus.RECORDED -> MaterialTheme.colorScheme.primaryContainer

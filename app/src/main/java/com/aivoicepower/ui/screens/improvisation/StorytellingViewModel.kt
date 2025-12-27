@@ -1,25 +1,35 @@
 package com.aivoicepower.ui.screens.improvisation
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.data.provider.StoryElementsProvider
 import com.aivoicepower.domain.model.exercise.StoryFormat
+import com.aivoicepower.domain.repository.VoiceAnalysisRepository
+import com.aivoicepower.utils.audio.AudioRecorderUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class StorytellingViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val storyElementsProvider: StoryElementsProvider,
-    private val userPreferencesDataStore: UserPreferencesDataStore
+    private val userPreferencesDataStore: UserPreferencesDataStore,
+    private val voiceAnalysisRepository: VoiceAnalysisRepository
 ) : ViewModel() {
+
+    private val audioRecorderUtil = AudioRecorderUtil(context)
+    private var currentRecordingPath: String? = null
 
     private val _state = MutableStateFlow(StorytellingState())
     val state: StateFlow<StorytellingState> = _state.asStateFlow()
@@ -77,40 +87,64 @@ class StorytellingViewModel @Inject constructor(
     }
 
     private fun startRecording() {
-        _state.value = _state.value.copy(
-            isPreparationPhase = false,
-            isRecording = true,
-            recordingDurationMs = 0,
-            recordingId = UUID.randomUUID().toString()
-        )
+        val recordingId = UUID.randomUUID().toString()
+        val recordingsDir = File(context.filesDir, "recordings/storytelling")
+        recordingsDir.mkdirs()
+        val outputPath = File(recordingsDir, "${recordingId}.m4a").absolutePath
 
-        // TODO Phase 8: Інтеграція з AudioRecorderUtil
-        recordingTimerJob?.cancel()
-        recordingTimerJob = viewModelScope.launch {
-            while (_state.value.isRecording) {
-                delay(100)
-                _state.value = _state.value.copy(
-                    recordingDurationMs = _state.value.recordingDurationMs + 100
-                )
+        try {
+            audioRecorderUtil.startRecording(outputPath)
+            currentRecordingPath = outputPath
+
+            _state.value = _state.value.copy(
+                isPreparationPhase = false,
+                isRecording = true,
+                recordingDurationMs = 0,
+                recordingId = recordingId
+            )
+
+            recordingTimerJob?.cancel()
+            recordingTimerJob = viewModelScope.launch {
+                while (_state.value.isRecording) {
+                    delay(100)
+                    _state.value = _state.value.copy(
+                        recordingDurationMs = _state.value.recordingDurationMs + 100
+                    )
+                }
             }
+        } catch (e: Exception) {
+            _state.value = _state.value.copy(
+                isRecording = false
+            )
         }
     }
 
     private fun stopRecording() {
         recordingTimerJob?.cancel()
+        audioRecorderUtil.stopRecording()
         _state.value = _state.value.copy(
             isRecording = false
         )
-
-        // TODO Phase 8: Зберегти запис через AudioRecorderUtil та RecordingDao
     }
 
     private fun completeTask() {
         viewModelScope.launch {
+            val recordingPath = currentRecordingPath
+            val storyPrompt = _state.value.storyPrompt
+            val format = _state.value.selectedFormat
+
+            // Analyze recording with Gemini if path exists
+            if (recordingPath != null && storyPrompt.isNotEmpty()) {
+                voiceAnalysisRepository.analyzeRecording(
+                    audioFilePath = recordingPath,
+                    expectedText = null,
+                    exerciseType = "storytelling_${format?.name?.lowercase() ?: "classic"}",
+                    context = "Формат історії: ${format?.name ?: "Класична"}, промпт: $storyPrompt"
+                )
+            }
+
             // Increment free improvisation count
             userPreferencesDataStore.incrementFreeImprovisations()
-
-            // TODO Phase 8: Зберегти завершення в базі даних
         }
     }
 
@@ -124,5 +158,6 @@ class StorytellingViewModel @Inject constructor(
         super.onCleared()
         preparationTimerJob?.cancel()
         recordingTimerJob?.cancel()
+        audioRecorderUtil.release()
     }
 }

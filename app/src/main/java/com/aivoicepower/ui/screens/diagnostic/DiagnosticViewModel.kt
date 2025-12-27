@@ -1,12 +1,17 @@
 package com.aivoicepower.ui.screens.diagnostic
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.local.database.dao.DiagnosticResultDao
 import com.aivoicepower.data.local.database.dao.RecordingDao
 import com.aivoicepower.data.local.database.entity.DiagnosticResultEntity
 import com.aivoicepower.data.local.database.entity.RecordingEntity
+import com.aivoicepower.domain.model.VoiceAnalysisResult
+import com.aivoicepower.domain.repository.VoiceAnalysisRepository
+import com.aivoicepower.utils.audio.AudioRecorderUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,15 +19,19 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.UUID
 import javax.inject.Inject
-import kotlin.random.Random
 
 @HiltViewModel
 class DiagnosticViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val recordingDao: RecordingDao,
-    private val diagnosticResultDao: DiagnosticResultDao
+    private val diagnosticResultDao: DiagnosticResultDao,
+    private val voiceAnalysisRepository: VoiceAnalysisRepository
 ) : ViewModel() {
+
+    private val audioRecorderUtil = AudioRecorderUtil(context)
 
     private val _state = MutableStateFlow(DiagnosticState())
     val state: StateFlow<DiagnosticState> = _state.asStateFlow()
@@ -40,12 +49,15 @@ class DiagnosticViewModel @Inject constructor(
                     it.copy(
                         showInstructionDialog = false,
                         selectedTask = null,
-                        currentTaskIndex = null
+                        currentTaskIndex = null,
+                        error = null
                     )
                 }
             }
 
             DiagnosticEvent.StartRecordingClicked -> {
+                // Clear error before attempting to start recording
+                _state.update { it.copy(error = null) }
                 startRecording()
             }
 
@@ -88,6 +100,14 @@ class DiagnosticViewModel @Inject constructor(
                 // Will be handled in navigation
                 _state.update { it.copy(isCompleted = true) }
             }
+
+            DiagnosticEvent.PermissionDenied -> {
+                _state.update {
+                    it.copy(
+                        error = "Для запису потрібен дозвіл на мікрофон. Надайте дозвіл у налаштуваннях."
+                    )
+                }
+            }
         }
     }
 
@@ -112,22 +132,42 @@ class DiagnosticViewModel @Inject constructor(
     }
 
     private fun startRecording() {
-        _state.update {
-            it.copy(
-                showInstructionDialog = false,
-                isRecording = true,
-                recordingSeconds = 0
-            )
-        }
+        val task = _state.value.selectedTask ?: return
 
-        // Start timer
-        recordingTimerJob?.cancel()
-        recordingTimerJob = viewModelScope.launch {
-            var seconds = 0
-            while (_state.value.isRecording) {
-                delay(1000)
-                seconds++
-                onEvent(DiagnosticEvent.RecordingTick(seconds))
+        // Create real recording path
+        val recordingsDir = File(context.filesDir, "recordings/diagnostic")
+        recordingsDir.mkdirs()
+        val outputPath = File(recordingsDir, "${task.id}_${System.currentTimeMillis()}.m4a").absolutePath
+
+        try {
+            audioRecorderUtil.startRecording(outputPath)
+
+            _state.update {
+                it.copy(
+                    showInstructionDialog = false,
+                    isRecording = true,
+                    recordingSeconds = 0,
+                    currentRecordingPath = outputPath
+                )
+            }
+
+            // Start timer
+            recordingTimerJob?.cancel()
+            recordingTimerJob = viewModelScope.launch {
+                var seconds = 0
+                while (_state.value.isRecording) {
+                    delay(1000)
+                    seconds++
+                    onEvent(DiagnosticEvent.RecordingTick(seconds))
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // Show error to user - keep instruction dialog open
+            _state.update {
+                it.copy(
+                    error = "Помилка запису: ${e.message ?: "Перевірте дозволи на мікрофон"}"
+                )
             }
         }
     }
@@ -145,8 +185,9 @@ class DiagnosticViewModel @Inject constructor(
     private fun stopRecording() {
         recordingTimerJob?.cancel()
 
-        // FAKE recording path (no actual audio file created)
-        val recordingPath = "recordings/diagnostic_${UUID.randomUUID()}.m4a"
+        // Stop real recording
+        val result = audioRecorderUtil.stopRecording()
+        val recordingPath = result?.filePath ?: _state.value.currentRecordingPath
 
         _state.update {
             it.copy(
@@ -199,28 +240,79 @@ class DiagnosticViewModel @Inject constructor(
                 )
             }
 
-            // Якщо всі задачі завершені, зберігаємо fake результати
+            // Якщо всі задачі завершені, аналізуємо всі записи з Gemini
             if (completedCount == updatedTasks.size) {
-                saveFakeDiagnosticResults()
+                analyzeAllRecordings()
             }
         }
     }
 
-    private suspend fun saveFakeDiagnosticResults() {
-        // Генеруємо fake scores (60-85 діапазон для реалістичності)
-        val diagnosticResult = DiagnosticResultEntity(
-            id = UUID.randomUUID().toString(),
-            diction = Random.nextInt(60, 86),
-            tempo = Random.nextInt(60, 86),
-            intonation = Random.nextInt(55, 81),
-            volume = Random.nextInt(65, 91),
-            structure = Random.nextInt(55, 81),
-            confidence = Random.nextInt(50, 76),
-            fillerWords = Random.nextInt(45, 71),
-            recommendations = "[]", // Empty for now
-            isInitial = true
-        )
+    private suspend fun analyzeAllRecordings() {
+        val tasks = _state.value.tasks
+        val analysisResults = mutableListOf<VoiceAnalysisResult>()
+
+        // Analyze each recording with Gemini
+        for (task in tasks) {
+            val recordingPath = task.recordingPath ?: continue
+            val file = File(recordingPath)
+            if (!file.exists()) continue
+
+            val result = voiceAnalysisRepository.analyzeRecording(
+                audioFilePath = recordingPath,
+                expectedText = task.contentText,
+                exerciseType = task.id,
+                context = task.instruction
+            )
+
+            result.getOrNull()?.let { analysisResults.add(it) }
+        }
+
+        // If we have analysis results, average them
+        val diagnosticResult = if (analysisResults.isNotEmpty()) {
+            val avgDiction = analysisResults.map { it.diction }.average().toInt()
+            val avgTempo = analysisResults.map { it.tempo }.average().toInt()
+            val avgIntonation = analysisResults.map { it.intonation }.average().toInt()
+            val avgVolume = analysisResults.map { it.volume }.average().toInt()
+            val avgConfidence = analysisResults.map { it.confidence }.average().toInt()
+            val avgFillerWords = analysisResults.map { it.fillerWords }.average().toInt()
+            val avgOverall = analysisResults.map { it.overallScore }.average().toInt()
+
+            // Combine recommendations
+            val allImprovements = analysisResults.flatMap { it.improvements }.distinct().take(5)
+
+            DiagnosticResultEntity(
+                id = UUID.randomUUID().toString(),
+                diction = avgDiction,
+                tempo = avgTempo,
+                intonation = avgIntonation,
+                volume = avgVolume,
+                structure = avgOverall, // Using overall score as structure proxy
+                confidence = avgConfidence,
+                fillerWords = avgFillerWords,
+                recommendations = allImprovements.joinToString(","),
+                isInitial = true
+            )
+        } else {
+            // Fallback to default values if analysis failed
+            DiagnosticResultEntity(
+                id = UUID.randomUUID().toString(),
+                diction = 50,
+                tempo = 50,
+                intonation = 50,
+                volume = 50,
+                structure = 50,
+                confidence = 50,
+                fillerWords = 50,
+                recommendations = "Спробуй записати ще раз",
+                isInitial = true
+            )
+        }
 
         diagnosticResultDao.insert(diagnosticResult)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        audioRecorderUtil.release()
     }
 }

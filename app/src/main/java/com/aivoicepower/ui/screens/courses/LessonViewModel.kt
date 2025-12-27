@@ -9,6 +9,7 @@ import com.aivoicepower.data.local.database.dao.RecordingDao
 import com.aivoicepower.data.local.database.entity.CourseProgressEntity
 import com.aivoicepower.data.local.database.entity.RecordingEntity
 import com.aivoicepower.domain.repository.CourseRepository
+import com.aivoicepower.domain.repository.VoiceAnalysisRepository
 import com.aivoicepower.utils.audio.AudioPlayerUtil
 import com.aivoicepower.utils.audio.AudioRecorderUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,7 +28,8 @@ class LessonViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val courseRepository: CourseRepository,
     private val courseProgressDao: CourseProgressDao,
-    private val recordingDao: RecordingDao
+    private val recordingDao: RecordingDao,
+    private val voiceAnalysisRepository: VoiceAnalysisRepository
 ) : ViewModel() {
 
     private val courseId: String = savedStateHandle["courseId"] ?: ""
@@ -196,8 +198,25 @@ class LessonViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                // Save recording to database
+                var score = 0
+
+                // Analyze recording with Gemini if path exists
                 if (currentExerciseState.recordingPath != null) {
+                    // Extract expected text from ExerciseContent
+                    val expectedText = when (val content = currentExerciseState.exercise.content) {
+                        is com.aivoicepower.domain.model.exercise.ExerciseContent.TongueTwister -> content.text
+                        is com.aivoicepower.domain.model.exercise.ExerciseContent.ReadingText -> content.text
+                        else -> null
+                    }
+                    val analysisResult = voiceAnalysisRepository.analyzeRecording(
+                        audioFilePath = currentExerciseState.recordingPath,
+                        expectedText = expectedText,
+                        exerciseType = currentExerciseState.exercise.type.name,
+                        context = "Урок: ${lesson.title}, вправа: ${currentExerciseState.exercise.title}"
+                    )
+                    score = analysisResult.getOrNull()?.overallScore ?: 0
+
+                    // Save recording to database
                     val recordingEntity = RecordingEntity(
                         id = UUID.randomUUID().toString(),
                         filePath = currentExerciseState.recordingPath,
@@ -205,7 +224,7 @@ class LessonViewModel @Inject constructor(
                         type = "exercise",
                         contextId = "${courseId}_${lessonId}",
                         exerciseId = currentExerciseState.exercise.id,
-                        isAnalyzed = false
+                        isAnalyzed = true
                     )
                     recordingDao.insert(recordingEntity)
                 }
@@ -232,7 +251,7 @@ class LessonViewModel @Inject constructor(
                         lessonId = lessonId,
                         isCompleted = true,
                         completedAt = System.currentTimeMillis(),
-                        bestScore = 100, // Placeholder - AI analysis will update this
+                        bestScore = score, // Real score from Gemini analysis
                         attemptsCount = 1,
                         lastAttemptAt = System.currentTimeMillis()
                     )

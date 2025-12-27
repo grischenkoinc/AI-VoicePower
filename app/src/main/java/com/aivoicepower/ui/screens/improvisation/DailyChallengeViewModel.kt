@@ -1,18 +1,23 @@
 package com.aivoicepower.ui.screens.improvisation
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.local.database.dao.DailyChallengeDao
 import com.aivoicepower.data.local.database.entity.DailyChallengeEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.data.provider.DailyChallengeProvider
+import com.aivoicepower.domain.repository.VoiceAnalysisRepository
+import com.aivoicepower.utils.audio.AudioRecorderUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.File
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.UUID
@@ -20,10 +25,15 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DailyChallengeViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val dailyChallengeProvider: DailyChallengeProvider,
     private val dailyChallengeDao: DailyChallengeDao,
-    private val userPreferencesDataStore: UserPreferencesDataStore
+    private val userPreferencesDataStore: UserPreferencesDataStore,
+    private val voiceAnalysisRepository: VoiceAnalysisRepository
 ) : ViewModel() {
+
+    private val audioRecorderUtil = AudioRecorderUtil(context)
+    private var currentRecordingPath: String? = null
 
     private val _state = MutableStateFlow(DailyChallengeState())
     val state: StateFlow<DailyChallengeState> = _state.asStateFlow()
@@ -115,38 +125,51 @@ class DailyChallengeViewModel @Inject constructor(
     }
 
     private fun startRecording() {
-        _state.value = _state.value.copy(
-            isPreparationPhase = false,
-            isRecording = true,
-            recordingDurationMs = 0,
-            recordingId = UUID.randomUUID().toString()
-        )
+        val recordingId = UUID.randomUUID().toString()
+        val recordingsDir = File(context.filesDir, "recordings/daily_challenge")
+        recordingsDir.mkdirs()
+        val outputPath = File(recordingsDir, "${recordingId}.m4a").absolutePath
 
-        // TODO Phase 8: Інтеграція з AudioRecorderUtil
-        recordingTimerJob?.cancel()
-        recordingTimerJob = viewModelScope.launch {
-            val timeLimit = _state.value.challenge?.timeLimit ?: 120
-            while (_state.value.isRecording && _state.value.recordingDurationMs < timeLimit * 1000L) {
-                delay(100)
-                _state.value = _state.value.copy(
-                    recordingDurationMs = _state.value.recordingDurationMs + 100
-                )
-            }
+        try {
+            audioRecorderUtil.startRecording(outputPath)
+            currentRecordingPath = outputPath
 
-            // Auto-stop when time limit reached
-            if (_state.value.recordingDurationMs >= timeLimit * 1000L) {
-                stopRecording()
+            _state.value = _state.value.copy(
+                isPreparationPhase = false,
+                isRecording = true,
+                recordingDurationMs = 0,
+                recordingId = recordingId
+            )
+
+            recordingTimerJob?.cancel()
+            recordingTimerJob = viewModelScope.launch {
+                val timeLimit = _state.value.challenge?.timeLimit ?: 120
+                while (_state.value.isRecording && _state.value.recordingDurationMs < timeLimit * 1000L) {
+                    delay(100)
+                    _state.value = _state.value.copy(
+                        recordingDurationMs = _state.value.recordingDurationMs + 100
+                    )
+                }
+
+                // Auto-stop when time limit reached
+                if (_state.value.recordingDurationMs >= timeLimit * 1000L) {
+                    stopRecording()
+                }
             }
+        } catch (e: Exception) {
+            _state.value = _state.value.copy(
+                isRecording = false,
+                error = "Помилка запису: ${e.message}"
+            )
         }
     }
 
     private fun stopRecording() {
         recordingTimerJob?.cancel()
+        audioRecorderUtil.stopRecording()
         _state.value = _state.value.copy(
             isRecording = false
         )
-
-        // TODO Phase 8: Зберегти запис через AudioRecorderUtil та RecordingDao
     }
 
     private fun completeChallenge() {
@@ -155,6 +178,17 @@ class DailyChallengeViewModel @Inject constructor(
                 val challenge = _state.value.challenge ?: return@launch
                 val today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
                 val completedAt = System.currentTimeMillis()
+                val recordingPath = currentRecordingPath
+
+                // Analyze recording with Gemini if path exists
+                if (recordingPath != null) {
+                    voiceAnalysisRepository.analyzeRecording(
+                        audioFilePath = recordingPath,
+                        expectedText = null,
+                        exerciseType = "daily_challenge_${challenge.type.name.lowercase()}",
+                        context = "Щоденний виклик: ${challenge.title}"
+                    )
+                }
 
                 // Update database
                 val challengeEntity = dailyChallengeDao.getChallengeByDate(today)
@@ -187,5 +221,6 @@ class DailyChallengeViewModel @Inject constructor(
         super.onCleared()
         preparationTimerJob?.cancel()
         recordingTimerJob?.cancel()
+        audioRecorderUtil.release()
     }
 }

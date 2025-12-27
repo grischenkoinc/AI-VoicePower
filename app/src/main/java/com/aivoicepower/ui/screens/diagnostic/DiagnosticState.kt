@@ -10,7 +10,8 @@ data class DiagnosticState(
     val currentRecordingPath: String? = null,
     val showRecordingPreview: Boolean = false,
     val completedTasksCount: Int = 0,
-    val isCompleted: Boolean = false
+    val isCompleted: Boolean = false,
+    val error: String? = null
 )
 
 data class DiagnosticTask(

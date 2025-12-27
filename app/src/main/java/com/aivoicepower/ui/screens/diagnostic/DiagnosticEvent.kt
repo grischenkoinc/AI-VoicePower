@@ -10,4 +10,5 @@ sealed class DiagnosticEvent {
     object SaveRecordingClicked : DiagnosticEvent()
     object PreviewDialogDismissed : DiagnosticEvent()
     object CompleteDiagnosticClicked : DiagnosticEvent()
+    object PermissionDenied : DiagnosticEvent()
 }

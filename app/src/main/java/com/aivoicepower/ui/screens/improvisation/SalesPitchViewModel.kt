@@ -9,6 +9,7 @@ import com.aivoicepower.data.local.database.entity.RecordingEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.data.remote.GeminiApiClient
 import com.aivoicepower.data.remote.SalesStage
+import com.aivoicepower.domain.repository.VoiceAnalysisRepository
 import com.aivoicepower.utils.audio.AudioRecorderUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -25,7 +26,8 @@ class SalesPitchViewModel @Inject constructor(
     private val geminiApiClient: GeminiApiClient,
     private val salesProductsProvider: SalesProductsProvider,
     private val recordingDao: RecordingDao,
-    private val userPreferencesDataStore: UserPreferencesDataStore
+    private val userPreferencesDataStore: UserPreferencesDataStore,
+    private val voiceAnalysisRepository: VoiceAnalysisRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SalesPitchState())
@@ -225,16 +227,25 @@ class SalesPitchViewModel @Inject constructor(
     private suspend fun saveRecording(transcription: String) {
         try {
             val path = recordingPath ?: return
-            val productId = _state.value.selectedProduct?.id ?: ""
+            val product = _state.value.selectedProduct
+            val customer = _state.value.customerProfile
+
+            // Analyze recording with Gemini
+            voiceAnalysisRepository.analyzeRecording(
+                audioFilePath = path,
+                expectedText = null,
+                exerciseType = "sales_pitch",
+                context = "Продаж продукту: ${product?.name ?: ""}, тип клієнта: ${customer?.type ?: ""}"
+            )
 
             val recordingEntity = RecordingEntity(
                 id = UUID.randomUUID().toString(),
                 filePath = path,
                 durationMs = _state.value.recordingSeconds * 1000L,
                 type = "improvisation",
-                contextId = "sales_$productId",
+                contextId = "sales_${product?.id ?: ""}",
                 transcription = transcription,
-                isAnalyzed = false
+                isAnalyzed = true
             )
 
             recordingDao.insert(recordingEntity)

@@ -1,20 +1,29 @@
 package com.aivoicepower.ui.screens.improvisation
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.content.ImprovisationTopicsProvider
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
+import com.aivoicepower.domain.repository.VoiceAnalysisRepository
+import com.aivoicepower.utils.audio.AudioRecorderUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
 class RandomTopicViewModel @Inject constructor(
-    private val userPreferencesDataStore: UserPreferencesDataStore
+    @ApplicationContext private val context: Context,
+    private val userPreferencesDataStore: UserPreferencesDataStore,
+    private val voiceAnalysisRepository: VoiceAnalysisRepository
 ) : ViewModel() {
+
+    private val audioRecorderUtil = AudioRecorderUtil(context)
 
     private val _state = MutableStateFlow(RandomTopicState())
     val state: StateFlow<RandomTopicState> = _state.asStateFlow()
@@ -74,13 +83,18 @@ class RandomTopicViewModel @Inject constructor(
     private fun startRecording() {
         viewModelScope.launch {
             try {
-                // TODO: Implement actual recording with AudioRecorderUtil in future phases
                 val recordingId = UUID.randomUUID().toString()
+                val recordingsDir = File(context.filesDir, "recordings/improvisation")
+                recordingsDir.mkdirs()
+                val outputPath = File(recordingsDir, "${recordingId}.m4a").absolutePath
+
+                audioRecorderUtil.startRecording(outputPath)
 
                 _state.update {
                     it.copy(
                         isRecording = true,
                         recordingId = recordingId,
+                        recordingPath = outputPath,
                         isPreparationPhase = false
                     )
                 }
@@ -105,6 +119,7 @@ class RandomTopicViewModel @Inject constructor(
 
     private fun stopRecording() {
         viewModelScope.launch {
+            audioRecorderUtil.stopRecording()
             _state.update {
                 it.copy(isRecording = false)
             }
@@ -114,7 +129,20 @@ class RandomTopicViewModel @Inject constructor(
     private fun completeTask() {
         viewModelScope.launch {
             try {
-                // TODO: Save recording to database when RecordingDao is implemented
+                val recordingPath = _state.value.recordingPath
+                val topic = _state.value.currentTopic
+
+                // Analyze recording with Gemini if path exists
+                if (recordingPath != null && topic != null) {
+                    val analysisResult = voiceAnalysisRepository.analyzeRecording(
+                        audioFilePath = recordingPath,
+                        expectedText = null, // Free improvisation - no expected text
+                        exerciseType = "random_topic",
+                        context = "Тема для імпровізації: ${topic.title}"
+                    )
+                    // Analysis result is available for future use (e.g., showing score)
+                    analysisResult.getOrNull()
+                }
 
                 // Increment free improvisation counter
                 userPreferencesDataStore.incrementFreeImprovisations()
@@ -125,5 +153,10 @@ class RandomTopicViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        audioRecorderUtil.release()
     }
 }

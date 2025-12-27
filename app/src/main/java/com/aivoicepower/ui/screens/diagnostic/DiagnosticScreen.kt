@@ -1,15 +1,24 @@
 package com.aivoicepower.ui.screens.diagnostic
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aivoicepower.ui.screens.diagnostic.components.*
@@ -21,6 +30,31 @@ fun DiagnosticScreen(
     onNavigateToHome: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    // Permission state
+    var hasAudioPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.RECORD_AUDIO
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    // Permission launcher
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        hasAudioPermission = isGranted
+        if (isGranted) {
+            // Permission granted - start recording
+            viewModel.onEvent(DiagnosticEvent.StartRecordingClicked)
+        } else {
+            // Permission denied - show error in dialog
+            viewModel.onEvent(DiagnosticEvent.PermissionDenied)
+        }
+    }
 
     // Navigate when diagnostic is completed
     LaunchedEffect(state.isCompleted) {
@@ -95,11 +129,17 @@ fun DiagnosticScreen(
     if (state.showInstructionDialog && state.selectedTask != null) {
         DiagnosticInstructionDialog(
             task = state.selectedTask!!,
+            error = state.error,
             onDismiss = {
                 viewModel.onEvent(DiagnosticEvent.InstructionDialogDismissed)
             },
             onStartRecording = {
-                viewModel.onEvent(DiagnosticEvent.StartRecordingClicked)
+                // Check and request permission before starting recording
+                if (hasAudioPermission) {
+                    viewModel.onEvent(DiagnosticEvent.StartRecordingClicked)
+                } else {
+                    permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                }
             }
         )
     }

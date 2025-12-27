@@ -1,24 +1,83 @@
-Виправ 2 баги в DiagnosticScreen:
+Виправ 2 проблеми:
 
-=== БАГ 1: Текст зникає під час запису ===
+=== БАГ 1: "setAudioSource failed" ===
 
-Знайди DiagnosticScreen.kt і перевір:
-- Коли показується текст для читання?
-- Чому він ховається під час запису?
+Це помилка дозволів мікрофона! Перевір:
 
-Текст повинен залишатися видимим ВСЕ ВРЕМЯ поки користувач записує!
+1. Чи є дозвіл в AndroidManifest.xml?
 
-Покажи код секції запису і виправ щоб текст був видимий.
+grep -n "RECORD_AUDIO\|MICROPHONE" app/src/main/AndroidManifest.xml
 
-=== БАГ 2: Кнопка "Прослухати" неактивна ===
+Якщо немає — додай:
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
 
-Знайди де визначається кнопка "Прослухати запис" і перевір:
-- Який enabled стан?
-- Чи є AudioPlayerUtil підключений?
+2. Чи запитується runtime permission?
 
-grep -n "Прослухати\|playback\|AudioPlayer" app/src/main/java/com/aivoicepower/ui/screens/diagnostic/
+grep -rn "RECORD_AUDIO\|requestPermission\|permission" app/src/main/java/com/aivoicepower/ui/screens/diagnostic/
 
-Покажи код і виправ.
+Потрібно запитувати дозвіл перед записом:
+
+val permissionLauncher = rememberLauncherForActivityResult(
+    ActivityResultContracts.RequestPermission()
+) { isGranted ->
+    if (isGranted) {
+        // Почати запис
+        viewModel.onEvent(DiagnosticEvent.StartRecording)
+    } else {
+        // Показати повідомлення про необхідність дозволу
+    }
+}
+
+// При натисканні кнопки:
+onClick = {
+    permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+}
+
+3. Перевір AudioRecorderUtil — чи правильно налаштований MediaRecorder?
+
+grep -n "setAudioSource\|MediaRecorder" app/src/main/java/com/aivoicepower/utils/audio/AudioRecorderUtil.kt
+
+=== БАГ 2: Анімація кнопок ===
+
+Додай простішу анімацію через InteractionSource:
+
+@Composable
+fun AnimatedPrimaryButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.96f else 1f,
+        animationSpec = tween(durationMillis = 100),
+        label = "buttonScale"
+    )
+    
+    Button(
+        onClick = onClick,
+        modifier = modifier.graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+        },
+        enabled = enabled,
+        interactionSource = interactionSource
+    ) {
+        Text(text)
+    }
+}
+
+Застосуй до кнопок "Почати" та "Почати запис" в DiagnosticScreen.kt
+
+Imports потрібні:
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.graphics.graphicsLayer
 
 === КРОК 3: Компіляція ===
 
@@ -27,7 +86,8 @@ grep -n "Прослухати\|playback\|AudioPlayer" app/src/main/java/com/aivo
 === РЕЗУЛЬТАТ ===
 
 Покажи:
-1. Що було причиною бага з текстом
-2. Що було причиною неактивної кнопки
-3. Як виправив
-4. Результат компіляції
+1. Чи був дозвіл RECORD_AUDIO в Manifest?
+2. Чи є runtime permission request?
+3. Як виправив помилку запису
+4. Чи додав анімації
+5. Результат компіляції

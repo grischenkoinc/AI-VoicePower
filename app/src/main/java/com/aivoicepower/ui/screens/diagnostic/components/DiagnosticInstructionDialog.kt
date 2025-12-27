@@ -1,11 +1,16 @@
 package com.aivoicepower.ui.screens.diagnostic.components
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -14,6 +19,7 @@ import com.aivoicepower.ui.screens.diagnostic.DiagnosticTask
 @Composable
 fun DiagnosticInstructionDialog(
     task: DiagnosticTask,
+    error: String? = null,
     onDismiss: () -> Unit,
     onStartRecording: () -> Unit
 ) {
@@ -107,6 +113,22 @@ fun DiagnosticInstructionDialog(
                     }
                 }
 
+                // Error message
+                error?.let {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    ) {
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // Buttons
@@ -118,9 +140,25 @@ fun DiagnosticInstructionDialog(
                         Text("Назад")
                     }
 
+                    // Animated button with InteractionSource
+                    val interactionSource = remember { MutableInteractionSource() }
+                    val isPressed by interactionSource.collectIsPressedAsState()
+                    val scale by animateFloatAsState(
+                        targetValue = if (isPressed) 0.96f else 1f,
+                        animationSpec = tween(durationMillis = 100),
+                        label = "buttonScale"
+                    )
+
                     Button(
                         onClick = onStartRecording,
-                        modifier = Modifier.weight(1f).padding(start = 8.dp)
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 8.dp)
+                            .graphicsLayer {
+                                scaleX = scale
+                                scaleY = scale
+                            },
+                        interactionSource = interactionSource
                     ) {
                         Text("Почати запис →")
                     }

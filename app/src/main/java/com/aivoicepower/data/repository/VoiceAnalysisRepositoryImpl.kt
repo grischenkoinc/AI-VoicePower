@@ -1,6 +1,8 @@
 package com.aivoicepower.data.repository
 
+import com.aivoicepower.data.remote.GeminiApiClient
 import com.aivoicepower.domain.model.VoiceAnalysis
+import com.aivoicepower.domain.model.VoiceAnalysisResult
 import com.aivoicepower.domain.model.VoiceMetrics
 import com.aivoicepower.domain.repository.VoiceAnalysisRepository
 import com.google.ai.client.generativeai.GenerativeModel
@@ -27,7 +29,8 @@ private data class GeminiAnalysisResponse(
 )
 
 class VoiceAnalysisRepositoryImpl @Inject constructor(
-    private val geminiModel: GenerativeModel
+    private val geminiModel: GenerativeModel,
+    private val geminiApiClient: GeminiApiClient
 ) : VoiceAnalysisRepository {
 
     private val gson = Gson()
@@ -143,5 +146,23 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
         }
 
         return text
+    }
+
+    /**
+     * Аналізує аудіо запис та повертає детальні метрики
+     * Делегує до GeminiApiClient
+     */
+    override suspend fun analyzeRecording(
+        audioFilePath: String,
+        expectedText: String?,
+        exerciseType: String,
+        context: String?
+    ): Result<VoiceAnalysisResult> = withContext(Dispatchers.IO) {
+        geminiApiClient.analyzeVoiceRecording(
+            audioFilePath = audioFilePath,
+            expectedText = expectedText,
+            exerciseType = exerciseType,
+            additionalContext = context
+        )
     }
 }
