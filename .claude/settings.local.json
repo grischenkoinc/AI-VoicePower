@@ -18,7 +18,8 @@
       "Bash(git stash:*)",
       "Bash(cat:*)",
       "Bash(tree:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(./gradlew.bat:*)"
     ]
   }
 }

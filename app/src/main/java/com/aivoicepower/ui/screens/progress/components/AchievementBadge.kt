@@ -85,19 +85,19 @@ fun AchievementBadge(
 
 private fun getAchievementIcon(achievement: Achievement): String {
     return when {
-        achievement.type.name.contains("STREAK") -> "[fire]"
-        achievement.type.name.contains("COURSE") -> "[book]"
-        achievement.type.name.contains("DICTION") -> "[speech]"
-        achievement.type.name.contains("TEMPO") -> "[clock]"
-        achievement.type.name.contains("EMOTION") -> "[star]"
-        achievement.type.name.contains("FILLER") -> "[check]"
-        achievement.type.name.contains("IMPROV") -> "[mic]"
-        achievement.type.name.contains("DEBAT") -> "[debate]"
-        achievement.type.name.contains("SALES") -> "[money]"
-        achievement.type.name.contains("STORY") -> "[book]"
-        achievement.type.name.contains("EARLY") -> "[sun]"
-        achievement.type.name.contains("NIGHT") -> "[moon]"
-        achievement.type.name.contains("BREAK") -> "[rocket]"
-        else -> "[trophy]"
+        achievement.type.name.contains("STREAK") -> "🔥"
+        achievement.type.name.contains("COURSE") -> "📚"
+        achievement.type.name.contains("DICTION") -> "🗣️"
+        achievement.type.name.contains("TEMPO") -> "⏱️"
+        achievement.type.name.contains("EMOTION") -> "⭐"
+        achievement.type.name.contains("FILLER") -> "✅"
+        achievement.type.name.contains("IMPROV") -> "🎤"
+        achievement.type.name.contains("DEBAT") -> "💬"
+        achievement.type.name.contains("SALES") -> "💰"
+        achievement.type.name.contains("STORY") -> "📚"
+        achievement.type.name.contains("EARLY") -> "☀️"
+        achievement.type.name.contains("NIGHT") -> "🌙"
+        achievement.type.name.contains("BREAK") -> "🚀"
+        else -> "🏆"
     }
 }

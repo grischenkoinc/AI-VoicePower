@@ -14,6 +14,7 @@ import androidx.compose.ui.window.DialogProperties
 fun DiagnosticRecordingDialog(
     recordingSeconds: Int,
     maxDurationSeconds: Int,
+    contentText: String? = null,
     onStopRecording: () -> Unit
 ) {
     val progress = if (maxDurationSeconds > 0) {
@@ -76,18 +77,36 @@ fun DiagnosticRecordingDialog(
                     )
                 }
 
-                // Animated microphone icon (just text for now)
-                Text(
-                    text = "🎤",
-                    style = MaterialTheme.typography.displayLarge,
-                    fontSize = MaterialTheme.typography.displayLarge.fontSize * 2
-                )
+                // Text to read (if provided)
+                if (contentText != null) {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = contentText,
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = TextAlign.Start,
+                            modifier = Modifier.padding(16.dp),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                } else {
+                    // Animated microphone icon for spontaneous speech
+                    Text(
+                        text = "🎤",
+                        style = MaterialTheme.typography.displayLarge,
+                        fontSize = MaterialTheme.typography.displayLarge.fontSize * 2
+                    )
 
-                Text(
-                    text = "Говоріть...",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                    Text(
+                        text = "Говоріть...",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 

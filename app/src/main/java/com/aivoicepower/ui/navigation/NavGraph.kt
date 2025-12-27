@@ -13,22 +13,72 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.aivoicepower.ui.screens.aicoach.AiCoachScreen
+import com.aivoicepower.ui.screens.diagnostic.DiagnosticResultScreen
+import com.aivoicepower.ui.screens.diagnostic.DiagnosticScreen
 import com.aivoicepower.ui.screens.main.MainScreen
+import com.aivoicepower.ui.screens.onboarding.OnboardingScreen
+import com.aivoicepower.ui.screens.onboarding.SplashScreen
 
 /**
  * Root navigation graph for the app
- *
- * TODO: Add Onboarding, Diagnostic when repositories are implemented
  */
 @Composable
 fun NavGraph(
     navController: NavHostController,
-    startDestination: String = Screen.Main.route
+    startDestination: String = Screen.Splash.route
 ) {
     NavHost(
         navController = navController,
         startDestination = startDestination
     ) {
+        // ===== ONBOARDING FLOW =====
+
+        composable(route = Screen.Splash.route) {
+            SplashScreen(
+                onNavigateToOnboarding = {
+                    navController.navigate(Screen.Onboarding.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                },
+                onNavigateToHome = {
+                    navController.navigate(Screen.Main.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(route = Screen.Onboarding.route) {
+            OnboardingScreen(
+                onNavigateToDiagnostic = {
+                    navController.navigate(Screen.Diagnostic.route) {
+                        popUpTo(Screen.Onboarding.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(route = Screen.Diagnostic.route) {
+            DiagnosticScreen(
+                onNavigateToHome = {
+                    // After diagnostic completion, go to DiagnosticResult
+                    navController.navigate(Screen.DiagnosticResult.route) {
+                        popUpTo(Screen.Diagnostic.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(route = Screen.DiagnosticResult.route) {
+            DiagnosticResultScreen(
+                onNavigateToHome = {
+                    navController.navigate(Screen.Main.route) {
+                        popUpTo(Screen.DiagnosticResult.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
         // ===== MAIN SCREEN (with Bottom Navigation) =====
 
         composable(route = Screen.Main.route) {

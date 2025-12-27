@@ -1,40 +1,33 @@
-Виправ помилки поетапно:
+Виправ 2 баги в DiagnosticScreen:
 
-### КРОК 1: Domain models - додай відсутні параметри
+=== БАГ 1: Текст зникає під час запису ===
 
-Achievement.kt - додай параметри: icon, tier (з default values)
-Course.kt - додай: estimatedMinutes, order (з default values)  
-Lesson.kt - додай: completedLessons (з default value)
+Знайди DiagnosticScreen.kt і перевір:
+- Коли показується текст для читання?
+- Чому він ховається під час запису?
 
-### КРОК 2: AudioPlayerUtil - створи stub
+Текст повинен залишатися видимим ВСЕ ВРЕМЯ поки користувач записує!
 
-Створи utils/audio/AudioPlayerUtil.kt з базовими методами:
-- play(filePath: String)
-- pause()
-- stop()
-- release()
-Поки що пусті реалізації.
+Покажи код секції запису і виправ щоб текст був видимий.
 
-### КРОК 3: DAO методи - додай відсутні
+=== БАГ 2: Кнопка "Прослухати" неактивна ===
 
-UserProgressDao - додай методи:
-- getUserProgressOnce(): UserProgressEntity?
-- insertOrUpdate(progress: UserProgressEntity)
-- updateSkillLevels(...)
+Знайди де визначається кнопка "Прослухати запис" і перевір:
+- Який enabled стан?
+- Чи є AudioPlayerUtil підключений?
 
-DiagnosticResultDao - додай:
-- getInitialDiagnostic(): Flow<DiagnosticResultEntity?>
+grep -n "Прослухати\|playback\|AudioPlayer" app/src/main/java/com/aivoicepower/ui/screens/diagnostic/
 
-RecordingDao - додай:
-- getAllRecordings(): Flow<List<RecordingEntity>>
+Покажи код і виправ.
 
-### КРОК 4: UserPreferencesDataStore - додай методи
+=== КРОК 3: Компіляція ===
 
-- hasCompletedOnboarding: Flow<Boolean>
-- setDailyTrainingMinutes(minutes: Int)
+./gradlew assembleDebug
 
-### КРОК 5: Виправ exerciseId параметри
+=== РЕЗУЛЬТАТ ===
 
-Подивись де викликається з exerciseId і виправ сигнатури.
-
-Після кожного кроку перевіряй компіляцію.
+Покажи:
+1. Що було причиною бага з текстом
+2. Що було причиною неактивної кнопки
+3. Як виправив
+4. Результат компіляції

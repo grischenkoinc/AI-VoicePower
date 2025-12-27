@@ -31,7 +31,7 @@ fun StreakCard(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "[fire]",
+                    text = "🔥",
                     style = MaterialTheme.typography.displaySmall
                 )
                 Text(
@@ -53,7 +53,7 @@ fun StreakCard(
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "[trophy]",
+                    text = "🏆",
                     style = MaterialTheme.typography.displaySmall
                 )
                 Text(

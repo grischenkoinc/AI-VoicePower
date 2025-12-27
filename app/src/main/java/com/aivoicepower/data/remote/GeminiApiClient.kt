@@ -1,6 +1,7 @@
 package com.aivoicepower.data.remote
 
 import android.content.Context
+import com.aivoicepower.BuildConfig
 import com.aivoicepower.data.chat.ConversationContext
 import com.aivoicepower.data.chat.Message
 import com.aivoicepower.data.chat.MessageRole
@@ -15,7 +16,7 @@ import javax.inject.Singleton
  * Client для роботи з Gemini API
  * Supports: AI Coach, Debate, Sales Pitch, Voice Analysis
  *
- * TODO Phase 8: Move API key to BuildConfig or secure storage
+ * API Key is securely loaded from local.properties via BuildConfig
  */
 @Singleton
 class GeminiApiClient @Inject constructor(
@@ -23,10 +24,9 @@ class GeminiApiClient @Inject constructor(
 ) {
 
     companion object {
-        // TODO: Move to BuildConfig or secure storage
-        // For now, using placeholder - user needs to add their own key
-        private const val API_KEY = "YOUR_GEMINI_API_KEY_HERE"
-        private const val MODEL_NAME = "gemini-1.5-flash-latest"
+        // API Key loaded from local.properties via BuildConfig
+        private val API_KEY = BuildConfig.GEMINI_API_KEY
+        private const val MODEL_NAME = "gemini-2.5-flash-lite"
     }
 
     private val generativeModel = GenerativeModel(

@@ -23,3 +23,10 @@ enum class ActivityType {
     DIAGNOSTIC,
     DAILY_CHALLENGE
 }
+
+data class QuickAction(
+    val id: String,
+    val title: String,
+    val icon: String,
+    val route: String
+)

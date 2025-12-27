@@ -1,23 +1,37 @@
 package com.aivoicepower.ui.screens.diagnostic.components
 
+import android.media.MediaPlayer
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import java.io.File
 
 @Composable
 fun DiagnosticRecordingPreviewDialog(
     recordingDurationSeconds: Int,
+    recordingPath: String? = null,
     onRetake: () -> Unit,
     onSave: () -> Unit,
     onDismiss: () -> Unit
 ) {
     val minutes = recordingDurationSeconds / 60
     val seconds = recordingDurationSeconds % 60
+
+    var isPlaying by remember { mutableStateOf(false) }
+    var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+
+    // Cleanup MediaPlayer on dispose
+    DisposableEffect(Unit) {
+        onDispose {
+            mediaPlayer?.release()
+            mediaPlayer = null
+        }
+    }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -70,13 +84,41 @@ fun DiagnosticRecordingPreviewDialog(
                     }
                 }
 
-                // Playback button (disabled for now - Phase 1.3 doesn't implement playback)
+                // Playback button
                 OutlinedButton(
-                    onClick = { /* TODO: Phase 2.x - Audio playback */ },
+                    onClick = {
+                        if (isPlaying) {
+                            mediaPlayer?.stop()
+                            mediaPlayer?.release()
+                            mediaPlayer = null
+                            isPlaying = false
+                        } else {
+                            recordingPath?.let { path ->
+                                try {
+                                    val file = File(path)
+                                    if (file.exists()) {
+                                        mediaPlayer = MediaPlayer().apply {
+                                            setDataSource(path)
+                                            prepare()
+                                            setOnCompletionListener {
+                                                isPlaying = false
+                                                release()
+                                                mediaPlayer = null
+                                            }
+                                            start()
+                                        }
+                                        isPlaying = true
+                                    }
+                                } catch (e: Exception) {
+                                    isPlaying = false
+                                }
+                            }
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = false
+                    enabled = recordingPath != null
                 ) {
-                    Text("▶️ Прослухати")
+                    Text(if (isPlaying) "⏹️ Зупинити" else "▶️ Прослухати")
                 }
 
                 Divider()

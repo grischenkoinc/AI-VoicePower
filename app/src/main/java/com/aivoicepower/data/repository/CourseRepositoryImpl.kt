@@ -1,5 +1,6 @@
 package com.aivoicepower.data.repository
 
+import android.util.Log
 import com.aivoicepower.domain.model.course.Course
 import com.aivoicepower.domain.model.course.Difficulty
 import com.aivoicepower.domain.model.course.Lesson
@@ -27,7 +28,9 @@ class CourseRepositoryImpl @Inject constructor() : CourseRepository {
     }
 
     override suspend fun getCourseById(courseId: String): Course? {
-        return getMockCourses().find { it.id == courseId }
+        val course = getMockCourses().find { it.id == courseId }
+        Log.d("CourseRepo", "getCourseById called with: $courseId, found: ${course != null}")
+        return course
     }
 
     override suspend fun getLessonById(lessonId: String): Lesson? {

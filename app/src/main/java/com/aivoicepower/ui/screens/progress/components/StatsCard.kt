@@ -36,19 +36,19 @@ fun StatsCard(
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 StatItem(
-                    icon = "[pen]",
+                    icon = "✏️",
                     value = "$totalExercises",
                     label = "вправ"
                 )
 
                 StatItem(
-                    icon = "[clock]",
+                    icon = "⏰",
                     value = "$totalMinutes",
                     label = "хвилин"
                 )
 
                 StatItem(
-                    icon = "[mic]",
+                    icon = "🎤",
                     value = "$totalRecordings",
                     label = "записiв"
                 )

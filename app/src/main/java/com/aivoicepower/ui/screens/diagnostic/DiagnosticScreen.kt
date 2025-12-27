@@ -108,6 +108,7 @@ fun DiagnosticScreen(
         DiagnosticRecordingDialog(
             recordingSeconds = state.recordingSeconds,
             maxDurationSeconds = state.selectedTask!!.durationSeconds,
+            contentText = state.selectedTask!!.contentText,
             onStopRecording = {
                 viewModel.onEvent(DiagnosticEvent.StopRecordingClicked)
             }
@@ -117,6 +118,7 @@ fun DiagnosticScreen(
     if (state.showRecordingPreview) {
         DiagnosticRecordingPreviewDialog(
             recordingDurationSeconds = state.recordingSeconds,
+            recordingPath = state.currentRecordingPath,
             onRetake = {
                 viewModel.onEvent(DiagnosticEvent.RetakeRecordingClicked)
             },

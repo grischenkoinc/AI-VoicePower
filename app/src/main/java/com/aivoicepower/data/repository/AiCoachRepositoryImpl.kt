@@ -1,11 +1,13 @@
 package com.aivoicepower.data.repository
 
+import android.util.Log
 import com.aivoicepower.data.chat.ConversationContext
 import com.aivoicepower.data.chat.Message
 import com.aivoicepower.data.chat.MessageRole
 import com.aivoicepower.data.local.database.dao.MessageDao
 import com.aivoicepower.data.local.database.entity.MessageEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
+import com.aivoicepower.data.remote.GeminiApiClient
 import com.aivoicepower.domain.repository.AiCoachRepository
 import dagger.Binds
 import dagger.Module
@@ -19,15 +21,13 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * TODO Phase 6: Implement full AI Coach functionality with Gemini API
- *
- * This is a stub implementation to satisfy dependency injection.
- * Full implementation pending Gemini API integration.
+ * AI Coach Repository with Gemini API integration
  */
 @Singleton
 class AiCoachRepositoryImpl @Inject constructor(
     private val messageDao: MessageDao,
-    private val userPreferencesDataStore: UserPreferencesDataStore
+    private val userPreferencesDataStore: UserPreferencesDataStore,
+    private val geminiApiClient: GeminiApiClient
 ) : AiCoachRepository {
 
     override fun getMessagesFlow(): Flow<List<Message>> {
@@ -38,9 +38,9 @@ class AiCoachRepositoryImpl @Inject constructor(
 
     override suspend fun sendMessage(content: String): Result<Message> {
         return try {
-            // TODO: Implement Gemini API call
-            // For now, just save the user message and return a stub AI response
+            Log.d("AiCoach", "Sending message: $content")
 
+            // Save user message
             val userMessage = Message(
                 id = UUID.randomUUID().toString(),
                 role = MessageRole.USER,
@@ -49,16 +49,41 @@ class AiCoachRepositoryImpl @Inject constructor(
             )
             messageDao.insertMessage(userMessage.toEntity())
 
+            // Get conversation history
+            val conversationHistory = messageDao.getMessagesFlow().first().map { it.toMessage() }
+
+            // Get user context
+            val userContext = getUserContext()
+
+            Log.d("AiCoach", "Calling Gemini API with ${conversationHistory.size} messages in history")
+
+            // Call Gemini API
+            val geminiResult = geminiApiClient.generateCoachResponse(
+                userMessage = content,
+                conversationHistory = conversationHistory,
+                userContext = userContext
+            )
+
+            if (geminiResult.isFailure) {
+                Log.e("AiCoach", "Gemini API error", geminiResult.exceptionOrNull())
+                throw geminiResult.exceptionOrNull() ?: Exception("Unknown Gemini error")
+            }
+
+            val aiResponseContent = geminiResult.getOrThrow()
+            Log.d("AiCoach", "Gemini response received: ${aiResponseContent.take(100)}...")
+
+            // Save AI response
             val aiMessage = Message(
                 id = UUID.randomUUID().toString(),
                 role = MessageRole.ASSISTANT,
-                content = "AI Coach response will be implemented in Phase 6.",
+                content = aiResponseContent,
                 timestamp = System.currentTimeMillis()
             )
             messageDao.insertMessage(aiMessage.toEntity())
 
             Result.success(aiMessage)
         } catch (e: Exception) {
+            Log.e("AiCoach", "Error in sendMessage", e)
             Result.failure(e)
         }
     }
@@ -72,12 +97,33 @@ class AiCoachRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getQuickActions(): List<String> {
-        return listOf(
-            "Дай поради для покращення мовлення",
-            "Як підготуватися до виступу?",
-            "Які вправи мені підходять?"
-        )
+        return try {
+            Log.d("AiCoach", "Generating quick actions via Gemini")
+
+            val userContext = getUserContext()
+            val result = geminiApiClient.generateQuickActions(userContext)
+
+            if (result.isSuccess) {
+                val actions = result.getOrThrow()
+                Log.d("AiCoach", "Generated ${actions.size} quick actions")
+                actions
+            } else {
+                Log.w("AiCoach", "Failed to generate quick actions, using defaults")
+                getDefaultQuickActions()
+            }
+        } catch (e: Exception) {
+            Log.e("AiCoach", "Error generating quick actions", e)
+            getDefaultQuickActions()
+        }
     }
+
+    private fun getDefaultQuickActions(): List<String> = listOf(
+        "Дай поради для покращення мовлення",
+        "Як підготуватися до виступу?",
+        "Які вправи мені підходять?",
+        "Як позбутися нервозності?",
+        "Підготуй мене до співбесіди"
+    )
 
     override suspend fun canSendMessage(): Boolean {
         val prefs = userPreferencesDataStore.userPreferencesFlow.first()

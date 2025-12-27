@@ -25,7 +25,7 @@ fun WelcomeHeader(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = if (userName != null) "$greeting, $userName! ☀️" else "$greeting! ☀️",
+                text = if (userName != null) "$greeting, $userName" else greeting,
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )

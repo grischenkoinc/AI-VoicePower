@@ -12,9 +12,15 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.aivoicepower.ui.screens.courses.CourseDetailScreen
+import com.aivoicepower.ui.screens.courses.CoursesListScreen
 import com.aivoicepower.ui.screens.home.HomeScreen
 import com.aivoicepower.ui.screens.improvisation.*
 import com.aivoicepower.ui.screens.lesson.LessonScreen
+import com.aivoicepower.ui.screens.progress.AchievementsScreen
+import com.aivoicepower.ui.screens.progress.CompareScreen
+import com.aivoicepower.ui.screens.progress.ProgressScreen
+import com.aivoicepower.ui.screens.progress.RecordingHistoryScreen
 import com.aivoicepower.ui.screens.results.ResultsScreen
 import com.aivoicepower.ui.screens.warmup.*
 
@@ -39,15 +45,56 @@ fun MainNavGraph(
         // ===== HOME =====
         composable(route = Screen.Home.route) {
             HomeScreen(
-                onLessonClick = { lessonId ->
+                onNavigateToCourse = { courseId ->
+                    navController.navigate(Screen.CourseDetail.createRoute(courseId))
+                },
+                onNavigateToAiCoach = onNavigateToAiCoach,
+                onNavigateToLesson = { courseId, lessonId ->
                     navController.navigate(Screen.Lesson.createRoute(lessonId))
+                },
+                onNavigateToWarmup = {
+                    navController.navigate(Screen.Warmup.route)
+                },
+                onNavigateToCourses = {
+                    navController.navigate(Screen.Courses.route)
+                },
+                onNavigateToImprovisation = {
+                    navController.navigate(Screen.Improvisation.route)
+                },
+                onNavigateToProgress = {
+                    navController.navigate(Screen.Progress.route)
+                },
+                onNavigateToQuickWarmup = {
+                    navController.navigate(Screen.WarmupQuick.route)
+                },
+                onNavigateToRandomTopic = {
+                    navController.navigate(Screen.RandomTopic.route)
                 }
             )
         }
 
-        // ===== COURSES (Placeholder) =====
+        // ===== COURSES =====
         composable(route = Screen.Courses.route) {
-            PlaceholderScreen("Курси - TODO (Phase 3-4)")
+            CoursesListScreen(
+                onNavigateToCourse = { courseId ->
+                    navController.navigate(Screen.CourseDetail.createRoute(courseId))
+                }
+            )
+        }
+
+        composable(
+            route = Screen.CourseDetail.route,
+            arguments = listOf(navArgument("courseId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val courseId = backStackEntry.arguments?.getString("courseId") ?: return@composable
+            CourseDetailScreen(
+                courseId = courseId,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToLesson = { _, lessonId ->
+                    navController.navigate(Screen.Lesson.createRoute(lessonId))
+                },
+                onNavigateToPremium = onNavigateToPremium
+            )
         }
 
         composable(
@@ -190,9 +237,40 @@ fun MainNavGraph(
             )
         }
 
-        // ===== PROGRESS (Placeholder) =====
+        // ===== PROGRESS =====
         composable(route = Screen.Progress.route) {
-            PlaceholderScreen("Прогрес - TODO (Phase 7)")
+            ProgressScreen(
+                onNavigateToCompare = {
+                    navController.navigate(Screen.Compare.route)
+                },
+                onNavigateToAchievements = {
+                    navController.navigate(Screen.Achievements.route)
+                },
+                onNavigateToHistory = {
+                    navController.navigate(Screen.RecordingHistory.route)
+                }
+            )
+        }
+
+        composable(route = Screen.Compare.route) {
+            CompareScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(route = Screen.Achievements.route) {
+            AchievementsScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(route = Screen.RecordingHistory.route) {
+            RecordingHistoryScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToResults = { recordingId ->
+                    // TODO: Navigate to recording results screen
+                }
+            )
         }
     }
 }
