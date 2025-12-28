@@ -65,6 +65,19 @@ class UserPreferencesDataStore @Inject constructor(
             )
         }
 
+    // Direct Flow for isPremium (used by PaywallViewModel)
+    val isPremium: Flow<Boolean> = context.dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.IS_PREMIUM] ?: false
+        }
+
     // Direct Flow for hasCompletedOnboarding (used by v2 ViewModels)
     val hasCompletedOnboarding: Flow<Boolean> = context.dataStore.data
         .catch { exception ->
@@ -82,6 +95,11 @@ class UserPreferencesDataStore @Inject constructor(
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.IS_PREMIUM] = isPremium
         }
+    }
+
+    // Alias for BillingRepository compatibility
+    suspend fun setPremiumStatus(isPremium: Boolean, expiresAt: Long?) {
+        updatePremiumStatus(isPremium)
     }
 
     suspend fun updateStreak(streak: Int) {

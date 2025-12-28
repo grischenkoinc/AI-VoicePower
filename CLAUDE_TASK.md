@@ -1,93 +1,54 @@
-Виправ 2 проблеми:
+Перевір чи є контент провайдери в v2-complete-redesign:
 
-=== БАГ 1: "setAudioSource failed" ===
+=== КРОК 1: Що є в v2 ===
 
-Це помилка дозволів мікрофона! Перевір:
+echo "=== Content providers в V2 ==="
+git ls-tree -r v2-complete-redesign --name-only | grep -i "content\|provider\|tonguetwister\|reading"
 
-1. Чи є дозвіл в AndroidManifest.xml?
+echo "=== Детальніше ==="
+git ls-tree -r v2-complete-redesign --name-only | grep "data/content"
 
-grep -n "RECORD_AUDIO\|MICROPHONE" app/src/main/AndroidManifest.xml
+=== КРОК 2: Що є в main ===
 
-Якщо немає — додай:
-<uses-permission android:name="android.permission.RECORD_AUDIO" />
+echo "=== Content providers в MAIN ==="
+ls app/src/main/java/com/aivoicepower/data/content/*.kt 2>/dev/null
 
-2. Чи запитується runtime permission?
+=== КРОК 3: Порівняй кількість файлів ===
 
-grep -rn "RECORD_AUDIO\|requestPermission\|permission" app/src/main/java/com/aivoicepower/ui/screens/diagnostic/
+echo "=== Файлів в v2 data/content ==="
+git ls-tree -r v2-complete-redesign --name-only | grep "data/content" | wc -l
 
-Потрібно запитувати дозвіл перед записом:
+echo "=== Файлів в main data/content ==="
+ls app/src/main/java/com/aivoicepower/data/content/*.kt 2>/dev/null | wc -l
 
-val permissionLauncher = rememberLauncherForActivityResult(
-    ActivityResultContracts.RequestPermission()
-) { isGranted ->
-    if (isGranted) {
-        // Почати запис
-        viewModel.onEvent(DiagnosticEvent.StartRecording)
-    } else {
-        // Показати повідомлення про необхідність дозволу
-    }
-}
+=== КРОК 4: Якщо в v2 більше — перенеси ВСЕ ===
 
-// При натисканні кнопки:
-onClick = {
-    permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-}
+git checkout v2-complete-redesign -- app/src/main/java/com/aivoicepower/data/content/
 
-3. Перевір AudioRecorderUtil — чи правильно налаштований MediaRecorder?
+=== КРОК 5: Також перевір Settings та Premium ===
 
-grep -n "setAudioSource\|MediaRecorder" app/src/main/java/com/aivoicepower/utils/audio/AudioRecorderUtil.kt
+echo "=== Settings в v2 ==="
+git ls-tree -r v2-complete-redesign --name-only | grep -i "settings"
 
-=== БАГ 2: Анімація кнопок ===
+echo "=== Premium в v2 ==="
+git ls-tree -r v2-complete-redesign --name-only | grep -i "premium\|paywall\|billing"
 
-Додай простішу анімацію через InteractionSource:
+=== КРОК 6: Перенеси якщо є ===
 
-@Composable
-fun AnimatedPrimaryButton(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.96f else 1f,
-        animationSpec = tween(durationMillis = 100),
-        label = "buttonScale"
-    )
-    
-    Button(
-        onClick = onClick,
-        modifier = modifier.graphicsLayer {
-            scaleX = scale
-            scaleY = scale
-        },
-        enabled = enabled,
-        interactionSource = interactionSource
-    ) {
-        Text(text)
-    }
-}
+# Якщо є settings
+git checkout v2-complete-redesign -- app/src/main/java/com/aivoicepower/ui/screens/settings/ 2>/dev/null
 
-Застосуй до кнопок "Почати" та "Почати запис" в DiagnosticScreen.kt
+# Якщо є premium
+git checkout v2-complete-redesign -- app/src/main/java/com/aivoicepower/ui/screens/premium/ 2>/dev/null
 
-Imports потрібні:
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.ui.graphics.graphicsLayer
+=== КРОК 7: Компіляція ===
 
-=== КРОК 3: Компіляція ===
-
-./gradlew assembleDebug
+./gradlew assembleDebug 2>&1 | grep -E "error:" | head -30
 
 === РЕЗУЛЬТАТ ===
 
 Покажи:
-1. Чи був дозвіл RECORD_AUDIO в Manifest?
-2. Чи є runtime permission request?
-3. Як виправив помилку запису
-4. Чи додав анімації
-5. Результат компіляції
+1. Скільки файлів контенту було в v2
+2. Скільки було в main
+3. Що перенесено
+4. Результат компіляції

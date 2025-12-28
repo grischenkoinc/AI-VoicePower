@@ -1,0 +1,1556 @@
+package com.aivoicepower.data.content
+
+import com.aivoicepower.domain.model.course.*
+import com.aivoicepower.domain.model.exercise.*
+import com.aivoicepower.domain.model.user.SkillType
+
+/**
+ * Hardcoded course content
+ * Contains full content for all 6 courses, 21 lessons each
+ */
+object CourseContentProvider {
+
+    fun getAllCourses(): List<Course> {
+        return listOf(
+            getCourse1(),
+            getCourse2(),
+            getCourse3(),
+            getCourse4(),
+            getCourse5(),
+            getCourse6()
+        )
+    }
+
+    fun getCourseById(id: String): Course? {
+        return getAllCourses().find { it.id == id }
+    }
+
+    fun getLessonById(courseId: String, lessonId: String): Lesson? {
+        return getCourseById(courseId)?.lessons?.find { it.id == lessonId }
+    }
+
+    // ========== COURSE 1: Clear Speech in 21 Days ==========
+
+    private fun getCourse1(): Course {
+        return Course(
+            id = "course_1",
+            title = "Чітке мовлення за 21 день",
+            description = "Покращ дикцію та чіткість вимови за 3 тижні. Щоденні вправи зі скоромовками та артикуляцією.",
+            iconEmoji = "🗣️",
+            totalLessons = 21,
+            isPremium = true,
+            estimatedDays = 21,
+            difficulty = Difficulty.BEGINNER,
+            skills = listOf(SkillType.DICTION, SkillType.TEMPO),
+            lessons = getCourse1AllLessons()
+        )
+    }
+
+    private fun getCourse1AllLessons(): List<Lesson> {
+        return getCourse1Week1() + getCourse1Week2() + getCourse1Week3()
+    }
+
+    private fun getCourse1Week1(): List<Lesson> {
+        return listOf(
+            // Day 1
+            Lesson(
+                id = "lesson_1",
+                courseId = "course_1",
+                dayNumber = 1,
+                title = "Основи артикуляції",
+                description = "Знайомство з артикуляційним апаратом та базовими вправами",
+                theory = TheoryContent(
+                    text = "Чітке мовлення починається з правильної роботи артикуляційного апарату: губ, язика, щелеп та м'якого піднебіння. Сьогодні ми познайомимося з базовими вправами, які допоможуть \"розігріти\" мовленнєвий апарат.",
+                    tips = listOf(
+                        "Виконуй вправи перед дзеркалом",
+                        "Не поспішай, важлива якість, а не швидкість",
+                        "Роби вправи щодня для кращого результату"
+                    )
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_1_1",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Скоромовка: П-Б-П",
+                        instruction = "Вимовляй повільно, чітко артикулюючи кожен звук. Поступово збільшуй швидкість.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Бик тупогуб, у бика губа тупа",
+                            difficulty = 1,
+                            targetSounds = listOf("Б", "П", "Г")
+                        ),
+                        durationSeconds = 60,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    ),
+                    Exercise(
+                        id = "ex_1_2",
+                        type = ExerciseType.READING,
+                        title = "Читання з паузами",
+                        instruction = "Читай текст, роблячи паузи після кожного речення. Контролюй дихання.",
+                        content = ExerciseContent.ReadingText(
+                            text = "Мистецтво красномовства — це не тільки вміння говорити, але й вміння бути почутим. Кожне слово має значення. Кожна пауза має свій сенс."
+                        ),
+                        durationSeconds = 90,
+                        targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                    )
+                ),
+                estimatedMinutes = 10
+            ),
+            // Day 2
+            Lesson(
+                id = "lesson_2",
+                courseId = "course_1",
+                dayNumber = 2,
+                title = "Губні звуки",
+                description = "Відпрацювання чіткої вимови губних приголосних",
+                theory = TheoryContent(
+                    text = "Губні звуки (П, Б, М, В, Ф) утворюються за допомогою губ. Для їх чіткої вимови важлива активна робота губних м'язів. Сьогодні будемо тренувати ці звуки через спеціальні скоромовки.",
+                    tips = listOf(
+                        "Відчуй напругу в губах при вимові",
+                        "Не допомагай собі язиком",
+                        "Контролюй рівномірність звучання"
+                    )
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_2_1",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Скоромовка: Б-П",
+                        instruction = "Чітко розрізняй Б та П. Вони відрізняються тільки вібрацією голосових зв'язок.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Купи кіп, купи кіп, купи кіп, купи кіп",
+                            difficulty = 2,
+                            targetSounds = listOf("П", "К")
+                        ),
+                        durationSeconds = 60,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    ),
+                    Exercise(
+                        id = "ex_2_2",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Скоромовка: М-Б",
+                        instruction = "Відчуй вібрацію в носі на звуці М.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Мамин мамин мамин мамі мамині макарони",
+                            difficulty = 2,
+                            targetSounds = listOf("М")
+                        ),
+                        durationSeconds = 60,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    )
+                ),
+                estimatedMinutes = 10
+            ),
+            // Day 3
+            Lesson(
+                id = "lesson_3",
+                courseId = "course_1",
+                dayNumber = 3,
+                title = "Язикові звуки",
+                description = "Тренування звуків, що утворюються язиком",
+                theory = TheoryContent(
+                    text = "Язик — найрухливіша частина артикуляційного апарату. Він відповідає за велику кількість звуків: Т, Д, Н, Л, Р та інші. Правильна позиція язика критично важлива для чіткості мовлення.",
+                    tips = listOf(
+                        "Відчуй кінчик язика",
+                        "Не напружуй язик надто сильно",
+                        "Контролюй положення язика"
+                    )
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_3_1",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Скоромовка: Т-Д",
+                        instruction = "Кінчик язика торкається верхніх зубів.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Ткач тче тканини на платтячко Тані",
+                            difficulty = 3,
+                            targetSounds = listOf("Т", "Д")
+                        ),
+                        durationSeconds = 60,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    ),
+                    Exercise(
+                        id = "ex_3_2",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Скоромовка: Л",
+                        instruction = "Кінчик язика притиснутий до альвеол.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Летіла лелека коло млина, ловила лелека мелену",
+                            difficulty = 3,
+                            targetSounds = listOf("Л", "М")
+                        ),
+                        durationSeconds = 60,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    )
+                ),
+                estimatedMinutes = 10
+            ),
+            // Day 4
+            Lesson(
+                id = "lesson_4",
+                courseId = "course_1",
+                dayNumber = 4,
+                title = "Свистячі звуки",
+                description = "Відпрацювання С, З, Ц",
+                theory = TheoryContent(
+                    text = "Свистячі звуки (С, З, Ц) утворюються при проходженні повітря через вузьку щілину між язиком та верхніми зубами. Для чіткої вимови важлива правильна форма язика — він має бути широким та плоским.",
+                    tips = listOf(
+                        "Язик широкий та плоский",
+                        "Повітря проходить по центру язика",
+                        "Не затискай щелепи"
+                    )
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_4_1",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Скоромовка: С",
+                        instruction = "Повітря має йти плавним потоком.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Сім синиць на сосні сиділи, си-си-си співали",
+                            difficulty = 2,
+                            targetSounds = listOf("С")
+                        ),
+                        durationSeconds = 60,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    ),
+                    Exercise(
+                        id = "ex_4_2",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Скоромовка: З-С",
+                        instruction = "Розрізняй дзвінкий З та глухий С.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "У лозі лози, у лузі лізе вуж",
+                            difficulty = 3,
+                            targetSounds = listOf("З", "С", "Л")
+                        ),
+                        durationSeconds = 60,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    )
+                ),
+                estimatedMinutes = 10
+            ),
+            // Day 5
+            Lesson(
+                id = "lesson_5",
+                courseId = "course_1",
+                dayNumber = 5,
+                title = "Шиплячі звуки",
+                description = "Відпрацювання Ш, Ж, Ч, Щ",
+                theory = TheoryContent(
+                    text = "Шиплячі звуки (Ш, Ж, Ч, Щ) вимагають підняття язика до піднебіння та створення ширшої щілини, ніж для свистячих. Ці звуки часто викликають труднощі, тому потребують особливої уваги.",
+                    tips = listOf(
+                        "Язик у формі чашечки",
+                        "Губи злегка витягнуті вперед",
+                        "Повітря виходить широким потоком"
+                    )
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_5_1",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Скоромовка: Ш",
+                        instruction = "Відчуй теплий потік повітря на долоні.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Шишки на сосні, шашки на столі",
+                            difficulty = 2,
+                            targetSounds = listOf("Ш", "С")
+                        ),
+                        durationSeconds = 60,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    ),
+                    Exercise(
+                        id = "ex_5_2",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Скоромовка: Ч-Щ",
+                        instruction = "Ч — короткий звук, Щ — довгий.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Чотири чорних чумачки чоботи чистили щіткою",
+                            difficulty = 4,
+                            targetSounds = listOf("Ч", "Щ")
+                        ),
+                        durationSeconds = 60,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    )
+                ),
+                estimatedMinutes = 10
+            ),
+            // Day 6
+            Lesson(
+                id = "lesson_6",
+                courseId = "course_1",
+                dayNumber = 6,
+                title = "Звук Р",
+                description = "Особлива увага найскладнішому звуку",
+                theory = TheoryContent(
+                    text = "Звук Р — один з найскладніших в українській мові. Він утворюється за рахунок вібрації кінчика язика. Навіть якщо ви вимовляєте Р правильно, його відпрацювання покращить загальну чіткість мовлення.",
+                    tips = listOf(
+                        "Кінчик язика біля альвеол",
+                        "Язик розслаблений, але пружний",
+                        "Сильний потік повітря викликає вібрацію"
+                    )
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_6_1",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Скоромовка: Р простий",
+                        instruction = "Почни повільно, відчуваючи кожну вібрацію.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Рано-рано два барани барабанили в барабани",
+                            difficulty = 3,
+                            targetSounds = listOf("Р", "Б")
+                        ),
+                        durationSeconds = 60,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    ),
+                    Exercise(
+                        id = "ex_6_2",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Скоромовка: Р складний",
+                        instruction = "Контролюй силу потоку повітря.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Тридцять три кораблі лавірували, лавірували, та не вилавірували",
+                            difficulty = 4,
+                            targetSounds = listOf("Р", "Л", "В")
+                        ),
+                        durationSeconds = 60,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    )
+                ),
+                estimatedMinutes = 10
+            ),
+            // Day 7
+            Lesson(
+                id = "lesson_7",
+                courseId = "course_1",
+                dayNumber = 7,
+                title = "Підсумок тижня",
+                description = "Комплексні вправи на всі звуки",
+                theory = TheoryContent(
+                    text = "Тиждень роботи позаду! Сьогодні закріплюємо все, що вивчили, через комплексні скоромовки, які поєднують різні групи звуків. Це виклик, але ви готові!",
+                    tips = listOf(
+                        "Не поспішай зі швидкістю",
+                        "Якщо збився — почни спочатку",
+                        "Записуй себе для самоконтролю"
+                    )
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_7_1",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Комплексна скоромовка",
+                        instruction = "Використовує всі групи звуків.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Король орел — орел, а орел — король",
+                            difficulty = 4,
+                            targetSounds = listOf("Р", "Л", "К", "О")
+                        ),
+                        durationSeconds = 90,
+                        targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                    ),
+                    Exercise(
+                        id = "ex_7_2",
+                        type = ExerciseType.FREE_SPEECH,
+                        title = "Вільна розповідь",
+                        instruction = "Розкажи про свій тиждень тренувань.",
+                        content = ExerciseContent.FreeSpeechTopic(
+                            topic = "Мої успіхи за тиждень",
+                            hints = listOf(
+                                "Які вправи були найскладнішими?",
+                                "Що тобі вдалося покращити?",
+                                "Які звуки далися легко?"
+                            )
+                        ),
+                        durationSeconds = 120,
+                        targetMetrics = listOf(SkillType.DICTION, SkillType.STRUCTURE)
+                    )
+                ),
+                estimatedMinutes = 15
+            )
+        )
+    }
+
+    private fun getCourse1Week2(): List<Lesson> {
+        return listOf(
+            // Day 8
+            Lesson(
+                id = "lesson_8",
+                courseId = "course_1",
+                dayNumber = 8,
+                title = "Складні звукосполучення",
+                description = "Опановуємо складні поєднання звуків",
+                theory = TheoryContent(
+                    text = "Цього тижня переходимо до складніших завдань. Сьогодні працюємо зі звукосполученнями, які часто викликають труднощі: СТР, СКР, ПР, ТР та інші. Правильна артикуляція цих комбінацій значно покращить вашу дикцію.",
+                    tips = listOf(
+                        "Не пропускай жодного звуку",
+                        "Вимовляй кожен звук окремо, потім об'єднуй",
+                        "Починай повільно, поступово прискорюйся"
+                    )
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_8_1",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Скоромовка: СТР",
+                        instruction = "Чітко вимовляй всі три звуки.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Стрімко стрибнув страх в стратосферу, стратосфера стратегічно стресувала",
+                            difficulty = 4,
+                            targetSounds = listOf("С", "Т", "Р")
+                        ),
+                        durationSeconds = 90,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    ),
+                    Exercise(
+                        id = "ex_8_2",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Скоромовка: ПР-ТР",
+                        instruction = "Зверни увагу на чіткість Р після приголосних.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "На дворі трава, на траві дрова. Не руби дрова на траві двора",
+                            difficulty = 3,
+                            targetSounds = listOf("Т", "Р", "Д")
+                        ),
+                        durationSeconds = 90,
+                        targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                    )
+                ),
+                estimatedMinutes = 12
+            ),
+            // Day 9
+            Lesson(
+                id = "lesson_9",
+                courseId = "course_1",
+                dayNumber = 9,
+                title = "Чіткість кінцівок слів",
+                description = "Вчимося чітко вимовляти закінчення",
+                theory = TheoryContent(
+                    text = "Одна з найпоширеніших проблем — ковтання кінцівок слів. Це робить мовлення нечітким та важким для сприйняття. Сьогодні тренуємо чітке завершення кожного слова.",
+                    tips = listOf(
+                        "Не ковтай останні склади",
+                        "Закінчення так само важливі, як і початок слова",
+                        "Контролюй себе особливо у швидкому темпі"
+                    )
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_9_1",
+                        type = ExerciseType.READING,
+                        title = "Читання з акцентом на закінчення",
+                        instruction = "Читай текст, чітко вимовляючи кожне закінчення.",
+                        content = ExerciseContent.ReadingText(
+                            text = "Прекрасний ранок починався поступово. Сонячне проміння пробивалося крізь хмари, освітлюючи сонні вулиці міста. Люди поспішали до своїх справ, кожен зі своїми думками та планами."
+                        ),
+                        durationSeconds = 120,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    ),
+                    Exercise(
+                        id = "ex_9_2",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Скоромовка на закінчення",
+                        instruction = "Особлива увага на -УВАЛИ.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Працювали, працювали, працювали, та допрацювали, опрацювали, перепрацювали",
+                            difficulty = 3,
+                            targetSounds = listOf("Р", "П", "В")
+                        ),
+                        durationSeconds = 90,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    )
+                ),
+                estimatedMinutes = 12
+            ),
+            // Day 10
+            Lesson(
+                id = "lesson_10",
+                courseId = "course_1",
+                dayNumber = 10,
+                title = "Дзвінкі та глухі приголосні",
+                description = "Розрізняємо парні приголосні",
+                theory = TheoryContent(
+                    text = "Парні приголосні (Б-П, Д-Т, Г-К, Ж-Ш, З-С) відрізняються лише наявністю чи відсутністю вібрації голосових зв'язок. Правильне розрізнення цих звуків критичне для чіткого мовлення.",
+                    tips = listOf(
+                        "Приклади руку до горла — відчуй вібрацію",
+                        "Дзвінкі звуки вібрують, глухі — ні",
+                        "Не оглушуй дзвінкі в кінці слів"
+                    )
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_10_1",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Пари: Б-П",
+                        instruction = "Чітко розрізняй Б та П.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Бобер біля берега бубнів набубнів, а Петро по полю попелу попив",
+                            difficulty = 4,
+                            targetSounds = listOf("Б", "П")
+                        ),
+                        durationSeconds = 90,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    ),
+                    Exercise(
+                        id = "ex_10_2",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Пари: Д-Т",
+                        instruction = "Не плутай Д та Т.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Дід Данило ділив диню: дольку Дині, дольку Дані, дольку Тані, дольку Толі",
+                            difficulty = 3,
+                            targetSounds = listOf("Д", "Т")
+                        ),
+                        durationSeconds = 90,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    )
+                ),
+                estimatedMinutes = 12
+            ),
+            // Day 11
+            Lesson(
+                id = "lesson_11",
+                courseId = "course_1",
+                dayNumber = 11,
+                title = "М'які та тверді звуки",
+                description = "Практикуємо м'якість та твердість",
+                theory = TheoryContent(
+                    text = "В українській мові більшість приголосних мають м'яку та тверду форму. М'яка вимова створюється підняттям середньої частини язика до піднебіння. Правильне використання м'якості робить мовлення красивим та зрозумілим.",
+                    tips = listOf(
+                        "М'які звуки перед І, Ї, Е, Є, Ю, Я та Ь",
+                        "Язик піднімається до піднебіння",
+                        "Не перебільшуй м'якість"
+                    )
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_11_1",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "М'які приголосні",
+                        instruction = "Відчуй різницю між твердими та м'якими.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Ліла лілії лила, Люба любисток любила, Ляля ляльку полюбляла",
+                            difficulty = 3,
+                            targetSounds = listOf("Л", "Ль")
+                        ),
+                        durationSeconds = 90,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    ),
+                    Exercise(
+                        id = "ex_11_2",
+                        type = ExerciseType.READING,
+                        title = "Читання з м'якими звуками",
+                        instruction = "Зверни увагу на м'яку вимову.",
+                        content = ExerciseContent.ReadingText(
+                            text = "Синє небо сяяло над полями. Легенький вітерець ніжно торкався колосся. Пісня жайворонка линула в безмежній блакиті, наповнюючи серце радістю та спокоєм."
+                        ),
+                        durationSeconds = 90,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    )
+                ),
+                estimatedMinutes = 12
+            ),
+            // Day 12
+            Lesson(
+                id = "lesson_12",
+                courseId = "course_1",
+                dayNumber = 12,
+                title = "Носові звуки",
+                description = "Правильна вимова М та Н",
+                theory = TheoryContent(
+                    text = "Носові звуки М та Н утворюються при проходженні повітря через ніс. Правильна вимова цих звуків важлива не тільки для чіткості, але й для резонансу голосу.",
+                    tips = listOf(
+                        "Повітря виходить через ніс",
+                        "Губи зімкнуті для М, язик торкається верхніх зубів для Н",
+                        "Відчуй вібрацію в носі"
+                    )
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_12_1",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Звук М",
+                        instruction = "Відчуй вібрацію в носі.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Мама милу Милу милом намилила, мила Мила милом милу мило",
+                            difficulty = 3,
+                            targetSounds = listOf("М", "Л")
+                        ),
+                        durationSeconds = 90,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    ),
+                    Exercise(
+                        id = "ex_12_2",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Звук Н",
+                        instruction = "Язик торкається верхніх зубів.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Ніна несе Ніці новини з Ніжина",
+                            difficulty = 2,
+                            targetSounds = listOf("Н")
+                        ),
+                        durationSeconds = 60,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    )
+                ),
+                estimatedMinutes = 10
+            ),
+            // Day 13
+            Lesson(
+                id = "lesson_13",
+                courseId = "course_1",
+                dayNumber = 13,
+                title = "Свистячі у швидкому темпі",
+                description = "С, З, Ц у складних словах",
+                theory = TheoryContent(
+                    text = "Повертаємось до свистячих звуків, але тепер у швидкому темпі та складних словах. Це справжній виклик для артикуляції!",
+                    tips = listOf(
+                        "Тримай язик стабільно",
+                        "Не допускай шепелявості",
+                        "Повітря йде рівним потоком"
+                    )
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_13_1",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Швидкі свистячі",
+                        instruction = "Спочатку повільно, потім швидше.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Цап ціпав цибулю в городі, а коза засівала цибулею сад, цибуля цвіла, цвіт цвіте цвітом",
+                            difficulty = 4,
+                            targetSounds = listOf("Ц", "С", "З")
+                        ),
+                        durationSeconds = 120,
+                        targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                    ),
+                    Exercise(
+                        id = "ex_13_2",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Складні слова",
+                        instruction = "Не пропускай жодного звуку.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Сім косарів накосили сім копиць сіна, сіно сохне, косарі косять",
+                            difficulty = 3,
+                            targetSounds = listOf("С", "К")
+                        ),
+                        durationSeconds = 90,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    )
+                ),
+                estimatedMinutes = 12
+            ),
+            // Day 14
+            Lesson(
+                id = "lesson_14",
+                courseId = "course_1",
+                dayNumber = 14,
+                title = "Підсумок другого тижня",
+                description = "Комплексна перевірка прогресу",
+                theory = TheoryContent(
+                    text = "Два тижні наполегливої роботи позаду! Сьогодні перевіряємо, наскільки покращилась твоя дикція. Виконай всі вправи та порівняй з першим тижнем.",
+                    tips = listOf(
+                        "Записуй себе для порівняння",
+                        "Будь чесним у самооцінці",
+                        "Відзнач свій прогрес!"
+                    )
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_14_1",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Комплексний тест",
+                        instruction = "Вимов без запинок.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Карл у Клари вкрав коралі, а Клара у Карла вкрала кларнет",
+                            difficulty = 3,
+                            targetSounds = listOf("К", "Л", "Р")
+                        ),
+                        durationSeconds = 90,
+                        targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                    ),
+                    Exercise(
+                        id = "ex_14_2",
+                        type = ExerciseType.FREE_SPEECH,
+                        title = "Рефлексія",
+                        instruction = "Розкажи про свій прогрес.",
+                        content = ExerciseContent.FreeSpeechTopic(
+                            topic = "Мій прогрес за два тижні",
+                            hints = listOf(
+                                "Які звуки стали легшими?",
+                                "Що ще потребує роботи?",
+                                "Як змінилось твоє мовлення?"
+                            )
+                        ),
+                        durationSeconds = 120,
+                        targetMetrics = listOf(SkillType.DICTION, SkillType.STRUCTURE)
+                    )
+                ),
+                estimatedMinutes = 15
+            )
+        )
+    }
+
+    private fun getCourse1Week3(): List<Lesson> {
+        return listOf(
+            // Day 15
+            Lesson(
+                id = "lesson_15",
+                courseId = "course_1",
+                dayNumber = 15,
+                title = "Подвійні приголосні",
+                description = "Чітка вимова подвоєних звуків",
+                theory = TheoryContent(
+                    text = "Подвійні приголосні — це не просто довший звук. Це два окремих звуки, які вимовляються разом. Правильна вимова подвоєння робить мовлення чітким та виразним.",
+                    tips = listOf(
+                        "Два окремих звуки, не один довгий",
+                        "Відчуй коротку паузу між ними",
+                        "Не скорочуй подвоєння"
+                    )
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_15_1",
+                        type = ExerciseType.READING,
+                        title = "Слова з подвоєнням",
+                        instruction = "Читай, чітко вимовляючи подвійні.",
+                        content = ExerciseContent.ReadingText(
+                            text = "Багаття горіло яскраво. Життя в таборі було насиченим. Кожен вечір ми збиралися разом, ділилися враженнями та планували завтрашній день."
+                        ),
+                        durationSeconds = 90,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    ),
+                    Exercise(
+                        id = "ex_15_2",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Скоромовка з подвоєнням",
+                        instruction = "Не пропускай подвійні звуки.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "В палаці паллада, в Олли оллі, в Аллі аллі, в Еммі еммі",
+                            difficulty = 3,
+                            targetSounds = listOf("Л", "М")
+                        ),
+                        durationSeconds = 60,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    )
+                ),
+                estimatedMinutes = 10
+            ),
+            // Day 16
+            Lesson(
+                id = "lesson_16",
+                courseId = "course_1",
+                dayNumber = 16,
+                title = "Складні скоромовки",
+                description = "Комбінації різних звуків",
+                theory = TheoryContent(
+                    text = "Час для справжнього виклику! Сьогодні працюємо з найскладнішими скоромовками, які поєднують всі типи звуків.",
+                    tips = listOf(
+                        "Почни дуже повільно",
+                        "Розбий на частини",
+                        "Швидкість прийде з практикою"
+                    )
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_16_1",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Майстер-скоромовка 1",
+                        instruction = "Найвищий рівень складності!",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Розпорядник розпорядився розпорядження розпорядити",
+                            difficulty = 5,
+                            targetSounds = listOf("Р", "З", "П")
+                        ),
+                        durationSeconds = 120,
+                        targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                    ),
+                    Exercise(
+                        id = "ex_16_2",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Майстер-скоромовка 2",
+                        instruction = "Не здавайся!",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Всіх скоромовок не переговориш, не перевискоромовиш",
+                            difficulty = 5,
+                            targetSounds = listOf("Р", "В", "П", "С")
+                        ),
+                        durationSeconds = 120,
+                        targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                    )
+                ),
+                estimatedMinutes = 15
+            ),
+            // Day 17
+            Lesson(
+                id = "lesson_17",
+                courseId = "course_1",
+                dayNumber = 17,
+                title = "Чіткість у швидкій мові",
+                description = "Зберігаємо дикцію при прискоренні",
+                theory = TheoryContent(
+                    text = "Справжня майстерність — це зберігати чіткість при будь-якому темпі. Сьогодні вчимося прискорюватись без втрати якості.",
+                    tips = listOf(
+                        "Якість важливіша за швидкість",
+                        "Прискорюйся поступово",
+                        "При помилці — повернись до повільного темпу"
+                    )
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_17_1",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Прискорення",
+                        instruction = "Почни повільно, закінчи швидко.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Петро Петрович Петренко приніс Петрові Петровичу перепілку",
+                            difficulty = 4,
+                            targetSounds = listOf("П", "Р", "Т")
+                        ),
+                        durationSeconds = 120,
+                        targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                    ),
+                    Exercise(
+                        id = "ex_17_2",
+                        type = ExerciseType.READING,
+                        title = "Швидке читання",
+                        instruction = "Читай швидко, але чітко.",
+                        content = ExerciseContent.ReadingText(
+                            text = "Технології змінюють світ швидше, ніж будь-коли. Кожного дня з'являються нові винаходи, які ще вчора здавалися фантастикою. Важливо встигати за прогресом, не втрачаючи людяності."
+                        ),
+                        durationSeconds = 90,
+                        targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                    )
+                ),
+                estimatedMinutes = 12
+            ),
+            // Day 18
+            Lesson(
+                id = "lesson_18",
+                courseId = "course_1",
+                dayNumber = 18,
+                title = "Артикуляція довгих слів",
+                description = "Складні багатоскладові слова",
+                theory = TheoryContent(
+                    text = "Довгі слова часто стають пасткою для дикції. Ми ковтаємо склади, змазуємо звуки. Сьогодні вчимося вимовляти кожен склад чітко.",
+                    tips = listOf(
+                        "Розбий слово на склади",
+                        "Вимов кожен склад окремо",
+                        "Об'єднай у ціле слово"
+                    )
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_18_1",
+                        type = ExerciseType.READING,
+                        title = "Складні терміни",
+                        instruction = "Кожен склад чіткий.",
+                        content = ExerciseContent.ReadingText(
+                            text = "Конституційний, систематизований, ідентифікований, характеристика, інтелектуалізація, перпендикулярність, протокольований."
+                        ),
+                        durationSeconds = 90,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    ),
+                    Exercise(
+                        id = "ex_18_2",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Довга скоромовка",
+                        instruction = "Не губи жодного складу.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Константин констатував конституційні конфлікти у конфедеративній конструкції",
+                            difficulty = 5,
+                            targetSounds = listOf("К", "Н", "С", "Т")
+                        ),
+                        durationSeconds = 120,
+                        targetMetrics = listOf(SkillType.DICTION)
+                    )
+                ),
+                estimatedMinutes = 12
+            ),
+            // Day 19
+            Lesson(
+                id = "lesson_19",
+                courseId = "course_1",
+                dayNumber = 19,
+                title = "Публічне читання",
+                description = "Читання для аудиторії",
+                theory = TheoryContent(
+                    text = "Читання вголос для інших вимагає особливої чіткості. Сьогодні практикуємо читання так, ніби нас слухає аудиторія.",
+                    tips = listOf(
+                        "Уяви аудиторію перед собою",
+                        "Проектуй голос",
+                        "Роби паузи для сприйняття"
+                    )
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_19_1",
+                        type = ExerciseType.READING,
+                        title = "Публічне читання",
+                        instruction = "Читай для уявної аудиторії.",
+                        content = ExerciseContent.ReadingText(
+                            text = "Шановні друзі! Сьогодні ми зібралися, щоб відзначити важливу подію. Кожен з вас зробив свій внесок у наш спільний успіх. Дякую за вашу відданість, працьовитість та віру в нашу справу. Разом ми здатні на велике!"
+                        ),
+                        durationSeconds = 120,
+                        targetMetrics = listOf(SkillType.DICTION, SkillType.VOLUME)
+                    ),
+                    Exercise(
+                        id = "ex_19_2",
+                        type = ExerciseType.FREE_SPEECH,
+                        title = "Імпровізована промова",
+                        instruction = "Виголоси коротку промову.",
+                        content = ExerciseContent.FreeSpeechTopic(
+                            topic = "Моє привітання аудиторії",
+                            hints = listOf(
+                                "Привітай присутніх",
+                                "Подякуй за увагу",
+                                "Надихни слухачів"
+                            )
+                        ),
+                        durationSeconds = 120,
+                        targetMetrics = listOf(SkillType.DICTION, SkillType.CONFIDENCE)
+                    )
+                ),
+                estimatedMinutes = 15
+            ),
+            // Day 20
+            Lesson(
+                id = "lesson_20",
+                courseId = "course_1",
+                dayNumber = 20,
+                title = "Фінальна перевірка",
+                description = "Перевірка всіх навичок",
+                theory = TheoryContent(
+                    text = "Передостанній день! Сьогодні проходимо всі основні вправи курсу, щоб перевірити прогрес перед фінальним тестом.",
+                    tips = listOf(
+                        "Будь уважним до деталей",
+                        "Не квапся",
+                        "Оціни свій прогрес чесно"
+                    )
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_20_1",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Фінальна скоромовка",
+                        instruction = "Покажи все, чому навчився!",
+                        content = ExerciseContent.TongueTwister(
+                            text = "Краб крабу зробив грабі, подарував грабі крабу: грабай краб грабами гравій",
+                            difficulty = 5,
+                            targetSounds = listOf("Р", "К", "Б")
+                        ),
+                        durationSeconds = 120,
+                        targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                    ),
+                    Exercise(
+                        id = "ex_20_2",
+                        type = ExerciseType.READING,
+                        title = "Комплексне читання",
+                        instruction = "Продемонструй всі навички.",
+                        content = ExerciseContent.ReadingText(
+                            text = "Мистецтво красномовства вимагає постійної практики. Кожен день приносить нові можливості для вдосконалення. Використовуй їх мудро, і твій голос стане твоїм найпотужнішим інструментом впливу на світ навколо тебе."
+                        ),
+                        durationSeconds = 120,
+                        targetMetrics = listOf(SkillType.DICTION, SkillType.INTONATION)
+                    )
+                ),
+                estimatedMinutes = 15
+            ),
+            // Day 21
+            Lesson(
+                id = "lesson_21",
+                courseId = "course_1",
+                dayNumber = 21,
+                title = "Підсумковий тест",
+                description = "Фінальна оцінка прогресу",
+                theory = TheoryContent(
+                    text = "Вітаю з завершенням курсу! Сьогодні — день підсумків. Пройди фінальний тест та порівняй результати з початком курсу. Ти молодець!",
+                    tips = listOf(
+                        "Пишайся своїм прогресом!",
+                        "Продовжуй практикувати",
+                        "Чітке мовлення — це навичка на все життя"
+                    )
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_21_1",
+                        type = ExerciseType.TONGUE_TWISTER,
+                        title = "Фінальний тест: скоромовки",
+                        instruction = "Вимов всі скоромовки чітко.",
+                        content = ExerciseContent.TongueTwister(
+                            text = "На дворі трава, на траві дрова. Король орел, орел король. Шишки на шишках.",
+                            difficulty = 4,
+                            targetSounds = listOf("Р", "Л", "Ш", "Т")
+                        ),
+                        durationSeconds = 180,
+                        targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                    ),
+                    Exercise(
+                        id = "ex_21_2",
+                        type = ExerciseType.FREE_SPEECH,
+                        title = "Підсумкова промова",
+                        instruction = "Розкажи про свої досягнення.",
+                        content = ExerciseContent.FreeSpeechTopic(
+                            topic = "Мої 21 день до чіткого мовлення",
+                            hints = listOf(
+                                "Яким був твій шлях?",
+                                "Що ти подолав?",
+                                "Які плани на майбутнє?"
+                            )
+                        ),
+                        durationSeconds = 180,
+                        targetMetrics = listOf(SkillType.DICTION, SkillType.CONFIDENCE, SkillType.STRUCTURE)
+                    )
+                ),
+                estimatedMinutes = 20
+            )
+        )
+    }
+
+    // ========== COURSE 2: Magic of Intonation ==========
+
+    private fun getCourse2(): Course {
+        return Course(
+            id = "course_2",
+            title = "Магія інтонації",
+            description = "Навчись передавати емоції голосом. Виразність та інтонаційне різноманіття.",
+            iconEmoji = "🎭",
+            totalLessons = 21,
+            isPremium = true,
+            estimatedDays = 21,
+            difficulty = Difficulty.INTERMEDIATE,
+            skills = listOf(SkillType.INTONATION, SkillType.VOLUME),
+            lessons = getCourse2AllLessons()
+        )
+    }
+
+    private fun getCourse2AllLessons(): List<Lesson> {
+        return (1..21).map { day ->
+            val (title, description, theory, exercises) = getCourse2LessonContent(day)
+            Lesson(
+                id = "lesson_$day",
+                courseId = "course_2",
+                dayNumber = day,
+                title = title,
+                description = description,
+                theory = theory,
+                exercises = exercises,
+                estimatedMinutes = if (day <= 7) 10 else if (day <= 14) 12 else 15
+            )
+        }
+    }
+
+    private fun getCourse2LessonContent(day: Int): LessonContent {
+        return when (day) {
+            1 -> LessonContent(
+                "Основи інтонації",
+                "Знайомство з інтонаційними моделями",
+                TheoryContent(
+                    "Інтонація — це музика мовлення. Вона передає емоції, наголоси, питання та ствердження. Сьогодні вивчаємо базові інтонаційні моделі: висхідну, низхідну та рівну.",
+                    listOf("Слухай свій голос уважно", "Експериментуй з висотою тону", "Записуй себе для аналізу")
+                ),
+                listOf(
+                    Exercise("ex_2_1_1", ExerciseType.READING, "Питальна інтонація", "Читай речення як питання.",
+                        ExerciseContent.ReadingText("Ти впевнений у цьому. Ми йдемо сьогодні. Вона вже прийшла."),
+                        60, listOf(SkillType.INTONATION)),
+                    Exercise("ex_2_1_2", ExerciseType.EMOTION_READING, "Радісна інтонація", "Передай радість голосом.",
+                        ExerciseContent.ReadingText("Яка чудова новина! Я так щасливий це чути!", Emotion.JOY),
+                        60, listOf(SkillType.INTONATION))
+                )
+            )
+            2 -> LessonContent(
+                "Емоція: радість",
+                "Передаємо радість через голос",
+                TheoryContent(
+                    "Радість характеризується підвищеним тоном, прискореним темпом та легкістю звучання. Голос стає світлішим, резонує у верхній частині голови.",
+                    listOf("Посміхайся під час говоріння", "Дихай глибоко", "Уяви щасливу ситуацію")
+                ),
+                listOf(
+                    Exercise("ex_2_2_1", ExerciseType.EMOTION_READING, "Радісний текст", "Читай з посмішкою.",
+                        ExerciseContent.ReadingText("Нарешті настав цей день! Сонце сяє, птахи співають, і все навколо здається таким прекрасним!", Emotion.JOY),
+                        90, listOf(SkillType.INTONATION))
+                )
+            )
+            3 -> LessonContent(
+                "Емоція: сум",
+                "Передаємо сум через голос",
+                TheoryContent(
+                    "Сум характеризується зниженим тоном, повільним темпом та приглушеним звучанням. Голос стає глибшим, тихішим.",
+                    listOf("Говори повільніше", "Знизь тон голосу", "Роби довші паузи")
+                ),
+                listOf(
+                    Exercise("ex_2_3_1", ExerciseType.EMOTION_READING, "Сумний текст", "Передай смуток у голосі.",
+                        ExerciseContent.ReadingText("Дощ монотонно стукав по вікну. Порожній дім здавався таким великим і холодним без тебе.", Emotion.SADNESS),
+                        90, listOf(SkillType.INTONATION))
+                )
+            )
+            4 -> LessonContent(
+                "Емоція: гнів",
+                "Контрольований вираз гніву",
+                TheoryContent(
+                    "Гнів у мовленні — це сила та напруга. Але контрольований гнів ефективніший за крик. Вчимося передавати рішучість без втрати контролю.",
+                    listOf("Тримай тіло напруженим", "Говори коротшими фразами", "Контролюй гучність")
+                ),
+                listOf(
+                    Exercise("ex_2_4_1", ExerciseType.EMOTION_READING, "Рішучий текст", "Передай рішучість.",
+                        ExerciseContent.ReadingText("Ні! Я більше не буду це терпіти. Досить! Час діяти, а не чекати.", Emotion.ANGER),
+                        90, listOf(SkillType.INTONATION, SkillType.VOLUME))
+                )
+            )
+            5 -> LessonContent(
+                "Емоція: здивування",
+                "Вираз несподіванки",
+                TheoryContent(
+                    "Здивування — це різка зміна інтонації, часто з підвищенням тону на ключових словах. Темп може прискорюватись або навпаки — уповільнюватись для драматичного ефекту.",
+                    listOf("Підвищуй тон на ключових словах", "Використовуй паузи", "Очі мають бути широко відкритими")
+                ),
+                listOf(
+                    Exercise("ex_2_5_1", ExerciseType.EMOTION_READING, "Здивування", "Покажи несподіванку.",
+                        ExerciseContent.ReadingText("Не може бути! Ти серйозно? Це ж неймовірно! Я навіть не міг уявити!", Emotion.SURPRISE),
+                        90, listOf(SkillType.INTONATION))
+                )
+            )
+            6 -> LessonContent(
+                "Паузи та акценти",
+                "Мистецтво пауз",
+                TheoryContent(
+                    "Пауза — один з найпотужніших інструментів оратора. Вона створює напругу, дає час на осмислення та підкреслює важливе.",
+                    listOf("Не бійся тиші", "Пауза перед важливим — сильніша", "Використовуй паузи для дихання")
+                ),
+                listOf(
+                    Exercise("ex_2_6_1", ExerciseType.READING, "Читання з паузами", "Зроби паузи у позначених місцях.",
+                        ExerciseContent.ReadingText("Справжній успіх... це не гроші. Це не слава. Справжній успіх — це... коли ти щасливий... роблячи те, що любиш."),
+                        120, listOf(SkillType.INTONATION, SkillType.TEMPO))
+                )
+            )
+            7 -> LessonContent(
+                "Підсумок тижня 1",
+                "Практика всіх емоцій",
+                TheoryContent(
+                    "Перший тиждень завершено! Сьогодні практикуємо всі вивчені емоції разом.",
+                    listOf("Переключайся між емоціями", "Відчувай різницю", "Записуй для порівняння")
+                ),
+                listOf(
+                    Exercise("ex_2_7_1", ExerciseType.EMOTION_READING, "Емоційний спектр", "Читай кожне речення з різною емоцією.",
+                        ExerciseContent.ReadingText("Я це зробив! Я не можу повірити. Це несправедливо. Нарешті!", Emotion.JOY),
+                        120, listOf(SkillType.INTONATION))
+                )
+            )
+            8 -> LessonContent(
+                "Наративна інтонація",
+                "Розповідь історій",
+                TheoryContent(
+                    "Розповідь історії вимагає багатого інтонаційного малюнку. Голос має вести слухача через сюжет, створюючи напругу та розв'язку.",
+                    listOf("Змінюй темп за сюжетом", "Використовуй паузи для інтриги", "Голоси персонажів мають відрізнятись")
+                ),
+                listOf(
+                    Exercise("ex_2_8_1", ExerciseType.READING, "Міні-історія", "Розкажи як захоплюючу історію.",
+                        ExerciseContent.ReadingText("Був темний вечір. Двері скрипнули. Хтось увійшов. Серце калатало. І раптом... це був лише кіт."),
+                        120, listOf(SkillType.INTONATION))
+                )
+            )
+            9 -> LessonContent(
+                "Ділова інтонація",
+                "Впевненість у бізнес-комунікації",
+                TheoryContent(
+                    "Ділова комунікація вимагає впевненої, рівної інтонації. Уникаємо занадто високих тонів та хвилювання у голосі.",
+                    listOf("Говори у нижньому регістрі", "Уникай питальної інтонації у ствердженнях", "Закінчуй фрази впевнено")
+                ),
+                listOf(
+                    Exercise("ex_2_9_1", ExerciseType.READING, "Бізнес-презентація", "Говори впевнено та професійно.",
+                        ExerciseContent.ReadingText("Наша компанія пропонує інноваційне рішення. Ми гарантуємо результат. Давайте обговоримо деталі співпраці."),
+                        90, listOf(SkillType.INTONATION, SkillType.CONFIDENCE))
+                )
+            )
+            10 -> LessonContent(
+                "Риторичні питання",
+                "Питання без відповіді",
+                TheoryContent(
+                    "Риторичні питання — потужний ораторський прийом. Вони змушують слухача думати, не вимагаючи відповіді.",
+                    listOf("Пауза після питання", "Інтонація може бути низхідною", "Підкреслюй важливість питання")
+                ),
+                listOf(
+                    Exercise("ex_2_10_1", ExerciseType.READING, "Риторичні питання", "Зроби питання впливовими.",
+                        ExerciseContent.ReadingText("Хіба це справедливо? Чи можемо ми залишатись байдужими? Що ми залишимо наступним поколінням?"),
+                        90, listOf(SkillType.INTONATION))
+                )
+            )
+            11 -> LessonContent(
+                "Драматична пауза",
+                "Мистецтво тиші",
+                TheoryContent(
+                    "Драматична пауза створює напругу та очікування. Вона змушує аудиторію чекати наступних слів з нетерпінням.",
+                    listOf("Тримай паузу довше ніж комфортно", "Зберігай контакт очима", "Наступні слова мають бути значущими")
+                ),
+                listOf(
+                    Exercise("ex_2_11_1", ExerciseType.READING, "Драматичне читання", "Використай довгі паузи.",
+                        ExerciseContent.ReadingText("І тоді він сказав одне слово... [пауза] Одне слово, яке змінило все... [пауза] 'Так'."),
+                        120, listOf(SkillType.INTONATION, SkillType.TEMPO))
+                )
+            )
+            12 -> LessonContent(
+                "Емоційна гучність",
+                "Гучність як інструмент",
+                TheoryContent(
+                    "Зміна гучності — потужний спосіб передачі емоцій. Шепіт може бути ефективнішим за крик.",
+                    listOf("Контрастуй гучність", "Тихий голос для інтимності", "Голосний — для енергії")
+                ),
+                listOf(
+                    Exercise("ex_2_12_1", ExerciseType.READING, "Динаміка гучності", "Змінюй гучність за текстом.",
+                        ExerciseContent.ReadingText("Це секрет [тихо]. Ніхто не має знати. Але одного дня... [голосно] Весь світ дізнається!"),
+                        90, listOf(SkillType.VOLUME, SkillType.INTONATION))
+                )
+            )
+            13 -> LessonContent(
+                "Натхненна промова",
+                "Надихаємо інших",
+                TheoryContent(
+                    "Натхненна промова поєднує всі елементи: правильний темп, виразну інтонацію, стратегічні паузи та емоційну гучність.",
+                    listOf("Вір у те, що говориш", "Передай енергію аудиторії", "Закінчуй на високій ноті")
+                ),
+                listOf(
+                    Exercise("ex_2_13_1", ExerciseType.READING, "Мотиваційний текст", "Надихни слухачів!",
+                        ExerciseContent.ReadingText("Кожен з вас здатен на велике! Ваші мрії не випадкові — вони вам дані, бо ви можете їх здійснити. Дійте! Вірте! Перемагайте!", Emotion.JOY),
+                        120, listOf(SkillType.INTONATION, SkillType.CONFIDENCE))
+                )
+            )
+            14 -> LessonContent(
+                "Підсумок тижня 2",
+                "Інтеграція навичок",
+                TheoryContent(
+                    "Другий тиждень завершено! Ваша інтонація стала багатшою та виразнішою. Продовжуємо розвиватись!",
+                    listOf("Практикуй щодня", "Слухай ораторів", "Аналізуй свої записи")
+                ),
+                listOf(
+                    Exercise("ex_2_14_1", ExerciseType.FREE_SPEECH, "Імпровізована промова", "Виголоси натхненну промову.",
+                        ExerciseContent.FreeSpeechTopic("Моє послання світу", listOf("Що важливо донести?", "Яку емоцію передати?", "Як надихнути?")),
+                        180, listOf(SkillType.INTONATION, SkillType.STRUCTURE))
+                )
+            )
+            15 -> LessonContent(
+                "Саркастична інтонація",
+                "Тонкощі сарказму",
+                TheoryContent(
+                    "Сарказм передається через контраст між словами та інтонацією. Слова можуть бути позитивними, а тон — протилежним.",
+                    listOf("Тон протилежний змісту", "Використовуй протяжність", "Не перебільшуй")
+                ),
+                listOf(
+                    Exercise("ex_2_15_1", ExerciseType.READING, "Саркастичне читання", "Зроби очевидним прихований сенс.",
+                        ExerciseContent.ReadingText("О, як чудово! Ще одна нарада. Саме те, чого мені бракувало. Не можу дочекатись."),
+                        90, listOf(SkillType.INTONATION))
+                )
+            )
+            16 -> LessonContent(
+                "Тепла інтонація",
+                "Дружній тон",
+                TheoryContent(
+                    "Теплий, дружній тон створює довіру та комфорт. Він характеризується м'якістю, середнім темпом та легкими підвищеннями тону.",
+                    listOf("Посміхайся очима", "Говори як з другом", "Використовуй м'які інтонації")
+                ),
+                listOf(
+                    Exercise("ex_2_16_1", ExerciseType.READING, "Дружнє привітання", "Створи відчуття тепла.",
+                        ExerciseContent.ReadingText("Привіт! Як я радий тебе бачити! Заходь, сідай. Розкажи, як справи? Давно не бачились!"),
+                        90, listOf(SkillType.INTONATION))
+                )
+            )
+            17 -> LessonContent(
+                "Авторитетна інтонація",
+                "Голос лідера",
+                TheoryContent(
+                    "Авторитетна інтонація передає впевненість та компетентність. Це не агресія, а спокійна сила.",
+                    listOf("Низхідна інтонація в кінці фраз", "Уникай підвищення тону", "Спокій та впевненість")
+                ),
+                listOf(
+                    Exercise("ex_2_17_1", ExerciseType.READING, "Авторитетне твердження", "Говори як експерт.",
+                        ExerciseContent.ReadingText("Моя рекомендація однозначна. Ми маємо діяти саме так. Я беру відповідальність на себе."),
+                        90, listOf(SkillType.INTONATION, SkillType.CONFIDENCE))
+                )
+            )
+            18 -> LessonContent(
+                "Емпатійна інтонація",
+                "Голос підтримки",
+                TheoryContent(
+                    "Емпатійна інтонація передає розуміння та підтримку. Вона м'яка, тепла та дбайлива.",
+                    listOf("Знизь темп", "М'який тон", "Паузи для слухання")
+                ),
+                listOf(
+                    Exercise("ex_2_18_1", ExerciseType.READING, "Підтримуюча розмова", "Передай турботу голосом.",
+                        ExerciseContent.ReadingText("Я розумію, як тобі важко. Ти не самотній у цьому. Ми разом це подолаємо. Я поруч."),
+                        90, listOf(SkillType.INTONATION))
+                )
+            )
+            19 -> LessonContent(
+                "Переключення емоцій",
+                "Швидка зміна настрою",
+                TheoryContent(
+                    "Професійний оратор може швидко переключатися між емоціями, не втрачаючи автентичності.",
+                    listOf("Чітко відчувай кожну емоцію", "Переходи мають бути плавними", "Практика — ключ до майстерності")
+                ),
+                listOf(
+                    Exercise("ex_2_19_1", ExerciseType.EMOTION_READING, "Емоційні переходи", "Змінюй емоцію кожне речення.",
+                        ExerciseContent.ReadingText("Яка радість! [радість] Ні, почекай... [сумнів] Це жахливо. [страх] Але я справлюсь! [рішучість]", Emotion.JOY),
+                        120, listOf(SkillType.INTONATION))
+                )
+            )
+            20 -> LessonContent(
+                "Фінальна підготовка",
+                "Майстер-клас інтонації",
+                TheoryContent(
+                    "Передостанній день! Демонструємо повний спектр інтонаційних можливостей.",
+                    listOf("Будь гнучким", "Експериментуй", "Насолоджуйся процесом")
+                ),
+                listOf(
+                    Exercise("ex_2_20_1", ExerciseType.READING, "Комплексний текст", "Використай всі вивчені прийоми.",
+                        ExerciseContent.ReadingText("Друзі! Настав час. Час сказати правду. Час діяти. Час змінювати світ. І цей час — зараз!"),
+                        150, listOf(SkillType.INTONATION, SkillType.VOLUME))
+                )
+            )
+            21 -> LessonContent(
+                "Випускний",
+                "Ваш інтонаційний спектакль",
+                TheoryContent(
+                    "Вітаю з завершенням курсу! Ваш голос тепер — справжній інструмент передачі емоцій та впливу.",
+                    listOf("Ви — майстер інтонації!", "Продовжуйте практику", "Надихайте світ своїм голосом")
+                ),
+                listOf(
+                    Exercise("ex_2_21_1", ExerciseType.FREE_SPEECH, "Фінальна промова", "Покажіть все, чому навчились!",
+                        ExerciseContent.FreeSpeechTopic("Мій шлях до виразного голосу", listOf("Що змінилось?", "Що відкрив?", "Куди далі?")),
+                        180, listOf(SkillType.INTONATION, SkillType.CONFIDENCE, SkillType.STRUCTURE))
+                )
+            )
+            else -> LessonContent("День $day", "Продовження курсу", null, emptyList())
+        }
+    }
+
+    // ========== COURSES 3-6: Similar structure with unique content ==========
+
+    private fun getCourse3(): Course {
+        return Course(
+            id = "course_3",
+            title = "Впевнений спікер",
+            description = "Публічні виступи без страху. Структура, аргументація, контакт з аудиторією.",
+            iconEmoji = "🎤",
+            totalLessons = 21,
+            isPremium = true,
+            estimatedDays = 21,
+            difficulty = Difficulty.INTERMEDIATE,
+            skills = listOf(SkillType.CONFIDENCE, SkillType.STRUCTURE),
+            lessons = generateCourse3Lessons()
+        )
+    }
+
+    private fun generateCourse3Lessons(): List<Lesson> {
+        val titles = listOf(
+            "Подолання страху сцени", "Мова тіла", "Структура виступу", "Вступ, що захоплює",
+            "Основна частина", "Переконливий висновок", "Підсумок тижня 1",
+            "Робота з аудиторією", "Відповіді на питання", "Візуальна підтримка",
+            "Імпровізація на сцені", "Управління часом", "Історії у виступі", "Підсумок тижня 2",
+            "Критика та зворотний зв'язок", "Складні аудиторії", "Онлайн-виступи",
+            "Дебати та дискусії", "Презентація проєктів", "Генеральна репетиція", "Випускний виступ"
+        )
+
+        return titles.mapIndexed { index, title ->
+            val day = index + 1
+            Lesson(
+                id = "lesson_$day",
+                courseId = "course_3",
+                dayNumber = day,
+                title = title,
+                description = "День $day курсу публічних виступів",
+                theory = TheoryContent(
+                    text = "Теорія дня $day: $title. Публічні виступи — це навичка, яка розвивається практикою. Сьогодні працюємо над важливим аспектом успішного виступу.",
+                    tips = listOf("Практикуй щодня", "Записуй виступи", "Аналізуй та вдосконалюй")
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_3_${day}_1",
+                        type = ExerciseType.FREE_SPEECH,
+                        title = "Практичний виступ",
+                        instruction = "Виконай вправу на тему дня.",
+                        content = ExerciseContent.FreeSpeechTopic(
+                            topic = "Практика: $title",
+                            hints = listOf("Структуруй думки", "Слідкуй за часом", "Будь впевненим")
+                        ),
+                        durationSeconds = 120,
+                        targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.STRUCTURE)
+                    )
+                ),
+                estimatedMinutes = 12
+            )
+        }
+    }
+
+    private fun getCourse4(): Course {
+        return Course(
+            id = "course_4",
+            title = "Чисте мовлення",
+            description = "Позбався від слів-паразитів. \"Ну\", \"як би\", \"типу\" більше немає.",
+            iconEmoji = "🧹",
+            totalLessons = 14,
+            isPremium = true,
+            estimatedDays = 14,
+            difficulty = Difficulty.BEGINNER,
+            skills = listOf(SkillType.FILLER_WORDS, SkillType.STRUCTURE),
+            lessons = generateCourse4Lessons()
+        )
+    }
+
+    private fun generateCourse4Lessons(): List<Lesson> {
+        val titles = listOf(
+            "Що таке слова-паразити", "Усвідомлення проблеми", "Пауза замість паразита",
+            "Тренування уваги", "Записуй себе", "Альтернативні слова", "Підсумок тижня 1",
+            "Контроль у стресі", "Швидке мовлення без паразитів", "Публічне мовлення",
+            "Телефонні розмови", "Ділова комунікація", "Генеральна перевірка", "Чисте мовлення назавжди"
+        )
+
+        return titles.mapIndexed { index, title ->
+            val day = index + 1
+            Lesson(
+                id = "lesson_$day",
+                courseId = "course_4",
+                dayNumber = day,
+                title = title,
+                description = "День $day: позбуваємось слів-паразитів",
+                theory = TheoryContent(
+                    text = "Сьогодні працюємо над: $title. Слова-паразити — це звичка, яку можна подолати. Кожен день наближає вас до чистого мовлення.",
+                    tips = listOf("Фіксуй кожне слово-паразит", "Замінюй паузою", "Будь терплячим")
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_4_${day}_1",
+                        type = ExerciseType.FREE_SPEECH,
+                        title = "Вільне мовлення",
+                        instruction = "Говори без слів-паразитів.",
+                        content = ExerciseContent.FreeSpeechTopic(
+                            topic = "Розкажи про свій день",
+                            hints = listOf("Без 'ну', 'типу', 'як би'", "Пауза замість паразита", "Слідкуй за собою")
+                        ),
+                        durationSeconds = 90,
+                        targetMetrics = listOf(SkillType.FILLER_WORDS)
+                    )
+                ),
+                estimatedMinutes = 10
+            )
+        }
+    }
+
+    private fun getCourse5(): Course {
+        return Course(
+            id = "course_5",
+            title = "Ділова комунікація",
+            description = "Переговори, співбесіди, презентації. Мова професіонала.",
+            iconEmoji = "💼",
+            totalLessons = 20,
+            isPremium = true,
+            estimatedDays = 20,
+            difficulty = Difficulty.ADVANCED,
+            skills = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE),
+            lessons = generateCourse5Lessons()
+        )
+    }
+
+    private fun generateCourse5Lessons(): List<Lesson> {
+        val titles = listOf(
+            "Основи ділового мовлення", "Перші враження", "Бізнес-етикет", "Телефонні переговори",
+            "Email vs голос", "Презентація ідеї", "Підсумок тижня 1",
+            "Переговори: основи", "Торг та компроміс", "Складні переговори",
+            "Співбесіда: підготовка", "Співбесіда: практика", "Нетворкінг", "Підсумок тижня 2",
+            "Конфлікти та критика", "Управління командою", "Публічні презентації",
+            "Міжкультурна комунікація", "Онлайн-комунікація", "Майстер ділової мови"
+        )
+
+        return titles.mapIndexed { index, title ->
+            val day = index + 1
+            Lesson(
+                id = "lesson_$day",
+                courseId = "course_5",
+                dayNumber = day,
+                title = title,
+                description = "День $day: професійна комунікація",
+                theory = TheoryContent(
+                    text = "$title — важливий аспект ділової комунікації. Професіонал має володіти цією навичкою бездоганно.",
+                    tips = listOf("Будь конкретним", "Поважай час співрозмовника", "Слухай активно")
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_5_${day}_1",
+                        type = ExerciseType.PITCH,
+                        title = "Бізнес-сценарій",
+                        instruction = "Виконай ділову вправу.",
+                        content = ExerciseContent.Pitch(
+                            scenario = "Бізнес-ситуація: $title",
+                            targetAudience = "Ділові партнери",
+                            keyMessages = listOf("Будь професійним", "Чіткі аргументи", "Результат-орієнтованість")
+                        ),
+                        durationSeconds = 120,
+                        targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
+                    )
+                ),
+                estimatedMinutes = 15
+            )
+        }
+    }
+
+    private fun getCourse6(): Course {
+        return Course(
+            id = "course_6",
+            title = "Харизматичний оратор",
+            description = "Майстер-клас публічних виступів. Просунутий рівень.",
+            iconEmoji = "⭐",
+            totalLessons = 21,
+            isPremium = true,
+            estimatedDays = 21,
+            difficulty = Difficulty.ADVANCED,
+            skills = listOf(SkillType.CONFIDENCE, SkillType.INTONATION, SkillType.STRUCTURE),
+            lessons = generateCourse6Lessons()
+        )
+    }
+
+    private fun generateCourse6Lessons(): List<Lesson> {
+        val titles = listOf(
+            "Що таке харизма", "Присутність на сцені", "Енергетика виступу", "Голос лідера",
+            "Історії, що надихають", "Гумор у виступах", "Підсумок тижня 1",
+            "Спонтанність vs підготовка", "Робота з великою аудиторією", "Камерні виступи",
+            "Медіа-виступи", "TED-стиль", "Мотиваційні промови", "Підсумок тижня 2",
+            "Особистий бренд оратора", "Монетизація виступів", "Створення спільноти",
+            "Менторство в ораторстві", "Власний стиль", "Генеральна репетиція", "Випускний майстер-клас"
+        )
+
+        return titles.mapIndexed { index, title ->
+            val day = index + 1
+            Lesson(
+                id = "lesson_$day",
+                courseId = "course_6",
+                dayNumber = day,
+                title = title,
+                description = "День $day: харизма та майстерність",
+                theory = TheoryContent(
+                    text = "$title — це елемент, який відрізняє хорошого оратора від великого. Харизма — це не вроджена якість, а навичка, яку можна розвинути.",
+                    tips = listOf("Будь автентичним", "Енергія заражає", "Практика робить майстра")
+                ),
+                exercises = listOf(
+                    Exercise(
+                        id = "ex_6_${day}_1",
+                        type = ExerciseType.FREE_SPEECH,
+                        title = "Харизматичний виступ",
+                        instruction = "Виголоси промову з максимальною енергією.",
+                        content = ExerciseContent.FreeSpeechTopic(
+                            topic = "Тема: $title",
+                            hints = listOf("Зачепи емоції", "Будь яскравим", "Залиш враження")
+                        ),
+                        durationSeconds = 180,
+                        targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.INTONATION)
+                    )
+                ),
+                estimatedMinutes = 15
+            )
+        }
+    }
+
+    // Helper data class for lesson content
+    private data class LessonContent(
+        val title: String,
+        val description: String,
+        val theory: TheoryContent?,
+        val exercises: List<Exercise>
+    )
+}

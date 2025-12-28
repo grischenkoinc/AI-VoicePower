@@ -20,7 +20,10 @@
       "Bash(tree:*)",
       "Bash(ls:*)",
       "Bash(./gradlew.bat:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(./gradlew kaptGenerateStubsDebugKotlin:*)",
+      "Bash(./gradlew compileDebugKotlin:*)"
     ]
   }
 }
