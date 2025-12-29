@@ -25,14 +25,20 @@ fun HomeScreen(
     onNavigateToImprovisation: () -> Unit,
     onNavigateToProgress: () -> Unit,
     onNavigateToQuickWarmup: () -> Unit,
-    onNavigateToRandomTopic: () -> Unit
+    onNavigateToRandomTopic: () -> Unit,
+    onNavigateToSettings: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("AI VoicePower") }
+                title = { Text("AI VoicePower") },
+                actions = {
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = "Налаштування")
+                    }
+                }
             )
         },
         floatingActionButton = {

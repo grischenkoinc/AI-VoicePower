@@ -1,5 +1,6 @@
 package com.aivoicepower.data.repository
 
+import android.util.Log
 import com.aivoicepower.data.remote.GeminiApiClient
 import com.aivoicepower.domain.model.VoiceAnalysis
 import com.aivoicepower.domain.model.VoiceAnalysisResult
@@ -158,11 +159,24 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
         exerciseType: String,
         context: String?
     ): Result<VoiceAnalysisResult> = withContext(Dispatchers.IO) {
-        geminiApiClient.analyzeVoiceRecording(
+        Log.d("DiagFlow", "=== VoiceAnalysisRepository.analyzeRecording() CALLED ===")
+        Log.d("DiagFlow", "audioFilePath: $audioFilePath")
+        Log.d("DiagFlow", "exerciseType: $exerciseType")
+        Log.d("DiagFlow", "File exists: ${File(audioFilePath).exists()}")
+        Log.d("DiagFlow", ">>> Calling geminiApiClient.analyzeVoiceRecording()...")
+
+        val result = geminiApiClient.analyzeVoiceRecording(
             audioFilePath = audioFilePath,
             expectedText = expectedText,
             exerciseType = exerciseType,
             additionalContext = context
         )
+
+        Log.d("DiagFlow", "<<< geminiApiClient returned: isSuccess=${result.isSuccess}")
+        if (result.isFailure) {
+            Log.e("DiagFlow", "geminiApiClient FAILED: ${result.exceptionOrNull()?.message}")
+        }
+
+        result
     }
 }

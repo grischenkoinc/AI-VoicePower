@@ -1,16 +1,21 @@
 package com.aivoicepower.ui.screens.diagnostic
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.local.database.dao.DiagnosticResultDao
 import com.aivoicepower.data.local.database.dao.UserProgressDao
 import com.aivoicepower.data.local.database.entity.UserProgressEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
 
 @HiltViewModel
@@ -26,80 +31,106 @@ class DiagnosticResultViewModel @Inject constructor(
         loadDiagnosticResult()
     }
 
+    fun retryAnalysis() {
+        _state.update { it.copy(isLoading = true, error = null) }
+        loadDiagnosticResult()
+    }
+
     private fun loadDiagnosticResult() {
         viewModelScope.launch {
             try {
-                // Завантажуємо останній результат діагностики
-                diagnosticResultDao.getLatestDiagnostic().collect { entity ->
-                    if (entity != null) {
-                        // Конвертуємо Entity → Display model
-                        val display = DiagnosticResultDisplay(
-                            overall = calculateOverall(entity),
-                            metrics = listOf(
-                                MetricDisplay(
-                                    name = "Дикція",
-                                    score = entity.diction,
-                                    label = getScoreLabel(entity.diction),
-                                    description = getScoreDescription("diction", entity.diction)
-                                ),
-                                MetricDisplay(
-                                    name = "Темп мовлення",
-                                    score = entity.tempo,
-                                    label = getScoreLabel(entity.tempo),
-                                    description = getScoreDescription("tempo", entity.tempo)
-                                ),
-                                MetricDisplay(
-                                    name = "Інтонація",
-                                    score = entity.intonation,
-                                    label = getScoreLabel(entity.intonation),
-                                    description = getScoreDescription("intonation", entity.intonation)
-                                ),
-                                MetricDisplay(
-                                    name = "Гучність",
-                                    score = entity.volume,
-                                    label = getScoreLabel(entity.volume),
-                                    description = getScoreDescription("volume", entity.volume)
-                                ),
-                                MetricDisplay(
-                                    name = "Структура",
-                                    score = entity.structure,
-                                    label = getScoreLabel(entity.structure),
-                                    description = getScoreDescription("structure", entity.structure)
-                                ),
-                                MetricDisplay(
-                                    name = "Впевненість",
-                                    score = entity.confidence,
-                                    label = getScoreLabel(entity.confidence),
-                                    description = getScoreDescription("confidence", entity.confidence)
-                                ),
-                                MetricDisplay(
-                                    name = "Без паразитів",
-                                    score = entity.fillerWords,
-                                    label = getScoreLabel(entity.fillerWords),
-                                    description = getScoreDescription("fillerWords", entity.fillerWords)
-                                )
-                            ),
-                            strengths = generateStrengths(entity),
-                            improvements = generateImprovements(entity),
-                            recommendations = generateRecommendations(entity)
-                        )
+                Log.d("DiagnosticResult", "Starting to load diagnostic result...")
+                Log.d("DiagnosticResult", "Waiting for non-null result from DB (timeout: 30s)...")
 
-                        _state.update {
-                            it.copy(
-                                isLoading = false,
-                                result = display
-                            )
-                        }
-
-                        // Зберігаємо рівні навичок в UserProgress
-                        saveToUserProgress(entity)
-                    }
+                // Чекаємо на ненульовий результат (макс 30 секунд)
+                // filterNotNull() - чекає поки Flow не емітує ненульове значення
+                val entity = withTimeout(30_000L) {
+                    diagnosticResultDao.getLatestDiagnostic()
+                        .filterNotNull()
+                        .first()
                 }
-            } catch (e: Exception) {
+
+                Log.d("DiagnosticResult", "Got entity: id=${entity.id}, diction=${entity.diction}")
+
+                // entity тепер гарантовано не null (filterNotNull чекає на дані)
+                // Конвертуємо Entity → Display model
+                val display = DiagnosticResultDisplay(
+                    overall = calculateOverall(entity),
+                    metrics = listOf(
+                        MetricDisplay(
+                            name = "Дикція",
+                            score = entity.diction,
+                            label = getScoreLabel(entity.diction),
+                            description = getScoreDescription("diction", entity.diction)
+                        ),
+                        MetricDisplay(
+                            name = "Темп мовлення",
+                            score = entity.tempo,
+                            label = getScoreLabel(entity.tempo),
+                            description = getScoreDescription("tempo", entity.tempo)
+                        ),
+                        MetricDisplay(
+                            name = "Інтонація",
+                            score = entity.intonation,
+                            label = getScoreLabel(entity.intonation),
+                            description = getScoreDescription("intonation", entity.intonation)
+                        ),
+                        MetricDisplay(
+                            name = "Гучність",
+                            score = entity.volume,
+                            label = getScoreLabel(entity.volume),
+                            description = getScoreDescription("volume", entity.volume)
+                        ),
+                        MetricDisplay(
+                            name = "Структура",
+                            score = entity.structure,
+                            label = getScoreLabel(entity.structure),
+                            description = getScoreDescription("structure", entity.structure)
+                        ),
+                        MetricDisplay(
+                            name = "Впевненість",
+                            score = entity.confidence,
+                            label = getScoreLabel(entity.confidence),
+                            description = getScoreDescription("confidence", entity.confidence)
+                        ),
+                        MetricDisplay(
+                            name = "Без паразитів",
+                            score = entity.fillerWords,
+                            label = getScoreLabel(entity.fillerWords),
+                            description = getScoreDescription("fillerWords", entity.fillerWords)
+                        )
+                    ),
+                    strengths = generateStrengths(entity),
+                    improvements = generateImprovements(entity),
+                    recommendations = generateRecommendations(entity)
+                )
+
                 _state.update {
                     it.copy(
                         isLoading = false,
-                        error = "Не вдалося завантажити результати"
+                        result = display,
+                        error = null
+                    )
+                }
+
+                Log.d("DiagnosticResult", "Result displayed successfully")
+
+                // Зберігаємо рівні навичок в UserProgress
+                saveToUserProgress(entity)
+            } catch (e: TimeoutCancellationException) {
+                Log.e("DiagnosticResult", "Timeout waiting for results - no data in DB after 30s", e)
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Результати діагностики не знайдено. Час очікування вичерпано."
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e("DiagnosticResult", "Error loading results", e)
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Не вдалося завантажити результати: ${e.message}"
                     )
                 }
             }

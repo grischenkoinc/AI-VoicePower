@@ -1,6 +1,7 @@
 package com.aivoicepower.data.remote
 
 import android.content.Context
+import android.util.Log
 import com.aivoicepower.BuildConfig
 import com.aivoicepower.data.chat.ConversationContext
 import com.aivoicepower.data.chat.Message
@@ -12,6 +13,7 @@ import com.google.ai.client.generativeai.type.generationConfig
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.delay
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -234,6 +236,7 @@ $transcription
     /**
      * Аналізує аудіо файл та повертає детальні метрики
      * Використовує Gemini multimodal для прямого аналізу аудіо
+     * Має retry логіку (3 спроби) для обробки 500 Internal Server Error
      */
     suspend fun analyzeVoiceRecording(
         audioFilePath: String,
@@ -241,34 +244,102 @@ $transcription
         exerciseType: String,
         additionalContext: String? = null
     ): Result<VoiceAnalysisResult> {
-        return try {
-            val audioFile = File(audioFilePath)
-            if (!audioFile.exists()) {
-                return Result.failure(Exception("Аудіо файл не знайдено: $audioFilePath"))
-            }
+        Log.d("DiagFlow", "=== GeminiApiClient.analyzeVoiceRecording() CALLED ===")
+        Log.d("DiagFlow", "audioFilePath: $audioFilePath")
+        Log.d("DiagFlow", "exerciseType: $exerciseType")
+        Log.d("Gemini", "=== analyzeVoiceRecording START ===")
+        Log.d("Gemini", "Audio file: $audioFilePath")
 
-            val mimeType = getMimeType(audioFilePath)
-            val audioBytes = audioFile.readBytes()
-
-            val prompt = buildVoiceAnalysisPrompt(expectedText, exerciseType, additionalContext)
-
-            val response = generativeModel.generateContent(
-                content {
-                    text(prompt)
-                    blob(mimeType, audioBytes)
-                }
-            )
-
-            val responseText = response.text
-                ?: return Result.failure(Exception("Gemini не повернув відповідь"))
-
-            // Парсимо JSON відповідь
-            val analysisResult = parseVoiceAnalysisResponse(responseText)
-            Result.success(analysisResult)
-
-        } catch (e: Exception) {
-            Result.failure(e)
+        val audioFile = File(audioFilePath)
+        Log.d("DiagFlow", "File exists check: ${audioFile.exists()}")
+        if (!audioFile.exists()) {
+            Log.e("DiagFlow", "!!! AUDIO FILE NOT FOUND !!!")
+            Log.e("Gemini", "Audio file NOT FOUND: $audioFilePath")
+            return Result.failure(Exception("Аудіо файл не знайдено: $audioFilePath"))
         }
+
+        val mimeType = getMimeType(audioFilePath)
+        val audioBytes = audioFile.readBytes()
+        Log.d("DiagFlow", "Audio loaded: ${audioBytes.size} bytes, mimeType: $mimeType")
+        Log.d("Gemini", "Audio file size: ${audioBytes.size} bytes, mimeType: $mimeType")
+
+        val prompt = buildVoiceAnalysisPrompt(expectedText, exerciseType, additionalContext)
+
+        var lastException: Exception? = null
+        val maxAttempts = 3
+
+        for (attempt in 0 until maxAttempts) {
+            try {
+                Log.d("DiagFlow", ">>> GEMINI API CALL - Attempt ${attempt + 1} of $maxAttempts <<<")
+                Log.d("Gemini", "Attempt ${attempt + 1} of $maxAttempts - Sending audio to Gemini API...")
+
+                val response = generativeModel.generateContent(
+                    content {
+                        text(prompt)
+                        blob(mimeType, audioBytes)
+                    }
+                )
+                Log.d("Gemini", "Gemini response received!")
+
+                val responseText = response.text
+                if (responseText == null) {
+                    Log.e("Gemini", "Gemini returned NULL response")
+                    lastException = Exception("Gemini не повернув відповідь")
+                    continue
+                }
+
+                Log.d("Gemini", "Gemini response (first 300 chars): ${responseText.take(300)}")
+
+                // Парсимо JSON відповідь
+                val analysisResult = parseVoiceAnalysisResponse(responseText)
+                Log.d("Gemini", "Parsed result: overallScore=${analysisResult.overallScore}")
+                Log.d("Gemini", "=== analyzeVoiceRecording SUCCESS ===")
+                return Result.success(analysisResult)
+
+            } catch (e: Exception) {
+                // Детальне логування помилки
+                Log.e("DiagFlow", "!!! GEMINI EXCEPTION on attempt ${attempt + 1} !!!")
+                Log.e("DiagFlow", "Exception class: ${e.javaClass.name}")
+                Log.e("DiagFlow", "Exception message: ${e.message}")
+                Log.e("DiagFlow", "Exception cause: ${e.cause}")
+                Log.e("Gemini", "Attempt ${attempt + 1} FAILED: ${e.javaClass.simpleName} - ${e.message}")
+                lastException = e
+
+                // Перевірка чи це retryable помилка
+                // Включає: 500, Internal, Server, 503, unavailable, unexpected
+                val isRetryable = e.message?.let { msg ->
+                    msg.contains("500") ||
+                    msg.contains("Internal", ignoreCase = true) ||
+                    msg.contains("Server", ignoreCase = true) ||
+                    msg.contains("503") ||
+                    msg.contains("unavailable", ignoreCase = true) ||
+                    msg.contains("unexpected", ignoreCase = true) ||
+                    msg.contains("UNKNOWN", ignoreCase = true) ||
+                    msg.contains("error", ignoreCase = true)
+                } ?: false
+
+                Log.d("DiagFlow", "isRetryable: $isRetryable, attempt: ${attempt + 1}/${maxAttempts}")
+
+                if (isRetryable && attempt < maxAttempts - 1) {
+                    val delayMs = 2000L * (attempt + 1) // 2s, 4s, 6s
+                    Log.w("DiagFlow", "Retryable error detected, waiting ${delayMs}ms before retry...")
+                    Log.w("Gemini", "Retryable error, waiting ${delayMs}ms before retry...")
+                    delay(delayMs)
+                } else if (!isRetryable) {
+                    // Не retryable помилка - виходимо одразу
+                    Log.e("DiagFlow", "NON-retryable error, giving up immediately")
+                    Log.e("Gemini", "Non-retryable error, giving up")
+                    break
+                } else {
+                    Log.d("DiagFlow", "Last attempt failed, no more retries")
+                }
+            }
+        }
+
+        // Всі спроби невдалі
+        Log.e("Gemini", "=== analyzeVoiceRecording FAILED after $maxAttempts attempts ===")
+        Log.e("Gemini", "Last error: ${lastException?.message}")
+        return Result.failure(lastException ?: Exception("Unknown error after $maxAttempts attempts"))
     }
 
     private fun getMimeType(filePath: String): String {

@@ -60,7 +60,32 @@ fun DiagnosticResultScreen(
                         .padding(paddingValues),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(state.error ?: "Помилка")
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.padding(32.dp)
+                    ) {
+                        Text(
+                            text = "😔",
+                            style = MaterialTheme.typography.displayMedium
+                        )
+                        Text(
+                            text = state.error ?: "Помилка",
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = { viewModel.retryAnalysis() },
+                            modifier = Modifier.fillMaxWidth(0.7f)
+                        ) {
+                            Text("Спробувати знову")
+                        }
+                        TextButton(onClick = onNavigateToHome) {
+                            Text("Пропустити і перейти до тренувань")
+                        }
+                    }
                 }
             }
 

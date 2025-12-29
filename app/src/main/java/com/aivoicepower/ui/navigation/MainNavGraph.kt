@@ -22,6 +22,8 @@ import com.aivoicepower.ui.screens.progress.CompareScreen
 import com.aivoicepower.ui.screens.progress.ProgressScreen
 import com.aivoicepower.ui.screens.progress.RecordingHistoryScreen
 import com.aivoicepower.ui.screens.results.ResultsScreen
+import com.aivoicepower.ui.screens.premium.PaywallScreen
+import com.aivoicepower.ui.screens.settings.SettingsScreen
 import com.aivoicepower.ui.screens.warmup.*
 
 /**
@@ -69,6 +71,9 @@ fun MainNavGraph(
                 },
                 onNavigateToRandomTopic = {
                     navController.navigate(Screen.RandomTopic.route)
+                },
+                onNavigateToSettings = {
+                    navController.navigate(Screen.Settings.route)
                 }
             )
         }
@@ -270,6 +275,22 @@ fun MainNavGraph(
                 onNavigateToResults = { recordingId ->
                     // TODO: Navigate to recording results screen
                 }
+            )
+        }
+
+        // ===== SETTINGS =====
+        composable(route = Screen.Settings.route) {
+            SettingsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToPremium = { navController.navigate(Screen.Premium.route) }
+            )
+        }
+
+        // ===== PREMIUM/PAYWALL =====
+        composable(route = Screen.Premium.route) {
+            PaywallScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onPurchaseSuccess = { navController.popBackStack() }
             )
         }
     }

@@ -1,6 +1,7 @@
 package com.aivoicepower.ui.screens.diagnostic
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.local.database.dao.DiagnosticResultDao
@@ -200,11 +201,30 @@ class DiagnosticViewModel @Inject constructor(
 
     private fun saveRecording() {
         viewModelScope.launch {
+            Log.d("DiagFlow", "=== saveRecording() CALLED ===")
+
             val currentState = _state.value
-            val task = currentState.selectedTask ?: return@launch
-            val taskIndex = currentState.currentTaskIndex ?: return@launch
-            val recordingPath = currentState.currentRecordingPath ?: return@launch
+            val task = currentState.selectedTask
+            val taskIndex = currentState.currentTaskIndex
+            val recordingPath = currentState.currentRecordingPath
             val durationSeconds = currentState.recordingSeconds
+
+            Log.d("DiagFlow", "task: ${task?.id}, taskIndex: $taskIndex")
+            Log.d("DiagFlow", "recordingPath: $recordingPath")
+            Log.d("DiagFlow", "durationSeconds: $durationSeconds")
+
+            if (task == null) {
+                Log.e("DiagFlow", "ABORT: task is null!")
+                return@launch
+            }
+            if (taskIndex == null) {
+                Log.e("DiagFlow", "ABORT: taskIndex is null!")
+                return@launch
+            }
+            if (recordingPath == null) {
+                Log.e("DiagFlow", "ABORT: recordingPath is null!")
+                return@launch
+            }
 
             // Save to Room database
             val recordingEntity = RecordingEntity(
@@ -241,60 +261,151 @@ class DiagnosticViewModel @Inject constructor(
             }
 
             // Якщо всі задачі завершені, аналізуємо всі записи з Gemini
+            Log.d("DiagFlow", "completedCount: $completedCount, totalTasks: ${updatedTasks.size}")
             if (completedCount == updatedTasks.size) {
+                Log.d("DiagFlow", "ALL TASKS COMPLETED! Calling analyzeAllRecordings()...")
                 analyzeAllRecordings()
+            } else {
+                Log.d("DiagFlow", "Not all tasks completed yet, skipping analysis")
             }
         }
     }
 
     private suspend fun analyzeAllRecordings() {
-        val tasks = _state.value.tasks
-        val analysisResults = mutableListOf<VoiceAnalysisResult>()
+        Log.d("DiagFlow", "=== analyzeAllRecordings() ENTERED ===")
+        Log.d("Diagnostic", "=== analyzeAllRecordings START ===")
 
-        // Analyze each recording with Gemini
-        for (task in tasks) {
-            val recordingPath = task.recordingPath ?: continue
-            val file = File(recordingPath)
-            if (!file.exists()) continue
+        // Показуємо стан "Аналізуємо..."
+        _state.update { it.copy(isAnalyzing = true, error = null) }
+        Log.d("DiagFlow", "State updated: isAnalyzing=true")
 
-            val result = voiceAnalysisRepository.analyzeRecording(
-                audioFilePath = recordingPath,
-                expectedText = task.contentText,
-                exerciseType = task.id,
-                context = task.instruction
-            )
+        try {
+            val tasks = _state.value.tasks
+            Log.d("DiagFlow", "Tasks to analyze: ${tasks.size}")
+            Log.d("Diagnostic", "Recordings to analyze: ${tasks.size}")
 
-            result.getOrNull()?.let { analysisResults.add(it) }
-        }
+            // Log all task paths
+            tasks.forEachIndexed { index, task ->
+                Log.d("DiagFlow", "Task[$index]: id=${task.id}, path=${task.recordingPath}, exists=${task.recordingPath?.let { File(it).exists() }}")
+            }
 
-        // If we have analysis results, average them
-        val diagnosticResult = if (analysisResults.isNotEmpty()) {
-            val avgDiction = analysisResults.map { it.diction }.average().toInt()
-            val avgTempo = analysisResults.map { it.tempo }.average().toInt()
-            val avgIntonation = analysisResults.map { it.intonation }.average().toInt()
-            val avgVolume = analysisResults.map { it.volume }.average().toInt()
-            val avgConfidence = analysisResults.map { it.confidence }.average().toInt()
-            val avgFillerWords = analysisResults.map { it.fillerWords }.average().toInt()
-            val avgOverall = analysisResults.map { it.overallScore }.average().toInt()
+            val analysisResults = mutableListOf<VoiceAnalysisResult>()
 
-            // Combine recommendations
-            val allImprovements = analysisResults.flatMap { it.improvements }.distinct().take(5)
+            // Analyze each recording with Gemini (with timeout)
+            for (task in tasks) {
+                val recordingPath = task.recordingPath
+                if (recordingPath == null) {
+                    Log.w("DiagFlow", "SKIP task ${task.id}: recordingPath is null")
+                    continue
+                }
 
-            DiagnosticResultEntity(
-                id = UUID.randomUUID().toString(),
-                diction = avgDiction,
-                tempo = avgTempo,
-                intonation = avgIntonation,
-                volume = avgVolume,
-                structure = avgOverall, // Using overall score as structure proxy
-                confidence = avgConfidence,
-                fillerWords = avgFillerWords,
-                recommendations = allImprovements.joinToString(","),
-                isInitial = true
-            )
-        } else {
-            // Fallback to default values if analysis failed
-            DiagnosticResultEntity(
+                val file = File(recordingPath)
+                if (!file.exists()) {
+                    Log.w("DiagFlow", "SKIP task ${task.id}: file does NOT exist at $recordingPath")
+                    continue
+                }
+
+                Log.d("DiagFlow", "Processing task ${task.id}, file size: ${file.length()} bytes")
+
+                try {
+                    Log.d("DiagFlow", ">>> Calling voiceAnalysisRepository.analyzeRecording() for ${task.id}")
+                    Log.d("Diagnostic", "Analyzing recording: ${task.id}")
+                    // Timeout 90 секунд на кожен запис (3 retry * 30 сек API timeout)
+                    val result = kotlinx.coroutines.withTimeout(90_000L) {
+                        voiceAnalysisRepository.analyzeRecording(
+                            audioFilePath = recordingPath,
+                            expectedText = task.contentText,
+                            exerciseType = task.id,
+                            context = task.instruction
+                        )
+                    }
+                    Log.d("DiagFlow", "<<< voiceAnalysisRepository returned for ${task.id}")
+                    result.getOrNull()?.let {
+                        Log.d("DiagFlow", "SUCCESS: ${task.id} analyzed, score: ${it.overallScore}")
+                        Log.d("Diagnostic", "Recording ${task.id} analyzed, score: ${it.overallScore}")
+                        analysisResults.add(it)
+                    } ?: run {
+                        Log.w("DiagFlow", "Result was null or failure for ${task.id}")
+                    }
+                } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+                    Log.e("DiagFlow", "!!! TIMEOUT for ${task.id} after 90 seconds !!!")
+                    Log.w("Diagnostic", "Timeout analyzing ${task.id}")
+                    continue
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    Log.e("DiagFlow", "!!! JOB CANCELLED for ${task.id} !!!")
+                    Log.e("DiagFlow", "CancellationException: ${e.message}")
+                    // Пробросити CancellationException далі - не ігнорувати
+                    throw e
+                } catch (e: Exception) {
+                    Log.e("DiagFlow", "!!! EXCEPTION for ${task.id}: ${e.javaClass.simpleName} - ${e.message}")
+                    Log.e("Diagnostic", "Error analyzing ${task.id}: ${e.message}")
+                    continue
+                }
+            }
+
+            // If we have analysis results, average them
+            val diagnosticResult = if (analysisResults.isNotEmpty()) {
+                val avgDiction = analysisResults.map { it.diction }.average().toInt()
+                val avgTempo = analysisResults.map { it.tempo }.average().toInt()
+                val avgIntonation = analysisResults.map { it.intonation }.average().toInt()
+                val avgVolume = analysisResults.map { it.volume }.average().toInt()
+                val avgConfidence = analysisResults.map { it.confidence }.average().toInt()
+                val avgFillerWords = analysisResults.map { it.fillerWords }.average().toInt()
+                val avgOverall = analysisResults.map { it.overallScore }.average().toInt()
+
+                // Combine recommendations
+                val allImprovements = analysisResults.flatMap { it.improvements }.distinct().take(5)
+
+                DiagnosticResultEntity(
+                    id = UUID.randomUUID().toString(),
+                    diction = avgDiction,
+                    tempo = avgTempo,
+                    intonation = avgIntonation,
+                    volume = avgVolume,
+                    structure = avgOverall, // Using overall score as structure proxy
+                    confidence = avgConfidence,
+                    fillerWords = avgFillerWords,
+                    recommendations = allImprovements.joinToString(","),
+                    isInitial = true
+                )
+            } else {
+                // Fallback to default values if analysis failed
+                DiagnosticResultEntity(
+                    id = UUID.randomUUID().toString(),
+                    diction = 50,
+                    tempo = 50,
+                    intonation = 50,
+                    volume = 50,
+                    structure = 50,
+                    confidence = 50,
+                    fillerWords = 50,
+                    recommendations = "Спробуй записати ще раз",
+                    isInitial = true
+                )
+            }
+
+            Log.d("Diagnostic", "Saving to DB: diction=${diagnosticResult.diction}, tempo=${diagnosticResult.tempo}, overall=${diagnosticResult.structure}")
+            diagnosticResultDao.insert(diagnosticResult)
+            Log.d("Diagnostic", "Saved to DB successfully, id=${diagnosticResult.id}")
+
+            // Завершуємо аналіз і переходимо до результатів
+            Log.d("Diagnostic", "Setting isCompleted=true, navigating to results...")
+            _state.update {
+                it.copy(
+                    isAnalyzing = false,
+                    isCompleted = true
+                )
+            }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            // Не перехоплюємо CancellationException - пробросимо далі
+            Log.e("DiagFlow", "!!! analyzeAllRecordings CANCELLED !!!")
+            Log.e("DiagFlow", "CancellationException: ${e.message}")
+            throw e
+        } catch (e: Exception) {
+            Log.e("DiagFlow", "!!! analyzeAllRecordings FAILED: ${e.javaClass.simpleName} !!!")
+            Log.e("Diagnostic", "Error in analyzeAllRecordings: ${e.message}", e)
+            // Помилка аналізу - зберігаємо дефолтні результати
+            val fallbackResult = DiagnosticResultEntity(
                 id = UUID.randomUUID().toString(),
                 diction = 50,
                 tempo = 50,
@@ -303,12 +414,24 @@ class DiagnosticViewModel @Inject constructor(
                 structure = 50,
                 confidence = 50,
                 fillerWords = 50,
-                recommendations = "Спробуй записати ще раз",
+                recommendations = "Аналіз не вдався, спробуй пізніше",
                 isInitial = true
             )
-        }
+            Log.d("DiagFlow", "Saving fallback result to DB...")
+            Log.d("Diagnostic", "Saving fallback result to DB...")
+            diagnosticResultDao.insert(fallbackResult)
+            Log.d("DiagFlow", "Fallback saved, navigating to results...")
+            Log.d("Diagnostic", "Fallback saved, setting isCompleted=true")
 
-        diagnosticResultDao.insert(diagnosticResult)
+            _state.update {
+                it.copy(
+                    isAnalyzing = false,
+                    isCompleted = true,
+                    error = null // Не показуємо помилку, бо все одно переходимо до результатів
+                )
+            }
+        }
+        Log.d("Diagnostic", "=== analyzeAllRecordings END ===")
     }
 
     override fun onCleared() {

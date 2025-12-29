@@ -42,8 +42,9 @@ sealed class Screen(val route: String) {
     // AI Coach (Phase 6)
     object AiCoach : Screen("ai-coach")
 
-    // Premium
+    // Premium & Settings
     object Premium : Screen("premium")
+    object Settings : Screen("settings")
 
     // Progress sub-screens
     object Achievements : Screen("progress/achievements")
