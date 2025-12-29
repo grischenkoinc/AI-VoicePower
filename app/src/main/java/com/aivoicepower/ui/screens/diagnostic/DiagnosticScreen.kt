@@ -107,8 +107,8 @@ fun DiagnosticScreen(
                 }
             }
 
-            // Complete button (shown when all tasks are recorded)
-            if (state.completedTasksCount == state.tasks.size && state.completedTasksCount > 0) {
+            // Complete button (shown when all tasks are recorded and NOT analyzing)
+            if (state.completedTasksCount == state.tasks.size && state.completedTasksCount > 0 && !state.isAnalyzing) {
                 Spacer(modifier = Modifier.weight(1f))
 
                 Button(
@@ -168,6 +168,14 @@ fun DiagnosticScreen(
             onDismiss = {
                 viewModel.onEvent(DiagnosticEvent.PreviewDialogDismissed)
             }
+        )
+    }
+
+    // Analyzing dialog - blocks UI during analysis
+    if (state.isAnalyzing) {
+        DiagnosticAnalyzingDialog(
+            currentTaskIndex = state.currentAnalyzingTaskIndex,
+            totalTasks = state.tasks.size
         )
     }
 }

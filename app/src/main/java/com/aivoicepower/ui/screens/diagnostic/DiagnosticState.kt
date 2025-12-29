@@ -11,6 +11,7 @@ data class DiagnosticState(
     val showRecordingPreview: Boolean = false,
     val completedTasksCount: Int = 0,
     val isAnalyzing: Boolean = false,
+    val currentAnalyzingTaskIndex: Int = 0,
     val isCompleted: Boolean = false,
     val error: String? = null
 )

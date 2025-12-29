@@ -38,6 +38,7 @@ class DiagnosticViewModel @Inject constructor(
     val state: StateFlow<DiagnosticState> = _state.asStateFlow()
 
     private var recordingTimerJob: Job? = null
+    private var analysisJob: Job? = null
 
     fun onEvent(event: DiagnosticEvent) {
         when (event) {
@@ -263,8 +264,15 @@ class DiagnosticViewModel @Inject constructor(
             // Якщо всі задачі завершені, аналізуємо всі записи з Gemini
             Log.d("DiagFlow", "completedCount: $completedCount, totalTasks: ${updatedTasks.size}")
             if (completedCount == updatedTasks.size) {
-                Log.d("DiagFlow", "ALL TASKS COMPLETED! Calling analyzeAllRecordings()...")
-                analyzeAllRecordings()
+                // Захист від подвійного виклику
+                if (analysisJob?.isActive == true) {
+                    Log.w("DiagFlow", "Analysis already in progress, skipping duplicate call")
+                    return@launch
+                }
+                Log.d("DiagFlow", "ALL TASKS COMPLETED! Starting analyzeAllRecordings()...")
+                analysisJob = viewModelScope.launch {
+                    analyzeAllRecordings()
+                }
             } else {
                 Log.d("DiagFlow", "Not all tasks completed yet, skipping analysis")
             }
@@ -276,7 +284,7 @@ class DiagnosticViewModel @Inject constructor(
         Log.d("Diagnostic", "=== analyzeAllRecordings START ===")
 
         // Показуємо стан "Аналізуємо..."
-        _state.update { it.copy(isAnalyzing = true, error = null) }
+        _state.update { it.copy(isAnalyzing = true, currentAnalyzingTaskIndex = 0, error = null) }
         Log.d("DiagFlow", "State updated: isAnalyzing=true")
 
         try {
@@ -292,7 +300,11 @@ class DiagnosticViewModel @Inject constructor(
             val analysisResults = mutableListOf<VoiceAnalysisResult>()
 
             // Analyze each recording with Gemini (with timeout)
-            for (task in tasks) {
+            for ((index, task) in tasks.withIndex()) {
+                // Update progress
+                _state.update { it.copy(currentAnalyzingTaskIndex = index) }
+                Log.d("DiagFlow", "Starting analysis for task $index: ${task.id}")
+
                 val recordingPath = task.recordingPath
                 if (recordingPath == null) {
                     Log.w("DiagFlow", "SKIP task ${task.id}: recordingPath is null")
