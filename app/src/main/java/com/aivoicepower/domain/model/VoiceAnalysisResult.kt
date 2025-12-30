@@ -11,6 +11,8 @@ data class VoiceAnalysisResult(
     val volume: Int,            // Стабільність гучності (0-100)
     val confidence: Int,        // Впевненість голосу (0-100)
     val fillerWords: Int,       // Відсутність слів-паразитів (0-100, 100 = немає паразитів)
+    val structure: Int = 50,    // Структура мовлення (0-100) - для спонтанного/переконливого
+    val persuasiveness: Int = 50, // Переконливість (0-100) - тільки для persuasive
     val overallScore: Int,      // Загальна оцінка (0-100)
     val strengths: List<String>,     // Сильні сторони
     val improvements: List<String>,  // Зони для покращення
@@ -27,6 +29,8 @@ data class VoiceAnalysisResult(
             volume = 50,
             confidence = 50,
             fillerWords = 50,
+            structure = 50,
+            persuasiveness = 50,
             overallScore = 50,
             strengths = listOf("Гарний початок!"),
             improvements = listOf("Продовжуй практикуватись"),

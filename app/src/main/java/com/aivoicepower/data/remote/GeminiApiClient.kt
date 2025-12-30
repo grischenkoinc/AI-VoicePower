@@ -358,20 +358,48 @@ $transcription
         exerciseType: String,
         additionalContext: String?
     ): String {
+        // Визначаємо чи потрібні додаткові метрики
+        val needsStructure = exerciseType.contains("spontaneous", ignoreCase = true) ||
+                exerciseType.contains("persuasive", ignoreCase = true) ||
+                exerciseType.contains("task_2", ignoreCase = true) ||
+                exerciseType.contains("task_4", ignoreCase = true)
+        val needsPersuasiveness = exerciseType.contains("persuasive", ignoreCase = true) ||
+                exerciseType.contains("task_4", ignoreCase = true)
+
+        val structureInstruction = if (needsStructure) {
+            "\n7. structure (структура) - чіткість структури: вступ, основна частина, висновок"
+        } else ""
+
+        val persuasivenessInstruction = if (needsPersuasiveness) {
+            "\n8. persuasiveness (переконливість) - аргументація, логіка, емоційний вплив"
+        } else ""
+
+        val structureJson = if (needsStructure) "\n  \"structure\": 55," else ""
+        val persuasivenessJson = if (needsPersuasiveness) "\n  \"persuasiveness\": 50," else ""
+
         return """
-Ти — професійний тренер з мовлення. Проаналізуй цей голосовий запис українською мовою.
+Ти — СТРОГИЙ професійний тренер з мовлення. Оцінюй КРИТИЧНО.
+
+ШКАЛА ОЦІНЮВАННЯ:
+- 90-100: ТІЛЬКИ для професійних дикторів (дуже рідко!)
+- 70-89: Добре, але є над чим працювати
+- 50-69: Середній рівень, потребує практики
+- 30-49: Слабко, багато помилок
+- 0-29: Дуже погано
+
+НЕ завищуй оцінки! Більшість людей мають бути в діапазоні 40-70.
 
 Тип вправи: $exerciseType
 ${if (expectedText != null) "Очікуваний текст: $expectedText" else ""}
 ${if (additionalContext != null) "Контекст: $additionalContext" else ""}
 
-Оціни за шкалою 0-100:
-1. diction (чіткість дикції) - наскільки чітко вимовляються звуки
-2. tempo (темп мовлення) - чи комфортний темп, не надто швидко/повільно
-3. intonation (інтонація) - виразність, емоційність
-4. volume (гучність) - стабільність гучності
-5. confidence (впевненість) - наскільки впевнено звучить голос
-6. fillerWords (слова-паразити) - 100 = немає паразитів, 0 = багато
+Оцінюй СУВОРО за шкалою 0-100:
+1. diction - чіткість КОЖНОГО звуку, артикуляція приголосних
+2. tempo - рівномірність темпу, доречні паузи, не занадто швидко/повільно
+3. intonation - емоційність, виразність (монотонність = низька оцінка!)
+4. volume - стабільність гучності, не занадто тихо/голосно
+5. confidence - впевненість голосу, відсутність тремтіння
+6. fillerWords - "е-е", "ну", "типу", "як би" = сильно знижуй оцінку!$structureInstruction$persuasivenessInstruction
 
 Також дай:
 - strengths: список 2-3 сильних сторін
@@ -381,16 +409,16 @@ ${if (additionalContext != null) "Контекст: $additionalContext" else ""}
 
 Відповідь ТІЛЬКИ у форматі JSON:
 {
-  "diction": 75,
-  "tempo": 80,
-  "intonation": 70,
-  "volume": 85,
-  "confidence": 72,
-  "fillerWords": 90,
-  "overallScore": 78,
-  "strengths": ["чітка вимова", "хороший темп"],
-  "improvements": ["додати емоційності", "менше пауз"],
-  "tip": "Спробуй читати з більшим ентузіазмом"
+  "diction": 55,
+  "tempo": 60,
+  "intonation": 45,
+  "volume": 70,
+  "confidence": 50,
+  "fillerWords": 40,$structureJson$persuasivenessJson
+  "overallScore": 53,
+  "strengths": ["...", "..."],
+  "improvements": ["...", "..."],
+  "tip": "..."
 }
         """.trimIndent()
     }
@@ -408,6 +436,8 @@ ${if (additionalContext != null) "Контекст: $additionalContext" else ""}
                 volume = parsed.volume ?: 50,
                 confidence = parsed.confidence ?: 50,
                 fillerWords = parsed.fillerWords ?: 50,
+                structure = parsed.structure ?: 50,
+                persuasiveness = parsed.persuasiveness ?: 50,
                 overallScore = parsed.overallScore ?: 50,
                 strengths = parsed.strengths ?: listOf("Гарний початок!"),
                 improvements = parsed.improvements ?: listOf("Продовжуй практикуватись"),
@@ -642,6 +672,8 @@ private data class VoiceAnalysisJsonResponse(
     @SerializedName("volume") val volume: Int?,
     @SerializedName("confidence") val confidence: Int?,
     @SerializedName("fillerWords") val fillerWords: Int?,
+    @SerializedName("structure") val structure: Int?,
+    @SerializedName("persuasiveness") val persuasiveness: Int?,
     @SerializedName("overallScore") val overallScore: Int?,
     @SerializedName("strengths") val strengths: List<String>?,
     @SerializedName("improvements") val improvements: List<String>?,

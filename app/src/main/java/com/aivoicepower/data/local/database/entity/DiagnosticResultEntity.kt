@@ -15,6 +15,7 @@ data class DiagnosticResultEntity(
     val structure: Int,         // 0-100
     val confidence: Int,        // 0-100
     val fillerWords: Int,       // 0-100 (100 = no filler words)
+    val persuasiveness: Int = 50, // 0-100 (тільки для persuasive task)
     val recommendations: String, // JSON array as string
     val isInitial: Boolean = true // true = first diagnostic, false = re-diagnostic
 )

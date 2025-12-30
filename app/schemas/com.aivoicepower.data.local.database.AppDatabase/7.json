@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 7,
-    "identityHash": "1bff5f59a509ca082a480036e781a17e",
+    "identityHash": "e8d9ea44cd6d3d37e731ab612048f92b",
     "entities": [
       {
         "tableName": "messages",
@@ -430,7 +430,7 @@
       },
       {
         "tableName": "diagnostic_results",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, `diction` INTEGER NOT NULL, `tempo` INTEGER NOT NULL, `intonation` INTEGER NOT NULL, `volume` INTEGER NOT NULL, `structure` INTEGER NOT NULL, `confidence` INTEGER NOT NULL, `fillerWords` INTEGER NOT NULL, `recommendations` TEXT NOT NULL, `isInitial` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, `diction` INTEGER NOT NULL, `tempo` INTEGER NOT NULL, `intonation` INTEGER NOT NULL, `volume` INTEGER NOT NULL, `structure` INTEGER NOT NULL, `confidence` INTEGER NOT NULL, `fillerWords` INTEGER NOT NULL, `persuasiveness` INTEGER NOT NULL, `recommendations` TEXT NOT NULL, `isInitial` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -487,6 +487,12 @@
             "notNull": true
           },
           {
+            "fieldPath": "persuasiveness",
+            "columnName": "persuasiveness",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
             "fieldPath": "recommendations",
             "columnName": "recommendations",
             "affinity": "TEXT",
@@ -512,7 +518,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1bff5f59a509ca082a480036e781a17e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e8d9ea44cd6d3d37e731ab612048f92b')"
     ]
   }
 }
