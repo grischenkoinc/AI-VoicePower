@@ -50,326 +50,1040 @@ object CourseContentProvider {
         return getCourse1Week1() + getCourse1Week2() + getCourse1Week3()
     }
 
-    private fun getCourse1Week1(): List<Lesson> {
-        return listOf(
-            // Day 1
-            Lesson(
-                id = "lesson_1",
-                courseId = "course_1",
-                dayNumber = 1,
-                title = "Основи артикуляції",
-                description = "Знайомство з артикуляційним апаратом та базовими вправами",
-                theory = TheoryContent(
-                    text = "Чітке мовлення починається з правильної роботи артикуляційного апарату: губ, язика, щелеп та м'якого піднебіння. Сьогодні ми познайомимося з базовими вправами, які допоможуть \"розігріти\" мовленнєвий апарат.",
-                    tips = listOf(
-                        "Виконуй вправи перед дзеркалом",
-                        "Не поспішай, важлива якість, а не швидкість",
-                        "Роби вправи щодня для кращого результату"
-                    )
-                ),
-                exercises = listOf(
-                    Exercise(
-                        id = "ex_1_1",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Скоромовка: П-Б-П",
-                        instruction = "Вимовляй повільно, чітко артикулюючи кожен звук. Поступово збільшуй швидкість.",
-                        content = ExerciseContent.TongueTwister(
-                            text = "Бик тупогуб, у бика губа тупа",
-                            difficulty = 1,
-                            targetSounds = listOf("Б", "П", "Г")
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.DICTION)
-                    ),
-                    Exercise(
-                        id = "ex_1_2",
-                        type = ExerciseType.READING,
-                        title = "Читання з паузами",
-                        instruction = "Читай текст, роблячи паузи після кожного речення. Контролюй дихання.",
-                        content = ExerciseContent.ReadingText(
-                            text = "Мистецтво красномовства — це не тільки вміння говорити, але й вміння бути почутим. Кожне слово має значення. Кожна пауза має свій сенс."
-                        ),
-                        durationSeconds = 90,
-                        targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
-                    )
-                ),
-                estimatedMinutes = 10
+    /**
+     * Course 1: Чітке мовлення за 21 день
+     * Week 1: Основи (Уроки 1-7)
+     */
+    private fun getCourse1Week1(): List<Lesson> = listOf(
+
+        // ==================== УРОК 1: Основи артикуляції ====================
+        Lesson(
+            id = "lesson_1",
+            courseId = "course_1",
+            dayNumber = 1,
+            title = "Основи артикуляції",
+            description = "Знайомство з артикуляційним апаратом та базові принципи чіткого мовлення",
+            theory = TheoryContent(
+                text = """
+                Що таке артикуляція і чому вона важлива?
+
+                Артикуляція — це робота органів мовлення (губ, язика, щелепи, піднебіння) під час вимови звуків. Це фундамент чіткого мовлення, від якого залежить, чи зрозуміють тебе з першого разу.
+
+                Уяви артикуляційний апарат як музичний інструмент. Навіть найкраща мелодія звучатиме погано на розстроєній гітарі. Так само найцікавіша думка втратить силу, якщо слова "з'їдаються" або звучать нечітко.
+
+                Цікавий факт: дослідження показують, що людей з чіткою дикцією сприймають як більш компетентних та впевнених — навіть якщо зміст їхніх слів однаковий. Перше враження формується за 7 секунд, і те, ЯК ти говориш, важить не менше, ніж ЩО ти говориш.
+
+                Добра новина: артикуляцію можна тренувати в будь-якому віці. М'язи обличчя та язика піддаються тренуванню так само, як м'язи тіла. За 21 день регулярних занять ти відчуєш суттєву різницю.
+
+                Три кити чіткої артикуляції:
+
+                1. Активна робота губ — губи це "двері" для звуків. Якщо вони ледь рухаються, звуки виходять змазаними. Багато людей говорять "крізь зуби" — це перша проблема, яку ми виправимо.
+
+                2. Рухливий язик — язик це головний артикулятор. Він створює більшість приголосних звуків. Чим точніше він рухається, тим чіткіше звучить мова.
+
+                3. Достатнє відкриття рота — багато хто говорить, ледь відкриваючи рот, це створює "бубніння". Достатнє відкриття рота дає звукам простір для формування.
+
+                Ключовий інсайт: 80% проблем з дикцією — це не проблеми з конкретними звуками, а загальна "лінь" артикуляційного апарату. Коли ми розбудимо м'язи — більшість звуків покращаться автоматично.
+
+                Важливо: перед КОЖНИМ уроком цього курсу виконуй розминку з розділу Warmup (артикуляційна гімнастика + дихальні вправи). Це підготує м'язи до роботи та зробить вправи ефективнішими.
+                """.trimIndent(),
+                tips = listOf(
+                    "Виконуй вправи перед дзеркалом — так ти бачитимеш роботу м'язів",
+                    "Не поспішай — краще повільно і чітко, ніж швидко і змазано",
+                    "Займайся щодня по 10 хвилин — регулярність важливіша за тривалість"
+                )
             ),
-            // Day 2
-            Lesson(
-                id = "lesson_2",
-                courseId = "course_1",
-                dayNumber = 2,
-                title = "Губні звуки",
-                description = "Відпрацювання чіткої вимови губних приголосних",
-                theory = TheoryContent(
-                    text = "Губні звуки (П, Б, М, В, Ф) утворюються за допомогою губ. Для їх чіткої вимови важлива активна робота губних м'язів. Сьогодні будемо тренувати ці звуки через спеціальні скоромовки.",
-                    tips = listOf(
-                        "Відчуй напругу в губах при вимові",
-                        "Не допомагай собі язиком",
-                        "Контролюй рівномірність звучання"
-                    )
-                ),
-                exercises = listOf(
-                    Exercise(
-                        id = "ex_2_1",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Скоромовка: Б-П",
-                        instruction = "Чітко розрізняй Б та П. Вони відрізняються тільки вібрацією голосових зв'язок.",
-                        content = ExerciseContent.TongueTwister(
-                            text = "Купи кіп, купи кіп, купи кіп, купи кіп",
-                            difficulty = 2,
-                            targetSounds = listOf("П", "К")
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.DICTION)
+            exercises = listOf(
+                Exercise(
+                    id = "ex_1_1",
+                    type = ExerciseType.READING,
+                    title = "Посмішка-Трубочка",
+                    instruction = "Широко посміхнися, розтягуючи губи (зуби видно), затримай на 2 секунди. Потім витягни губи трубочкою вперед, затримай на 2 секунди. Повтори 10 разів. Ця вправа активізує м'язи губ.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу Посмішка-Трубочка: посмішка — трубочка, посмішка — трубочка. Мої губи активно працюють.",
+                        emotion = null
                     ),
-                    Exercise(
-                        id = "ex_2_2",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Скоромовка: М-Б",
-                        instruction = "Відчуй вібрацію в носі на звуці М.",
-                        content = ExerciseContent.TongueTwister(
-                            text = "Мамин мамин мамин мамі мамині макарони",
-                            difficulty = 2,
-                            targetSounds = listOf("М")
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.DICTION)
-                    )
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION)
                 ),
-                estimatedMinutes = 10
+                Exercise(
+                    id = "ex_1_2",
+                    type = ExerciseType.READING,
+                    title = "Голка",
+                    instruction = "Відкрий рот. Витягни загострений язик вперед якомога далі — язик має бути напруженим, 'гострим'. Затримай на 3 секунди, розслаб. Повтори 5 разів. Ця вправа розвиває точність руху язика.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу Голка: витягую гострий язик вперед, тримаю три секунди, розслабляю.",
+                        emotion = null
+                    ),
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_1_3",
+                    type = ExerciseType.READING,
+                    title = "Годинник",
+                    instruction = "Закрий рот. Язиком роби кругові рухи між губами та зубами. Рухайся повільно, 'промальовуючи' повне коло. 5 кругів за годинниковою стрілкою, потім 5 кругів проти годинникової стрілки.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу Годинник: язик рухається по колу — п'ять кругів в один бік, п'ять кругів в інший.",
+                        emotion = null
+                    ),
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_1_4",
+                    type = ExerciseType.READING,
+                    title = "Лев",
+                    instruction = "Широко відкрий рот. Висунь язик максимально вниз, до підборіддя. Очі широко відкриті, дивишся вгору. Затримай на 5 секунд, розслаб. Повтори 5 разів. Ця вправа розтягує м'язи обличчя.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу Лев: широко відкриваю рот, висуваю язик вниз, тримаю п'ять секунд.",
+                        emotion = null
+                    ),
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_1_5",
+                    type = ExerciseType.READING,
+                    title = "Коник",
+                    instruction = "Поцокай язиком, імітуючи цокіт копит. Починай повільно, відчуваючи, як язик 'присмоктується' до піднебіння. Поступово пришвидшуйся. Виконай 20 цоків.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу Коник: цокаю язиком повільно, потім швидше — цок, цок, цок.",
+                        emotion = null
+                    ),
+                    durationSeconds = 30,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                // Скоромовки для запису
+                Exercise(
+                    id = "ex_1_6",
+                    type = ExerciseType.TONGUE_TWISTER,
+                    title = "Скоромовка 1",
+                    instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: чітка робота губ на звуках Б, П.",
+                    content = ExerciseContent.TongueTwister(
+                        text = "Був бик тупогуб, тупогубенький бичок.",
+                        difficulty = 1,
+                        targetSounds = listOf("Б", "П")
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                ),
+                Exercise(
+                    id = "ex_1_7",
+                    type = ExerciseType.TONGUE_TWISTER,
+                    title = "Скоромовка 2",
+                    instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: чіткість звуків К, Ч, Ц та закінчень слів.",
+                    content = ExerciseContent.TongueTwister(
+                        text = "Ходить квочка коло кілочка, водить діточок коло квіточок.",
+                        difficulty = 2,
+                        targetSounds = listOf("К", "Ч", "Ц")
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                ),
+                Exercise(
+                    id = "ex_1_8",
+                    type = ExerciseType.TONGUE_TWISTER,
+                    title = "Скоромовка 3",
+                    instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: шиплячі звуки Ш та плавні переходи.",
+                    content = ExerciseContent.TongueTwister(
+                        text = "Сів шпак на шпаківню, заспівав шпак півню: ти не вмієш так, як я!",
+                        difficulty = 2,
+                        targetSounds = listOf("Ш", "П")
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                )
             ),
-            // Day 3
-            Lesson(
-                id = "lesson_3",
-                courseId = "course_1",
-                dayNumber = 3,
-                title = "Язикові звуки",
-                description = "Тренування звуків, що утворюються язиком",
-                theory = TheoryContent(
-                    text = "Язик — найрухливіша частина артикуляційного апарату. Він відповідає за велику кількість звуків: Т, Д, Н, Л, Р та інші. Правильна позиція язика критично важлива для чіткості мовлення.",
-                    tips = listOf(
-                        "Відчуй кінчик язика",
-                        "Не напружуй язик надто сильно",
-                        "Контролюй положення язика"
-                    )
-                ),
-                exercises = listOf(
-                    Exercise(
-                        id = "ex_3_1",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Скоромовка: Т-Д",
-                        instruction = "Кінчик язика торкається верхніх зубів.",
-                        content = ExerciseContent.TongueTwister(
-                            text = "Ткач тче тканини на платтячко Тані",
-                            difficulty = 3,
-                            targetSounds = listOf("Т", "Д")
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.DICTION)
-                    ),
-                    Exercise(
-                        id = "ex_3_2",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Скоромовка: Л",
-                        instruction = "Кінчик язика притиснутий до альвеол.",
-                        content = ExerciseContent.TongueTwister(
-                            text = "Летіла лелека коло млина, ловила лелека мелену",
-                            difficulty = 3,
-                            targetSounds = listOf("Л", "М")
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.DICTION)
-                    )
-                ),
-                estimatedMinutes = 10
+            estimatedMinutes = 10
+        ),
+
+        // ==================== УРОК 2: Губні звуки ====================
+        Lesson(
+            id = "lesson_2",
+            courseId = "course_1",
+            dayNumber = 2,
+            title = "Губні звуки",
+            description = "Тренування звуків Б, П, М, В, Ф — основи чіткої артикуляції",
+            theory = TheoryContent(
+                text = """
+                Звуки, з яких починається мова
+
+                Губні звуки — Б, П, М, В, Ф — це перші звуки, які вимовляє кожна дитина. "Ма-ма", "ба-ба", "па-па" — все це губні. Вони найпростіші за механікою, але часто стають "жертвами" ледачої артикуляції у дорослих.
+
+                Як утворюються губні звуки:
+
+                Б і П — вибухові звуки. Губи щільно стискаються, повітря накопичується, а потім — різкий "вибух". Різниця між ними: Б — дзвінкий (голосові зв'язки вібрують), П — глухий (тільки повітря).
+
+                М — носовий звук. Губи зімкнені, але повітря виходить через ніс, створюючи характерне "гудіння".
+
+                В і Ф — щілинні звуки. Нижня губа наближається до верхніх зубів, утворюючи вузьку щілину. В — дзвінкий, Ф — глухий.
+
+                Цікавий факт: чому діти кажуть "мама" одним з перших слів? Не лише тому, що люблять маму! Звук М — найлегший для вимови: губи просто змикаються, повітря йде через ніс, не потрібен точний контроль язика. Еволюція зробила так, що найважливіше слово — найпростіше.
+
+                Типові помилки:
+
+                Слабкий "вибух" — Б і П звучать нечітко, змазано. Причина — губи не змикаються повністю або недостатньо щільно.
+
+                В перетворюється на У — "уода" замість "вода". Це трапляється, коли нижня губа не дотягується до верхніх зубів.
+
+                Слабкий М — звук "пустий", без резонансу. Причина — недостатнє змикання губ.
+
+                Перевір себе: скажи перед дзеркалом "Бабуся пекла пиріжки". Чи повністю змикаються губи на Б і П? Чи є чіткий "вибух" повітря?
+
+                Чому це важливо: губні звуки — одні з найчастіших в українській мові. Слова "будь ласка", "добре", "можливо", "відповідь" — ми вимовляємо їх десятки разів на день. Нечіткі губні створюють враження невпевненого мовлення. Чіткі Б, П, М, В одразу додають твоїй мові "рельєфності" та переконливості.
+                """.trimIndent(),
+                tips = listOf(
+                    "Для Б і П губи мають повністю змикатися — перевіряй перед дзеркалом",
+                    "Для В нижня губа торкається верхніх зубів — не плутай з У",
+                    "Тренуй контраст: вимовляй пари Б-П, В-Ф, відчуваючи різницю"
+                )
             ),
-            // Day 4
-            Lesson(
-                id = "lesson_4",
-                courseId = "course_1",
-                dayNumber = 4,
-                title = "Свистячі звуки",
-                description = "Відпрацювання С, З, Ц",
-                theory = TheoryContent(
-                    text = "Свистячі звуки (С, З, Ц) утворюються при проходженні повітря через вузьку щілину між язиком та верхніми зубами. Для чіткої вимови важлива правильна форма язика — він має бути широким та плоским.",
-                    tips = listOf(
-                        "Язик широкий та плоский",
-                        "Повітря проходить по центру язика",
-                        "Не затискай щелепи"
-                    )
-                ),
-                exercises = listOf(
-                    Exercise(
-                        id = "ex_4_1",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Скоромовка: С",
-                        instruction = "Повітря має йти плавним потоком.",
-                        content = ExerciseContent.TongueTwister(
-                            text = "Сім синиць на сосні сиділи, си-си-си співали",
-                            difficulty = 2,
-                            targetSounds = listOf("С")
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.DICTION)
+            exercises = listOf(
+                Exercise(
+                    id = "ex_2_1",
+                    type = ExerciseType.READING,
+                    title = "Вибухові губи",
+                    instruction = "Щільно стисни губи, ніби тримаєш повітря. Різко 'вистріли' повітрям зі звуком 'П!'. Повтори зі звуком 'Б!'. Чергуй: П! Б! П! Б! Відчуй різницю: П — тільки повітря, Б — з голосом. Повтори 10 пар.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу Вибухові губи: П! Б! П! Б! Губи щільно змикаються перед кожним звуком.",
+                        emotion = null
                     ),
-                    Exercise(
-                        id = "ex_4_2",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Скоромовка: З-С",
-                        instruction = "Розрізняй дзвінкий З та глухий С.",
-                        content = ExerciseContent.TongueTwister(
-                            text = "У лозі лози, у лузі лізе вуж",
-                            difficulty = 3,
-                            targetSounds = listOf("З", "С", "Л")
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.DICTION)
-                    )
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
                 ),
-                estimatedMinutes = 10
+                Exercise(
+                    id = "ex_2_2",
+                    type = ExerciseType.READING,
+                    title = "Мотор",
+                    instruction = "Злегка зімкни губи, вони мають бути розслабленими. Видихай повітря так, щоб губи вібрували. Спочатку без голосу: 'прррр' (як мотор). Потім з голосом: 'брррр'. По 5 секунд кожен варіант, 3 підходи.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу Мотор: прррр без голосу, потім брррр з голосом. Губи вібрують.",
+                        emotion = null
+                    ),
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_2_3",
+                    type = ExerciseType.READING,
+                    title = "В-Ф контраст",
+                    instruction = "Піднеси нижню губу до верхніх зубів (злегка торкаючись). Вимов протяжно 'Ффффф' (5 секунд) — тільки повітря. Тепер додай голос: 'Ввввв' (5 секунд) — відчуй вібрацію. Чергуй: Ф-В-Ф-В. Повтори 5 пар.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу В-Ф контраст: Ффффф без голосу, Ввввв з голосом. Нижня губа торкається верхніх зубів.",
+                        emotion = null
+                    ),
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_2_4",
+                    type = ExerciseType.READING,
+                    title = "Змикання-Розмикання",
+                    instruction = "Щільно зімкни губи. Вимов довге 'Ммммм', відчуваючи вібрацію в носі та губах. Різко відкрий рот на 'А': 'Мммм-А!'. Потім: 'Мммм-О!', 'Мммм-У!'. Повтори 5 циклів.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу Змикання-Розмикання: Мммм-А! Мммм-О! Мммм-У! Губи щільно зімкнені на М.",
+                        emotion = null
+                    ),
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_2_5",
+                    type = ExerciseType.READING,
+                    title = "Губні склади",
+                    instruction = "Вимовляй чітко, з активними губами: БА-БО-БУ-БИ-БЕ, ПА-ПО-ПУ-ПИ-ПЕ, МА-МО-МУ-МИ-МЕ, ВА-ВО-ВУ-ВИ-ВЕ, ФА-ФО-ФУ-ФИ-ФЕ. Повтори 2 цикли.",
+                    content = ExerciseContent.ReadingText(
+                        text = "БА-БО-БУ-БИ-БЕ. ПА-ПО-ПУ-ПИ-ПЕ. МА-МО-МУ-МИ-МЕ. ВА-ВО-ВУ-ВИ-ВЕ. ФА-ФО-ФУ-ФИ-ФЕ.",
+                        emotion = null
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                // Скоромовки
+                Exercise(
+                    id = "ex_2_6",
+                    type = ExerciseType.TONGUE_TWISTER,
+                    title = "Скоромовка 1",
+                    instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук Б у різних позиціях — на початку слова, в середині.",
+                    content = ExerciseContent.TongueTwister(
+                        text = "Бабин біб розцвів у дощ — буде бабі біб у борщ.",
+                        difficulty = 2,
+                        targetSounds = listOf("Б")
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                ),
+                Exercise(
+                    id = "ex_2_7",
+                    type = ExerciseType.TONGUE_TWISTER,
+                    title = "Скоромовка 2",
+                    instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук П та сполучення ПР.",
+                    content = ExerciseContent.TongueTwister(
+                        text = "Прийшов Прокіп — кипів окріп, пішов Прокіп — кипить окріп.",
+                        difficulty = 3,
+                        targetSounds = listOf("П", "Р")
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                ),
+                Exercise(
+                    id = "ex_2_8",
+                    type = ExerciseType.TONGUE_TWISTER,
+                    title = "Скоромовка 3",
+                    instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук В на початку слів.",
+                    content = ExerciseContent.TongueTwister(
+                        text = "Ввічливий Василь возив Вікторії великі валізи у вагоні.",
+                        difficulty = 2,
+                        targetSounds = listOf("В")
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                )
             ),
-            // Day 5
-            Lesson(
-                id = "lesson_5",
-                courseId = "course_1",
-                dayNumber = 5,
-                title = "Шиплячі звуки",
-                description = "Відпрацювання Ш, Ж, Ч, Щ",
-                theory = TheoryContent(
-                    text = "Шиплячі звуки (Ш, Ж, Ч, Щ) вимагають підняття язика до піднебіння та створення ширшої щілини, ніж для свистячих. Ці звуки часто викликають труднощі, тому потребують особливої уваги.",
-                    tips = listOf(
-                        "Язик у формі чашечки",
-                        "Губи злегка витягнуті вперед",
-                        "Повітря виходить широким потоком"
-                    )
-                ),
-                exercises = listOf(
-                    Exercise(
-                        id = "ex_5_1",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Скоромовка: Ш",
-                        instruction = "Відчуй теплий потік повітря на долоні.",
-                        content = ExerciseContent.TongueTwister(
-                            text = "Шишки на сосні, шашки на столі",
-                            difficulty = 2,
-                            targetSounds = listOf("Ш", "С")
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.DICTION)
-                    ),
-                    Exercise(
-                        id = "ex_5_2",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Скоромовка: Ч-Щ",
-                        instruction = "Ч — короткий звук, Щ — довгий.",
-                        content = ExerciseContent.TongueTwister(
-                            text = "Чотири чорних чумачки чоботи чистили щіткою",
-                            difficulty = 4,
-                            targetSounds = listOf("Ч", "Щ")
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.DICTION)
-                    )
-                ),
-                estimatedMinutes = 10
+            estimatedMinutes = 10
+        ),
+
+        // ==================== УРОК 3: Язикові звуки ====================
+        Lesson(
+            id = "lesson_3",
+            courseId = "course_1",
+            dayNumber = 3,
+            title = "Язикові звуки",
+            description = "Тренування звуків Т, Д, Н, Л — робота кінчика язика",
+            theory = TheoryContent(
+                text = """
+                Язик — головний артикулятор
+
+                Якщо губи — це "двері" для звуків, то язик — це "скульптор", який формує більшість приголосних. Сьогодні ми працюємо зі звуками Т, Д, Н, Л — вони створюються кінчиком язика біля верхніх зубів або альвеол (горбиків за зубами).
+
+                Як утворюються ці звуки:
+
+                Т і Д — вибухові звуки. Кінчик язика притискається до альвеол, повітря накопичується, потім — різкий "вибух". Т — глухий (тільки повітря), Д — дзвінкий (з вібрацією голосових зв'язок).
+
+                Н — носовий звук. Язик у тій самій позиції, але повітря виходить через ніс, а не через рот.
+
+                Л — боковий звук. Кінчик язика притиснутий до альвеол, а повітря обтікає язик з боків, створюючи м'яке "ллл".
+
+                Цікавий факт: альвеоли — це горбики на піднебінні, приблизно в 0.5-1 см за верхніми зубами. Знайди їх язиком прямо зараз! Саме до них має торкатися кінчик язика для Т, Д, Н, Л. Багато людей помилково торкаються зубів — і звуки виходять "м'якшими", менш чіткими.
+
+                Типові помилки:
+
+                Язик торкається зубів замість альвеол — звуки стають "сюсюкаючими", інфантильними. Особливо помітно на Т і Д.
+
+                Недостатній контакт язика — Т і Д звучать "проковтнуто", нечітко, ніби людина говорить з повним ротом.
+
+                Л занадто "м'яке" або "тверде" — український Л має бути помірним, ні "ль", ні "англійський dark L".
+
+                Перевір себе: повільно скажи "так-так-так", звертаючи увагу на кінчик язика. Де він торкається — зубів чи трохи далі (альвеол)? Чи чіткий "удар" язика?
+
+                Чому це важливо: звуки Т, Д, Н, Л — одні з найчастіших в українській мові. Слова "так", "добре", "ні", "ладно", "тільки", "давай" — ми вимовляємо їх десятки разів на день. Нечіткість цих звуків одразу помітна і може створювати враження невпевненості. Чіткі язикові звуки — ознака культурного, освіченого мовлення.
+                """.trimIndent(),
+                tips = listOf(
+                    "Знайди альвеоли язиком — горбики за верхніми зубами, 0.5-1 см від зубів",
+                    "Для Т і Д кінчик язика б'є по альвеолах, не по зубах",
+                    "Для Л відчуй, як повітря проходить з боків язика"
+                )
             ),
-            // Day 6
-            Lesson(
-                id = "lesson_6",
-                courseId = "course_1",
-                dayNumber = 6,
-                title = "Звук Р",
-                description = "Особлива увага найскладнішому звуку",
-                theory = TheoryContent(
-                    text = "Звук Р — один з найскладніших в українській мові. Він утворюється за рахунок вібрації кінчика язика. Навіть якщо ви вимовляєте Р правильно, його відпрацювання покращить загальну чіткість мовлення.",
-                    tips = listOf(
-                        "Кінчик язика біля альвеол",
-                        "Язик розслаблений, але пружний",
-                        "Сильний потік повітря викликає вібрацію"
-                    )
-                ),
-                exercises = listOf(
-                    Exercise(
-                        id = "ex_6_1",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Скоромовка: Р простий",
-                        instruction = "Почни повільно, відчуваючи кожну вібрацію.",
-                        content = ExerciseContent.TongueTwister(
-                            text = "Рано-рано два барани барабанили в барабани",
-                            difficulty = 3,
-                            targetSounds = listOf("Р", "Б")
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.DICTION)
+            exercises = listOf(
+                Exercise(
+                    id = "ex_3_1",
+                    type = ExerciseType.READING,
+                    title = "Стукалочка",
+                    instruction = "Відкрий рот. Знайди язиком альвеоли (горбики за верхніми зубами). Кінчиком язика ритмічно 'стукай' по альвеолах. Промовляй: та-та-та, да-да-да. Чергуй: та-да-та-да. По 10 секунд кожен варіант.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу Стукалочка: та-та-та, да-да-да, та-да-та-да. Кінчик язика стукає по альвеолах.",
+                        emotion = null
                     ),
-                    Exercise(
-                        id = "ex_6_2",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Скоромовка: Р складний",
-                        instruction = "Контролюй силу потоку повітря.",
-                        content = ExerciseContent.TongueTwister(
-                            text = "Тридцять три кораблі лавірували, лавірували, та не вилавірували",
-                            difficulty = 4,
-                            targetSounds = listOf("Р", "Л", "В")
-                        ),
-                        durationSeconds = 60,
-                        targetMetrics = listOf(SkillType.DICTION)
-                    )
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
                 ),
-                estimatedMinutes = 10
+                Exercise(
+                    id = "ex_3_2",
+                    type = ExerciseType.READING,
+                    title = "Маляр",
+                    instruction = "Відкрий рот широко. Кінчиком язика 'фарбуй' піднебіння. Рухайся від альвеол (за зубами) до м'якого піднебіння (глибше) і назад. Рот тримай відкритим увесь час. Виконай 10 повільних рухів.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу Маляр: язик рухається по піднебінню від зубів углиб і назад.",
+                        emotion = null
+                    ),
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_3_3",
+                    type = ExerciseType.READING,
+                    title = "Пароплав",
+                    instruction = "Притисни кінчик язика до альвеол. Тягни звук 'Ллллл' (як гудок пароплава). Відчуй, як повітря проходить з боків язика. Тримай звук рівним, без переривань. По 5 секунд, 5 підходів.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу Пароплав: Ллллл — тягну звук, повітря йде з боків язика.",
+                        emotion = null
+                    ),
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_3_4",
+                    type = ExerciseType.READING,
+                    title = "Катапульта",
+                    instruction = "Притисни кінчик язика до альвеол. Накопич 'напругу' на 2 секунди. Різко 'вистріли' язиком зі звуком 'Т!'. Повтори з 'Д!'. Відчуй різницю: Т — тільки повітря, Д — з голосом. По 10 кожного звуку.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу Катапульта: Т! Т! Т! потім Д! Д! Д! Язик різко відривається від альвеол.",
+                        emotion = null
+                    ),
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_3_5",
+                    type = ExerciseType.READING,
+                    title = "Язикові склади",
+                    instruction = "Вимовляй чітко, слідкуючи за кінчиком язика: ТА-ТО-ТУ-ТИ-ТЕ, ДА-ДО-ДУ-ДИ-ДЕ, НА-НО-НУ-НИ-НЕ, ЛА-ЛО-ЛУ-ЛИ-ЛЕ. Повтори 2 цикли.",
+                    content = ExerciseContent.ReadingText(
+                        text = "ТА-ТО-ТУ-ТИ-ТЕ. ДА-ДО-ДУ-ДИ-ДЕ. НА-НО-НУ-НИ-НЕ. ЛА-ЛО-ЛУ-ЛИ-ЛЕ.",
+                        emotion = null
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                // Скоромовки
+                Exercise(
+                    id = "ex_3_6",
+                    type = ExerciseType.TONGUE_TWISTER,
+                    title = "Скоромовка 1",
+                    instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук Т у сполученнях ТА, ТЕ, ТІ, ТР.",
+                    content = ExerciseContent.TongueTwister(
+                        text = "Тато тесав тесом тісно, татів тесел в тіста тріснув.",
+                        difficulty = 3,
+                        targetSounds = listOf("Т")
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                ),
+                Exercise(
+                    id = "ex_3_7",
+                    type = ExerciseType.TONGUE_TWISTER,
+                    title = "Скоромовка 2",
+                    instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук Д на початку та в середині слів.",
+                    content = ExerciseContent.TongueTwister(
+                        text = "Дід Данило дуба доглядав, добре дід Данило дуба доглядав.",
+                        difficulty = 2,
+                        targetSounds = listOf("Д")
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                ),
+                Exercise(
+                    id = "ex_3_8",
+                    type = ExerciseType.TONGUE_TWISTER,
+                    title = "Скоромовка 3",
+                    instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук Л у повторюваних сполученнях.",
+                    content = ExerciseContent.TongueTwister(
+                        text = "Летіла лелека, летіла, летіла, на полі далекім тихенько присіла.",
+                        difficulty = 2,
+                        targetSounds = listOf("Л")
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                )
             ),
-            // Day 7
-            Lesson(
-                id = "lesson_7",
-                courseId = "course_1",
-                dayNumber = 7,
-                title = "Підсумок тижня",
-                description = "Комплексні вправи на всі звуки",
-                theory = TheoryContent(
-                    text = "Тиждень роботи позаду! Сьогодні закріплюємо все, що вивчили, через комплексні скоромовки, які поєднують різні групи звуків. Це виклик, але ви готові!",
-                    tips = listOf(
-                        "Не поспішай зі швидкістю",
-                        "Якщо збився — почни спочатку",
-                        "Записуй себе для самоконтролю"
-                    )
-                ),
-                exercises = listOf(
-                    Exercise(
-                        id = "ex_7_1",
-                        type = ExerciseType.TONGUE_TWISTER,
-                        title = "Комплексна скоромовка",
-                        instruction = "Використовує всі групи звуків.",
-                        content = ExerciseContent.TongueTwister(
-                            text = "Король орел — орел, а орел — король",
-                            difficulty = 4,
-                            targetSounds = listOf("Р", "Л", "К", "О")
-                        ),
-                        durationSeconds = 90,
-                        targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+            estimatedMinutes = 10
+        ),
+
+        // ==================== УРОК 4: Свистячі звуки ====================
+        Lesson(
+            id = "lesson_4",
+            courseId = "course_1",
+            dayNumber = 4,
+            title = "Свистячі звуки",
+            description = "Тренування звуків С, З, Ц — правильна позиція язика",
+            theory = TheoryContent(
+                text = """
+                Звуки, які "свистять"
+
+                Свистячі звуки — С, З, Ц — утворюються, коли повітря проходить через вузьку щілину між язиком та альвеолами. Цей спрямований потік повітря створює характерний високий "свист". Ці звуки вимагають точності — невелика зміна позиції язика суттєво впливає на якість звуку.
+
+                Як утворюються свистячі:
+
+                С — глухий свистячий. Кінчик язика біля нижніх зубів (зсередини!), передня частина язика наближається до альвеол, утворюючи вузьку щілину. Губи злегка розтягнуті в посмішці. Повітря проходить через щілину — і ми чуємо "свист".
+
+                З — дзвінкий варіант С. Та сама позиція, але додається вібрація голосових зв'язок. Порівняй: "ссс" — як повітря виходить з кульки, "ззз" — як дзижчить комар.
+
+                Ц — злитий звук (Т+С). Спочатку язик повністю перекриває потік повітря (як для Т), потім миттєво переходить у позицію С. Це один звук, не два!
+
+                Цікавий факт: свистячі звуки — "лакмусовий папірець" дикції. Логопеди часто починають діагностику саме з них. Якщо С і З чіткі — скоріш за все, з іншими звуками теж все гаразд. Якщо ж є "шепелявість" — вона одразу впадає у вухо.
+
+                Типові помилки:
+
+                Шепелявість (міжзубне С) — язик висувається між зубами, і С/З звучать "по-дитячому". Це найпоширеніша проблема свистячих.
+
+                Занадто слабкий свист — повітряний потік недостатньо сильний або щілина занадто широка, звук "розмитий".
+
+                Ц розпадається на Т-С — замість одного злитого звуку чути два окремих.
+
+                Перевір себе: стань перед дзеркалом і скажи "сонце". Чи видно язик між зубами? (не має бути видно!). Чи злегка розтягнуті губи в посмішці?
+
+                Чому це важливо: свистячі — дуже часті звуки в українській мові. Слова "скажу", "здоров'я", "спасибі", "звичайно", "цікаво" — ми вимовляємо їх постійно. Шепелявість миттєво знижує враження від мовлення. Хороша новина: свистячі добре піддаються корекції у будь-якому віці.
+                """.trimIndent(),
+                tips = listOf(
+                    "Для С і З кінчик язика біля НИЖНІХ зубів, не між зубами",
+                    "Губи в посмішці — це допомагає створити правильну щілину",
+                    "Ц — один злитий звук, не 'т-с', а швидкий перехід"
+                )
+            ),
+            exercises = listOf(
+                Exercise(
+                    id = "ex_4_1",
+                    type = ExerciseType.READING,
+                    title = "Насос",
+                    instruction = "Посміхнися (губи розтягнуті, зуби видно). Кінчик язика впри в нижні зуби (зсередини!). Видихай повітря зі звуком 'С-с-с-с'. Уяви, що накачуєш насосом колесо — потік має бути сильним. По 5 секунд, 5 підходів.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу Насос: С-с-с-с-с — сильний потік повітря, губи в посмішці, язик внизу.",
+                        emotion = null
                     ),
-                    Exercise(
-                        id = "ex_7_2",
-                        type = ExerciseType.FREE_SPEECH,
-                        title = "Вільна розповідь",
-                        instruction = "Розкажи про свій тиждень тренувань.",
-                        content = ExerciseContent.FreeSpeechTopic(
-                            topic = "Мої успіхи за тиждень",
-                            hints = listOf(
-                                "Які вправи були найскладнішими?",
-                                "Що тобі вдалося покращити?",
-                                "Які звуки далися легко?"
-                            )
-                        ),
-                        durationSeconds = 120,
-                        targetMetrics = listOf(SkillType.DICTION, SkillType.STRUCTURE)
-                    )
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
                 ),
-                estimatedMinutes = 15
-            )
+                Exercise(
+                    id = "ex_4_2",
+                    type = ExerciseType.READING,
+                    title = "Комарик",
+                    instruction = "Та сама позиція, що й для С (посмішка, язик внизу біля зубів). Додай голос: 'З-з-з-з' (як дзижчання комара). Поклади руку на горло — ти маєш відчути вібрацію. По 5 секунд, 5 підходів.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу Комарик: З-з-з-з-з — як комар дзижчить, відчуваю вібрацію в горлі.",
+                        emotion = null
+                    ),
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_4_3",
+                    type = ExerciseType.READING,
+                    title = "Кузнечик",
+                    instruction = "Вимовляй повільно: 'Т-с... Т-с... Т-с...'. Поступово прискорюй, зближуючи Т і С. Коли вони 'зіллються' — отримаєш чітке 'Ц'. Звук має бути коротким і чітким: 'Ц! Ц! Ц!'. Повтори 15 разів.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу Кузнечик: Т-с, Т-с, швидше — Ц! Ц! Ц! Один короткий злитий звук.",
+                        emotion = null
+                    ),
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_4_4",
+                    type = ExerciseType.READING,
+                    title = "Контраст С-Ш",
+                    instruction = "С: посмішка, язик внизу біля зубів → 'ссс'. Ш: губи округлені, язик піднятий → 'шшш'. Чергуй: С-Ш-С-Ш. Відчуй різницю в позиції губ та язика. Повтори 10 пар.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую контраст С-Ш: ссс — шшш — ссс — шшш. Різна позиція губ і язика.",
+                        emotion = null
+                    ),
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_4_5",
+                    type = ExerciseType.READING,
+                    title = "Свистячі склади",
+                    instruction = "Вимовляй чітко, зберігаючи посмішку: СА-СО-СУ-СИ-СЕ, ЗА-ЗО-ЗУ-ЗИ-ЗЕ, ЦА-ЦО-ЦУ-ЦИ-ЦЕ. Повтори 2 цикли.",
+                    content = ExerciseContent.ReadingText(
+                        text = "СА-СО-СУ-СИ-СЕ. ЗА-ЗО-ЗУ-ЗИ-ЗЕ. ЦА-ЦО-ЦУ-ЦИ-ЦЕ.",
+                        emotion = null
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                // Скоромовки
+                Exercise(
+                    id = "ex_4_6",
+                    type = ExerciseType.TONGUE_TWISTER,
+                    title = "Скоромовка 1",
+                    instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук С на початку слів та в сполученнях.",
+                    content = ExerciseContent.TongueTwister(
+                        text = "Сьогодні сонце світить ясно, у синім небі — все прекрасно.",
+                        difficulty = 2,
+                        targetSounds = listOf("С")
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                ),
+                Exercise(
+                    id = "ex_4_7",
+                    type = ExerciseType.TONGUE_TWISTER,
+                    title = "Скоромовка 2",
+                    instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук З у різних позиціях.",
+                    content = ExerciseContent.TongueTwister(
+                        text = "Зозуля зозулятко забавляла, зозуленя в гніздечку скакало.",
+                        difficulty = 2,
+                        targetSounds = listOf("З")
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                ),
+                Exercise(
+                    id = "ex_4_8",
+                    type = ExerciseType.TONGUE_TWISTER,
+                    title = "Скоромовка 3",
+                    instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звуки С і Ц разом.",
+                    content = ExerciseContent.TongueTwister(
+                        text = "У киці на лапці кігтики-царапки, царапки ці — киці, кігтики для мишки.",
+                        difficulty = 3,
+                        targetSounds = listOf("С", "Ц")
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                )
+            ),
+            estimatedMinutes = 10
+        ),
+
+        // ==================== УРОК 5: Шиплячі звуки ====================
+        Lesson(
+            id = "lesson_5",
+            courseId = "course_1",
+            dayNumber = 5,
+            title = "Шиплячі звуки",
+            description = "Тренування звуків Ш, Ж, Ч, Щ — округлені губи та язик 'чашечкою'",
+            theory = TheoryContent(
+                text = """
+                Звуки, які "шиплять"
+
+                Шиплячі звуки — Ш, Ж, Ч, Щ — утворюються, коли повітря проходить через ширшу щілину, ніж для свистячих. Язик при цьому піднятий угору і відтягнутий трохи назад. Результат — характерний м'який "шип" замість високого "свисту".
+
+                Різниця між свистячими і шиплячими — це важливо:
+
+                Свистячі (С, З, Ц): кінчик язика біля нижніх зубів, губи в посмішці, високий "свист".
+                Шиплячі (Ш, Ж, Ч, Щ): язик піднятий "чашечкою", губи округлені, м'який "шип".
+
+                Як утворюються шиплячі:
+
+                Ш — глухий шиплячий. Язик у формі "чашечки", піднятий до піднебіння (але не торкається!). Губи округлені та злегка витягнуті вперед.
+
+                Ж — дзвінкий варіант Ш. Та сама позиція плюс вібрація голосових зв'язок. Порівняй: Ш — як шипить змія, Ж — як дзижчить джміль.
+
+                Ч — злитий звук (м'яке Т + коротке Ш). Це один короткий звук!
+
+                Щ — подовжений м'який шиплячий. В українській він звучить як довге м'яке Ш.
+
+                Цікавий факт: в українській мові шиплячі завжди тверді (на відміну від інших слов'янських мов). Це одна з характерних рис української фонетики. Правильні українські шиплячі звучать чітко та впевнено.
+
+                Типові помилки:
+
+                Ш і Ж звучать як С і З — язик не піднімається, залишається внизу. "Шапка" звучить майже як "сапка".
+
+                Губи не округлені — без округлення губ Ш втрачає свій характерний низький тембр.
+
+                Плутанина Ч і Щ — Ч має бути коротким, Щ — довгим.
+
+                Перевір себе: скажи "шуба" і "суп" — чи чуєш різницю? При Ш губи мають округлитися, при С — розтягнутися в посмішку.
+
+                Чому це важливо: шиплячі надають мовленню "об'ємності". Нечіткі шиплячі роблять мову "плоскою". Правильні, округлі Ш і Ж створюють враження культурного, приємного мовлення.
+                """.trimIndent(),
+                tips = listOf(
+                    "Для шиплячих губи ОКРУГЛЕНІ (як для 'У'), не в посмішці",
+                    "Язик у формі 'чашечки' — краї підняті, середина заглиблена",
+                    "Ч — короткий 'удар', Щ — довгий протяжний звук"
+                )
+            ),
+            exercises = listOf(
+                Exercise(
+                    id = "ex_5_1",
+                    type = ExerciseType.READING,
+                    title = "Чашечка",
+                    instruction = "Відкрий рот. Підніми язик, зроби з нього 'чашечку' (краї підняті, середина заглиблена). Кінчик язика не торкається нічого — він 'висить' у повітрі. Затримай на 5 секунд, розслаб. Повтори 5 разів.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу Чашечка: язик піднятий, краї вгору, тримаю п'ять секунд.",
+                        emotion = null
+                    ),
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_5_2",
+                    type = ExerciseType.READING,
+                    title = "Паровоз",
+                    instruction = "Язик у позиції 'чашечка', губи округлені (як для поцілунку). Видихай: 'Ш-ш-ш-ш' (як паровоз випускає пару). Додай голос: 'Ж-ж-ж-ж' (як джміль). Чергуй: Ш-Ж-Ш-Ж. По 5 секунд кожен звук, 3 підходи.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу Паровоз: Ш-ш-ш-ш як пара, Ж-ж-ж-ж як джміль. Губи округлені.",
+                        emotion = null
+                    ),
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_5_3",
+                    type = ExerciseType.READING,
+                    title = "Локомотив",
+                    instruction = "Ч — короткий, різкий: 'Ч! Ч! Ч!' (як колеса поїзда стукають). Щ — довгий, тягучий: 'Щ-щ-щ-щ'. Чергуй, відчуваючи різницю: Ч (удар) — Щ (протяжність). По 10 кожного звуку.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу Локомотив: Ч! Ч! Ч! — короткі удари, Щ-щ-щ-щ — довгий звук.",
+                        emotion = null
+                    ),
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_5_4",
+                    type = ExerciseType.READING,
+                    title = "Округлення губ",
+                    instruction = "Витягни губи трубочкою (як для поцілунку). Тримаючи цю позицію, вимовляй: 'Шшш', потім 'Жжж'. Перевір: якщо посміхнешся під час Ш — звук зміниться (стане схожим на С). По 5 секунд, 3 підходи.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу Округлення губ: губи трубочкою, Шшш, потім Жжж.",
+                        emotion = null
+                    ),
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_5_5",
+                    type = ExerciseType.READING,
+                    title = "Шиплячі склади",
+                    instruction = "Вимовляй чітко, з округленими губами: ША-ШО-ШУ-ШИ-ШЕ, ЖА-ЖО-ЖУ-ЖИ-ЖЕ, ЧА-ЧО-ЧУ-ЧИ-ЧЕ, ЩА-ЩО-ЩУ-ЩИ-ЩЕ. Повтори 2 цикли.",
+                    content = ExerciseContent.ReadingText(
+                        text = "ША-ШО-ШУ-ШИ-ШЕ. ЖА-ЖО-ЖУ-ЖИ-ЖЕ. ЧА-ЧО-ЧУ-ЧИ-ЧЕ. ЩА-ЩО-ЩУ-ЩИ-ЩЕ.",
+                        emotion = null
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                // Скоромовки
+                Exercise(
+                    id = "ex_5_6",
+                    type = ExerciseType.TONGUE_TWISTER,
+                    title = "Скоромовка 1",
+                    instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук Ш у різних позиціях.",
+                    content = ExerciseContent.TongueTwister(
+                        text = "Шила шапку — вийшла ковпак, шила ковпак — вийшла шапка.",
+                        difficulty = 2,
+                        targetSounds = listOf("Ш")
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                ),
+                Exercise(
+                    id = "ex_5_7",
+                    type = ExerciseType.TONGUE_TWISTER,
+                    title = "Скоромовка 2",
+                    instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук Ж на початку слів.",
+                    content = ExerciseContent.TongueTwister(
+                        text = "Жук жує журу з жоржиною, жовту жабу з жоржем бачив він навесні.",
+                        difficulty = 3,
+                        targetSounds = listOf("Ж")
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                ),
+                Exercise(
+                    id = "ex_5_8",
+                    type = ExerciseType.TONGUE_TWISTER,
+                    title = "Скоромовка 3",
+                    instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звуки Ч і Щ.",
+                    content = ExerciseContent.TongueTwister(
+                        text = "Чорна черепашка чекає на чай, у чашці — печиво, частуй, не зівай!",
+                        difficulty = 2,
+                        targetSounds = listOf("Ч", "Щ")
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                )
+            ),
+            estimatedMinutes = 10
+        ),
+
+        // ==================== УРОК 6: Звук Р ====================
+        Lesson(
+            id = "lesson_6",
+            courseId = "course_1",
+            dayNumber = 6,
+            title = "Звук Р",
+            description = "Тренування найскладнішого звуку української мови — вібранта Р",
+            theory = TheoryContent(
+                text = """
+                Найскладніший звук української мови
+
+                Звук Р — це вібрант. Він утворюється, коли кінчик язика вібрує під потоком повітря біля альвеол. Це єдиний звук, який вимагає вібрації язика, тому він найскладніший для опанування.
+
+                Як утворюється звук Р:
+
+                1. Кінчик язика піднімається до альвеол (горбики за верхніми зубами)
+                2. Язик має бути розслаблений, але пружний — як пелюстка на вітрі
+                3. Сильний потік повітря змушує кінчик язика вібрувати
+                4. Ця вібрація (2-5 коливань) створює характерний "рокочучий" звук
+
+                Цікавий факт: Р — останній звук, який діти опановують природним шляхом, зазвичай до 5-6 років. Приблизно 30% дорослих мають неідеальний Р: занадто м'який, горловий ("французький"), або одноударний (без повноцінної вібрації).
+
+                Типові проблеми:
+
+                Горловий Р (увулярний) — вібрує не кінчик язика, а маленький язичок у горлі. Звучить "по-французьки". Це інший звук, і він одразу впадає у вухо.
+
+                Одноударний Р — язик робить один удар замість вібрації. Звук занадто короткий.
+
+                Заміна на Л — кінчик язика не вібрує, а просто торкається альвеол.
+
+                Чесна правда: якщо у тебе горловий Р з дитинства — повна корекція зазвичай вимагає роботи з логопедом. Але вправи все одно корисні: вони покращують рухливість язика і можуть "запустити" правильну вібрацію.
+
+                Перевір себе: скажи протяжно "ррррр". Що відбувається? Вібрує кінчик язика (правильно!)? Вібрує щось у горлі (горловий Р)? Немає вібрації взагалі (одноударний)?
+
+                Чому це важливо: звук Р — один з найхарактерніших в українській мові. Він додає мовленню енергії та виразності. Слова "робота", "разом", "прекрасно" з чітким Р звучать впевнено і красиво. Навіть якщо повноцінна вібрація не виходить — тренування покращує координацію артикуляційного апарату.
+                """.trimIndent(),
+                tips = listOf(
+                    "Головне для Р — РОЗСЛАБЛЕНИЙ язик + сильний видих",
+                    "Спробуй 'завести' Р через швидке 'д-д-д-д-дррр'",
+                    "Не засмучуйся, якщо не виходить одразу — Р може 'включитися' раптово після тижнів практики"
+                )
+            ),
+            exercises = listOf(
+                Exercise(
+                    id = "ex_6_1",
+                    type = ExerciseType.READING,
+                    title = "Барабанщик",
+                    instruction = "Відкрий рот. Швидко 'стукай' кінчиком язика по альвеолах. Вимовляй: 'Д-д-д-д-д' максимально швидко. Намагайся прискорити до межі — саме на високій швидкості може 'включитися' вібрація. По 10 секунд, 3 підходи.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу Барабанщик: д-д-д-д-д швидко-швидко, язик стукає по альвеолах.",
+                        emotion = null
+                    ),
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_6_2",
+                    type = ExerciseType.READING,
+                    title = "Моторчик з Д",
+                    instruction = "Швидко вимовляй 'Д-д-д-д-д'. Додай сильний видих (ніби здуваєш свічку). Спробуй 'завести мотор': д-д-д-д-дррр... Якщо вібрація не виходить — не засмучуйся, продовжуй швидке 'Д'. По 15 секунд, 3 підходи.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу Моторчик: д-д-д-д-д, сильний видих, намагаюся завести дррр.",
+                        emotion = null
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_6_3",
+                    type = ExerciseType.READING,
+                    title = "Коник плюс",
+                    instruction = "Цокай язиком 10 разів. Після цокання затримай язик 'присмоктаним' до піднебіння. Сильно видихни — можливо, кінчик язика завібрує. Повтори цикл 5 разів.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу Коник плюс: цокаю, затримую язик, сильно видихаю.",
+                        emotion = null
+                    ),
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_6_4",
+                    type = ExerciseType.READING,
+                    title = "Тигр",
+                    instruction = "Рикай як тигр: 'Р-р-р-р' (або 'ДР-р-р' якщо без Д не виходить). Потім додай голосні: РА-РО-РУ-РИ-РЕ. Потім Р у кінці: АР-ОР-УР-ИР-ЕР. Не переживай, якщо вібрація слабка. Повтори 3 цикли.",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую вправу Тигр: Р-р-р-р, потім РА-РО-РУ-РИ-РЕ, потім АР-ОР-УР-ИР-ЕР.",
+                        emotion = null
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_6_5",
+                    type = ExerciseType.READING,
+                    title = "Р з приголосними",
+                    instruction = "Вимовляй склади, де Р йде після іншого приголосного — так легше 'запустити' вібрацію: ТРА-ТРО-ТРУ, ДРА-ДРО-ДРУ, КРА-КРО-КРУ, ГРА-ГРО-ГРУ, ПРА-ПРО-ПРУ. Повтори 2 цикли.",
+                    content = ExerciseContent.ReadingText(
+                        text = "ТРА-ТРО-ТРУ. ДРА-ДРО-ДРУ. КРА-КРО-КРУ. ГРА-ГРО-ГРУ. ПРА-ПРО-ПРУ.",
+                        emotion = null
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                // Скоромовки
+                Exercise(
+                    id = "ex_6_6",
+                    type = ExerciseType.TONGUE_TWISTER,
+                    title = "Скоромовка 1",
+                    instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: Р у різних позиціях слова.",
+                    content = ExerciseContent.TongueTwister(
+                        text = "Рила свиня тупорила, білорила, весь двір перерила, рилом рила.",
+                        difficulty = 3,
+                        targetSounds = listOf("Р")
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                ),
+                Exercise(
+                    id = "ex_6_7",
+                    type = ExerciseType.TONGUE_TWISTER,
+                    title = "Скоромовка 2",
+                    instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: Р у сполученнях з Л.",
+                    content = ExerciseContent.TongueTwister(
+                        text = "Тридцять три кораблі лавірували, лавірували, та не вилавірували.",
+                        difficulty = 4,
+                        targetSounds = listOf("Р", "Л")
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                ),
+                Exercise(
+                    id = "ex_6_8",
+                    type = ExerciseType.TONGUE_TWISTER,
+                    title = "Скоромовка 3",
+                    instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: Р у сполученнях ДР, ТР.",
+                    content = ExerciseContent.TongueTwister(
+                        text = "Дрова рубали два дроворуби, на дворі трава, на траві — дрова.",
+                        difficulty = 3,
+                        targetSounds = listOf("Р", "Д", "Т")
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                )
+            ),
+            estimatedMinutes = 10
+        ),
+
+        // ==================== УРОК 7: Підсумок тижня ====================
+        Lesson(
+            id = "lesson_7",
+            courseId = "course_1",
+            dayNumber = 7,
+            title = "Підсумок тижня",
+            description = "Повторення всіх груп звуків та комплексні вправи",
+            theory = TheoryContent(
+                text = """
+                Що ми опанували за перший тиждень
+
+                Вітаю! Ти пройшов перший тиждень курсу "Чітке мовлення за 21 день". Це серйозний крок — більшість людей навіть не замислюються про свою артикуляцію, а ти вже тиждень цілеспрямовано її тренуєш.
+
+                Що ми вивчили:
+
+                Урок 1: Основи артикуляції — три кити чіткого мовлення: активні губи, рухливий язик, відкритий рот.
+
+                Урок 2: Губні звуки (Б, П, М, В, Ф) — звуки, що створюються роботою губ. Повне змикання для Б, П, М; щілина "губи-зуби" для В, Ф.
+
+                Урок 3: Язикові звуки (Т, Д, Н, Л) — кінчик язика працює біля альвеол. Чіткий "удар" для Т, Д; носовий резонанс для Н; бокове проходження повітря для Л.
+
+                Урок 4: Свистячі звуки (С, З, Ц) — високий "свист" через вузьку щілину. Язик внизу біля зубів, губи в посмішці.
+
+                Урок 5: Шиплячі звуки (Ш, Ж, Ч, Щ) — м'який "шип" через ширшу щілину. Язик "чашечкою" вгорі, губи округлені.
+
+                Урок 6: Звук Р — найскладніший вібрант. Кінчик язика вібрує від потоку повітря.
+
+                Що ти вже маєш відчувати: м'язи обличчя "прокинулися", деякі звуки стали чіткішими, з'явилося усвідомлення того, як ти говориш.
+
+                Головні принципи:
+                1. Артикуляція — це м'язова робота. Тренуй м'язи щодня.
+                2. Кожна група звуків має свою позицію язика та губ.
+                3. Регулярність важливіша за тривалість — 10 хвилин щодня краще за годину раз на тиждень.
+                4. Усвідомленість — ключ до змін. Помічай, як говориш у повсякденному житті.
+
+                Що далі: другий тиждень буде про нюанси — складні звукосполучення, чіткість кінцівок слів, дзвінкі та глухі приголосні. Твоя база готова — час відточувати майстерність!
+                """.trimIndent(),
+                tips = listOf(
+                    "Оціни свій прогрес — які звуки покращилися найбільше?",
+                    "Визнач 'проблемні' звуки — приділи їм більше уваги на другому тижні",
+                    "Продовжуй щоденну розминку — це основа твого прогресу"
+                )
+            ),
+            exercises = listOf(
+                Exercise(
+                    id = "ex_7_1",
+                    type = ExerciseType.READING,
+                    title = "Комплексна розминка",
+                    instruction = "Активізуй всі групи м'язів: Посмішка-Трубочка (5 разів), Голка (3 рази по 3 сек), Годинник (3+3 кола), Чашечка (3 рази по 3 сек), Коник (10 цоків).",
+                    content = ExerciseContent.ReadingText(
+                        text = "Виконую комплексну розминку: посмішка-трубочка, голка, годинник, чашечка, коник.",
+                        emotion = null
+                    ),
+                    durationSeconds = 120,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_7_2",
+                    type = ExerciseType.READING,
+                    title = "Губні звуки",
+                    instruction = "Вимовляй чітко, з активними губами: БА-БО-БУ-БИ-БЕ, ПА-ПО-ПУ-ПИ-ПЕ, МА-МО-МУ-МИ-МЕ, ВА-ВО-ВУ-ВИ-ВЕ, ФА-ФО-ФУ-ФИ-ФЕ.",
+                    content = ExerciseContent.ReadingText(
+                        text = "БА-БО-БУ-БИ-БЕ. ПА-ПО-ПУ-ПИ-ПЕ. МА-МО-МУ-МИ-МЕ. ВА-ВО-ВУ-ВИ-ВЕ. ФА-ФО-ФУ-ФИ-ФЕ.",
+                        emotion = null
+                    ),
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_7_3",
+                    type = ExerciseType.READING,
+                    title = "Язикові звуки",
+                    instruction = "Кінчик язика працює біля альвеол: ТА-ТО-ТУ-ТИ-ТЕ, ДА-ДО-ДУ-ДИ-ДЕ, НА-НО-НУ-НИ-НЕ, ЛА-ЛО-ЛУ-ЛИ-ЛЕ.",
+                    content = ExerciseContent.ReadingText(
+                        text = "ТА-ТО-ТУ-ТИ-ТЕ. ДА-ДО-ДУ-ДИ-ДЕ. НА-НО-НУ-НИ-НЕ. ЛА-ЛО-ЛУ-ЛИ-ЛЕ.",
+                        emotion = null
+                    ),
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_7_4",
+                    type = ExerciseType.READING,
+                    title = "Свистячі та шиплячі",
+                    instruction = "Свистячі (посмішка, язик внизу): СА-ЗА-ЦА. Шиплячі (округлені губи, язик чашечкою): ША-ЖА-ЧА-ЩА. Контраст: СА-ША, СО-ШО, СУ-ШУ, ЗА-ЖА, ЗО-ЖО, ЗУ-ЖУ.",
+                    content = ExerciseContent.ReadingText(
+                        text = "СА-ЗА-ЦА. ША-ЖА-ЧА-ЩА. СА-ША, СО-ШО, СУ-ШУ. ЗА-ЖА, ЗО-ЖО, ЗУ-ЖУ.",
+                        emotion = null
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                Exercise(
+                    id = "ex_7_5",
+                    type = ExerciseType.READING,
+                    title = "Звук Р",
+                    instruction = "Практика вібранта: РА-РО-РУ-РИ-РЕ, АР-ОР-УР-ИР-ЕР, ТРА-ДРА-КРА-ГРА-ПРА.",
+                    content = ExerciseContent.ReadingText(
+                        text = "РА-РО-РУ-РИ-РЕ. АР-ОР-УР-ИР-ЕР. ТРА-ДРА-КРА-ГРА-ПРА.",
+                        emotion = null
+                    ),
+                    durationSeconds = 45,
+                    targetMetrics = listOf(SkillType.DICTION)
+                ),
+                // Скоромовки
+                Exercise(
+                    id = "ex_7_6",
+                    type = ExerciseType.TONGUE_TWISTER,
+                    title = "Скоромовка 1 (комплексна)",
+                    instruction = "Комплексна скоромовка на губні + Р + язикові. Прочитай повільно, потім швидше, потім запиши.",
+                    content = ExerciseContent.TongueTwister(
+                        text = "Бурі бобри брід перебрели, забули бобри забрати торби.",
+                        difficulty = 3,
+                        targetSounds = listOf("Б", "Р", "Т", "Д", "Л")
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                ),
+                Exercise(
+                    id = "ex_7_7",
+                    type = ExerciseType.TONGUE_TWISTER,
+                    title = "Скоромовка 2 (комплексна)",
+                    instruction = "Комплексна скоромовка на свистячі + язикові + шиплячі. Прочитай повільно, потім швидше, потім запиши.",
+                    content = ExerciseContent.TongueTwister(
+                        text = "Понад ставом стоїть стадо, ставить ставу стадо шкоду.",
+                        difficulty = 3,
+                        targetSounds = listOf("С", "Т", "Д", "Ш")
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                ),
+                Exercise(
+                    id = "ex_7_8",
+                    type = ExerciseType.TONGUE_TWISTER,
+                    title = "Скоромовка 3 (фінальний челендж)",
+                    instruction = "Фінальна скоромовка на всі групи звуків. Спробуй прискоритись без втрати чіткості!",
+                    content = ExerciseContent.TongueTwister(
+                        text = "Розкажу вам про покупки: про які такі покупки? Про покупки, про покупки, про покупочки мої!",
+                        difficulty = 3,
+                        targetSounds = listOf("Р", "П", "К")
+                    ),
+                    durationSeconds = 60,
+                    targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                )
+            ),
+            estimatedMinutes = 15
         )
-    }
+    )
 
     private fun getCourse1Week2(): List<Lesson> {
         return listOf(

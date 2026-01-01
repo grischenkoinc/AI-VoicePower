@@ -16,7 +16,7 @@ import com.aivoicepower.ui.screens.courses.CourseDetailScreen
 import com.aivoicepower.ui.screens.courses.CoursesListScreen
 import com.aivoicepower.ui.screens.home.HomeScreen
 import com.aivoicepower.ui.screens.improvisation.*
-import com.aivoicepower.ui.screens.lesson.LessonScreen
+import com.aivoicepower.ui.screens.courses.LessonScreen
 import com.aivoicepower.ui.screens.progress.AchievementsScreen
 import com.aivoicepower.ui.screens.progress.CompareScreen
 import com.aivoicepower.ui.screens.progress.ProgressScreen
@@ -52,7 +52,7 @@ fun MainNavGraph(
                 },
                 onNavigateToAiCoach = onNavigateToAiCoach,
                 onNavigateToLesson = { courseId, lessonId ->
-                    navController.navigate(Screen.Lesson.createRoute(lessonId))
+                    navController.navigate(Screen.Lesson.createRoute(courseId, lessonId))
                 },
                 onNavigateToWarmup = {
                     navController.navigate(Screen.Warmup.route)
@@ -95,8 +95,8 @@ fun MainNavGraph(
             CourseDetailScreen(
                 courseId = courseId,
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToLesson = { _, lessonId ->
-                    navController.navigate(Screen.Lesson.createRoute(lessonId))
+                onNavigateToLesson = { courseId, lessonId ->
+                    navController.navigate(Screen.Lesson.createRoute(courseId, lessonId))
                 },
                 onNavigateToPremium = onNavigateToPremium
             )
@@ -105,16 +105,16 @@ fun MainNavGraph(
         composable(
             route = Screen.Lesson.route,
             arguments = listOf(
+                navArgument("courseId") { type = NavType.StringType },
                 navArgument("lessonId") { type = NavType.StringType }
             )
         ) { backStackEntry ->
+            val courseId = backStackEntry.arguments?.getString("courseId") ?: return@composable
             val lessonId = backStackEntry.arguments?.getString("lessonId") ?: return@composable
             LessonScreen(
+                courseId = courseId,
                 lessonId = lessonId,
-                onNavigateBack = { navController.popBackStack() },
-                onExerciseComplete = { exerciseId ->
-                    navController.navigate(Screen.Results.createRoute(lessonId, exerciseId))
-                }
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 

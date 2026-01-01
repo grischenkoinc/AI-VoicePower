@@ -149,7 +149,7 @@ class HomeViewModel @Inject constructor(
                 subtitle = "Курс \"${getCourseName(recommendedCourse)}\"",
                 estimatedMinutes = 15,
                 isCompleted = false,
-                navigationRoute = Screen.Lesson.createRoute("lesson_$nextLesson")
+                navigationRoute = Screen.Lesson.createRoute(recommendedCourse, "lesson_$nextLesson")
             )
         )
 
