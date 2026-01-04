@@ -16,7 +16,7 @@ import com.aivoicepower.ui.screens.courses.CourseDetailScreen
 import com.aivoicepower.ui.screens.courses.CoursesListScreen
 import com.aivoicepower.ui.screens.home.HomeScreen
 import com.aivoicepower.ui.screens.improvisation.*
-import com.aivoicepower.ui.screens.courses.LessonScreen
+import com.aivoicepower.ui.screens.lesson.LessonScreen
 import com.aivoicepower.ui.screens.progress.AchievementsScreen
 import com.aivoicepower.ui.screens.progress.CompareScreen
 import com.aivoicepower.ui.screens.progress.ProgressScreen

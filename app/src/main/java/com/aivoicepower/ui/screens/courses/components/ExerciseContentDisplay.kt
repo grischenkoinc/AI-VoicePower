@@ -163,6 +163,20 @@ fun ExerciseContentDisplay(
                         }
                     }
                 }
+
+                is ExerciseContent.ArticulationExercise -> {
+                    Text(
+                        text = "Виконай вправу за iнструкцiєю",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    if (content.hasTimer) {
+                        Text(
+                            text = "Час виконання: ${content.durationSeconds} сек",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             }
         }
     }

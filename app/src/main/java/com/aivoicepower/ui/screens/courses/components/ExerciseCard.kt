@@ -83,5 +83,6 @@ private fun getExerciseEmoji(type: ExerciseType): String {
         ExerciseType.DIALOGUE -> "[DL]"
         ExerciseType.PITCH -> "[P]"
         ExerciseType.QA -> "[QA]"
+        ExerciseType.ARTICULATION -> "[A]"
     }
 }

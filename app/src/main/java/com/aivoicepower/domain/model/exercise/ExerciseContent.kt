@@ -31,4 +31,11 @@ sealed class ExerciseContent {
         val targetAudience: String,
         val keyMessages: List<String>
     ) : ExerciseContent()
+
+    data class ArticulationExercise(
+        val hasTimer: Boolean = true,
+        val durationSeconds: Int = 60,
+        val repetitions: Int? = null,
+        val imageUrl: String? = null  // Для майбутньої ілюстрації
+    ) : ExerciseContent()
 }

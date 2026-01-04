@@ -1,54 +1,44 @@
-Перевір чи є контент провайдери в v2-complete-redesign:
+В артикуляційних вправах немає кнопки "Повернутись". Потрібно додати.
 
-=== КРОК 1: Що є в v2 ===
+1. Знайди UI для артикуляційних вправ в LessonScreen.kt:
+grep -B10 -A30 "Виконано\|ARTICULATION\|ArticulationExercise" app/src/main/java/com/aivoicepower/ui/screens/lesson/LessonScreen.kt
 
-echo "=== Content providers в V2 ==="
-git ls-tree -r v2-complete-redesign --name-only | grep -i "content\|provider\|tonguetwister\|reading"
+2. Знайди кнопку "Виконано" і заміни її на Row з двома кнопками:
+```kotlin
+// Замість однієї кнопки "Виконано":
+Row(
+    modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 16.dp, vertical = 16.dp),
+    horizontalArrangement = Arrangement.spacedBy(12.dp)
+) {
+    // Кнопка "Повернутись" - показувати якщо не перша вправа
+    if (currentExerciseIndex > 0) {
+        OutlinedButton(
+            onClick = { viewModel.onPreviousExercise() },
+            modifier = Modifier.weight(1f)
+        ) {
+            Text("Повернутись")
+        }
+    }
+    
+    // Кнопка "Виконано"
+    Button(
+        onClick = { viewModel.onExerciseCompleted() },  // або onNextExercise()
+        modifier = Modifier.weight(1f)
+    ) {
+        Icon(
+            imageVector = Icons.Default.Check,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text("Виконано")
+    }
+}
+```
 
-echo "=== Детальніше ==="
-git ls-tree -r v2-complete-redesign --name-only | grep "data/content"
+3. Переконайся що currentExerciseIndex доступний в цьому composable. Якщо ні - передай його як параметр.
 
-=== КРОК 2: Що є в main ===
-
-echo "=== Content providers в MAIN ==="
-ls app/src/main/java/com/aivoicepower/data/content/*.kt 2>/dev/null
-
-=== КРОК 3: Порівняй кількість файлів ===
-
-echo "=== Файлів в v2 data/content ==="
-git ls-tree -r v2-complete-redesign --name-only | grep "data/content" | wc -l
-
-echo "=== Файлів в main data/content ==="
-ls app/src/main/java/com/aivoicepower/data/content/*.kt 2>/dev/null | wc -l
-
-=== КРОК 4: Якщо в v2 більше — перенеси ВСЕ ===
-
-git checkout v2-complete-redesign -- app/src/main/java/com/aivoicepower/data/content/
-
-=== КРОК 5: Також перевір Settings та Premium ===
-
-echo "=== Settings в v2 ==="
-git ls-tree -r v2-complete-redesign --name-only | grep -i "settings"
-
-echo "=== Premium в v2 ==="
-git ls-tree -r v2-complete-redesign --name-only | grep -i "premium\|paywall\|billing"
-
-=== КРОК 6: Перенеси якщо є ===
-
-# Якщо є settings
-git checkout v2-complete-redesign -- app/src/main/java/com/aivoicepower/ui/screens/settings/ 2>/dev/null
-
-# Якщо є premium
-git checkout v2-complete-redesign -- app/src/main/java/com/aivoicepower/ui/screens/premium/ 2>/dev/null
-
-=== КРОК 7: Компіляція ===
-
-./gradlew assembleDebug 2>&1 | grep -E "error:" | head -30
-
-=== РЕЗУЛЬТАТ ===
-
-Покажи:
-1. Скільки файлів контенту було в v2
-2. Скільки було в main
-3. Що перенесено
-4. Результат компіляції
+4. Компіляція:
+./gradlew assembleDebug

@@ -3,14 +3,17 @@ package com.aivoicepower.ui.screens.lesson
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aivoicepower.domain.model.Exercise
-import com.aivoicepower.domain.model.Lesson
+import com.aivoicepower.domain.model.course.Lesson
+import com.aivoicepower.domain.model.exercise.Exercise
+import com.aivoicepower.domain.model.exercise.ExerciseContent
+import com.aivoicepower.domain.model.exercise.ExerciseType
 import com.aivoicepower.domain.repository.LessonRepository
 import com.aivoicepower.domain.repository.VoiceAnalysisRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
@@ -42,10 +45,24 @@ class LessonViewModel @Inject constructor(
             try {
                 val lesson = lessonRepository.getLessonById(lessonId)
                 if (lesson != null) {
+                    // Знаходимо наступний урок
+                    val allLessons = lessonRepository.getAllLessons().first()
+                    val courseLessons = allLessons
+                        .filter { it.courseId == lesson.courseId }
+                        .sortedBy { it.order }
+                    val currentIndex = courseLessons.indexOfFirst { it.id == lesson.id }
+                    val nextLesson = if (currentIndex >= 0 && currentIndex < courseLessons.size - 1) {
+                        courseLessons[currentIndex + 1]
+                    } else null
+
                     _uiState.value = LessonUiState.Success(
                         lesson = lesson,
                         currentExercise = lesson.exercises.firstOrNull(),
-                        currentStepIndex = 0
+                        currentExerciseIndex = 0,
+                        currentStepIndex = 0,
+                        nextLessonId = nextLesson?.id,
+                        nextLessonTitle = nextLesson?.title,
+                        isLastLessonInCourse = nextLesson == null
                     )
                 } else {
                     _uiState.value = LessonUiState.Error("Урок не знайдено")
@@ -73,7 +90,18 @@ class LessonViewModel @Inject constructor(
             if (currentState is LessonUiState.Success) {
                 val exercise = currentState.currentExercise
                 if (exercise != null) {
-                    val context = "${exercise.title}: ${exercise.instruction}"
+                    val context = when (exercise.type) {
+                        ExerciseType.TONGUE_TWISTER -> {
+                            val content = exercise.content as? ExerciseContent.TongueTwister
+                            buildString {
+                                append("СКОРОМОВКА\n")
+                                append("Оригінальний текст: ${content?.text ?: ""}\n")
+                                append("Цільові звуки: ${content?.targetSounds?.joinToString(", ") ?: ""}\n")
+                                append("Інструкція: ${exercise.instruction}")
+                            }
+                        }
+                        else -> "${exercise.title}: ${exercise.instruction}"
+                    }
                     val result = voiceAnalysisRepository.analyzeVoice(audioFile, context)
 
                     result.onSuccess { analysis ->
@@ -100,10 +128,28 @@ class LessonViewModel @Inject constructor(
             if (currentExerciseIndex < currentState.lesson.exercises.size) {
                 _uiState.value = currentState.copy(
                     currentExercise = currentState.lesson.exercises[currentExerciseIndex],
+                    currentExerciseIndex = currentExerciseIndex,
                     currentStepIndex = 0
                 )
                 resetRecording()
+            } else {
+                // Урок завершено
+                _uiState.value = currentState.copy(isCompleted = true)
             }
+        }
+    }
+
+    fun moveToPreviousExercise() {
+        val currentState = _uiState.value
+        if (currentState is LessonUiState.Success && currentExerciseIndex > 0) {
+            currentExerciseIndex--
+            currentStepIndex = 0
+            _uiState.value = currentState.copy(
+                currentExercise = currentState.lesson.exercises[currentExerciseIndex],
+                currentExerciseIndex = currentExerciseIndex,
+                currentStepIndex = 0
+            )
+            resetRecording()
         }
     }
 
@@ -136,6 +182,44 @@ class LessonViewModel @Inject constructor(
             }
         }
     }
+
+    fun loadNextLesson(nextLessonId: String) {
+        currentExerciseIndex = 0
+        currentStepIndex = 0
+        _recordingState.value = RecordingState.Idle
+        _uiState.value = LessonUiState.Loading
+
+        viewModelScope.launch {
+            try {
+                val lesson = lessonRepository.getLessonById(nextLessonId)
+                if (lesson != null) {
+                    // Знаходимо наступний урок
+                    val allLessons = lessonRepository.getAllLessons().first()
+                    val courseLessons = allLessons
+                        .filter { it.courseId == lesson.courseId }
+                        .sortedBy { it.order }
+                    val currentIndex = courseLessons.indexOfFirst { it.id == lesson.id }
+                    val nextLesson = if (currentIndex >= 0 && currentIndex < courseLessons.size - 1) {
+                        courseLessons[currentIndex + 1]
+                    } else null
+
+                    _uiState.value = LessonUiState.Success(
+                        lesson = lesson,
+                        currentExercise = lesson.exercises.firstOrNull(),
+                        currentExerciseIndex = 0,
+                        currentStepIndex = 0,
+                        nextLessonId = nextLesson?.id,
+                        nextLessonTitle = nextLesson?.title,
+                        isLastLessonInCourse = nextLesson == null
+                    )
+                } else {
+                    _uiState.value = LessonUiState.Error("Урок не знайдено")
+                }
+            } catch (e: Exception) {
+                _uiState.value = LessonUiState.Error(e.message ?: "Помилка завантаження уроку")
+            }
+        }
+    }
 }
 
 sealed interface LessonUiState {
@@ -143,7 +227,12 @@ sealed interface LessonUiState {
     data class Success(
         val lesson: Lesson,
         val currentExercise: Exercise?,
-        val currentStepIndex: Int = 0
+        val currentExerciseIndex: Int = 0,
+        val currentStepIndex: Int = 0,
+        val isCompleted: Boolean = false,
+        val nextLessonId: String? = null,
+        val nextLessonTitle: String? = null,
+        val isLastLessonInCourse: Boolean = false
     ) : LessonUiState
     data class Error(val message: String) : LessonUiState
 }

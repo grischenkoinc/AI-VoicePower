@@ -24,7 +24,9 @@ import com.aivoicepower.domain.model.course.Lesson
 @Composable
 fun CompletedPhaseContent(
     lesson: Lesson,
+    nextLesson: Lesson? = null,
     onFinish: () -> Unit,
+    onNextLesson: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -44,7 +46,7 @@ fun CompletedPhaseContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Урок завершено!",
+            text = "Урок пройдено!",
             style = MaterialTheme.typography.headlineMedium
         )
 
@@ -77,6 +79,18 @@ fun CompletedPhaseContent(
         }
 
         Spacer(modifier = Modifier.height(32.dp))
+
+        // Next lesson button (if available)
+        if (nextLesson != null && onNextLesson != null) {
+            Button(
+                onClick = onNextLesson,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("До наступного уроку: ${nextLesson.title}")
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+        }
 
         Button(
             onClick = onFinish,

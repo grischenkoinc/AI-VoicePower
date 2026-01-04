@@ -1,6 +1,6 @@
 package com.aivoicepower.domain.repository
 
-import com.aivoicepower.domain.model.Lesson
+import com.aivoicepower.domain.model.course.Lesson
 import kotlinx.coroutines.flow.Flow
 
 interface LessonRepository {

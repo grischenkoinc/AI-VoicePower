@@ -1,5 +1,6 @@
 package com.aivoicepower.di
 
+import com.aivoicepower.BuildConfig
 import com.aivoicepower.data.repository.LessonRepositoryImpl
 import com.aivoicepower.data.repository.VoiceAnalysisRepositoryImpl
 import com.aivoicepower.domain.repository.LessonRepository
@@ -18,10 +19,9 @@ object AppModule {
     @Provides
     @Singleton
     fun provideGeminiModel(): GenerativeModel {
-        // TODO: Add your Gemini API key here or load from BuildConfig
         return GenerativeModel(
             modelName = "gemini-2.5-flash",
-            apiKey = "AIzaSyAte8eIXj8aqTp5-ymLHQqcBZEeuj8miQU" // Replace with actual API key
+            apiKey = BuildConfig.GEMINI_API_KEY
         )
     }
 
