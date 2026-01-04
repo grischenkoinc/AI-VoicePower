@@ -75,6 +75,7 @@ fun ExerciseCard(
 
 private fun getExerciseEmoji(type: ExerciseType): String {
     return when (type) {
+        ExerciseType.ARTICULATION -> "[A]"
         ExerciseType.TONGUE_TWISTER -> "[TT]"
         ExerciseType.READING -> "[R]"
         ExerciseType.EMOTION_READING -> "[ER]"
@@ -83,6 +84,9 @@ private fun getExerciseEmoji(type: ExerciseType): String {
         ExerciseType.DIALOGUE -> "[DL]"
         ExerciseType.PITCH -> "[P]"
         ExerciseType.QA -> "[QA]"
-        ExerciseType.ARTICULATION -> "[A]"
+        ExerciseType.TONGUE_TWISTER_BATTLE -> "[TB]"
+        ExerciseType.MINIMAL_PAIRS -> "[MP]"
+        ExerciseType.CONTRAST_SOUNDS -> "[CS]"
+        ExerciseType.SLOW_MOTION -> "[SM]"
     }
 }

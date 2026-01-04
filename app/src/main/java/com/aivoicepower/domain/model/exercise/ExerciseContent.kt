@@ -38,4 +38,30 @@ sealed class ExerciseContent {
         val repetitions: Int? = null,
         val imageUrl: String? = null  // Для майбутньої ілюстрації
     ) : ExerciseContent()
+
+    // Схожі слова (бик/бік, сила/шила)
+    data class MinimalPairs(
+        val pairs: List<Pair<String, String>>,  // [("бик", "бік"), ("сила", "шила")]
+        val targetSounds: List<String>
+    ) : ExerciseContent()
+
+    // Чергування звуків
+    data class ContrastSounds(
+        val sequence: String,  // "ша-са-ша-са-ша-са"
+        val targetSounds: List<String>,
+        val repetitions: Int = 5
+    ) : ExerciseContent()
+
+    // 3 скоромовки поспіль
+    data class TongueTwisterBattle(
+        val twisters: List<TongueTwister>,  // 3 скоромовки
+        val allowMistakes: Int = 0
+    ) : ExerciseContent()
+
+    // Повільна скоромовка
+    data class SlowMotion(
+        val text: String,
+        val targetSounds: List<String>,
+        val minDurationSeconds: Int = 30
+    ) : ExerciseContent()
 }

@@ -177,6 +177,91 @@ fun ExerciseContentDisplay(
                         )
                     }
                 }
+
+                is ExerciseContent.MinimalPairs -> {
+                    Text(
+                        text = "Схожi слова:",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                    content.pairs.forEach { pair ->
+                        Text(
+                            text = "${pair.first} / ${pair.second}",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                    if (content.targetSounds.isNotEmpty()) {
+                        Text(
+                            text = "Цiльовi звуки: ${content.targetSounds.joinToString(", ")}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                is ExerciseContent.ContrastSounds -> {
+                    Text(
+                        text = "Послiдовнiсть:",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                    Text(
+                        text = content.sequence,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    if (content.targetSounds.isNotEmpty()) {
+                        Text(
+                            text = "Цiльовi звуки: ${content.targetSounds.joinToString(", ")}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Text(
+                        text = "Повторень: ${content.repetitions}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                is ExerciseContent.TongueTwisterBattle -> {
+                    Text(
+                        text = "Скоромовки (${content.twisters.size}):",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                    content.twisters.forEachIndexed { index, twister ->
+                        Text(
+                            text = "${index + 1}. ${twister.text}",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        )
+                    }
+                    Text(
+                        text = "Допустимо помилок: ${content.allowMistakes}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                is ExerciseContent.SlowMotion -> {
+                    Text(
+                        text = "Текст (повiльно):",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                    Text(
+                        text = content.text,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    if (content.targetSounds.isNotEmpty()) {
+                        Text(
+                            text = "Цiльовi звуки: ${content.targetSounds.joinToString(", ")}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Text(
+                        text = "Мiн. час: ${content.minDurationSeconds} сек",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }

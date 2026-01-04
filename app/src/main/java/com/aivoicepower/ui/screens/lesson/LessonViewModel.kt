@@ -100,6 +100,52 @@ class LessonViewModel @Inject constructor(
                                 append("Інструкція: ${exercise.instruction}")
                             }
                         }
+                        ExerciseType.READING -> {
+                            val content = exercise.content as? ExerciseContent.ReadingText
+                            buildString {
+                                append("ЧИТАННЯ ТЕКСТУ\n")
+                                append("Текст для читання: ${content?.text ?: ""}\n")
+                                append("Інструкція: ${exercise.instruction}")
+                            }
+                        }
+                        ExerciseType.MINIMAL_PAIRS -> {
+                            val content = exercise.content as? ExerciseContent.MinimalPairs
+                            buildString {
+                                append("СХОЖІ СЛОВА\n")
+                                append("Пари слів: ${content?.pairs?.joinToString(", ") { "${it.first}/${it.second}" } ?: ""}\n")
+                                append("Цільові звуки: ${content?.targetSounds?.joinToString(", ") ?: ""}\n")
+                                append("Інструкція: ${exercise.instruction}")
+                            }
+                        }
+                        ExerciseType.CONTRAST_SOUNDS -> {
+                            val content = exercise.content as? ExerciseContent.ContrastSounds
+                            buildString {
+                                append("ЧЕРГУВАННЯ ЗВУКІВ\n")
+                                append("Послідовність: ${content?.sequence ?: ""}\n")
+                                append("Цільові звуки: ${content?.targetSounds?.joinToString(", ") ?: ""}\n")
+                                append("Інструкція: ${exercise.instruction}")
+                            }
+                        }
+                        ExerciseType.TONGUE_TWISTER_BATTLE -> {
+                            val content = exercise.content as? ExerciseContent.TongueTwisterBattle
+                            buildString {
+                                append("БАТЛ СКОРОМОВОК (3 поспіль)\n")
+                                content?.twisters?.forEachIndexed { index, twister ->
+                                    append("${index + 1}. ${twister.text}\n")
+                                }
+                                append("Інструкція: ${exercise.instruction}")
+                            }
+                        }
+                        ExerciseType.SLOW_MOTION -> {
+                            val content = exercise.content as? ExerciseContent.SlowMotion
+                            buildString {
+                                append("ПОВІЛЬНА СКОРОМОВКА\n")
+                                append("Текст: ${content?.text ?: ""}\n")
+                                append("Цільові звуки: ${content?.targetSounds?.joinToString(", ") ?: ""}\n")
+                                append("Мінімальний час: ${content?.minDurationSeconds ?: 30} сек\n")
+                                append("Інструкція: ${exercise.instruction}")
+                            }
+                        }
                         else -> "${exercise.title}: ${exercise.instruction}"
                     }
                     val result = voiceAnalysisRepository.analyzeVoice(audioFile, context)
