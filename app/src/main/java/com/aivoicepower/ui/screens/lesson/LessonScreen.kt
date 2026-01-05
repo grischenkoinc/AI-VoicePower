@@ -48,7 +48,10 @@ fun LessonScreen(
     val audioRecorder = remember { AudioRecorder(context) }
 
     var hasAudioPermission by remember { mutableStateOf(false) }
-    var showTheory by remember { mutableStateOf(true) }
+
+    // Скидаємо showTheory на true коли змінюється урок
+    val currentLessonId = (uiState as? LessonUiState.Success)?.lesson?.id
+    var showTheory by remember(currentLessonId) { mutableStateOf(true) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -176,6 +179,7 @@ private fun ExerciseContent(
     Column(
         modifier = modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -195,7 +199,7 @@ private fun ExerciseContent(
 
         // For articulation exercises - "Повернутись" + "Виконано" UI
         if (isArticulation) {
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(32.dp))
 
             Row(
                 modifier = Modifier
@@ -253,7 +257,7 @@ private fun ExerciseContent(
                 exampleText = exercise.exampleText
             )
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(32.dp))
 
             // Step Navigation
             StepNavigation(
@@ -267,11 +271,170 @@ private fun ExerciseContent(
             // Show recording interface
             when (recordingState) {
                 is RecordingState.Idle -> {
-                    // Get text to display - from content for TongueTwister, or from exampleText
+                    // Special handling for MinimalPairs - show word pairs
+                    val minimalPairsContent = if (exercise.type == ExerciseType.MINIMAL_PAIRS && exercise.content is ExerciseContent.MinimalPairs) {
+                        exercise.content as ExerciseContent.MinimalPairs
+                    } else null
+
+                    if (minimalPairsContent != null) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = Primary.copy(alpha = 0.1f))
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(20.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "Вимовте пари слів чітко:",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = Primary
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                // Display word pairs
+                                minimalPairsContent.pairs.forEachIndexed { index, pair ->
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 8.dp),
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = pair.first,
+                                            style = MaterialTheme.typography.headlineSmall,
+                                            color = Primary,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Text(
+                                            text = "  —  ",
+                                            style = MaterialTheme.typography.headlineSmall,
+                                            color = TextSecondary
+                                        )
+                                        Text(
+                                            text = pair.second,
+                                            style = MaterialTheme.typography.headlineSmall,
+                                            color = Success,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text(
+                                    text = "Фокус: ${minimalPairsContent.targetSounds.joinToString(", ")}",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = TextSecondary
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(32.dp))
+                    }
+
+                    // Special handling for TongueTwisterBattle - show all tongue twisters
+                    val tongueTwisterBattleContent = if (exercise.type == ExerciseType.TONGUE_TWISTER_BATTLE && exercise.content is ExerciseContent.TongueTwisterBattle) {
+                        exercise.content as ExerciseContent.TongueTwisterBattle
+                    } else null
+
+                    if (tongueTwisterBattleContent != null) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f))
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(20.dp)
+                            ) {
+                                Text(
+                                    text = "Прочитай ${tongueTwisterBattleContent.twisters.size} скоромовки поспіль:",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.error,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                tongueTwisterBattleContent.twisters.forEachIndexed { index, twister ->
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text(
+                                            text = "${index + 1}.",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            color = Primary,
+                                            fontWeight = FontWeight.Bold,
+                                            modifier = Modifier.padding(end = 8.dp)
+                                        )
+                                        Text(
+                                            text = twister.text,
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+                                    if (index < tongueTwisterBattleContent.twisters.size - 1) {
+                                        Spacer(modifier = Modifier.height(12.dp))
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text(
+                                    text = "Читай без пауз між скоромовками",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = TextSecondary
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(32.dp))
+                    }
+
+                    // Special handling for SlowMotion - show text with duration requirement
+                    val slowMotionContent = if (exercise.type == ExerciseType.SLOW_MOTION && exercise.content is ExerciseContent.SlowMotion) {
+                        exercise.content as ExerciseContent.SlowMotion
+                    } else null
+
+                    if (slowMotionContent != null) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(20.dp)
+                            ) {
+                                Text(
+                                    text = "Повільна вимова",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text(
+                                    text = slowMotionContent.text,
+                                    style = MaterialTheme.typography.headlineSmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text(
+                                    text = "Мінімум ${slowMotionContent.minDurationSeconds} секунд на вимову",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(32.dp))
+                    }
+
+                    // Get text to display - from content for TongueTwister/ReadingText, or from exampleText
                     val displayText = when {
                         exercise.type == ExerciseType.TONGUE_TWISTER && exercise.content is ExerciseContent.TongueTwister -> {
                             (exercise.content as ExerciseContent.TongueTwister).text
                         }
+                        exercise.type == ExerciseType.READING && exercise.content is ExerciseContent.ReadingText -> {
+                            (exercise.content as ExerciseContent.ReadingText).text
+                        }
+                        exercise.type == ExerciseType.MINIMAL_PAIRS -> null // Already handled above
+                        exercise.type == ExerciseType.TONGUE_TWISTER_BATTLE -> null // Already handled above
+                        exercise.type == ExerciseType.SLOW_MOTION -> null // Already handled above
                         !exercise.exampleText.isNullOrEmpty() -> exercise.exampleText
                         else -> null
                     }
@@ -280,7 +443,7 @@ private fun ExerciseContent(
                         (exercise.content as ExerciseContent.TongueTwister).targetSounds
                     } else null
 
-                    // Show text if available
+                    // Show text if available (not for MinimalPairs which is handled above)
                     if (!displayText.isNullOrEmpty()) {
                         Card(
                             modifier = Modifier.fillMaxWidth(),
@@ -292,7 +455,11 @@ private fun ExerciseContent(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
-                                    text = if (exercise.type == ExerciseType.TONGUE_TWISTER) "Скоромовка:" else "Текст для вправи:",
+                                    text = when (exercise.type) {
+                                        ExerciseType.TONGUE_TWISTER -> "Скоромовка:"
+                                        ExerciseType.READING -> "Прочитайте вголос:"
+                                        else -> "Текст для вправи:"
+                                    },
                                     style = MaterialTheme.typography.labelMedium,
                                     color = TextSecondary
                                 )
@@ -352,8 +519,18 @@ private fun ExerciseContent(
                             }
                         }
 
-                        // Кнопка "Пропустити" для скоромовок
-                        if (exercise.type == ExerciseType.TONGUE_TWISTER) {
+                        // Кнопка "Пропустити" для всіх типів вправ
+                        if (exercise.type in listOf(
+                            ExerciseType.TONGUE_TWISTER,
+                            ExerciseType.READING,
+                            ExerciseType.EMOTION_READING,
+                            ExerciseType.FREE_SPEECH,
+                            ExerciseType.MINIMAL_PAIRS,
+                            ExerciseType.CONTRAST_SOUNDS,
+                            ExerciseType.TONGUE_TWISTER_BATTLE,
+                            ExerciseType.SLOW_MOTION,
+                            ExerciseType.ARTICULATION
+                        )) {
                             OutlinedButton(
                                 onClick = onNextExercise,
                                 modifier = if (currentExerciseIndex > 0) Modifier.weight(1f) else Modifier
@@ -364,11 +541,165 @@ private fun ExerciseContent(
                     }
                 }
                 is RecordingState.Recording -> {
+                    // Special handling for MinimalPairs during recording
+                    val recordingMinimalPairs = if (exercise.type == ExerciseType.MINIMAL_PAIRS && exercise.content is ExerciseContent.MinimalPairs) {
+                        exercise.content as ExerciseContent.MinimalPairs
+                    } else null
+
+                    if (recordingMinimalPairs != null) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = RecordingActive.copy(alpha = 0.15f)),
+                            border = BorderStroke(2.dp, RecordingActive)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(20.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.Mic,
+                                        contentDescription = null,
+                                        tint = RecordingActive,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "Йде запис - вимовляйте пари слів:",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = RecordingActive,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(12.dp))
+                                recordingMinimalPairs.pairs.forEach { pair ->
+                                    Text(
+                                        text = "${pair.first} — ${pair.second}",
+                                        style = MaterialTheme.typography.headlineSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        textAlign = TextAlign.Center,
+                                        color = RecordingActive
+                                    )
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(32.dp))
+                    }
+
+                    // Special handling for TongueTwisterBattle during recording
+                    val recordingBattleContent = if (exercise.type == ExerciseType.TONGUE_TWISTER_BATTLE && exercise.content is ExerciseContent.TongueTwisterBattle) {
+                        exercise.content as ExerciseContent.TongueTwisterBattle
+                    } else null
+
+                    if (recordingBattleContent != null) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = RecordingActive.copy(alpha = 0.15f)),
+                            border = BorderStroke(2.dp, RecordingActive)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(20.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.Mic,
+                                        contentDescription = null,
+                                        tint = RecordingActive,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "Йде запис - читайте скоромовки:",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = RecordingActive,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(12.dp))
+                                recordingBattleContent.twisters.forEachIndexed { index, twister ->
+                                    Row(modifier = Modifier.fillMaxWidth()) {
+                                        Text(
+                                            text = "${index + 1}.",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            color = RecordingActive,
+                                            fontWeight = FontWeight.Bold,
+                                            modifier = Modifier.padding(end = 8.dp)
+                                        )
+                                        Text(
+                                            text = twister.text,
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = RecordingActive
+                                        )
+                                    }
+                                    if (index < recordingBattleContent.twisters.size - 1) {
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                    }
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(32.dp))
+                    }
+
+                    // Special handling for SlowMotion during recording
+                    val recordingSlowMotion = if (exercise.type == ExerciseType.SLOW_MOTION && exercise.content is ExerciseContent.SlowMotion) {
+                        exercise.content as ExerciseContent.SlowMotion
+                    } else null
+
+                    if (recordingSlowMotion != null) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = RecordingActive.copy(alpha = 0.15f)),
+                            border = BorderStroke(2.dp, RecordingActive)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(20.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.Mic,
+                                        contentDescription = null,
+                                        tint = RecordingActive,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "Йде запис - читайте ПОВІЛЬНО:",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = RecordingActive,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text(
+                                    text = recordingSlowMotion.text,
+                                    style = MaterialTheme.typography.headlineSmall,
+                                    color = RecordingActive
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Мінімум ${recordingSlowMotion.minDurationSeconds} секунд",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = RecordingActive
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(32.dp))
+                    }
+
                     // Get text to display during recording
                     val recordingDisplayText = when {
                         exercise.type == ExerciseType.TONGUE_TWISTER && exercise.content is ExerciseContent.TongueTwister -> {
                             (exercise.content as ExerciseContent.TongueTwister).text
                         }
+                        exercise.type == ExerciseType.READING && exercise.content is ExerciseContent.ReadingText -> {
+                            (exercise.content as ExerciseContent.ReadingText).text
+                        }
+                        exercise.type == ExerciseType.MINIMAL_PAIRS -> null // Handled above
+                        exercise.type == ExerciseType.TONGUE_TWISTER_BATTLE -> null // Handled above
+                        exercise.type == ExerciseType.SLOW_MOTION -> null // Handled above
                         !exercise.exampleText.isNullOrEmpty() -> exercise.exampleText
                         else -> null
                     }
@@ -393,7 +724,11 @@ private fun ExerciseContent(
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
-                                        text = if (exercise.type == ExerciseType.TONGUE_TWISTER) "Йде запис - читайте скоромовку:" else "Йде запис - читайте текст:",
+                                        text = when (exercise.type) {
+                                            ExerciseType.TONGUE_TWISTER -> "Йде запис - читайте скоромовку:"
+                                            ExerciseType.READING -> "Йде запис - читайте текст вголос:"
+                                            else -> "Йде запис - читайте текст:"
+                                        },
                                         style = MaterialTheme.typography.labelMedium,
                                         color = RecordingActive,
                                         fontWeight = FontWeight.Bold
@@ -461,7 +796,7 @@ private fun ExerciseContent(
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
@@ -483,9 +818,10 @@ private fun RecordButton(
     Button(
         onClick = { if (hasPermission) onClick() },
         modifier = Modifier
-            .size(120.dp)
+            .height(72.dp)
+            .widthIn(min = 200.dp)
             .scale(if (isRecording) scale else 1f),
-        shape = CircleShape,
+        shape = RoundedCornerShape(36.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = if (isRecording) RecordingActive else Primary
         ),
@@ -494,8 +830,15 @@ private fun RecordButton(
         Icon(
             imageVector = if (isRecording) Icons.Default.Stop else Icons.Default.Mic,
             contentDescription = if (isRecording) "Зупинити" else "Записати",
-            modifier = Modifier.size(48.dp),
+            modifier = Modifier.size(32.dp),
             tint = Color.White
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = if (isRecording) "Зупинити" else "Записати",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = Color.White
         )
     }
 }
@@ -513,9 +856,7 @@ private fun AnalysisResults(
     val isLastExercise = currentExerciseIndex >= totalExercises - 1
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState()),
+        modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Score Circle
@@ -1035,7 +1376,7 @@ private fun TheorySection(
             }
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(32.dp))
 
         Button(
             onClick = onContinue,
@@ -1043,6 +1384,8 @@ private fun TheorySection(
         ) {
             Text("Почати вправи")
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 

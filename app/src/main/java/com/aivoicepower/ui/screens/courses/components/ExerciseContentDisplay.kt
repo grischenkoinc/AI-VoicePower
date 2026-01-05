@@ -2,14 +2,21 @@ package com.aivoicepower.ui.screens.courses.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.aivoicepower.domain.model.exercise.ExerciseContent
 
@@ -199,68 +206,150 @@ fun ExerciseContentDisplay(
                 }
 
                 is ExerciseContent.ContrastSounds -> {
-                    Text(
-                        text = "Послiдовнiсть:",
-                        style = MaterialTheme.typography.titleSmall
-                    )
-                    Text(
-                        text = content.sequence,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    if (content.targetSounds.isNotEmpty()) {
-                        Text(
-                            text = "Цiльовi звуки: ${content.targetSounds.joinToString(", ")}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer
                         )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Чергуй звуки:",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Послідовність звуків великим шрифтом
+                            Text(
+                                text = content.sequence,
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            )
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            // Кількість повторень
+                            Text(
+                                text = "Повтори ${content.repetitions} разів",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Цільові звуки
+                            if (content.targetSounds.isNotEmpty()) {
+                                Text(
+                                    text = "Фокус: ${content.targetSounds.joinToString(" / ")}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
                     }
-                    Text(
-                        text = "Повторень: ${content.repetitions}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
 
                 is ExerciseContent.TongueTwisterBattle -> {
-                    Text(
-                        text = "Скоромовки (${content.twisters.size}):",
-                        style = MaterialTheme.typography.titleSmall
-                    )
-                    content.twisters.forEachIndexed { index, twister ->
-                        Text(
-                            text = "${index + 1}. ${twister.text}",
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(vertical = 4.dp)
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
                         )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Text(
+                                text = "Прочитай ${content.twisters.size} скоромовки поспіль:",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.error,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            content.twisters.forEachIndexed { index, twister ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.Top
+                                ) {
+                                    Text(
+                                        text = "${index + 1}.",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.width(28.dp)
+                                    )
+
+                                    Text(
+                                        text = twister.text,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+
+                                if (index < content.twisters.size - 1) {
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Text(
+                                text = "Читай без пауз між скоромовками",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
-                    Text(
-                        text = "Допустимо помилок: ${content.allowMistakes}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
 
                 is ExerciseContent.SlowMotion -> {
-                    Text(
-                        text = "Текст (повiльно):",
-                        style = MaterialTheme.typography.titleSmall
-                    )
-                    Text(
-                        text = content.text,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    if (content.targetSounds.isNotEmpty()) {
-                        Text(
-                            text = "Цiльовi звуки: ${content.targetSounds.joinToString(", ")}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
                         )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Text(
+                                text = "Повільна вимова",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Text(
+                                text = content.text,
+                                style = MaterialTheme.typography.headlineSmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Text(
+                                text = "Мінімум ${content.minDurationSeconds} секунд",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
-                    Text(
-                        text = "Мiн. час: ${content.minDurationSeconds} сек",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
             }
         }

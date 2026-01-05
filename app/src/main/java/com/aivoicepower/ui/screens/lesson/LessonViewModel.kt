@@ -85,6 +85,17 @@ class LessonViewModel @Inject constructor(
             return
         }
 
+        // Перевірка файлу перед аналізом
+        if (!audioFile.exists()) {
+            _recordingState.value = RecordingState.Error("Аудіо файл не знайдено")
+            return
+        }
+
+        if (audioFile.length() < 1000) {
+            _recordingState.value = RecordingState.Error("Запис занадто короткий. Спробуйте ще раз.")
+            return
+        }
+
         viewModelScope.launch {
             val currentState = _uiState.value
             if (currentState is LessonUiState.Success) {

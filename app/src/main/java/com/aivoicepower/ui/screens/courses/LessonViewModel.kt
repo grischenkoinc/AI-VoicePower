@@ -200,6 +200,26 @@ class LessonViewModel @Inject constructor(
             try {
                 var score = 0
 
+                // Validate recording before analysis
+                if (currentExerciseState.recordingPath != null) {
+                    // Check minimum recording duration (2 seconds)
+                    if (currentExerciseState.recordingDurationMs < 2000) {
+                        _state.update {
+                            it.copy(error = "Запис занадто короткий. Говоріть принаймні 2 секунди.")
+                        }
+                        return@launch
+                    }
+
+                    // Check if file exists and has content
+                    val recordingFile = java.io.File(currentExerciseState.recordingPath)
+                    if (!recordingFile.exists() || recordingFile.length() < 1000) {
+                        _state.update {
+                            it.copy(error = "Запис порожній або пошкоджений. Спробуйте ще раз.")
+                        }
+                        return@launch
+                    }
+                }
+
                 // Analyze recording with Gemini if path exists
                 if (currentExerciseState.recordingPath != null) {
                     // Extract expected text from ExerciseContent
