@@ -25,8 +25,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.aivoicepower.domain.model.course.TheoryContent
+import com.aivoicepower.domain.model.exercise.Emotion
 import com.aivoicepower.domain.model.exercise.ExerciseContent
 import com.aivoicepower.domain.model.exercise.ExerciseType
 import com.aivoicepower.ui.theme.*
@@ -428,12 +430,28 @@ private fun ExerciseContent(
                         exercise.type == ExerciseType.READING && exercise.content is ExerciseContent.ReadingText -> {
                             (exercise.content as ExerciseContent.ReadingText).text
                         }
+                        exercise.type == ExerciseType.EMOTION_READING && exercise.content is ExerciseContent.ReadingText -> {
+                            (exercise.content as ExerciseContent.ReadingText).text
+                        }
                         exercise.type == ExerciseType.MINIMAL_PAIRS -> null // Already handled above
                         exercise.type == ExerciseType.TONGUE_TWISTER_BATTLE -> null // Already handled above
                         exercise.type == ExerciseType.SLOW_MOTION -> null // Already handled above
                         !exercise.exampleText.isNullOrEmpty() -> exercise.exampleText
                         else -> null
                     }
+
+                    // Get emotion for EMOTION_READING exercises
+                    val emotionLabel = if (exercise.type == ExerciseType.EMOTION_READING && exercise.content is ExerciseContent.ReadingText) {
+                        when ((exercise.content as ExerciseContent.ReadingText).emotion) {
+                            Emotion.JOY -> "😊 Читай з РАДІСТЮ"
+                            Emotion.SADNESS -> "😢 Читай з СУМОМ"
+                            Emotion.ANGER -> "😠 Читай з ГНІВОМ"
+                            Emotion.SURPRISE -> "😮 Читай зі ЗДИВУВАННЯМ"
+                            Emotion.FEAR -> "😨 Читай зі СТРАХОМ"
+                            Emotion.NEUTRAL -> "😐 Читай НЕЙТРАЛЬНО"
+                            else -> null
+                        }
+                    } else null
 
                     val targetSounds = if (exercise.type == ExerciseType.TONGUE_TWISTER && exercise.content is ExerciseContent.TongueTwister) {
                         (exercise.content as ExerciseContent.TongueTwister).targetSounds
@@ -444,28 +462,45 @@ private fun ExerciseContent(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(containerColor = Primary.copy(alpha = 0.1f))
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (emotionLabel != null)
+                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                                else
+                                    Primary.copy(alpha = 0.1f)
+                            )
                         ) {
                             Column(
                                 modifier = Modifier.padding(20.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text(
-                                    text = when (exercise.type) {
-                                        ExerciseType.TONGUE_TWISTER -> "Скоромовка:"
-                                        ExerciseType.READING -> "Прочитайте вголос:"
-                                        else -> "Текст для вправи:"
-                                    },
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = TextSecondary
-                                )
-                                Spacer(modifier = Modifier.height(12.dp))
+                                // Show emotion label for EMOTION_READING
+                                if (emotionLabel != null) {
+                                    Text(
+                                        text = emotionLabel,
+                                        style = MaterialTheme.typography.titleLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                } else {
+                                    Text(
+                                        text = when (exercise.type) {
+                                            ExerciseType.TONGUE_TWISTER -> "Скоромовка:"
+                                            ExerciseType.READING -> "Прочитайте вголос:"
+                                            else -> "Текст для вправи:"
+                                        },
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = TextSecondary
+                                    )
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                }
                                 Text(
                                     text = displayText,
                                     style = MaterialTheme.typography.headlineSmall,
                                     fontWeight = FontWeight.Medium,
                                     textAlign = TextAlign.Center,
-                                    color = Primary
+                                    color = Primary,
+                                    lineHeight = 32.sp
                                 )
                                 // Show target sounds for tongue twisters
                                 if (!targetSounds.isNullOrEmpty()) {
@@ -693,12 +728,28 @@ private fun ExerciseContent(
                         exercise.type == ExerciseType.READING && exercise.content is ExerciseContent.ReadingText -> {
                             (exercise.content as ExerciseContent.ReadingText).text
                         }
+                        exercise.type == ExerciseType.EMOTION_READING && exercise.content is ExerciseContent.ReadingText -> {
+                            (exercise.content as ExerciseContent.ReadingText).text
+                        }
                         exercise.type == ExerciseType.MINIMAL_PAIRS -> null // Handled above
                         exercise.type == ExerciseType.TONGUE_TWISTER_BATTLE -> null // Handled above
                         exercise.type == ExerciseType.SLOW_MOTION -> null // Handled above
                         !exercise.exampleText.isNullOrEmpty() -> exercise.exampleText
                         else -> null
                     }
+
+                    // Get emotion for recording display
+                    val recordingEmotionLabel = if (exercise.type == ExerciseType.EMOTION_READING && exercise.content is ExerciseContent.ReadingText) {
+                        when ((exercise.content as ExerciseContent.ReadingText).emotion) {
+                            Emotion.JOY -> "😊 Читай з РАДІСТЮ"
+                            Emotion.SADNESS -> "😢 Читай з СУМОМ"
+                            Emotion.ANGER -> "😠 Читай з ГНІВОМ"
+                            Emotion.SURPRISE -> "😮 Читай зі ЗДИВУВАННЯМ"
+                            Emotion.FEAR -> "😨 Читай зі СТРАХОМ"
+                            Emotion.NEUTRAL -> "😐 Читай НЕЙТРАЛЬНО"
+                            else -> null
+                        }
+                    } else null
 
                     if (!recordingDisplayText.isNullOrEmpty()) {
                         Card(
@@ -711,24 +762,49 @@ private fun ExerciseContent(
                                 modifier = Modifier.padding(20.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = Icons.Default.Mic,
-                                        contentDescription = null,
-                                        tint = RecordingActive,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
+                                // Show emotion label for EMOTION_READING during recording
+                                if (recordingEmotionLabel != null) {
                                     Text(
-                                        text = when (exercise.type) {
-                                            ExerciseType.TONGUE_TWISTER -> "Йде запис - читайте скоромовку:"
-                                            ExerciseType.READING -> "Йде запис - читайте текст вголос:"
-                                            else -> "Йде запис - читайте текст:"
-                                        },
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = RecordingActive,
-                                        fontWeight = FontWeight.Bold
+                                        text = recordingEmotionLabel,
+                                        style = MaterialTheme.typography.titleLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = RecordingActive
                                     )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.Mic,
+                                            contentDescription = null,
+                                            tint = RecordingActive,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "Йде запис...",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = RecordingActive
+                                        )
+                                    }
+                                } else {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Default.Mic,
+                                            contentDescription = null,
+                                            tint = RecordingActive,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = when (exercise.type) {
+                                                ExerciseType.TONGUE_TWISTER -> "Йде запис - читайте скоромовку:"
+                                                ExerciseType.READING -> "Йде запис - читайте текст вголос:"
+                                                else -> "Йде запис - читайте текст:"
+                                            },
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = RecordingActive,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
                                 }
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text(
@@ -736,7 +812,8 @@ private fun ExerciseContent(
                                     style = MaterialTheme.typography.headlineSmall,
                                     fontWeight = FontWeight.Bold,
                                     textAlign = TextAlign.Center,
-                                    color = RecordingActive
+                                    color = RecordingActive,
+                                    lineHeight = 32.sp
                                 )
                             }
                         }
