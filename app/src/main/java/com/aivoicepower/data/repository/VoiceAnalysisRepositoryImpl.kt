@@ -41,6 +41,19 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
         context: String
     ): Result<VoiceAnalysis> = withContext(Dispatchers.IO) {
         try {
+            // Перевірка файлу
+            if (!audioFile.exists()) {
+                Log.e("VoiceAnalysis", "Audio file not found: ${audioFile.absolutePath}")
+                return@withContext Result.failure(Exception("Аудіо файл не знайдено"))
+            }
+
+            if (audioFile.length() < 1000) {
+                Log.e("VoiceAnalysis", "Audio file too small: ${audioFile.length()} bytes")
+                return@withContext Result.failure(Exception("Аудіо файл порожній або пошкоджений"))
+            }
+
+            Log.d("VoiceAnalysis", "Analyzing file: ${audioFile.absolutePath}, size: ${audioFile.length()} bytes")
+
             val prompt = if (context.startsWith("СКОРОМОВКА")) {
                 // Спеціальний промпт для скоромовок
                 """
@@ -48,14 +61,16 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
 
 $context
 
-ВАЖЛИВО:
+КРИТИЧНО ВАЖЛИВО - ПОРОЖНІ ЗАПИСИ:
+Якщо в записі тиша, шум, або немає розбірливого мовлення — ОБОВ'ЯЗКОВО постав overallScore = 0!
+НЕ ВИГАДУЙ фідбек якщо не чуєш реальних слів!
+
+ПРАВИЛА ОЦІНЮВАННЯ:
 - Порівнюй вимову з ОРИГІНАЛЬНИМ текстом скоромовки
 - Оцінюй ТІЛЬКИ вимову цільових звуків
 - НЕ аналізуй слова-паразити (їх не може бути в скоромовці)
 - НЕ згадуй слова, яких НЕМАЄ в оригінальному тексті
 - Користувач записує ШВИДКИЙ варіант вимови
-
-Прослухай аудіозапис. Якщо в записі немає мовлення або тільки тиша - вкажи це у фідбеку і постав низькі оцінки.
 
 Оцінюй за критеріями (0-100):
 1. clarity - чіткість вимови ЦІЛЬОВИХ ЗВУКІВ
@@ -83,9 +98,17 @@ $context
 
 Контекст вправи: $context
 
-ВАЖЛИВО: Прослухай аудіозапис. Якщо в записі немає мовлення або тільки тиша - вкажи це у фідбеку і постав низькі оцінки.
+КРИТИЧНО ВАЖЛИВО - ПОРОЖНІ ЗАПИСИ:
+Прослухай аудіозапис УВАЖНО. Якщо в записі:
+- Тиша або тільки шум
+- Немає розбірливого мовлення
+- Менше 3 слів
+- Тільки вдихи/видихи без слів
 
-Якщо є мовлення, проаналізуй його за критеріями:
+ТО ОБОВ'ЯЗКОВО постав overallScore = 0 і напиши у feedback: "Запис порожній або нерозбірливий. Будь ласка, говоріть чітко у мікрофон."
+НЕ ВИГАДУЙ позитивний фідбек якщо не чуєш реального мовлення!
+
+Якщо є РЕАЛЬНЕ мовлення (чуєш слова), проаналізуй його за критеріями:
 1. Чіткість вимови (0-100)
 2. Темп мовлення (слів за хвилину, оптимально 120-150)
 3. Гучність голосу (0-100)
@@ -109,10 +132,22 @@ $context
                 """.trimIndent()
             }
 
+            // Визначаємо MIME type на основі розширення файлу
+            val mimeType = when {
+                audioFile.name.endsWith(".m4a", ignoreCase = true) -> "audio/mp4"
+                audioFile.name.endsWith(".mp4", ignoreCase = true) -> "audio/mp4"
+                audioFile.name.endsWith(".wav", ignoreCase = true) -> "audio/wav"
+                audioFile.name.endsWith(".mp3", ignoreCase = true) -> "audio/mpeg"
+                audioFile.name.endsWith(".ogg", ignoreCase = true) -> "audio/ogg"
+                audioFile.name.endsWith(".3gp", ignoreCase = true) -> "audio/3gpp"
+                else -> "audio/mp4" // Default
+            }
+            Log.d("VoiceAnalysis", "Using MIME type: $mimeType for file: ${audioFile.name}")
+
             val response = geminiModel.generateContent(
                 content {
                     text(prompt)
-                    blob("audio/mp4", audioFile.readBytes())
+                    blob(mimeType, audioFile.readBytes())
                 }
             )
 

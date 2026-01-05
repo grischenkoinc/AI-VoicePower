@@ -53,7 +53,7 @@ class CourseDetailViewModel @Inject constructor(
                     LessonWithProgress(
                         lesson = lesson,
                         isCompleted = false, // TODO: Get from CourseProgressDao
-                        isLocked = course.isPremium && index >= 7, // Free: first 7 lessons
+                        isLocked = false, // TEMP: All lessons unlocked for testing
                         weekNumber = (index / 7) + 1
                     )
                 }

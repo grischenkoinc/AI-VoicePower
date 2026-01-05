@@ -22,7 +22,7 @@ import javax.inject.Inject
 class LessonViewModel @Inject constructor(
     private val lessonRepository: LessonRepository,
     private val voiceAnalysisRepository: VoiceAnalysisRepository,
-    savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val lessonId: String = savedStateHandle["lessonId"] ?: ""
@@ -33,8 +33,18 @@ class LessonViewModel @Inject constructor(
     private val _recordingState = MutableStateFlow<RecordingState>(RecordingState.Idle)
     val recordingState: StateFlow<RecordingState> = _recordingState.asStateFlow()
 
-    private var currentExerciseIndex = 0
-    private var currentStepIndex = 0
+    // Відновлення стану з SavedStateHandle (збереження при обертанні/згортанні)
+    private var currentExerciseIndex: Int
+        get() = savedStateHandle["exerciseIndex"] ?: 0
+        set(value) { savedStateHandle["exerciseIndex"] = value }
+
+    private var currentStepIndex: Int
+        get() = savedStateHandle["stepIndex"] ?: 0
+        set(value) { savedStateHandle["stepIndex"] = value }
+
+    private var showTheory: Boolean
+        get() = savedStateHandle["showTheory"] ?: true
+        set(value) { savedStateHandle["showTheory"] = value }
 
     init {
         loadLesson()
@@ -55,11 +65,17 @@ class LessonViewModel @Inject constructor(
                         courseLessons[currentIndex + 1]
                     } else null
 
+                    // Відновлюємо збережений стан (для обертання/згортання екрану)
+                    val savedExerciseIdx = currentExerciseIndex.coerceIn(0, lesson.exercises.size - 1)
+                    val savedStepIdx = currentStepIndex
+                    val savedShowTheory = showTheory
+
                     _uiState.value = LessonUiState.Success(
                         lesson = lesson,
-                        currentExercise = lesson.exercises.firstOrNull(),
-                        currentExerciseIndex = 0,
-                        currentStepIndex = 0,
+                        currentExercise = lesson.exercises.getOrNull(savedExerciseIdx),
+                        currentExerciseIndex = savedExerciseIdx,
+                        currentStepIndex = savedStepIdx,
+                        showTheory = savedShowTheory,
                         nextLessonId = nextLesson?.id,
                         nextLessonTitle = nextLesson?.title,
                         isLastLessonInCourse = nextLesson == null
@@ -177,6 +193,14 @@ class LessonViewModel @Inject constructor(
         _recordingState.value = RecordingState.Idle
     }
 
+    fun updateShowTheory(show: Boolean) {
+        showTheory = show
+        val currentState = _uiState.value
+        if (currentState is LessonUiState.Success) {
+            _uiState.value = currentState.copy(showTheory = show)
+        }
+    }
+
     fun moveToNextExercise() {
         val currentState = _uiState.value
         if (currentState is LessonUiState.Success) {
@@ -241,8 +265,11 @@ class LessonViewModel @Inject constructor(
     }
 
     fun loadNextLesson(nextLessonId: String) {
+        // Скидаємо стан при переході на новий урок
         currentExerciseIndex = 0
         currentStepIndex = 0
+        showTheory = true
+        savedStateHandle["lessonId"] = nextLessonId
         _recordingState.value = RecordingState.Idle
         _uiState.value = LessonUiState.Loading
 
@@ -265,6 +292,7 @@ class LessonViewModel @Inject constructor(
                         currentExercise = lesson.exercises.firstOrNull(),
                         currentExerciseIndex = 0,
                         currentStepIndex = 0,
+                        showTheory = true,
                         nextLessonId = nextLesson?.id,
                         nextLessonTitle = nextLesson?.title,
                         isLastLessonInCourse = nextLesson == null
@@ -286,6 +314,7 @@ sealed interface LessonUiState {
         val currentExercise: Exercise?,
         val currentExerciseIndex: Int = 0,
         val currentStepIndex: Int = 0,
+        val showTheory: Boolean = true,
         val isCompleted: Boolean = false,
         val nextLessonId: String? = null,
         val nextLessonTitle: String? = null,

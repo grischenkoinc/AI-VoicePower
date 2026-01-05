@@ -48,7 +48,8 @@ object CourseContentProvider {
     }
 
     private fun getCourse1AllLessons(): List<Lesson> {
-        return getCourse1Week1() + getCourse1Week2() + getCourse1Week3()
+        // ClearSpeechCourse.getLessons() повертає всі 21 урок (1-21)
+        return ClearSpeechCourse.getLessons()
     }
 
     /**

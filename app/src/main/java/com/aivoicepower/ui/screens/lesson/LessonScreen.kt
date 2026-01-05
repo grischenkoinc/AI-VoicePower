@@ -49,10 +49,6 @@ fun LessonScreen(
 
     var hasAudioPermission by remember { mutableStateOf(false) }
 
-    // Скидаємо showTheory на true коли змінюється урок
-    val currentLessonId = (uiState as? LessonUiState.Success)?.lesson?.id
-    var showTheory by remember(currentLessonId) { mutableStateOf(true) }
-
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -107,10 +103,10 @@ fun LessonScreen(
                             modifier = Modifier.padding(paddingValues)
                         )
                     }
-                    showTheory && state.lesson.theory != null -> {
+                    state.showTheory && state.lesson.theory != null -> {
                         TheorySection(
                             theory = state.lesson.theory!!,
-                            onContinue = { showTheory = false },
+                            onContinue = { viewModel.updateShowTheory(false) },
                             modifier = Modifier.padding(paddingValues)
                         )
                     }
