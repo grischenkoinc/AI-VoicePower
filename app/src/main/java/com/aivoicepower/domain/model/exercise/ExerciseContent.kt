@@ -64,4 +64,13 @@ sealed class ExerciseContent {
         val targetSounds: List<String>,
         val minDurationSeconds: Int = 30
     ) : ExerciseContent()
+
+    // Дихальна вправа (для курсу "Сила голосу")
+    data class BreathingExercise(
+        val inhaleSeconds: Int,        // Тривалість вдиху
+        val holdSeconds: Int,          // Затримка дихання
+        val exhaleSeconds: Int,        // Тривалість видиху
+        val cycles: Int,               // Кількість циклів
+        val instruction: String        // Додаткова інструкція
+    ) : ExerciseContent()
 }

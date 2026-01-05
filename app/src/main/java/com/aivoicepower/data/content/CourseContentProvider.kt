@@ -3,6 +3,7 @@ package com.aivoicepower.data.content
 import android.util.Log
 import com.aivoicepower.data.content.courses.ClearSpeechCourse
 import com.aivoicepower.data.content.courses.IntonationMagicCourse
+import com.aivoicepower.data.content.courses.VoicePowerCourse
 import com.aivoicepower.domain.model.course.*
 import com.aivoicepower.domain.model.exercise.*
 import com.aivoicepower.domain.model.user.SkillType
@@ -713,62 +714,10 @@ object CourseContentProvider {
         return IntonationMagicCourse.getCourse()
     }
 
-    // ========== COURSES 3-6: Similar structure with unique content ==========
+    // ========== COURSE 3: Сила голосу ==========
 
     private fun getCourse3(): Course {
-        return Course(
-            id = "course_3",
-            title = "Впевнений спікер",
-            description = "Публічні виступи без страху. Структура, аргументація, контакт з аудиторією.",
-            iconEmoji = "🎤",
-            totalLessons = 21,
-            isPremium = true,
-            estimatedDays = 21,
-            difficulty = Difficulty.INTERMEDIATE,
-            skills = listOf(SkillType.CONFIDENCE, SkillType.STRUCTURE),
-            lessons = generateCourse3Lessons()
-        )
-    }
-
-    private fun generateCourse3Lessons(): List<Lesson> {
-        val titles = listOf(
-            "Подолання страху сцени", "Мова тіла", "Структура виступу", "Вступ, що захоплює",
-            "Основна частина", "Переконливий висновок", "Підсумок тижня 1",
-            "Робота з аудиторією", "Відповіді на питання", "Візуальна підтримка",
-            "Імпровізація на сцені", "Управління часом", "Історії у виступі", "Підсумок тижня 2",
-            "Критика та зворотний зв'язок", "Складні аудиторії", "Онлайн-виступи",
-            "Дебати та дискусії", "Презентація проєктів", "Генеральна репетиція", "Випускний виступ"
-        )
-
-        return titles.mapIndexed { index, title ->
-            val day = index + 1
-            Lesson(
-                id = "lesson_$day",
-                courseId = "course_3",
-                dayNumber = day,
-                title = title,
-                description = "День $day курсу публічних виступів",
-                theory = TheoryContent(
-                    text = "Теорія дня $day: $title. Публічні виступи — це навичка, яка розвивається практикою. Сьогодні працюємо над важливим аспектом успішного виступу.",
-                    tips = listOf("Практикуй щодня", "Записуй виступи", "Аналізуй та вдосконалюй")
-                ),
-                exercises = listOf(
-                    Exercise(
-                        id = "ex_3_${day}_1",
-                        type = ExerciseType.FREE_SPEECH,
-                        title = "Практичний виступ",
-                        instruction = "Виконай вправу на тему дня.",
-                        content = ExerciseContent.FreeSpeechTopic(
-                            topic = "Практика: $title",
-                            hints = listOf("Структуруй думки", "Слідкуй за часом", "Будь впевненим")
-                        ),
-                        durationSeconds = 120,
-                        targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.STRUCTURE)
-                    )
-                ),
-                estimatedMinutes = 12
-            )
-        }
+        return VoicePowerCourse.getCourse()
     }
 
     private fun getCourse4(): Course {

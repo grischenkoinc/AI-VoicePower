@@ -88,5 +88,6 @@ private fun getExerciseEmoji(type: ExerciseType): String {
         ExerciseType.MINIMAL_PAIRS -> "[MP]"
         ExerciseType.CONTRAST_SOUNDS -> "[CS]"
         ExerciseType.SLOW_MOTION -> "[SM]"
+        ExerciseType.BREATHING -> "[BR]"
     }
 }

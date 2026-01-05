@@ -7,7 +7,13 @@ enum class SkillType {
     VOLUME,         // Гучність
     STRUCTURE,      // Структура мовлення
     CONFIDENCE,     // Впевненість
-    FILLER_WORDS    // Слова-паразити (100 = немає паразитів)
+    FILLER_WORDS,   // Слова-паразити (100 = немає паразитів)
+
+    // Нові для курсу "Сила голосу"
+    BREATHING,      // Дихання
+    VOICE_QUALITY,  // Якість голосу
+    PROJECTION,     // Проекція голосу
+    RESONANCE       // Резонанс
 }
 
 fun SkillType.toDisplayString(): String {
@@ -19,5 +25,9 @@ fun SkillType.toDisplayString(): String {
         SkillType.STRUCTURE -> "Структура"
         SkillType.CONFIDENCE -> "Впевненість"
         SkillType.FILLER_WORDS -> "Без слів-паразитів"
+        SkillType.BREATHING -> "Дихання"
+        SkillType.VOICE_QUALITY -> "Якість голосу"
+        SkillType.PROJECTION -> "Проекція"
+        SkillType.RESONANCE -> "Резонанс"
     }
 }
