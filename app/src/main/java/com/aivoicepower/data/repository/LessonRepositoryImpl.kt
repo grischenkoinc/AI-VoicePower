@@ -1,6 +1,6 @@
 package com.aivoicepower.data.repository
 
-import com.aivoicepower.data.content.courses.ClearSpeechCourse
+import com.aivoicepower.data.content.CourseContentProvider
 import com.aivoicepower.domain.model.course.Lesson
 import com.aivoicepower.domain.repository.LessonRepository
 import kotlinx.coroutines.flow.Flow
@@ -10,15 +10,20 @@ import javax.inject.Inject
 class LessonRepositoryImpl @Inject constructor() : LessonRepository {
 
     override fun getAllLessons(): Flow<List<Lesson>> {
-        return flowOf(ClearSpeechCourse.getLessons())
+        val allLessons = CourseContentProvider.getAllCourses().flatMap { it.lessons }
+        return flowOf(allLessons)
     }
 
     override suspend fun getLessonById(id: String): Lesson? {
-        return ClearSpeechCourse.getLessons().find { it.id == id }
+        return CourseContentProvider.getAllCourses()
+            .flatMap { it.lessons }
+            .find { it.id == id }
     }
 
     override fun getFreeLessons(): Flow<List<Lesson>> {
-        // All lessons from ClearSpeechCourse are free
-        return flowOf(ClearSpeechCourse.getLessons())
+        // Free lessons from all courses (first 7 lessons of each course)
+        val freeLessons = CourseContentProvider.getAllCourses()
+            .flatMap { course -> course.lessons.take(7) }
+        return flowOf(freeLessons)
     }
 }

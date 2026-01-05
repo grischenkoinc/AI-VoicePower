@@ -1,6 +1,7 @@
 package com.aivoicepower.ui.screens.courses
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -73,10 +74,14 @@ class LessonViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
 
+            Log.d("LessonVM", "Looking for courseId=$courseId, lessonId=$lessonId")
+
             try {
                 courseRepository.getLessonById(courseId, lessonId)
                     .collect { lesson ->
+                        Log.d("LessonVM", "Lesson found: ${lesson != null}, lesson.id=${lesson?.id}")
                         if (lesson == null) {
+                            Log.e("LessonVM", "Lesson NOT FOUND! courseId=$courseId, lessonId=$lessonId")
                             _state.update {
                                 it.copy(
                                     isLoading = false,
