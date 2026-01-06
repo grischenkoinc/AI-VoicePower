@@ -2,6 +2,7 @@ package com.aivoicepower.data.content
 
 import android.util.Log
 import com.aivoicepower.data.content.courses.ClearSpeechCourse
+import com.aivoicepower.data.content.courses.CleanSpeechCourse
 import com.aivoicepower.data.content.courses.ConfidentSpeakerCourse
 import com.aivoicepower.data.content.courses.IntonationMagicCourse
 import com.aivoicepower.data.content.courses.VoicePowerCourse
@@ -726,60 +727,7 @@ object CourseContentProvider {
     }
 
     private fun getCourse5(): Course {
-        return Course(
-            id = "course_5",
-            title = "Ділова комунікація",
-            description = "Переговори, співбесіди, презентації. Мова професіонала.",
-            iconEmoji = "💼",
-            totalLessons = 20,
-            isPremium = true,
-            estimatedDays = 20,
-            difficulty = Difficulty.ADVANCED,
-            skills = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE),
-            lessons = generateCourse5Lessons()
-        )
-    }
-
-    private fun generateCourse5Lessons(): List<Lesson> {
-        val titles = listOf(
-            "Основи ділового мовлення", "Перші враження", "Бізнес-етикет", "Телефонні переговори",
-            "Email vs голос", "Презентація ідеї", "Підсумок тижня 1",
-            "Переговори: основи", "Торг та компроміс", "Складні переговори",
-            "Співбесіда: підготовка", "Співбесіда: практика", "Нетворкінг", "Підсумок тижня 2",
-            "Конфлікти та критика", "Управління командою", "Публічні презентації",
-            "Міжкультурна комунікація", "Онлайн-комунікація", "Майстер ділової мови"
-        )
-
-        return titles.mapIndexed { index, title ->
-            val day = index + 1
-            Lesson(
-                id = "lesson_$day",
-                courseId = "course_5",
-                dayNumber = day,
-                title = title,
-                description = "День $day: професійна комунікація",
-                theory = TheoryContent(
-                    text = "$title — важливий аспект ділової комунікації. Професіонал має володіти цією навичкою бездоганно.",
-                    tips = listOf("Будь конкретним", "Поважай час співрозмовника", "Слухай активно")
-                ),
-                exercises = listOf(
-                    Exercise(
-                        id = "ex_5_${day}_1",
-                        type = ExerciseType.PITCH,
-                        title = "Бізнес-сценарій",
-                        instruction = "Виконай ділову вправу.",
-                        content = ExerciseContent.Pitch(
-                            scenario = "Бізнес-ситуація: $title",
-                            targetAudience = "Ділові партнери",
-                            keyMessages = listOf("Будь професійним", "Чіткі аргументи", "Результат-орієнтованість")
-                        ),
-                        durationSeconds = 120,
-                        targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
-                    )
-                ),
-                estimatedMinutes = 15
-            )
-        }
+        return CleanSpeechCourse.getCourse()
     }
 
     private fun getCourse6(): Course {
