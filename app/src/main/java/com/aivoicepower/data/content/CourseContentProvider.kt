@@ -2,6 +2,7 @@ package com.aivoicepower.data.content
 
 import android.util.Log
 import com.aivoicepower.data.content.courses.ClearSpeechCourse
+import com.aivoicepower.data.content.courses.ConfidentSpeakerCourse
 import com.aivoicepower.data.content.courses.IntonationMagicCourse
 import com.aivoicepower.data.content.courses.VoicePowerCourse
 import com.aivoicepower.domain.model.course.*
@@ -721,57 +722,7 @@ object CourseContentProvider {
     }
 
     private fun getCourse4(): Course {
-        return Course(
-            id = "course_4",
-            title = "Чисте мовлення",
-            description = "Позбався від слів-паразитів. \"Ну\", \"як би\", \"типу\" більше немає.",
-            iconEmoji = "🧹",
-            totalLessons = 14,
-            isPremium = true,
-            estimatedDays = 14,
-            difficulty = Difficulty.BEGINNER,
-            skills = listOf(SkillType.FILLER_WORDS, SkillType.STRUCTURE),
-            lessons = generateCourse4Lessons()
-        )
-    }
-
-    private fun generateCourse4Lessons(): List<Lesson> {
-        val titles = listOf(
-            "Що таке слова-паразити", "Усвідомлення проблеми", "Пауза замість паразита",
-            "Тренування уваги", "Записуй себе", "Альтернативні слова", "Підсумок тижня 1",
-            "Контроль у стресі", "Швидке мовлення без паразитів", "Публічне мовлення",
-            "Телефонні розмови", "Ділова комунікація", "Генеральна перевірка", "Чисте мовлення назавжди"
-        )
-
-        return titles.mapIndexed { index, title ->
-            val day = index + 1
-            Lesson(
-                id = "lesson_$day",
-                courseId = "course_4",
-                dayNumber = day,
-                title = title,
-                description = "День $day: позбуваємось слів-паразитів",
-                theory = TheoryContent(
-                    text = "Сьогодні працюємо над: $title. Слова-паразити — це звичка, яку можна подолати. Кожен день наближає вас до чистого мовлення.",
-                    tips = listOf("Фіксуй кожне слово-паразит", "Замінюй паузою", "Будь терплячим")
-                ),
-                exercises = listOf(
-                    Exercise(
-                        id = "ex_4_${day}_1",
-                        type = ExerciseType.FREE_SPEECH,
-                        title = "Вільне мовлення",
-                        instruction = "Говори без слів-паразитів.",
-                        content = ExerciseContent.FreeSpeechTopic(
-                            topic = "Розкажи про свій день",
-                            hints = listOf("Без 'ну', 'типу', 'як би'", "Пауза замість паразита", "Слідкуй за собою")
-                        ),
-                        durationSeconds = 90,
-                        targetMetrics = listOf(SkillType.FILLER_WORDS)
-                    )
-                ),
-                estimatedMinutes = 10
-            )
-        }
+        return ConfidentSpeakerCourse.getCourse()
     }
 
     private fun getCourse5(): Course {
