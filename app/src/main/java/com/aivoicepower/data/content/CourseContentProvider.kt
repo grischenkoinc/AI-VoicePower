@@ -2,6 +2,7 @@ package com.aivoicepower.data.content
 
 import android.util.Log
 import com.aivoicepower.data.content.courses.BusinessCommunicationCourse
+import com.aivoicepower.data.content.courses.CharismaticSpeakerCourse
 import com.aivoicepower.data.content.courses.ClearSpeechCourse
 import com.aivoicepower.data.content.courses.CleanSpeechCourse
 import com.aivoicepower.data.content.courses.ConfidentSpeakerCourse
@@ -13,7 +14,7 @@ import com.aivoicepower.domain.model.user.SkillType
 
 /**
  * Hardcoded course content
- * Contains full content for all 6 courses, 21 lessons each
+ * Contains full content for all 7 courses, 21 lessons each
  */
 object CourseContentProvider {
 
@@ -24,7 +25,8 @@ object CourseContentProvider {
             getCourse3(),
             getCourse4(),
             getCourse5(),
-            getCourse6()
+            getCourse6(),
+            getCourse7()
         )
     }
 
@@ -733,6 +735,10 @@ object CourseContentProvider {
 
     private fun getCourse6(): Course {
         return BusinessCommunicationCourse.getCourse()
+    }
+
+    private fun getCourse7(): Course {
+        return CharismaticSpeakerCourse.getCourse()
     }
 
     // Helper data class for lesson content
