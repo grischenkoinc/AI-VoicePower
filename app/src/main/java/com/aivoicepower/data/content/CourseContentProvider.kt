@@ -1,6 +1,7 @@
 package com.aivoicepower.data.content
 
 import android.util.Log
+import com.aivoicepower.data.content.courses.BusinessCommunicationCourse
 import com.aivoicepower.data.content.courses.ClearSpeechCourse
 import com.aivoicepower.data.content.courses.CleanSpeechCourse
 import com.aivoicepower.data.content.courses.ConfidentSpeakerCourse
@@ -731,59 +732,7 @@ object CourseContentProvider {
     }
 
     private fun getCourse6(): Course {
-        return Course(
-            id = "course_6",
-            title = "Харизматичний оратор",
-            description = "Майстер-клас публічних виступів. Просунутий рівень.",
-            iconEmoji = "⭐",
-            totalLessons = 21,
-            isPremium = true,
-            estimatedDays = 21,
-            difficulty = Difficulty.ADVANCED,
-            skills = listOf(SkillType.CONFIDENCE, SkillType.INTONATION, SkillType.STRUCTURE),
-            lessons = generateCourse6Lessons()
-        )
-    }
-
-    private fun generateCourse6Lessons(): List<Lesson> {
-        val titles = listOf(
-            "Що таке харизма", "Присутність на сцені", "Енергетика виступу", "Голос лідера",
-            "Історії, що надихають", "Гумор у виступах", "Підсумок тижня 1",
-            "Спонтанність vs підготовка", "Робота з великою аудиторією", "Камерні виступи",
-            "Медіа-виступи", "TED-стиль", "Мотиваційні промови", "Підсумок тижня 2",
-            "Особистий бренд оратора", "Монетизація виступів", "Створення спільноти",
-            "Менторство в ораторстві", "Власний стиль", "Генеральна репетиція", "Випускний майстер-клас"
-        )
-
-        return titles.mapIndexed { index, title ->
-            val day = index + 1
-            Lesson(
-                id = "lesson_$day",
-                courseId = "course_6",
-                dayNumber = day,
-                title = title,
-                description = "День $day: харизма та майстерність",
-                theory = TheoryContent(
-                    text = "$title — це елемент, який відрізняє хорошого оратора від великого. Харизма — це не вроджена якість, а навичка, яку можна розвинути.",
-                    tips = listOf("Будь автентичним", "Енергія заражає", "Практика робить майстра")
-                ),
-                exercises = listOf(
-                    Exercise(
-                        id = "ex_6_${day}_1",
-                        type = ExerciseType.FREE_SPEECH,
-                        title = "Харизматичний виступ",
-                        instruction = "Виголоси промову з максимальною енергією.",
-                        content = ExerciseContent.FreeSpeechTopic(
-                            topic = "Тема: $title",
-                            hints = listOf("Зачепи емоції", "Будь яскравим", "Залиш враження")
-                        ),
-                        durationSeconds = 180,
-                        targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.INTONATION)
-                    )
-                ),
-                estimatedMinutes = 15
-            )
-        }
+        return BusinessCommunicationCourse.getCourse()
     }
 
     // Helper data class for lesson content
