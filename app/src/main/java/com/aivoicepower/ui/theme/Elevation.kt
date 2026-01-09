@@ -1,178 +1,192 @@
 package com.aivoicepower.ui.theme
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.geometry.Offset
 
-/**
- * AI VoicePower Elevation & Shadow System
- * Based on Design Bible v1.0
- * 
- * Multi-layer shadows для створення глибини та преміум відчуття
- */
-
-// ============================================
-// ELEVATION LEVELS
-// ============================================
+// ===== ELEVATION LEVELS =====
 object Elevation {
-    val level0: Dp = 0.dp   // Flat — немає elevation
-    val level1: Dp = 2.dp   // Subtle lift — легке підняття
-    val level2: Dp = 4.dp   // Cards — стандартні картки
-    val level3: Dp = 8.dp   // Raised cards, FAB — підняті елементи
-    val level4: Dp = 16.dp  // Dropdowns, menus — floating елементи
-    val level5: Dp = 24.dp  // Modals, dialogs — верхній рівень
+    val level0 = 0.dp   // Flat
+    val level1 = 2.dp   // Subtle lift
+    val level2 = 4.dp   // Cards
+    val level3 = 8.dp   // Raised cards
+    val level4 = 16.dp  // Dropdowns
+    val level5 = 24.dp  // Modals
 }
 
-// ============================================
-// SHADOW DEFINITIONS (Multi-layer)
-// ============================================
-object Shadows {
-    
-    /**
-     * Звичайна картка
-     * Використання: Course cards, lesson cards, тощо
-     */
+// ===== SHADOW PRESETS =====
+object ShadowPresets {
+
+    // ===== CARD SHADOWS (темні картки на темному фоні) =====
+
+    // Звичайна картка
     val card = listOf(
-        Shadow(
-            color = ShadowColors.black30,  // 30% black
-            offset = Offset(0f, 4f),
-            blurRadius = 6f
-        ),
-        Shadow(
-            color = ShadowColors.black20,  // 20% black
-            offset = Offset(0f, 10f),
-            blurRadius = 20f
-        )
-    )
-    
-    /**
-     * Підсвічена картка (active/selected)
-     * Використання: Selected course, active lesson
-     */
-    val elevatedGlow = listOf(
-        Shadow(
-            color = ShadowColors.black30,
-            offset = Offset(0f, 4f),
-            blurRadius = 6f
-        ),
-        Shadow(
-            color = ShadowColors.black20,
-            offset = Offset(0f, 10f),
-            blurRadius = 20f
-        ),
-        Shadow(
-            color = ShadowColors.primary30,  // 30% primary glow
-            offset = Offset(0f, 0f),
-            blurRadius = 30f
-        )
-    )
-    
-    /**
-     * Primary кнопка
-     * Використання: Основні action кнопки
-     */
-    val primaryButton = listOf(
-        Shadow(
-            color = ShadowColors.primary30,  // 30% primary
-            offset = Offset(0f, 4f),
-            blurRadius = 12f
-        )
-    )
-    
-    /**
-     * CTA (Secondary) кнопка
-     * Використання: "Почати урок", "Записати"
-     */
-    val ctaButton = listOf(
-        Shadow(
-            color = ShadowColors.secondary40,  // 40% secondary
-            offset = Offset(0f, 4f),
-            blurRadius = 15f
-        )
-    )
-    
-    /**
-     * Subtle shadow для малих елементів
-     * Використання: Chips, small buttons
-     */
-    val subtle = listOf(
-        Shadow(
-            color = ShadowColors.black20,
-            offset = Offset(0f, 2f),
-            blurRadius = 4f
-        )
-    )
-    
-    /**
-     * Modal/Dialog shadow
-     * Використання: Модальні вікна, діалоги
-     */
-    val modal = listOf(
-        Shadow(
-            color = ShadowColors.black30,
-            offset = Offset(0f, 10f),
-            blurRadius = 30f
-        ),
-        Shadow(
-            color = ShadowColors.black20,
-            offset = Offset(0f, 20f),
+        androidx.compose.ui.graphics.Shadow(
+            color = ShadowColors.black40,  // 40% black
+            offset = androidx.compose.ui.geometry.Offset(0f, 24f),
             blurRadius = 60f
+        ),
+        androidx.compose.ui.graphics.Shadow(
+            color = ShadowColors.black10,
+            offset = androidx.compose.ui.geometry.Offset(0f, 4f),
+            blurRadius = 8f
         )
     )
-    
-    /**
-     * FAB (Floating Action Button) shadow
-     * Використання: AI Coach FAB
-     */
-    val fab = listOf(
-        Shadow(
-            color = ShadowColors.black30,
-            offset = Offset(0f, 6f),
-            blurRadius = 10f
+
+    // Картка з підсвіткою (hover/active)
+    val cardElevated = listOf(
+        androidx.compose.ui.graphics.Shadow(
+            color = ShadowColors.black40,
+            offset = androidx.compose.ui.geometry.Offset(0f, 30f),
+            blurRadius = 70f
         ),
-        Shadow(
-            color = ShadowColors.primary30,
-            offset = Offset(0f, 0f),
+        androidx.compose.ui.graphics.Shadow(
+            color = ShadowColors.primaryGlow,  // 30% primary
+            offset = androidx.compose.ui.geometry.Offset(0f, 0f),
+            blurRadius = 40f
+        )
+    )
+
+    // ===== BUTTON SHADOWS =====
+
+    // Primary button (синій з glow)
+    val primaryButton = listOf(
+        androidx.compose.ui.graphics.Shadow(
+            color = ShadowColors.primaryGlow,  // 30% primary
+            offset = androidx.compose.ui.geometry.Offset(0f, 8f),
+            blurRadius = 22f
+        ),
+        androidx.compose.ui.graphics.Shadow(
+            color = ShadowColors.black20,
+            offset = androidx.compose.ui.geometry.Offset(0f, 2f),
+            blurRadius = 5f
+        )
+    )
+
+    // CTA button (помаранчевий з сильним glow)
+    val ctaButton = listOf(
+        androidx.compose.ui.graphics.Shadow(
+            color = ShadowColors.accentGlow,  // 30% orange
+            offset = androidx.compose.ui.geometry.Offset(0f, 14f),
+            blurRadius = 36f
+        ),
+        androidx.compose.ui.graphics.Shadow(
+            color = ShadowColors.black20,
+            offset = androidx.compose.ui.geometry.Offset(0f, 3f),
+            blurRadius = 8f
+        )
+    )
+
+    // ===== RECORD BUTTON SHADOWS =====
+
+    // Idle state
+    val recordButton = listOf(
+        androidx.compose.ui.graphics.Shadow(
+            color = ShadowColors.primaryGlow,
+            offset = androidx.compose.ui.geometry.Offset(0f, 10f),
+            blurRadius = 28f
+        ),
+        androidx.compose.ui.graphics.Shadow(
+            color = ShadowColors.black20,
+            offset = androidx.compose.ui.geometry.Offset(0f, 3f),
+            blurRadius = 8f
+        )
+    )
+
+    // Recording state (пульсуючий)
+    val recordButtonActive = listOf(
+        androidx.compose.ui.graphics.Shadow(
+            color = ShadowColors.primaryGlow,
+            offset = androidx.compose.ui.geometry.Offset(0f, 14f),
+            blurRadius = 42f
+        ),
+        androidx.compose.ui.graphics.Shadow(
+            color = ShadowColors.black30,
+            offset = androidx.compose.ui.geometry.Offset(0f, 4f),
+            blurRadius = 10f
+        )
+    )
+
+    // ===== PROGRESS RING SHADOWS =====
+
+    val circularProgress = listOf(
+        androidx.compose.ui.graphics.Shadow(
+            color = ShadowColors.purpleGlow,  // 30% purple
+            offset = androidx.compose.ui.geometry.Offset(0f, 8f),
             blurRadius = 20f
         )
     )
-    
-    /**
-     * Bottom sheet shadow
-     * Використання: Bottom sheets
-     */
-    val bottomSheet = listOf(
-        Shadow(
-            color = ShadowColors.black30,
-            offset = Offset(0f, -4f),  // Shadow вгору
-            blurRadius = 15f
+
+    val successRing = listOf(
+        androidx.compose.ui.graphics.Shadow(
+            color = ShadowColors.successGlow,  // 30% green
+            offset = androidx.compose.ui.geometry.Offset(0f, 14f),
+            blurRadius = 42f
+        )
+    )
+
+    // ===== BADGE SHADOWS =====
+
+    val levelBadge = listOf(
+        androidx.compose.ui.graphics.Shadow(
+            color = ShadowColors.accentGlow,
+            offset = androidx.compose.ui.geometry.Offset(0f, 4f),
+            blurRadius = 10f
+        )
+    )
+
+    val secondaryBadge = listOf(
+        androidx.compose.ui.graphics.Shadow(
+            color = ShadowColors.purpleGlow,
+            offset = androidx.compose.ui.geometry.Offset(0f, 4f),
+            blurRadius = 10f
         )
     )
 }
 
-/**
- * Таблиця використання тіней:
- * 
- * CARD              - Звичайні картки (course cards, lesson items)
- * ELEVATED_GLOW     - Активні/вибрані картки з glow ефектом
- * PRIMARY_BUTTON    - Основні кнопки (primary color)
- * CTA_BUTTON        - CTA кнопки (secondary color) - "Почати", "Записати"
- * SUBTLE            - Малі елементи (chips, tags)
- * MODAL             - Модальні вікна, діалоги
- * FAB               - Floating action buttons
- * BOTTOM_SHEET      - Bottom sheets
- */
+// ===== 3D EFFECT PARAMETERS (для прогрес-бару) =====
+object ThreeDEffects {
 
-/**
- * Extension function для застосування multi-layer shadow в Compose
- * 
- * ПРИМІТКА: Jetpack Compose наразі не підтримує multiple shadows на одному елементі нативно.
- * Для багатошарових тіней потрібно використовувати:
- * 1. Modifier.drawBehind з Canvas
- * 2. Або стекати декілька Box один на одному з різними shadows
- * 3. Або використовувати elevation (але це дає тільки одну тінь)
- * 
- * TODO: Створити custom Modifier.multiLayerShadow() в окремому файлі Modifiers.kt
- */
+    // Inset shadows для track (впадина)
+    val progressTrackInset = listOf(
+        androidx.compose.ui.graphics.Shadow(
+            color = ShadowColors.black30,
+            offset = androidx.compose.ui.geometry.Offset(0f, 3f),
+            blurRadius = 8f
+        ),
+        androidx.compose.ui.graphics.Shadow(
+            color = ShadowColors.black40,
+            offset = androidx.compose.ui.geometry.Offset(0f, 1f),
+            blurRadius = 2f
+        )
+    )
+
+    // Shadows для fill (випуклість + glow)
+    val progressFillShadows = listOf(
+        // Outer glow
+        androidx.compose.ui.graphics.Shadow(
+            color = ShadowColors.successGlow,  // 30% green
+            offset = androidx.compose.ui.geometry.Offset(0f, 0f),
+            blurRadius = 24f
+        ),
+        // Drop shadow
+        androidx.compose.ui.graphics.Shadow(
+            color = SuccessColors.default.copy(alpha = 0.4f),
+            offset = androidx.compose.ui.geometry.Offset(0f, 3f),
+            blurRadius = 6f
+        ),
+        // Subtle bottom shadow
+        androidx.compose.ui.graphics.Shadow(
+            color = SuccessColors.default.copy(alpha = 0.5f),
+            offset = androidx.compose.ui.geometry.Offset(0f, 1f),
+            blurRadius = 2f
+        )
+    )
+}
+
+// ===== HELPER: Blur radius для glassmorphism =====
+object GlassBlur {
+    val light = 12.dp
+    val medium = 22.dp
+    val strong = 32.dp
+}

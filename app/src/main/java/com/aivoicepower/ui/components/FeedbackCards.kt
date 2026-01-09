@@ -1,203 +1,130 @@
 package com.aivoicepower.ui.components
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import com.aivoicepower.ui.theme.*
+
+/**
+ * Metric data class
+ */
+data class Metric(
+    val label: String,
+    val score: Int
+)
 
 /**
  * AI Feedback Card - картка з результатами AI аналізу
  */
 @Composable
 fun AiFeedbackCard(
-    overallScore: Int, // 0-100
-    strengths: List<String>,
-    improvements: List<String>,
-    tip: String,
+    overallScore: Int,
+    metrics: List<Metric>,
+    feedback: String,
     modifier: Modifier = Modifier
 ) {
+    var isVisible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        isVisible = true
+    }
+
+    val slideOffset by animateDpAsState(
+        targetValue = if (isVisible) 0.dp else 20.dp,
+        animationSpec = tween(
+            durationMillis = 300,
+            easing = AnimationEasing.decelerate
+        ),
+        label = "slideOffset"
+    )
+
+    val alpha by animateFloatAsState(
+        targetValue = if (isVisible) 1f else 0f,
+        animationSpec = tween(300),
+        label = "alpha"
+    )
+
     Card(
         modifier = modifier
             .fillMaxWidth()
+            .offset(y = slideOffset)
+            .alpha(alpha)
             .glassEffect(GlassStrength.STRONG, RoundedCornerShape(CornerRadius.xl))
-            .shadowPreset(ShadowPreset.ELEVATED, RoundedCornerShape(CornerRadius.xl)),
-        colors = CardDefaults.cardColors(
-            containerColor = GlassEffect.backgroundStrong
-        ),
-        shape = RoundedCornerShape(CornerRadius.xl)
+            .border(
+                width = 1.dp,
+                color = PrimaryColors.default.copy(alpha = 0.3f),
+                shape = RoundedCornerShape(CornerRadius.xl)
+            )
+            .shadowPreset(ShadowPreset.CARD_ELEVATED, RoundedCornerShape(CornerRadius.xl)),
+        shape = RoundedCornerShape(CornerRadius.xl),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
         Column(
-            modifier = Modifier
-                .padding(Spacing.lg)
-                .fillMaxWidth(),
+            modifier = Modifier.padding(Spacing.lg),
             verticalArrangement = Arrangement.spacedBy(Spacing.md)
         ) {
             // Header
             Row(
-                horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
             ) {
                 Icon(
                     imageVector = Icons.Default.AutoAwesome,
                     contentDescription = "AI",
-                    tint = PrimaryColors.default,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(24.dp),
+                    tint = PrimaryColors.default
                 )
                 Text(
                     text = "AI Аналіз",
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     color = TextColors.primary
                 )
             }
 
             // Overall score
-            Row(
+            Box(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-                verticalAlignment = Alignment.CenterVertically
+                contentAlignment = Alignment.Center
             ) {
                 CircularProgress(
                     progress = overallScore / 100f,
-                    size = 64,
-                    strokeWidth = 6,
-                    showPercentage = true
-                )
-
-                Column {
-                    Text(
-                        text = "Загальний результат",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextColors.secondary
-                    )
-                    Text(
-                        text = getScoreLabel(overallScore),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = getScoreColor(overallScore)
-                    )
-                }
-            }
-
-            Divider(color = BorderColors.subtle)
-
-            // Strengths
-            if (strengths.isNotEmpty()) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(Spacing.xs)
-                ) {
-                    Text(
-                        text = "Сильні сторони",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = SemanticColors.success
-                    )
-                    strengths.forEach { strength ->
-                        Text(
-                            text = "• $strength",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = TextColors.primary
-                        )
-                    }
-                }
-            }
-
-            // Improvements
-            if (improvements.isNotEmpty()) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(Spacing.xs)
-                ) {
-                    Text(
-                        text = "Що покращити",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = SemanticColors.warning
-                    )
-                    improvements.forEach { improvement ->
-                        Text(
-                            text = "• $improvement",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = TextColors.primary
-                        )
-                    }
-                }
-            }
-
-            // Tip
-            Surface(
-                color = PrimaryColors.default.copy(alpha = 0.1f),
-                shape = RoundedCornerShape(CornerRadius.md)
-            ) {
-                Row(
-                    modifier = Modifier.padding(Spacing.md),
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
-                ) {
-                    Text(
-                        text = tip,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextColors.primary
-                    )
-                }
-            }
-        }
-    }
-}
-
-/**
- * Metric Card - картка з метрикою (дикція, темп, і т.д.)
- */
-@Composable
-fun MetricCard(
-    metricName: String,
-    score: Int, // 0-100
-    details: String? = null,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = BackgroundColors.surface
-        ),
-        shape = RoundedCornerShape(CornerRadius.md)
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(Spacing.md)
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(Spacing.sm)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = metricName,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = TextColors.primary
-                )
-                Text(
-                    text = "$score%",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = getScoreColor(score)
+                    size = 80,
+                    strokeWidth = 8
                 )
             }
 
-            LinearProgressIndicator(
-                progress = score / 100f,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(6.dp),
-                color = getScoreColor(score),
-                trackColor = BackgroundColors.primary.copy(alpha = 0.3f)
-            )
+            // Metrics
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                metrics.forEachIndexed { index, metric ->
+                    val delayMs = index * 100
+                    MetricCard(
+                        label = metric.label,
+                        score = metric.score,
+                        animationDelay = delayMs
+                    )
+                }
+            }
 
-            if (details != null) {
+            // Text feedback
+            if (feedback.isNotEmpty()) {
                 Text(
-                    text = details,
-                    style = MaterialTheme.typography.bodySmall,
+                    text = feedback,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = TextColors.secondary
                 )
             }
@@ -205,16 +132,120 @@ fun MetricCard(
     }
 }
 
-// Helper functions
-private fun getScoreLabel(score: Int): String = when {
-    score >= 90 -> "Відмінно"
-    score >= 75 -> "Добре"
-    score >= 60 -> "Задовільно"
-    else -> "Потребує покращення"
+/**
+ * Metric Card - горизонтальний бар з оцінкою
+ */
+@Composable
+fun MetricCard(
+    label: String,
+    score: Int,
+    modifier: Modifier = Modifier,
+    animationDelay: Int = 0
+) {
+    var isVisible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        delay(animationDelay.toLong())
+        isVisible = true
+    }
+
+    val progress by animateFloatAsState(
+        targetValue = if (isVisible) score / 100f else 0f,
+        animationSpec = tween(
+            durationMillis = AnimationDuration.medium,
+            easing = AnimationEasing.decelerate
+        ),
+        label = "metricProgress"
+    )
+
+    val scoreColor = when (score) {
+        in 0..39 -> ErrorColors.default
+        in 40..69 -> WarningColors.default
+        else -> SuccessColors.default
+    }
+
+    val progressGradient = when (score) {
+        in 0..39 -> Brush.horizontalGradient(listOf(ErrorColors.default, ErrorColors.light))
+        in 40..69 -> Brush.horizontalGradient(listOf(WarningColors.default, WarningColors.light))
+        else -> Gradients.progressFill
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(60.dp)
+            .background(GlassColors.light, RoundedCornerShape(CornerRadius.md))
+            .border(1.dp, BorderColors.light, RoundedCornerShape(CornerRadius.md))
+            .padding(Spacing.md)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Left: Label + Score
+            Column {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextColors.secondary
+                )
+                Text(
+                    text = "$score/100",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = scoreColor
+                )
+            }
+
+            // Right: Progress bar
+            Box(
+                modifier = Modifier
+                    .width(120.dp)
+                    .height(8.dp)
+                    .background(GlassColors.medium, RoundedCornerShape(CornerRadius.full))
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(progress)
+                        .background(progressGradient, RoundedCornerShape(CornerRadius.full))
+                )
+            }
+        }
+    }
 }
 
-private fun getScoreColor(score: Int): androidx.compose.ui.graphics.Color = when {
-    score >= 75 -> SemanticColors.success
-    score >= 50 -> SemanticColors.warning
-    else -> SemanticColors.error
+// Legacy support - old AiFeedbackCard signature
+@Composable
+fun AiFeedbackCard(
+    overallScore: Int,
+    strengths: List<String>,
+    improvements: List<String>,
+    tip: String,
+    modifier: Modifier = Modifier
+) {
+    // Convert old format to new metrics format
+    val metrics = listOf(
+        Metric("Загальний результат", overallScore)
+    )
+    val feedback = buildString {
+        if (strengths.isNotEmpty()) {
+            append("Сильні сторони: ")
+            append(strengths.joinToString(", "))
+            append("\n")
+        }
+        if (improvements.isNotEmpty()) {
+            append("Що покращити: ")
+            append(improvements.joinToString(", "))
+            append("\n")
+        }
+        append(tip)
+    }
+
+    AiFeedbackCard(
+        overallScore = overallScore,
+        metrics = metrics,
+        feedback = feedback,
+        modifier = modifier
+    )
 }

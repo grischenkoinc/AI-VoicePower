@@ -1,5 +1,7 @@
 package com.aivoicepower.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -7,10 +9,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.aivoicepower.ui.theme.*
+
+/**
+ * Chip Status enum
+ */
+enum class ChipStatus {
+    SUCCESS, WARNING, ERROR, INFO, NEUTRAL
+}
 
 /**
  * Status Chip - кольоровий chip для статусів
@@ -19,40 +31,43 @@ import com.aivoicepower.ui.theme.*
 fun StatusChip(
     text: String,
     status: ChipStatus,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    icon: ImageVector? = null
 ) {
     val (backgroundColor, textColor) = when (status) {
-        ChipStatus.SUCCESS -> SemanticColors.success to TextColors.onPrimary
-        ChipStatus.WARNING -> SemanticColors.warning to TextColors.onPrimary
-        ChipStatus.ERROR -> SemanticColors.error to TextColors.onPrimary
-        ChipStatus.INFO -> SemanticColors.info to TextColors.onPrimary
-        ChipStatus.NEUTRAL -> BackgroundColors.surface to TextColors.primary
+        ChipStatus.SUCCESS -> SuccessColors.light.copy(alpha = 0.15f) to SuccessColors.default
+        ChipStatus.WARNING -> WarningColors.light.copy(alpha = 0.15f) to WarningColors.default
+        ChipStatus.ERROR -> ErrorColors.light.copy(alpha = 0.15f) to ErrorColors.default
+        ChipStatus.INFO -> PrimaryColors.light.copy(alpha = 0.15f) to PrimaryColors.default
+        ChipStatus.NEUTRAL -> GlassColors.medium to TextColors.secondary
     }
 
-    Surface(
-        modifier = modifier.height(32.dp),
-        color = backgroundColor,
-        shape = RoundedCornerShape(CornerRadius.full)
+    Row(
+        modifier = modifier
+            .height(24.dp)
+            .background(backgroundColor, RoundedCornerShape(CornerRadius.full))
+            .padding(horizontal = Spacing.sm, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.xs)
     ) {
-        Box(
-            modifier = Modifier.padding(horizontal = Spacing.md),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = text,
-                style = MaterialTheme.typography.labelMedium,
-                color = textColor
+        icon?.let {
+            Icon(
+                imageVector = it,
+                contentDescription = null,
+                modifier = Modifier.size(14.dp),
+                tint = textColor
             )
         }
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall,
+            color = textColor
+        )
     }
-}
-
-enum class ChipStatus {
-    SUCCESS, WARNING, ERROR, INFO, NEUTRAL
 }
 
 /**
- * Info Badge - маленький badge з числом
+ * Info Badge - маленький круглий badge з числом
  */
 @Composable
 fun InfoBadge(
@@ -60,74 +75,80 @@ fun InfoBadge(
     modifier: Modifier = Modifier
 ) {
     if (count > 0) {
-        Surface(
-            modifier = modifier.size(20.dp),
-            color = SemanticColors.error,
-            shape = CircleShape
+        Box(
+            modifier = modifier
+                .size(20.dp)
+                .shadowPreset(ShadowPreset.SECONDARY_BADGE, CircleShape)
+                .background(SecondaryColors.default, CircleShape)
+                .border(2.dp, Color.White, CircleShape),
+            contentAlignment = Alignment.Center
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Text(
-                    text = if (count > 99) "99+" else "$count",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = TextColors.onPrimary
-                )
-            }
+            Text(
+                text = if (count > 99) "99+" else count.toString(),
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                color = Color.White
+            )
         }
     }
 }
 
 /**
- * Section Divider - розділювач з текстом
+ * Section Divider - розділювач секцій з опціональним текстом
  */
 @Composable
 fun SectionDivider(
-    text: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    label: String? = null
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = Spacing.md),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
-    ) {
+    if (label != null) {
+        Row(
+            modifier = modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Divider(
+                modifier = Modifier.weight(1f),
+                thickness = 1.dp,
+                color = BorderColors.default
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = TextColors.tertiary,
+                modifier = Modifier.padding(horizontal = Spacing.sm)
+            )
+            Divider(
+                modifier = Modifier.weight(1f),
+                thickness = 1.dp,
+                color = BorderColors.default
+            )
+        }
+    } else {
         Divider(
-            modifier = Modifier.weight(1f),
-            color = BorderColors.default
-        )
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelMedium,
-            color = TextColors.secondary
-        )
-        Divider(
-            modifier = Modifier.weight(1f),
+            modifier = modifier.fillMaxWidth(),
+            thickness = 1.dp,
             color = BorderColors.default
         )
     }
 }
 
 /**
- * Empty State - порожній стан з іконкою та текстом
+ * Empty State - порожній стан списку з іконкою та текстом
  */
 @Composable
 fun EmptyState(
     icon: ImageVector,
     title: String,
     description: String,
-    actionText: String? = null,
-    onActionClick: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    actionLabel: String? = null,
+    onActionClick: (() -> Unit)? = null
 ) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(Spacing.xxl),
+            .padding(Spacing.xl),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(Spacing.md)
+        verticalArrangement = Arrangement.spacedBy(Spacing.lg)
     ) {
         Icon(
             imageVector = icon,
@@ -150,10 +171,9 @@ fun EmptyState(
             textAlign = TextAlign.Center
         )
 
-        if (actionText != null && onActionClick != null) {
-            Spacer(modifier = Modifier.height(Spacing.sm))
-            PrimaryButton(
-                text = actionText,
+        if (actionLabel != null && onActionClick != null) {
+            AppTextButton(
+                text = actionLabel,
                 onClick = onActionClick
             )
         }
@@ -161,28 +181,31 @@ fun EmptyState(
 }
 
 /**
- * Loading Indicator - індикатор завантаження з текстом
+ * Loading Indicator - індикатор завантаження з опціональним текстом
  */
 @Composable
 fun LoadingIndicator(
-    text: String = "Завантаження...",
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    size: Dp = 40.dp,
+    text: String? = null
 ) {
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(Spacing.xl),
+        modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(Spacing.md)
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm)
     ) {
         CircularProgressIndicator(
+            modifier = Modifier.size(size),
             color = PrimaryColors.default,
             strokeWidth = 3.dp
         )
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodyMedium,
-            color = TextColors.secondary
-        )
+
+        text?.let {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextColors.secondary
+            )
+        }
     }
 }

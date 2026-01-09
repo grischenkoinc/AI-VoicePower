@@ -1,145 +1,211 @@
 package com.aivoicepower.ui.components
 
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 import com.aivoicepower.ui.theme.*
 
 /**
- * Record Button - велика кругла кнопка для запису
- * Стани: Idle (готовий), Recording (записує), Processing (обробка)
+ * Record Button - велика кругла кнопка для запису (115dp)
+ * Стани: Idle (з pulse rings), Recording (синій pulsating border)
  */
 @Composable
 fun RecordButton(
     isRecording: Boolean,
-    isProcessing: Boolean = false,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    size: Int = 72 // dp
+    enabled: Boolean = true
 ) {
-    // Pulse animation для idle стану
-    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-    val scale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.05f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = tween(
+            durationMillis = AnimationDuration.short,
+            easing = AnimationEasing.standard
         ),
-        label = "scale"
+        label = "recordButtonScale"
     )
 
-    // Glow animation для recording стану
-    val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.6f,
+    // Border pulsation for recording state
+    val borderAlpha by rememberInfiniteTransition(label = "border_pulse").animateFloat(
+        initialValue = 0.6f,
+        targetValue = 1f,
         animationSpec = infiniteRepeatable(
-            animation = tween(800, easing = LinearEasing),
+            animation = tween(1000, easing = AnimationEasing.smooth),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "glow"
+        label = "border_alpha"
     )
 
     Box(
-        modifier = modifier
-            .size(size.dp)
-            .then(
-                if (!isRecording && !isProcessing) {
-                    Modifier.scale(scale)
-                } else {
-                    Modifier
-                }
-            ),
+        modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
-        // Outer border
-        Box(
-            modifier = Modifier
-                .size(size.dp)
-                .border(
-                    width = 4.dp,
-                    color = BackgroundColors.surfaceElevated,
-                    shape = CircleShape
+        // Pulse rings (тільки коли НЕ recording)
+        if (!isRecording) {
+            repeat(3) { index ->
+                val delay = index * 300
+                val targetScale = 1.0f + (index + 1) * 0.3f
+                val alpha = 0.3f - index * 0.1f
+
+                val pulseScale by rememberInfiniteTransition(label = "pulse_$index").animateFloat(
+                    initialValue = 1f,
+                    targetValue = targetScale,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(
+                            durationMillis = 2000,
+                            delayMillis = delay,
+                            easing = AnimationEasing.smooth
+                        ),
+                        repeatMode = RepeatMode.Restart
+                    ),
+                    label = "pulse_scale_$index"
                 )
-        )
+
+                val pulseAlpha by rememberInfiniteTransition(label = "pulse_alpha_$index").animateFloat(
+                    initialValue = alpha,
+                    targetValue = 0f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(
+                            durationMillis = 2000,
+                            delayMillis = delay,
+                            easing = AnimationEasing.smooth
+                        ),
+                        repeatMode = RepeatMode.Restart
+                    ),
+                    label = "pulse_alpha_$index"
+                )
+
+                Box(
+                    modifier = Modifier
+                        .size(115.dp)
+                        .scale(pulseScale)
+                        .border(
+                            width = 2.dp,
+                            color = PrimaryColors.default.copy(alpha = pulseAlpha),
+                            shape = CircleShape
+                        )
+                )
+            }
+        }
 
         // Main button
-        Surface(
+        Box(
             modifier = Modifier
-                .size((size - 8).dp)
+                .size(115.dp)
+                .scale(scale)
+                .then(
+                    if (isRecording) {
+                        Modifier.border(
+                            width = 4.dp,
+                            color = PrimaryColors.default.copy(alpha = borderAlpha),
+                            shape = CircleShape
+                        )
+                    } else Modifier
+                )
+                .gradientBackground(Gradients.recordButton, CircleShape)
                 .shadowPreset(
-                    if (isRecording) ShadowPreset.BUTTON_CTA else ShadowPreset.BUTTON_PRIMARY,
+                    if (isRecording) ShadowPreset.RECORD_BUTTON_ACTIVE else ShadowPreset.RECORD_BUTTON,
                     CircleShape
                 )
-                .clickable(enabled = !isProcessing, onClick = onClick),
-            shape = CircleShape,
-            color = if (isRecording) SemanticColors.error else SecondaryColors.default
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    enabled = enabled,
+                    onClick = onClick
+                ),
+            contentAlignment = Alignment.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.radialGradient(
-                            colors = if (isRecording) {
-                                listOf(
-                                    SemanticColors.error.copy(alpha = glowAlpha),
-                                    SemanticColors.errorLight.copy(alpha = glowAlpha)
-                                )
-                            } else {
-                                listOf(
-                                    SecondaryColors.default,
-                                    SecondaryColors.light
-                                )
-                            }
-                        )
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                if (isProcessing) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(32.dp),
-                        color = TextColors.onSecondary,
-                        strokeWidth = 3.dp
-                    )
-                } else {
-                    Icon(
-                        imageVector = if (isRecording) Icons.Default.Stop else Icons.Default.Mic,
-                        contentDescription = if (isRecording) "Зупинити запис" else "Почати запис",
-                        modifier = Modifier.size(32.dp),
-                        tint = TextColors.onSecondary
-                    )
-                }
-            }
+            Icon(
+                imageVector = if (isRecording) Icons.Default.Pause else Icons.Default.Mic,
+                contentDescription = if (isRecording) "Pause recording" else "Start recording",
+                modifier = Modifier.size(48.dp),
+                tint = TextColors.primary
+            )
         }
     }
 }
 
 /**
  * Compact Record Button - компактна версія (56dp)
+ * Без pulse rings, але з border pulsation при recording
  */
 @Composable
 fun CompactRecordButton(
     isRecording: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
-    RecordButton(
-        isRecording = isRecording,
-        onClick = onClick,
-        modifier = modifier,
-        size = 56
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = tween(
+            durationMillis = AnimationDuration.short,
+            easing = AnimationEasing.standard
+        ),
+        label = "compactRecordButtonScale"
     )
+
+    // Border pulsation for recording state
+    val borderAlpha by rememberInfiniteTransition(label = "compact_border_pulse").animateFloat(
+        initialValue = 0.6f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = AnimationEasing.smooth),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "compact_border_alpha"
+    )
+
+    Box(
+        modifier = modifier
+            .size(56.dp)
+            .scale(scale)
+            .then(
+                if (isRecording) {
+                    Modifier.border(
+                        width = 3.dp,
+                        color = PrimaryColors.default.copy(alpha = borderAlpha),
+                        shape = CircleShape
+                    )
+                } else Modifier
+            )
+            .gradientBackground(Gradients.recordButton, CircleShape)
+            .shadowPreset(
+                if (isRecording) ShadowPreset.RECORD_BUTTON_ACTIVE else ShadowPreset.RECORD_BUTTON,
+                CircleShape
+            )
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                enabled = enabled,
+                onClick = onClick
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = if (isRecording) Icons.Default.Pause else Icons.Default.Mic,
+            contentDescription = if (isRecording) "Pause recording" else "Start recording",
+            modifier = Modifier.size(24.dp),
+            tint = TextColors.primary
+        )
+    }
 }

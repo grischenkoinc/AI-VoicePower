@@ -1,256 +1,341 @@
 package com.aivoicepower.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.aivoicepower.ui.theme.*
 
 /**
- * Course Card - картка курсу
+ * Course Card - картка курсу з темною фіолетовою шапкою та світлим body
  */
 @Composable
 fun CourseCard(
     title: String,
     description: String,
-    lessonsCount: Int,
-    progress: Float, // 0.0 - 1.0
+    icon: ImageVector,
+    iconColor: Color,
+    progress: Float?, // null якщо не почато
+    totalLessons: Int,
+    completedLessons: Int,
     isLocked: Boolean = false,
-    isPremium: Boolean = false,
+    isCompleted: Boolean = false,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    icon: ImageVector? = null
+    modifier: Modifier = Modifier
 ) {
-    Surface(
+    Card(
         modifier = modifier
             .fillMaxWidth()
-            .cornerRadiusLg()
-            .shadowPreset(
-                ShadowPreset.CARD,
-                RoundedCornerShape(CornerRadius.lg)
-            )
-            .then(if (!isLocked) Modifier.clickable(onClick = onClick) else Modifier),
-        color = BackgroundColors.surface,
-        shape = RoundedCornerShape(CornerRadius.lg)
+            .shadowPreset(ShadowPreset.CARD, RoundedCornerShape(CornerRadius.lg))
+            .clickable(enabled = !isLocked, onClick = onClick),
+        shape = RoundedCornerShape(CornerRadius.lg),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
-        Column(
-            modifier = Modifier
-                .cardPadding()
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(Spacing.sm)
-        ) {
-            // Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Icon + Title
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.weight(1f)
+        Box {
+            Column {
+                // Header (темна фіолетова)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .cardHeaderBackground()
+                        .padding(Spacing.lg)
                 ) {
-                    if (icon != null) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = null,
-                            modifier = Modifier.size(32.dp),
-                            tint = PrimaryColors.default
-                        )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.md)
+                    ) {
+                        // Icon в кольоровому колі
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .background(iconColor, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                modifier = Modifier.size(28.dp),
+                                tint = Color.White
+                            )
+                        }
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = title,
+                                style = MaterialTheme.typography.titleLarge,
+                                color = TextColors.primary
+                            )
+                            Text(
+                                text = description,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = TextColors.secondary,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                     }
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleLarge,
-                        color = TextColors.primary
-                    )
                 }
 
-                // Premium badge or Lock
-                if (isPremium) {
-                    PremiumBadge()
+                // Body (світлий)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .cardBodyBackground()
+                        .then(
+                            if (isCompleted) {
+                                Modifier.border(
+                                    width = 2.dp,
+                                    color = SuccessColors.default,
+                                    shape = RoundedCornerShape(
+                                        bottomStart = CornerRadius.lg,
+                                        bottomEnd = CornerRadius.lg
+                                    )
+                                )
+                            } else Modifier
+                        )
+                        .padding(Spacing.lg)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                        if (progress != null && progress > 0f) {
+                            SkillProgressBar(
+                                skillName = "",
+                                progress = progress,
+                                showLabel = false,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "$completedLessons / $totalLessons уроків",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = TextColors.tertiary
+                            )
+
+                            if (isCompleted) {
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = "Completed",
+                                    modifier = Modifier.size(20.dp),
+                                    tint = SuccessColors.default
+                                )
+                            }
+                        }
+                    }
                 }
-                if (isLocked) {
+            }
+
+            // Locked overlay
+            if (isLocked) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(Color.Black.copy(alpha = 0.5f)),
+                    contentAlignment = Alignment.Center
+                ) {
                     Icon(
                         imageVector = Icons.Default.Lock,
-                        contentDescription = "Заблоковано",
-                        tint = TextColors.secondary,
-                        modifier = Modifier.size(20.dp)
+                        contentDescription = "Locked",
+                        modifier = Modifier.size(48.dp),
+                        tint = Color.White
                     )
                 }
             }
-
-            // Description
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = TextColors.secondary,
-                maxLines = 2
-            )
-
-            // Progress bar
-            if (progress > 0f && !isLocked) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    LinearProgressIndicator(
-                        progress = progress,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(4.dp),
-                        color = AccentColors.default,
-                        trackColor = BackgroundColors.primary.copy(alpha = 0.3f)
-                    )
-                    Text(
-                        text = "${(progress * 100).toInt()}% завершено",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = TextColors.secondary
-                    )
-                }
-            }
-
-            // Lessons count
-            Text(
-                text = "$lessonsCount уроків",
-                style = MaterialTheme.typography.labelMedium,
-                color = TextColors.muted
-            )
         }
     }
 }
 
 /**
- * Lesson Card - картка уроку
+ * Lesson Card - картка уроку з темною шапкою та світлим body
  */
 @Composable
 fun LessonCard(
     dayNumber: Int,
     title: String,
-    estimatedMinutes: Int,
+    durationMinutes: Int,
+    exercisesCount: Int,
     isCompleted: Boolean = false,
     isLocked: Boolean = false,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(
+    Card(
         modifier = modifier
             .fillMaxWidth()
-            .cornerRadiusMd()
+            .alpha(if (isLocked) 0.6f else 1f)
             .shadowPreset(
-                if (isCompleted) ShadowPreset.ELEVATED else ShadowPreset.CARD,
-                RoundedCornerShape(CornerRadius.md)
+                if (isCompleted) ShadowPreset.CARD_ELEVATED else ShadowPreset.CARD,
+                RoundedCornerShape(CornerRadius.lg)
             )
-            .then(if (!isLocked) Modifier.clickable(onClick = onClick) else Modifier),
-        color = if (isCompleted)
-            BackgroundColors.surfaceElevated
-        else
-            BackgroundColors.surface,
-        shape = RoundedCornerShape(CornerRadius.md)
+            .clickable(enabled = !isLocked, onClick = onClick),
+        shape = RoundedCornerShape(CornerRadius.lg),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
-        Row(
-            modifier = Modifier
-                .padding(Spacing.md)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Day number circle
-            Surface(
-                modifier = Modifier.size(48.dp),
-                shape = CircleShape,
-                color = if (isCompleted)
-                    SemanticColors.success
-                else if (isLocked)
-                    BackgroundColors.primary.copy(alpha = 0.5f)
-                else
-                    PrimaryColors.default
+        Column {
+            // Header
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .then(
+                        if (isCompleted) {
+                            Modifier.gradientBackground(
+                                Gradients.success,
+                                RoundedCornerShape(
+                                    topStart = CornerRadius.lg,
+                                    topEnd = CornerRadius.lg
+                                )
+                            )
+                        } else {
+                            Modifier.cardHeaderBackground()
+                        }
+                    )
+                    .padding(Spacing.md)
             ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize()
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.md)
                 ) {
-                    if (isCompleted) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Завершено",
-                            tint = TextColors.onPrimary
-                        )
-                    } else if (isLocked) {
-                        Icon(
-                            imageVector = Icons.Default.Lock,
-                            contentDescription = "Заблоковано",
-                            tint = TextColors.onPrimary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    } else {
-                        Text(
-                            text = "$dayNumber",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = TextColors.onPrimary
-                        )
+                    // Day circle або icon
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .background(
+                                if (isCompleted) Color.White else PrimaryColors.default,
+                                CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        when {
+                            isCompleted -> {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = "Completed",
+                                    modifier = Modifier.size(20.dp),
+                                    tint = SuccessColors.default
+                                )
+                            }
+                            isLocked -> {
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = "Locked",
+                                    modifier = Modifier.size(16.dp),
+                                    tint = Color.White
+                                )
+                            }
+                            else -> {
+                                Text(
+                                    text = dayNumber.toString(),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = Color.White
+                                )
+                            }
+                        }
                     }
+
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = TextColors.primary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
 
-            // Content
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+            // Body
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .cardBodyBackground()
+                    .padding(Spacing.md)
             ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = TextColors.primary
-                )
-                Text(
-                    text = "~$estimatedMinutes хв",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = TextColors.secondary
-                )
-            }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.lg)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.xs)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Schedule,
+                            contentDescription = "Duration",
+                            modifier = Modifier.size(16.dp),
+                            tint = TextColors.tertiary
+                        )
+                        Text(
+                            text = "$durationMinutes хв",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextColors.tertiary
+                        )
+                    }
 
-            // Arrow
-            if (!isLocked) {
-                Icon(
-                    imageVector = Icons.Filled.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = TextColors.secondary
-                )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.xs)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Exercises",
+                            modifier = Modifier.size(16.dp),
+                            tint = TextColors.tertiary
+                        )
+                        Text(
+                            text = "$exercisesCount вправ",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextColors.tertiary
+                        )
+                    }
+                }
             }
         }
     }
 }
 
 /**
- * Premium Badge
+ * Premium Badge - золотий бейдж Premium
  */
 @Composable
-fun PremiumBadge() {
-    Surface(
-        shape = RoundedCornerShape(CornerRadius.full),
-        color = SecondaryColors.default,
-        modifier = Modifier.height(24.dp)
+fun PremiumBadge(
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .height(24.dp)
+            .gradientBackground(Gradients.premium, RoundedCornerShape(CornerRadius.full))
+            .border(1.dp, Color(0xFFFFD700), RoundedCornerShape(CornerRadius.full))
+            .shadowPreset(ShadowPreset.SECONDARY_BADGE, RoundedCornerShape(CornerRadius.full))
+            .padding(horizontal = Spacing.sm, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.xs)
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = Spacing.sm),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "PRO",
-                style = MaterialTheme.typography.labelSmall,
-                color = TextColors.onPrimary
-            )
-        }
+        Icon(
+            imageVector = Icons.Default.Star,
+            contentDescription = "Premium",
+            modifier = Modifier.size(14.dp),
+            tint = Color.White
+        )
+        Text(
+            text = "Premium",
+            style = MaterialTheme.typography.labelSmall,
+            color = Color.White
+        )
     }
 }

@@ -91,7 +91,7 @@ fun TestDesignSystemScreen() {
                 .fillMaxWidth()
                 .height(48.dp)
                 .gradientBackground(
-                    Gradients.secondary,
+                    Gradients.ctaButton,
                     RoundedCornerShape(CornerRadius.md)
                 ),
             contentAlignment = androidx.compose.ui.Alignment.Center

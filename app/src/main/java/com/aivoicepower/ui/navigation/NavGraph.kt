@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.aivoicepower.ui.screens.ComponentsShowcaseScreen
 import com.aivoicepower.ui.screens.aicoach.AiCoachScreen
 import com.aivoicepower.ui.screens.diagnostic.DiagnosticResultScreen
 import com.aivoicepower.ui.screens.diagnostic.DiagnosticScreen
@@ -25,7 +26,7 @@ import com.aivoicepower.ui.screens.onboarding.SplashScreen
 @Composable
 fun NavGraph(
     navController: NavHostController,
-    startDestination: String = Screen.Splash.route
+    startDestination: String = Screen.ComponentsShowcase.route // Тимчасово для тесту
 ) {
     NavHost(
         navController = navController,
@@ -110,6 +111,12 @@ fun NavGraph(
             PremiumPlaceholderScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
+        }
+
+        // ===== COMPONENTS SHOWCASE (Development) =====
+
+        composable(route = Screen.ComponentsShowcase.route) {
+            ComponentsShowcaseScreen()
         }
     }
 }

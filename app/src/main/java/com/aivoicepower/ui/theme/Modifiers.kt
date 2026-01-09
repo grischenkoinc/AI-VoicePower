@@ -3,251 +3,155 @@ package com.aivoicepower.ui.theme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-/**
- * AI VoicePower Custom Modifiers
- * 
- * Extension functions для спрощення роботи з Design System
- */
+// ===== GRADIENT BACKGROUNDS =====
 
-// ============================================
-// GLASSMORPHISM EFFECT
-// ============================================
-
-/**
- * Застосовує glass effect (glassmorphism)
- * 
- * @param strength Інтенсивність ефекту (LIGHT, MEDIUM, STRONG)
- * @param shape Форма елемента
- * @param border Чи додавати border
- * 
- * Приклад:
- * ```kotlin
- * Box(
- *     modifier = Modifier
- *         .size(200.dp)
- *         .glassEffect(GlassStrength.MEDIUM, RoundedCornerShape(16.dp))
- * )
- * ```
- */
-fun Modifier.glassEffect(
-    strength: GlassStrength = GlassStrength.MEDIUM,
-    shape: Shape = RectangleShape,
-    border: Boolean = true
-): Modifier = this.composed {
-    val backgroundColor = when (strength) {
-        GlassStrength.LIGHT -> GlassEffect.backgroundLight
-        GlassStrength.MEDIUM -> GlassEffect.backgroundMedium
-        GlassStrength.STRONG -> GlassEffect.backgroundStrong
-    }
-    
-    var modifier = this
-        .background(backgroundColor, shape)
-        .clip(shape)
-    
-    if (border) {
-        modifier = modifier.border(
-            width = 1.dp,
-            color = GlassEffect.borderColor,
-            shape = shape
-        )
-    }
-    
-    modifier
-}
-
-enum class GlassStrength {
-    LIGHT,   // 5% white
-    MEDIUM,  // 8% white
-    STRONG   // 10% white
-}
-
-// ============================================
-// GRADIENT BACKGROUND
-// ============================================
-
-/**
- * Застосовує gradient background
- * 
- * @param gradient Brush gradient з Gradients object
- * @param shape Форма елемента
- * 
- * Приклад:
- * ```kotlin
- * Button(
- *     onClick = { },
- *     modifier = Modifier.gradientBackground(Gradients.primary, RoundedCornerShape(12.dp))
- * )
- * ```
- */
 fun Modifier.gradientBackground(
     gradient: Brush,
-    shape: Shape = RectangleShape
-): Modifier = this
-    .background(gradient, shape)
+    shape: Shape = RoundedCornerShape(0.dp)
+) = this
     .clip(shape)
+    .background(gradient)
 
-// ============================================
-// SHADOW WITH PRESET
-// ============================================
+// Shortcuts для конкретних градієнтів
+fun Modifier.cardHeaderBackground(shape: Shape = RoundedCornerShape(0.dp)) =
+    gradientBackground(Gradients.cardHeader, shape)
+fun Modifier.cardBodyBackground(shape: Shape = RoundedCornerShape(0.dp)) =
+    gradientBackground(Gradients.cardBody, shape)
+fun Modifier.primaryButtonBackground(shape: Shape = RoundedCornerShape(16.dp)) =
+    gradientBackground(Gradients.primaryButton, shape)
+fun Modifier.ctaButtonBackground(shape: Shape = RoundedCornerShape(16.dp)) =
+    gradientBackground(Gradients.ctaButton, shape)
 
-/**
- * Застосовує тінь з preset з Design System
- * 
- * ПРИМІТКА: Це спрощена версія, яка використовує стандартний Modifier.shadow()
- * Для справжніх multi-layer shadows потрібна складніша реалізація з Canvas
- * 
- * @param preset Тип тіні (CARD, ELEVATED, BUTTON_PRIMARY, тощо)
- * @param shape Форма елемента
- * 
- * Приклад:
- * ```kotlin
- * Card(
- *     modifier = Modifier.shadowPreset(ShadowPreset.CARD, RoundedCornerShape(16.dp))
- * )
- * ```
- */
-fun Modifier.shadowPreset(
-    preset: ShadowPreset,
-    shape: Shape = RectangleShape
-): Modifier = this.composed {
-    val elevation = when (preset) {
-        ShadowPreset.NONE -> 0.dp
-        ShadowPreset.SUBTLE -> Elevation.level1
-        ShadowPreset.CARD -> Elevation.level2
-        ShadowPreset.ELEVATED -> Elevation.level3
-        ShadowPreset.BUTTON_PRIMARY -> Elevation.level2
-        ShadowPreset.BUTTON_CTA -> Elevation.level2
-        ShadowPreset.FAB -> Elevation.level3
-        ShadowPreset.MODAL -> Elevation.level5
-    }
-    
-    // TODO: Для справжніх multi-layer shadows використовувати drawBehind
-    // Поки що використовуємо стандартний shadow
-    this.shadow(
-        elevation = elevation,
-        shape = shape,
-        clip = false
-    )
+// ===== GLASS EFFECT =====
+
+enum class GlassStrength {
+    LIGHT, MEDIUM, STRONG
 }
+
+fun Modifier.glassEffect(
+    strength: GlassStrength = GlassStrength.MEDIUM,
+    shape: Shape = RoundedCornerShape(16.dp)
+) = this
+    .clip(shape)
+    .background(
+        when (strength) {
+            GlassStrength.LIGHT -> GlassColors.light
+            GlassStrength.MEDIUM -> GlassColors.medium
+            GlassStrength.STRONG -> GlassColors.strong
+        }
+    )
+    .border(
+        width = 1.dp,
+        color = GlassColors.border,
+        shape = shape
+    )
+
+// ===== CORNER RADIUS SHORTCUTS =====
+
+fun Modifier.cornerRadiusXs() = clip(RoundedCornerShape(4.dp))
+fun Modifier.cornerRadiusSm() = clip(RoundedCornerShape(8.dp))
+fun Modifier.cornerRadiusMd() = clip(RoundedCornerShape(12.dp))
+fun Modifier.cornerRadiusLg() = clip(RoundedCornerShape(16.dp))
+fun Modifier.cornerRadiusXl() = clip(RoundedCornerShape(24.dp))
+fun Modifier.cornerRadiusXxl() = clip(RoundedCornerShape(32.dp))
+fun Modifier.cornerRadiusFull() = clip(RoundedCornerShape(100.dp))
+
+// ===== SHADOW PRESETS =====
 
 enum class ShadowPreset {
-    NONE,            // Без тіні
-    SUBTLE,          // Тонка тінь (chips, tags)
-    CARD,            // Звичайна картка
-    ELEVATED,        // Піднята картка/FAB
-    BUTTON_PRIMARY,  // Primary кнопка
-    BUTTON_CTA,      // CTA кнопка
-    FAB,             // Floating action button
-    MODAL            // Модальне вікно
+    CARD,
+    CARD_ELEVATED,
+    BUTTON_PRIMARY,
+    BUTTON_CTA,
+    RECORD_BUTTON,
+    RECORD_BUTTON_ACTIVE,
+    LEVEL_BADGE,
+    SECONDARY_BADGE,
+    CIRCULAR_PROGRESS,
+    SUCCESS_RING,
+    PROGRESS_TRACK
 }
 
-// ============================================
-// SPACING SHORTCUTS
-// ============================================
+fun Modifier.shadowPreset(
+    preset: ShadowPreset,
+    shape: Shape = RoundedCornerShape(16.dp)
+) = this.shadow(
+    elevation = when (preset) {
+        ShadowPreset.CARD -> Elevation.level2
+        ShadowPreset.CARD_ELEVATED -> Elevation.level3
+        ShadowPreset.BUTTON_PRIMARY -> Elevation.level2
+        ShadowPreset.BUTTON_CTA -> Elevation.level3
+        ShadowPreset.RECORD_BUTTON -> Elevation.level3
+        ShadowPreset.RECORD_BUTTON_ACTIVE -> Elevation.level4
+        ShadowPreset.LEVEL_BADGE -> Elevation.level1
+        ShadowPreset.SECONDARY_BADGE -> Elevation.level1
+        ShadowPreset.CIRCULAR_PROGRESS -> Elevation.level2
+        ShadowPreset.SUCCESS_RING -> Elevation.level2
+        ShadowPreset.PROGRESS_TRACK -> Elevation.level1
+    },
+    shape = shape,
+    clip = false
+)
 
-/**
- * Extension для швидкого доступу до spacing
- */
+// ===== SPACING SHORTCUTS =====
+
+fun Modifier.paddingXs() = this.then(Modifier.padding(Spacing.xs))
+fun Modifier.paddingSm() = this.then(Modifier.padding(Spacing.sm))
+fun Modifier.paddingMd() = this.then(Modifier.padding(Spacing.md))
+fun Modifier.paddingLg() = this.then(Modifier.padding(Spacing.lg))
+fun Modifier.paddingXl() = this.then(Modifier.padding(Spacing.xl))
+
 fun Modifier.screenPadding(): Modifier = this.padding(horizontal = Spacing.screenHorizontal)
-
 fun Modifier.cardPadding(): Modifier = this.padding(Spacing.cardPadding)
-
 fun Modifier.sectionSpacing(): Modifier = this.padding(vertical = Spacing.sectionSpacing)
 
-// ============================================
-// CORNER RADIUS SHORTCUTS
-// ============================================
+// ===== BORDER SHORTCUTS =====
 
-/**
- * Extension для швидкого clip з corner radius
- */
-fun Modifier.cornerRadius(radius: Dp): Modifier = this
-    .clip(androidx.compose.foundation.shape.RoundedCornerShape(radius))
+fun Modifier.borderLight(
+    width: Dp = 1.dp,
+    shape: Shape = RoundedCornerShape(12.dp)
+) = border(width, BorderColors.light, shape)
 
-fun Modifier.cornerRadiusXs(): Modifier = this
-    .clip(androidx.compose.foundation.shape.RoundedCornerShape(CornerRadius.xs))
+fun Modifier.borderDefault(
+    width: Dp = 1.dp,
+    shape: Shape = RoundedCornerShape(12.dp)
+) = border(width, BorderColors.default, shape)
 
-fun Modifier.cornerRadiusSm(): Modifier = this
-    .clip(androidx.compose.foundation.shape.RoundedCornerShape(CornerRadius.sm))
+fun Modifier.borderPrimary(
+    width: Dp = 2.dp,
+    shape: Shape = RoundedCornerShape(12.dp)
+) = border(width, BorderColors.primary, shape)
 
-fun Modifier.cornerRadiusMd(): Modifier = this
-    .clip(androidx.compose.foundation.shape.RoundedCornerShape(CornerRadius.md))
+// ===== COMBINED MODIFIERS (для швидкості) =====
 
-fun Modifier.cornerRadiusLg(): Modifier = this
-    .clip(androidx.compose.foundation.shape.RoundedCornerShape(CornerRadius.lg))
+// Картка з темною шапкою
+fun Modifier.cardHeaderStyle() = this
+    .cardHeaderBackground()
+    .paddingMd()
 
-fun Modifier.cornerRadiusXl(): Modifier = this
-    .clip(androidx.compose.foundation.shape.RoundedCornerShape(CornerRadius.xl))
+// Світле тіло картки
+fun Modifier.cardBodyStyle() = this
+    .cardBodyBackground()
+    .paddingMd()
 
-fun Modifier.cornerRadiusFull(): Modifier = this
-    .clip(androidx.compose.foundation.shape.CircleShape)
+// Primary кнопка (повний стиль)
+fun Modifier.primaryButtonStyle() = this
+    .primaryButtonBackground()
+    .shadowPreset(ShadowPreset.BUTTON_PRIMARY)
+    .paddingMd()
 
-// ============================================
-// BORDER SHORTCUTS
-// ============================================
-
-/**
- * Extension для швидкого border
- */
-fun Modifier.borderSubtle(shape: Shape = RectangleShape): Modifier = this
-    .border(1.dp, BorderColors.subtle, shape)
-
-fun Modifier.borderDefault(shape: Shape = RectangleShape): Modifier = this
-    .border(1.dp, BorderColors.default, shape)
-
-fun Modifier.borderAccent(shape: Shape = RectangleShape): Modifier = this
-    .border(2.dp, BorderColors.accent, shape)
-
-/**
- * ПРИКЛАД КОМПЛЕКСНОГО ВИКОРИСТАННЯ:
- * 
- * ```kotlin
- * // Glass card з тінню
- * Box(
- *     modifier = Modifier
- *         .size(200.dp, 100.dp)
- *         .glassEffect(
- *             strength = GlassStrength.MEDIUM,
- *             shape = RoundedCornerShape(CornerRadius.lg)
- *         )
- *         .shadowPreset(ShadowPreset.CARD, RoundedCornerShape(CornerRadius.lg))
- *         .cardPadding()
- * )
- * 
- * // CTA кнопка з градієнтом
- * Button(
- *     onClick = { },
- *     modifier = Modifier
- *         .gradientBackground(
- *             gradient = Gradients.secondary,
- *             shape = RoundedCornerShape(CornerRadius.md)
- *         )
- *         .shadowPreset(ShadowPreset.BUTTON_CTA, RoundedCornerShape(CornerRadius.md))
- * ) {
- *     Text("Почати урок")
- * }
- * 
- * // Картка курсу
- * Card(
- *     modifier = Modifier
- *         .fillMaxWidth()
- *         .cornerRadiusLg()
- *         .shadowPreset(ShadowPreset.CARD, RoundedCornerShape(CornerRadius.lg))
- * ) {
- *     Column(modifier = Modifier.cardPadding()) {
- *         // Content
- *     }
- * }
- * ```
- */
+// CTA кнопка (повний стиль)
+fun Modifier.ctaButtonStyle() = this
+    .ctaButtonBackground()
+    .shadowPreset(ShadowPreset.BUTTON_CTA)
+    .paddingMd()

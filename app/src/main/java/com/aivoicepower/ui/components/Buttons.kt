@@ -1,12 +1,20 @@
 package com.aivoicepower.ui.components
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.aivoicepower.ui.theme.*
@@ -22,45 +30,59 @@ fun PrimaryButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     loading: Boolean = false,
-    icon: ImageVector? = null
+    icon: (@Composable () -> Unit)? = null
 ) {
-    Button(
-        onClick = onClick,
-        enabled = enabled && !loading,
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val scale by animateFloatAsState(
+        targetValue = when {
+            !enabled -> 1f
+            isPressed -> 0.98f
+            else -> 1f
+        },
+        animationSpec = tween(
+            durationMillis = AnimationDuration.short,
+            easing = AnimationEasing.standard
+        ),
+        label = "primaryButtonScale"
+    )
+
+    Box(
         modifier = modifier
             .height(48.dp)
-            .shadowPreset(
-                ShadowPreset.BUTTON_PRIMARY,
-                RoundedCornerShape(CornerRadius.md)
-            ),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = PrimaryColors.default,
-            contentColor = TextColors.onPrimary,
-            disabledContainerColor = PrimaryColors.default.copy(alpha = 0.38f)
-        ),
-        shape = RoundedCornerShape(CornerRadius.md)
+            .scale(scale)
+            .primaryButtonBackground(RoundedCornerShape(CornerRadius.md))
+            .shadowPreset(ShadowPreset.BUTTON_PRIMARY, RoundedCornerShape(CornerRadius.md))
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                enabled = enabled && !loading,
+                onClick = onClick
+            )
+            .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
+        contentAlignment = Alignment.Center
     ) {
         if (loading) {
             CircularProgressIndicator(
                 modifier = Modifier.size(20.dp),
-                color = TextColors.onPrimary,
+                color = TextColors.primary,
                 strokeWidth = 2.dp
             )
         } else {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                if (icon != null) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
+                icon?.let {
+                    it()
+                    Spacer(modifier = Modifier.width(Spacing.sm))
                 }
                 Text(
                     text = text,
-                    style = MaterialTheme.typography.labelLarge
+                    style = MaterialTheme.typography.labelLarge,
+                    color = TextColors.primary
                 )
             }
         }
@@ -68,7 +90,7 @@ fun PrimaryButton(
 }
 
 /**
- * Secondary Button - другорядна дія
+ * Secondary Button - другорядна дія (Ghost style)
  * Використання: "Назад", "Скасувати", "Пропустити"
  */
 @Composable
@@ -77,37 +99,69 @@ fun SecondaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    icon: ImageVector? = null
+    loading: Boolean = false,
+    icon: (@Composable () -> Unit)? = null
 ) {
-    OutlinedButton(
-        onClick = onClick,
-        enabled = enabled,
-        modifier = modifier.height(48.dp),
-        colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = TextColors.primary,
-            disabledContentColor = TextColors.muted
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val scale by animateFloatAsState(
+        targetValue = when {
+            !enabled -> 1f
+            isPressed -> 0.98f
+            else -> 1f
+        },
+        animationSpec = tween(
+            durationMillis = AnimationDuration.short,
+            easing = AnimationEasing.standard
         ),
-        border = androidx.compose.foundation.BorderStroke(
-            width = 1.dp,
-            color = if (enabled) BorderColors.default else BorderColors.subtle
-        ),
-        shape = RoundedCornerShape(CornerRadius.md)
+        label = "secondaryButtonScale"
+    )
+
+    Box(
+        modifier = modifier
+            .height(48.dp)
+            .scale(scale)
+            .background(
+                color = GlassColors.medium,
+                shape = RoundedCornerShape(CornerRadius.md)
+            )
+            .border(
+                width = 1.dp,
+                color = BorderColors.default,
+                shape = RoundedCornerShape(CornerRadius.md)
+            )
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                enabled = enabled && !loading,
+                onClick = onClick
+            )
+            .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
+        contentAlignment = Alignment.Center
     ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (icon != null) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp)
+        if (loading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                color = TextColors.primary,
+                strokeWidth = 2.dp
+            )
+        } else {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                icon?.let {
+                    it()
+                    Spacer(modifier = Modifier.width(Spacing.sm))
+                }
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = TextColors.primary
                 )
             }
-            Text(
-                text = text,
-                style = MaterialTheme.typography.labelLarge
-            )
         }
     }
 }
@@ -123,51 +177,59 @@ fun CTAButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     loading: Boolean = false,
-    icon: ImageVector? = null
+    icon: (@Composable () -> Unit)? = null
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val scale by animateFloatAsState(
+        targetValue = when {
+            !enabled -> 1f
+            isPressed -> 0.98f
+            else -> 1f
+        },
+        animationSpec = tween(
+            durationMillis = AnimationDuration.short,
+            easing = AnimationEasing.standard
+        ),
+        label = "ctaButtonScale"
+    )
+
     Box(
         modifier = modifier
-            .height(48.dp)
-            .gradientBackground(
-                Gradients.secondary,
-                RoundedCornerShape(CornerRadius.md)
+            .height(52.dp)
+            .scale(scale)
+            .ctaButtonBackground(RoundedCornerShape(CornerRadius.lg))
+            .shadowPreset(ShadowPreset.BUTTON_CTA, RoundedCornerShape(CornerRadius.lg))
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                enabled = enabled && !loading,
+                onClick = onClick
             )
-            .shadowPreset(
-                ShadowPreset.BUTTON_CTA,
-                RoundedCornerShape(CornerRadius.md)
-            )
-            .then(
-                if (enabled && !loading) {
-                    Modifier.clickable(onClick = onClick)
-                } else {
-                    Modifier
-                }
-            ),
+            .padding(horizontal = Spacing.xl, vertical = Spacing.md),
         contentAlignment = Alignment.Center
     ) {
         if (loading) {
             CircularProgressIndicator(
                 modifier = Modifier.size(20.dp),
-                color = TextColors.onSecondary,
+                color = TextColors.primary,
                 strokeWidth = 2.dp
             )
         } else {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                if (icon != null) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp),
-                        tint = TextColors.onSecondary
-                    )
+                icon?.let {
+                    it()
+                    Spacer(modifier = Modifier.width(Spacing.sm))
                 }
                 Text(
                     text = text,
                     style = MaterialTheme.typography.labelLarge,
-                    color = TextColors.onSecondary
+                    color = TextColors.primary
                 )
             }
         }
@@ -185,10 +247,27 @@ fun AppTextButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val textColor by animateColorAsState(
+        targetValue = when {
+            !enabled -> TextColors.muted
+            isPressed -> PrimaryColors.dark
+            else -> PrimaryColors.default
+        },
+        animationSpec = tween(
+            durationMillis = AnimationDuration.short,
+            easing = AnimationEasing.standard
+        ),
+        label = "textButtonColor"
+    )
+
     TextButton(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier,
+        interactionSource = interactionSource,
         colors = ButtonDefaults.textButtonColors(
             contentColor = PrimaryColors.default,
             disabledContentColor = TextColors.muted
@@ -196,7 +275,8 @@ fun AppTextButton(
     ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.labelLarge
+            style = MaterialTheme.typography.labelLarge,
+            color = textColor
         )
     }
 }
