@@ -51,6 +51,4 @@ sealed class Screen(val route: String) {
     object Compare : Screen("progress/compare")
     object RecordingHistory : Screen("progress/recording-history")
 
-    // Development / Debug
-    object ComponentsShowcase : Screen("components_showcase")
 }
