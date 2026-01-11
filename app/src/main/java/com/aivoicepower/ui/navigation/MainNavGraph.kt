@@ -109,12 +109,15 @@ fun MainNavGraph(
                 navArgument("lessonId") { type = NavType.StringType }
             )
         ) { backStackEntry ->
-            val courseId = backStackEntry.arguments?.getString("courseId") ?: return@composable
-            val lessonId = backStackEntry.arguments?.getString("lessonId") ?: return@composable
+            val courseId = backStackEntry.arguments?.getString("courseId") ?: ""
+            val lessonId = backStackEntry.arguments?.getString("lessonId") ?: ""
             LessonScreen(
                 courseId = courseId,
                 lessonId = lessonId,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToResults = { recordingId ->
+                    navController.navigate(Screen.Results.createRoute(lessonId, ""))
+                }
             )
         }
 

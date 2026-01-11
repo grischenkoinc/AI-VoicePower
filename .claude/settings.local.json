@@ -23,7 +23,11 @@
       "Bash(git pull:*)",
       "Bash(git ls-tree:*)",
       "Bash(./gradlew kaptGenerateStubsDebugKotlin:*)",
-      "Bash(./gradlew compileDebugKotlin:*)"
+      "Bash(./gradlew compileDebugKotlin:*)",
+      "Bash(adb devices:*)",
+      "Bash(\"%LOCALAPPDATA%\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" devices)",
+      "Bash(./gradlew installDebug:*)",
+      "Bash(./gradlew :app:compileDebugKotlin:*)"
     ]
   }
 }

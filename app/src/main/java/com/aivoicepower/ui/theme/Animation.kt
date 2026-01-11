@@ -1,158 +1,219 @@
 package com.aivoicepower.ui.theme
 
-import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.Easing
+import androidx.compose.animation.core.*
 
 /**
- * AI VoicePower Animation System
- * Based on Design Bible v1.0
- * 
- * Консистентні параметри анімацій для преміум UX
+ * AI VoicePower Animation System v2.0
+ *
+ * Джерело: Design_Example_react.md
+ * Timing та easing для всіх анімацій
  */
 
-// ============================================
-// ANIMATION DURATION (в мілісекундах)
-// ============================================
 object AnimationDuration {
-    const val micro = 100       // Зміна кольору, opacity
-    const val short = 200       // Кнопки, chips, toggle
-    const val medium = 350      // Картки, expand/collapse
-    const val long = 500        // Переходи між екранами
-    const val emphasis = 800    // Святкування, досягнення
+    // Micro-interactions
+    const val instant = 100
+    const val fast = 150
+    const val normal = 200
+    const val medium = 300
+    const val slow = 400
+
+    // Specific animations (з CSS)
+    const val recordPulse = 1500      // Record button idle pulse
+    const val recordActive = 1500     // Record button active state
+    const val waveExpand = 2500       // Wave rings expansion
+    const val borderPulse = 2000      // Card border pulse
+    const val progressFill = 600      // Progress bar fill
+    const val tipHover = 300          // Tip row hover
+    const val buttonHover = 300       // Button hover
+
+    // Compatibility aliases
+    const val micro = instant
+    const val short = normal
+    const val long = slow
+    const val emphasis = 800
 }
 
-// ============================================
-// EASING CURVES
-// ============================================
 object AnimationEasing {
-    /**
-     * Standard easing — для більшості анімацій
-     * Використання: Загальні transitions
-     */
-    val standard: Easing = CubicBezierEasing(0.4f, 0.0f, 0.2f, 1.0f)
-    
-    /**
-     * Decelerate — сповільнення в кінці
-     * Використання: Елементи що з'являються (fade in, slide in)
-     */
-    val decelerate: Easing = CubicBezierEasing(0.0f, 0.0f, 0.2f, 1.0f)
-    
-    /**
-     * Accelerate — прискорення в кінці
-     * Використання: Елементи що зникають (fade out, slide out)
-     */
-    val accelerate: Easing = CubicBezierEasing(0.4f, 0.0f, 1.0f, 1.0f)
-    
-    /**
-     * Bouncy — відскік в кінці
-     * Використання: Кнопки release, досягнення, playful interactions
-     */
-    val bouncy: Easing = CubicBezierEasing(0.34f, 1.56f, 0.64f, 1.0f)
-    
-    /**
-     * Smooth — плавна крива
-     * Використання: Тривалі анімації, loops, pulse effects
-     */
-    val smooth: Easing = CubicBezierEasing(0.25f, 0.1f, 0.25f, 1.0f)
-    
-    /**
-     * Snappy — різке закінчення
-     * Використання: Button press, immediate feedback
-     */
-    val snappy: Easing = CubicBezierEasing(0.5f, 0.0f, 0.1f, 1.0f)
+    // Standard Material easing
+    val standard = CubicBezierEasing(0.4f, 0.0f, 0.2f, 1f)
+    val accelerate = CubicBezierEasing(0.4f, 0.0f, 1f, 1f)
+    val decelerate = CubicBezierEasing(0.0f, 0.0f, 0.2f, 1f)
+
+    // Custom easing (CSS equivalents)
+    val easeInOut = CubicBezierEasing(0.42f, 0.0f, 0.58f, 1.0f)  // ease-in-out
+    val easeOut = CubicBezierEasing(0.0f, 0.0f, 0.58f, 1.0f)     // ease-out
+    val easeIn = CubicBezierEasing(0.42f, 0.0f, 1.0f, 1.0f)      // ease-in
+
+    // Bouncy effects
+    val bouncy = CubicBezierEasing(0.68f, -0.55f, 0.265f, 1.55f)
+
+    // Smooth
+    val smooth = CubicBezierEasing(0.25f, 0.1f, 0.25f, 1.0f)
+
+    // Compatibility aliases
+    val snappy = standard
 }
 
 /**
- * Таблиця використання анімацій:
- * 
- * === DURATION ===
- * MICRO (100ms)    - Зміна кольору, opacity, hover states
- * SHORT (200ms)    - Кнопки, chips, toggle, checkbox
- * MEDIUM (350ms)   - Картки, expand/collapse, dialogs
- * LONG (500ms)     - Переходи між екранами, bottom sheets
- * EMPHASIS (800ms) - Святкування, досягнення, конфетті
- * 
- * === EASING ===
- * STANDARD         - Загальні transitions (за замовчуванням)
- * DECELERATE       - Елементи що з'являються (fade in, slide in)
- * ACCELERATE       - Елементи що зникають (fade out, slide out)
- * BOUNCY           - Playful interactions (button release, badges)
- * SMOOTH           - Тривалі анімації (progress, pulse, loops)
- * SNAPPY           - Immediate feedback (button press)
- * 
- * === КОМБІНАЦІЇ ===
- * Button Press:     duration=100ms, easing=snappy
- * Button Release:   duration=150ms, easing=bouncy
- * Card Appear:      duration=250ms, easing=decelerate
- * Card Disappear:   duration=250ms, easing=accelerate
- * Modal Open:       duration=350ms, easing=decelerate
- * Achievement:      duration=800ms, easing=bouncy
- * Progress Fill:    duration=400ms, easing=smooth
+ * Record Button Pulse Animation
+ * CSS: animation: pulse 1.5s ease-in-out infinite
+ * Scale: 1.0 → 1.05
  */
+object RecordButtonPulse {
+    val duration = AnimationDuration.recordPulse
+    val easing = AnimationEasing.easeInOut
 
-// ============================================
-// STAGGER DELAYS
-// ============================================
+    fun animationSpec() = infiniteRepeatable<Float>(
+        animation = tween(
+            durationMillis = duration,
+            easing = easing
+        ),
+        repeatMode = RepeatMode.Reverse
+    )
+
+    // Scales
+    const val scaleFrom = 1.0f
+    const val scaleTo = 1.05f
+}
+
+/**
+ * Record Button Active (тінь pulse)
+ * CSS: Зміна shadow з 20dp → 25dp
+ */
+object RecordButtonActive {
+    val duration = AnimationDuration.recordActive
+    val easing = AnimationEasing.easeInOut
+
+    fun animationSpec() = infiniteRepeatable<Float>(
+        animation = tween(
+            durationMillis = duration,
+            easing = easing
+        ),
+        repeatMode = RepeatMode.Reverse
+    )
+}
+
+/**
+ * Wave Ring Expansion
+ * CSS: animation: waveExpand 2.5s ease-out infinite
+ * Scale: 1.0 → 1.7
+ * Opacity: 1.0 → 0.0
+ */
+object WaveRingExpansion {
+    val duration = AnimationDuration.waveExpand
+    val easing = AnimationEasing.easeOut
+
+    // Delays для 3 rings
+    const val delay1 = 0
+    const val delay2 = 800
+    const val delay3 = 1600
+
+    fun scaleAnimationSpec(delay: Int) = infiniteRepeatable<Float>(
+        animation = tween(
+            durationMillis = duration,
+            delayMillis = delay,
+            easing = easing
+        ),
+        repeatMode = RepeatMode.Restart
+    )
+
+    fun opacityAnimationSpec(delay: Int) = infiniteRepeatable<Float>(
+        animation = tween(
+            durationMillis = duration,
+            delayMillis = delay,
+            easing = easing
+        ),
+        repeatMode = RepeatMode.Restart
+    )
+
+    // Values
+    const val scaleFrom = 1.0f
+    const val scaleTo = 1.7f
+    const val opacityFrom = 1.0f
+    const val opacityTo = 0.0f
+}
+
+/**
+ * Card Border Pulse (recording state)
+ * CSS: animation: borderPulse 2s ease-in-out infinite
+ */
+object CardBorderPulse {
+    val duration = AnimationDuration.borderPulse
+    val easing = AnimationEasing.easeInOut
+
+    fun animationSpec() = infiniteRepeatable<Float>(
+        animation = tween(
+            durationMillis = duration,
+            easing = easing
+        ),
+        repeatMode = RepeatMode.Reverse
+    )
+}
+
+/**
+ * Progress Fill Animation
+ * CSS: transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1)
+ */
+object ProgressFillAnimation {
+    val duration = AnimationDuration.progressFill
+    val easing = AnimationEasing.standard
+
+    fun animationSpec() = tween<Float>(
+        durationMillis = duration,
+        easing = easing
+    )
+}
+
+/**
+ * Tip Row Hover
+ * CSS: transition: transform 0.3s, box-shadow 0.3s
+ * Transform: translateX(0) → translateX(6px)
+ */
+object TipRowHover {
+    val duration = AnimationDuration.tipHover
+    val easing = AnimationEasing.standard
+
+    fun animationSpec() = tween<Float>(
+        durationMillis = duration,
+        easing = easing
+    )
+
+    const val translateFrom = 0f
+    const val translateTo = 6f  // dp
+}
+
+/**
+ * Button Hover (Nav buttons)
+ * CSS: transition: all 0.3s
+ * Transform: translateY(0) → translateY(-2px)
+ * Shadow: збільшується
+ */
+object ButtonHover {
+    val duration = AnimationDuration.buttonHover
+    val easing = AnimationEasing.standard
+
+    fun animationSpec() = tween<Float>(
+        durationMillis = duration,
+        easing = easing
+    )
+
+    const val translateY = -2f  // dp
+}
+
+/**
+ * Stagger Delays
+ * Для списків, grid тощо
+ */
+object StaggerDelays {
+    const val listItem = 50
+    const val gridItem = 100
+    const val card = 150
+}
+
+// ===== COMPATIBILITY LAYER =====
+
 object AnimationStagger {
-    /**
-     * Затримка між елементами списку при появі
-     */
-    const val listItem = 50  // мс між елементами
-    
-    /**
-     * Затримка між елементами grid при появі
-     */
-    const val gridItem = 75  // мс між елементами
-    
-    /**
-     * Затримка для achievement unlock sequence
-     */
-    const val achievementSequence = 200  // мс між кроками
+    const val listItem = StaggerDelays.listItem
+    const val gridItem = StaggerDelays.gridItem
+    const val achievementSequence = 200
 }
-
-/**
- * ПРИКЛАДИ ВИКОРИСТАННЯ:
- * 
- * ```kotlin
- * // Button press
- * val scale by animateFloatAsState(
- *     targetValue = if (pressed) 0.96f else 1f,
- *     animationSpec = tween(
- *         durationMillis = AnimationDuration.micro,
- *         easing = AnimationEasing.snappy
- *     )
- * )
- * 
- * // Card appear in list
- * LazyColumn {
- *     itemsIndexed(items) { index, item ->
- *         CardItem(
- *             modifier = Modifier.animateEnterExit(
- *                 enter = fadeIn(
- *                     animationSpec = tween(
- *                         durationMillis = AnimationDuration.short,
- *                         delayMillis = index * AnimationStagger.listItem,
- *                         easing = AnimationEasing.decelerate
- *                     )
- *                 ) + slideInVertically(
- *                     animationSpec = tween(
- *                         durationMillis = AnimationDuration.medium,
- *                         delayMillis = index * AnimationStagger.listItem,
- *                         easing = AnimationEasing.decelerate
- *                     ),
- *                     initialOffsetY = { it / 4 }
- *                 )
- *             )
- *         )
- *     }
- * }
- * 
- * // Achievement unlock
- * LaunchedEffect(showAchievement) {
- *     delay(AnimationStagger.achievementSequence.toLong())
- *     animateBadgeScale.animateTo(1.2f)
- *     delay(200)
- *     animateBadgeScale.animateTo(1f)
- * }
- * ```
- */

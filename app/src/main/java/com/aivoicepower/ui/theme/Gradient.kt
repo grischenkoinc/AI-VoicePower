@@ -1,128 +1,218 @@
 package com.aivoicepower.ui.theme
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
+/**
+ * AI VoicePower Gradient System v2.0
+ *
+ * Джерело: Design_Example_react.md
+ * Всі градієнти з еталонного дизайну
+ */
+
 object Gradients {
 
-    // ===== BACKGROUND (темний з переходами) =====
-    val background = Brush.verticalGradient(
+    // ===== PRIMARY GRADIENTS =====
+
+    /**
+     * Основний фон застосунку
+     * CSS: linear-gradient(135deg, #667eea 0%, #764ba2 100%)
+     */
+    val appBackground = Brush.linearGradient(
         colors = listOf(
-            BackgroundColors.primary,    // #2d2640
-            BackgroundColors.secondary,  // #1a1625
-            BackgroundColors.tertiary    // #0f0d1a
-        )
+            Color(0xFF667EEA),  // Індиго
+            Color(0xFF764BA2)   // Фіолетовий
+        ),
+        start = Offset(0f, 0f),
+        end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY) // 135° діагональ
     )
 
-    // ===== CARD HEADER (темна фіолетова шапка) =====
-    val cardHeader = Brush.linearGradient(
+    /**
+     * Theory Card Header (темна шапка)
+     * CSS: linear-gradient(135deg, #3d266a, #1f1f2e)
+     */
+    val cardHeaderTheory = Brush.linearGradient(
         colors = listOf(
-            CardHeaderColors.start,  // #3d266a
-            CardHeaderColors.end     // #1f1f2e
-        )
+            Color(0xFF3D266A),  // Темний фіолетовий
+            Color(0xFF1F1F2E)   // Майже чорний
+        ),
+        start = Offset(0f, 0f),
+        end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
     )
 
-    // ===== CARD BODY (світлий градієнт) =====
-    val cardBody = Brush.verticalGradient(
+    /**
+     * Practice Card Header (альтернативна темна шапка)
+     * CSS: linear-gradient(135deg, #2d2640, #1f1f2e)
+     */
+    val cardHeaderPractice = Brush.linearGradient(
         colors = listOf(
-            CardBodyColors.start,  // #fafafc
-            CardBodyColors.end     // #f3f4f6
-        )
+            Color(0xFF2D2640),  // Темний фіолетово-сірий
+            Color(0xFF1F1F2E)   // Майже чорний
+        ),
+        start = Offset(0f, 0f),
+        end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
     )
 
-    // ===== PRIMARY BUTTON (синій індиго) =====
-    val primaryButton = Brush.linearGradient(
+    // ===== TAG GRADIENTS =====
+
+    /**
+     * Primary Tag (Section Tag — 📖 Теорія)
+     * CSS: linear-gradient(135deg, #a78bfa, #7c3aed)
+     */
+    val tagPrimary = Brush.linearGradient(
         colors = listOf(
-            PrimaryColors.default,  // #6366f1
-            PrimaryColors.dark      // #4f46e5
-        )
+            Color(0xFFA78BFA),  // Світлий фіолетовий
+            Color(0xFF7C3AED)   // Фіолетовий
+        ),
+        start = Offset(0f, 0f),
+        end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
     )
 
-    // ===== SECONDARY BADGE (фіолетовий) =====
-    val secondaryBadge = Brush.linearGradient(
+    /**
+     * Secondary Tag (Practice Tag — 🔥 Практика)
+     * CSS: linear-gradient(135deg, #f59e0b, #d97706)
+     */
+    val tagSecondary = Brush.linearGradient(
         colors = listOf(
-            SecondaryColors.light,   // #a78bfa
-            SecondaryColors.dark     // #7c3aed
-        )
+            Color(0xFFF59E0B),  // Помаранчевий
+            Color(0xFFD97706)   // Темний помаранчевий
+        ),
+        start = Offset(0f, 0f),
+        end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
     )
 
-    // ===== CTA BUTTON (помаранчевий) =====
-    val ctaButton = Brush.linearGradient(
+    /**
+     * Level Pill (⚡ Рівень 3)
+     * CSS: linear-gradient(135deg, #fbbf24, #f59e0b)
+     */
+    val levelPill = Brush.linearGradient(
         colors = listOf(
-            AccentColors.default,  // #f59e0b
-            AccentColors.dark      // #d97706
-        )
+            Color(0xFFFBBF24),  // Жовтий
+            Color(0xFFF59E0B)   // Помаранчевий
+        ),
+        start = Offset(0f, 0f),
+        end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
     )
 
-    // ===== SUCCESS/PROGRESS (зелений) =====
-    val success = Brush.linearGradient(
+    // ===== PROGRESS BAR GRADIENTS =====
+
+    /**
+     * Progress Track (180° вертикальний)
+     * CSS: linear-gradient(180deg, #c4b5fd 0%, #a78bfa 100%)
+     */
+    val progressTrack = Brush.linearGradient(
         colors = listOf(
-            SuccessColors.default,  // #22c55e
-            SuccessColors.dark      // #16a34a
-        )
+            Color(0xFFC4B5FD),  // Світло-фіолетовий
+            Color(0xFFA78BFA)   // Фіолетовий
+        ),
+        start = Offset(0f, 0f),
+        end = Offset(0f, Float.POSITIVE_INFINITY) // Вертикальний (180°)
     )
 
-    // ===== PROGRESS BAR TRACK (світлий фіолетовий) =====
-    val progressTrack = Brush.verticalGradient(
+    /**
+     * Progress Fill (90° горизонтальний)
+     * CSS: linear-gradient(90deg, #22c55e, #16a34a)
+     */
+    val progressFill = Brush.linearGradient(
         colors = listOf(
-            ProgressBarColors.trackStart,  // #c4b5fd
-            ProgressBarColors.trackEnd     // #a78bfa
-        )
+            Color(0xFF22C55E),  // Яскравий зелений
+            Color(0xFF16A34A)   // Темний зелений
+        ),
+        start = Offset(0f, 0f),
+        end = Offset(Float.POSITIVE_INFINITY, 0f) // Горизонтальний (90°)
     )
 
-    // ===== PROGRESS BAR FILL (зелений 3D) =====
-    val progressFill = Brush.horizontalGradient(
+    // ===== BUTTON GRADIENTS =====
+
+    /**
+     * Record Button (ідентичний app background)
+     * CSS: linear-gradient(135deg, #667eea, #764ba2)
+     */
+    val recordButton = appBackground // Використовуємо той самий градієнт
+
+    // ===== SPECIAL GRADIENTS =====
+
+    /**
+     * Section Background (для внутрішніх секцій)
+     * CSS: linear-gradient(135deg, #f3f4f6, #e5e7eb)
+     */
+    val sectionBackground = Brush.linearGradient(
         colors = listOf(
-            ProgressBarColors.fillStart,  // #22c55e
-            ProgressBarColors.fillEnd     // #16a34a
-        )
+            Color(0xFFF3F4F6),  // Майже білий
+            Color(0xFFE5E7EB)   // Світло-сірий
+        ),
+        start = Offset(0f, 0f),
+        end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
     )
 
-    // ===== LEVEL BADGE (жовто-помаранчевий) =====
-    val levelBadge = Brush.linearGradient(
+    /**
+     * Highlight Box (15% помаранчевий → 20% фіолетовий)
+     * Для блоків з важливою інформацією
+     */
+    val highlightBox = Brush.linearGradient(
         colors = listOf(
-            LevelBadgeColors.start,  // #fbbf24
-            LevelBadgeColors.end     // #f59e0b
-        )
+            Color(0x26F59E0B),  // 15% помаранчевий
+            Color(0x338B5CF6)   // 20% фіолетовий
+        ),
+        start = Offset(0f, 0f),
+        end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
     )
 
-    // ===== FACT BOX (помаранчевий → фіолетовий) =====
-    val factBox = Brush.linearGradient(
+    // ===== SHIMMER/GLOW EFFECTS =====
+
+    /**
+     * Shimmer effect для progress fill
+     * Світлий градієнт на краю для glow ефекту
+     */
+    val progressShimmer = Brush.linearGradient(
         colors = listOf(
-            FactBoxColors.start,  // rgba(245, 158, 11, 0.15)
-            FactBoxColors.end     // rgba(139, 92, 246, 0.2)
-        )
+            Color(0x00FFFFFF),  // Прозорий
+            Color(0x8CFFFFFF)   // 55% білий
+        ),
+        start = Offset(0f, 0f),
+        end = Offset(Float.POSITIVE_INFINITY, 0f)
     )
 
-    // ===== RECORD BUTTON (синій як primary) =====
-    val recordButton = Brush.linearGradient(
+    /**
+     * Top highlight для 3D progress fill
+     * Gradient поверх fill для 3D ефекту
+     */
+    val progressTopHighlight = Brush.linearGradient(
         colors = listOf(
-            PrimaryColors.default,  // #6366f1
-            PrimaryColors.dark      // #4f46e5
-        )
+            Color(0x99FFFFFF),  // 60% білий
+            Color(0x00FFFFFF)   // Прозорий
+        ),
+        start = Offset(0f, 0f),
+        end = Offset(0f, Float.POSITIVE_INFINITY)
     )
 
-    // ===== TIMER GRADIENT (фіолетовий для SVG) =====
-    val timer = Brush.linearGradient(
+    /**
+     * Top highlight для 3D progress track
+     * Gradient поверх track для 3D ефекту
+     */
+    val progressTrackHighlight = Brush.linearGradient(
         colors = listOf(
-            SecondaryColors.light,  // #a78bfa
-            SecondaryColors.dark    // #7c3aed
-        )
+            Color(0x80FFFFFF),  // 50% білий
+            Color(0x00FFFFFF)   // Прозорий
+        ),
+        start = Offset(0f, 0f),
+        end = Offset(0f, Float.POSITIVE_INFINITY)
     )
 
-    // ===== SCORE RING (зелений для результатів) =====
-    val scoreRing = Brush.linearGradient(
-        colors = listOf(
-            SuccessColors.default,  // #22c55e
-            SuccessColors.dark      // #16a34a
-        )
-    )
+    // ===== COMPATIBILITY LAYER =====
 
-    // ===== PREMIUM BADGE (золотий градієнт) =====
-    val premium = Brush.linearGradient(
-        colors = listOf(
-            Color(0xFFFFD700),  // Gold
-            Color(0xFFFFA500)   // Orange gold
-        )
-    )
+    // Legacy aliases для існуючого коду
+    val background = appBackground
+    val cardHeader = cardHeaderTheory
+    val cardBody = sectionBackground
+    val primaryButton = appBackground
+    val secondaryBadge = tagPrimary
+    val ctaButton = tagSecondary
+    val success = progressFill
+    val levelBadge = levelPill
+    val factBox = highlightBox
+    val timer = tagPrimary
+    val scoreRing = progressFill
+    val premium = levelPill
 }
