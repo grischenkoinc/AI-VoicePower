@@ -1,5 +1,7 @@
 package com.aivoicepower.ui.theme.components
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -7,6 +9,7 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,7 +17,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -40,40 +46,36 @@ fun HighlightBox(
     content: String,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth()
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .drawBehind {
+                // Orange left border
+                drawRect(
+                    color = Color(0xFFF59E0B),
+                    topLeft = Offset.Zero,
+                    size = Size(12.dp.toPx(), size.height)
+                )
+            }
+            .background(Gradients.highlightBox, RoundedCornerShape(16.dp))
+            .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Orange left border (3dp)
-        Box(
-            modifier = Modifier
-                .width(3.dp)
-                .height(IntrinsicSize.Min)
-                .background(Color(0xFFF59E0B))
+        Text(
+            text = title,
+            style = AppTypography.titleMedium,
+            color = TextColors.onLightPrimary,
+            fontWeight = FontWeight.Bold,
+            fontSize = 15.sp
         )
 
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .background(Gradients.highlightBox, RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Text(
-                text = title,
-                style = AppTypography.titleMedium,
-                color = TextColors.onLightPrimary,
-                fontWeight = FontWeight.Bold,
-                fontSize = 15.sp
-            )
-
-            Text(
-                text = content,
-                style = AppTypography.bodyMedium,
-                color = TextColors.onLightSecondary,
-                fontSize = 14.sp,
-                lineHeight = 21.sp
-            )
-        }
+        Text(
+            text = content,
+            style = AppTypography.bodyMedium,
+            color = TextColors.onLightSecondary,
+            fontSize = 14.sp,
+            lineHeight = 21.sp
+        )
     }
 }
 
@@ -125,17 +127,26 @@ fun TipRow(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
+    val offsetX by animateDpAsState(
+        targetValue = if (isPressed) 6.dp else 0.dp,
+        animationSpec = tween(300),
+        label = "offset"
+    )
+
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .offset(x = offsetX)
             .background(
                 color = Color(0xFFF9FAFB),
                 shape = RoundedCornerShape(12.dp)
             )
             .clickable(
                 interactionSource = interactionSource,
-                indication = null
-            ) { /* Tip clicked */ }
+                indication = rememberRipple(color = Color(0xFFA78BFA)) // Додали ripple!
+            ) {
+                // Tip clicked
+            }
             .padding(16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.Top
@@ -146,7 +157,7 @@ fun TipRow(
                 .shadow(
                     elevation = if (isPressed) 8.dp else 4.dp,
                     shape = CircleShape,
-                    spotColor = Color(0x40A78BFA)
+                    spotColor = Color(0x66A78BFA)
                 )
                 .background(
                     brush = Gradients.tagPrimary,

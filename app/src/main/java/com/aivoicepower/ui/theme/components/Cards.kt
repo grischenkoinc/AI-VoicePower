@@ -8,6 +8,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.aivoicepower.ui.theme.*
@@ -71,6 +72,14 @@ fun PracticeCard(
     header: @Composable ColumnScope.() -> Unit,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    // DEBUG: Перевірка чи існує gradient
+    val practiceGradient = try {
+        Gradients.cardHeaderPractice
+    } catch (e: Exception) {
+        android.util.Log.e("PracticeCard", "cardHeaderPractice не знайдено, використовую cardHeaderTheory")
+        Gradients.cardHeaderTheory
+    }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -86,10 +95,15 @@ fun PracticeCard(
     ) {
         Column {
             // Header (альтернативний темний градієнт)
-            CardHeader(
-                gradient = Gradients.cardHeaderPractice,
-                content = header
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(practiceGradient) // Використовуємо перевірений gradient
+                    .padding(start = 28.dp, end = 28.dp, top = 28.dp, bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                header()
+            }
 
             // Body (білий фон)
             CardBody(content = content)
@@ -104,13 +118,13 @@ fun PracticeCard(
  */
 @Composable
 private fun CardHeader(
-    gradient: androidx.compose.ui.graphics.Brush,
+    gradient: Brush,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(gradient)
+            .background(gradient) // Явно застосовуємо gradient
             .padding(start = 28.dp, end = 28.dp, top = 28.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {

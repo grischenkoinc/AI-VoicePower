@@ -31,11 +31,26 @@ fun LessonScreen(
     GradientBackground(
         content = {
             Box(modifier = Modifier.fillMaxSize()) {
-                // Main Content (scrollable)
+                // Fixed Progress Header (top)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 24.dp, end = 24.dp, top = 40.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    ProgressBar3D(
+                        progress = 0.25f,
+                        currentStep = 1,
+                        totalSteps = 4,
+                        stepLabel = "Теорія"
+                    )
+                }
+
+                // Main Content (scrollable) — починається після ProgressBar
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(top = 140.dp, bottom = 80.dp) // Space for fixed header + footer
+                        .padding(top = 100.dp) // Зменшено з 140dp до 100dp
                 ) {
                     Column(
                         modifier = Modifier
@@ -137,7 +152,7 @@ fun LessonScreen(
                                         Text(
                                             text = if (isRecording) "Йде запис..." else "Натисни для запису",
                                             style = AppTypography.bodyMedium,
-                                            color = TextColors.muted,
+                                            color = TextColors.onLightMuted,
                                             fontSize = 14.sp,
                                             fontWeight = FontWeight.SemiBold
                                         )
@@ -146,35 +161,14 @@ fun LessonScreen(
                             }
                         )
 
+                        // Bottom Navigation (НЕфіксований — в кінці контенту)
+                        BottomNavRow(
+                            onPrevious = onNavigateBack,
+                            onNext = { /* Navigate to next step */ }
+                        )
+
                         Spacer(modifier = Modifier.height(24.dp))
                     }
-                }
-
-                // Fixed Progress Header (top)
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 24.dp, end = 24.dp, top = 40.dp),
-                    verticalArrangement = Arrangement.spacedBy(24.dp)
-                ) {
-                    ProgressBar3D(
-                        progress = 0.25f,
-                        currentStep = 1,
-                        totalSteps = 4,
-                        stepLabel = "Теорія"
-                    )
-                }
-
-                // Fixed Bottom Navigation
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    verticalArrangement = Arrangement.Bottom
-                ) {
-                    BottomNavRow(
-                        onPrevious = onNavigateBack,
-                        onNext = { /* Navigate to next step */ }
-                    )
                 }
             }
         }

@@ -1,250 +1,6 @@
-Виправлення LessonScreen відповідно до Design_Example_react.md та фідбеку. Видаляємо TopStatusRow з основного контенту (він має бути в окремому шарі поверх скролу), фіксуємо ProgressBar вгорі, фіксуємо BottomNavRow внизу, виправляємо HighlightBox (left border замість рамки навколо), виправляємо PracticeCard header gradient, додаємо hover ефект до TipRow. Оновити ui/screens/lesson/LessonScreen.kt:
-kotlinpackage com.aivoicepower.ui.screens.lesson
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.aivoicepower.ui.theme.AIVoicePowerTheme
-import com.aivoicepower.ui.theme.components.*
-
+Фінальне виправлення 3 проблем у LessonScreen компонентах. Виправлення 1 — TipRow не реагує на дотик: замінити clickable indication з null на ripple indication щоб була візуальна реакція, також перевірити що interactionSource правильно підключений. Виправлення 2 — PracticeCard header без градієнта: перевірити що Gradients.cardHeaderPractice існує і має правильні кольори, якщо ні то використати Gradients.cardHeaderTheory тимчасово, також додати явний log для debug. Виправлення 3 — RecordButton синя рамка не пульсує: додати animated border навколо кнопки окремим Box що змінює borderWidth та alpha при recording, shadow не показує рамку так як треба. Код для Content.kt — TipRow з ripple indication:
+```kotlin
 @Composable
-fun LessonScreen(
-    courseId: String,
-    lessonId: String,
-    onNavigateBack: () -> Unit,
-    onNavigateToResults: (String) -> Unit,
-    viewModel: LessonViewModel = viewModel()
-) {
-    var isRecording by remember { mutableStateOf(false) }
-    val scrollState = rememberScrollState()
-    
-    GradientBackground {
-        Box(modifier = Modifier.fillMaxSize()) {
-            // Main Content (scrollable)
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = 140.dp, bottom = 80.dp) // Space for fixed header + footer
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(scrollState)
-                        .padding(horizontal = 24.dp),
-                    verticalArrangement = Arrangement.spacedBy(20.dp)
-                ) {
-                    // Theory Card
-                    MainCard(
-                        header = {
-                            SectionTag(
-                                emoji = "📖",
-                                text = "Теорія",
-                                isPractice = false
-                            )
-                            
-                            BigTitle(text = "Основи артикуляції")
-                            
-                            LevelPill(
-                                emoji = "⚡",
-                                level = 3
-                            )
-                        },
-                        content = {
-                            ContentText(
-                                title = "Що таке артикуляція?",
-                                text = "Артикуляція — це робота органів мовлення (губ, язика, щелеп) під час вимови звуків. Це основа чіткого мовлення."
-                            )
-                            
-                            HighlightBox(
-                                title = "💡 Ключовий інсайт",
-                                content = "Чітка дикція = впевненість у спілкуванні"
-                            )
-                            
-                            ContentText(
-                                text = "Люди з гарною артикуляцією справляють враження компетентних професіоналів. Регулярні тренування приносять відчутний результат."
-                            )
-                            
-                            NumberedTips(
-                                tips = listOf(
-                                    "Розтягни губи широко — зуби мають бути видно",
-                                    "Витягни губи вперед трубочкою максимально",
-                                    "Виконуй без пауз між повтореннями"
-                                )
-                            )
-                        }
-                    )
-                    
-                    // Practice Card
-                    PracticeCard(
-                        header = {
-                            SectionTag(
-                                emoji = "🔥",
-                                text = "Практика • 1/5",
-                                isPractice = true
-                            )
-                            
-                            BigTitle(text = "Посмішка → Трубочка")
-                        },
-                        content = {
-                            ExerciseVisual {
-                                VisualRow(
-                                    items = listOf(
-                                        VisualItem(
-                                            emoji = "😄",
-                                            label = "Широка посмішка",
-                                            time = "2 сек"
-                                        ),
-                                        VisualItem(
-                                            emoji = "😗",
-                                            label = "Губи трубочкою",
-                                            time = "2 сек"
-                                        )
-                                    )
-                                )
-                                
-                                VisualDivider()
-                                
-                                RepeatRow(repetitions = 10)
-                            }
-                            
-                            // Record Section
-                            Box(
-                                modifier = Modifier.fillMaxWidth(),
-                                contentAlignment = androidx.compose.ui.Alignment.Center
-                            ) {
-                                Column(
-                                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                                ) {
-                                    RecordButton(
-                                        isRecording = isRecording,
-                                        onClick = { isRecording = !isRecording }
-                                    )
-                                    
-                                    androidx.compose.material3.Text(
-                                        text = if (isRecording) "Йде запис..." else "Натисни для запису",
-                                        style = com.aivoicepower.ui.theme.AppTypography.bodyMedium,
-                                        color = com.aivoicepower.ui.theme.TextColors.onLightMuted,
-                                        fontSize = 14.sp,
-                                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
-                                    )
-                                }
-                            }
-                        }
-                    )
-                    
-                    Spacer(modifier = Modifier.height(24.dp))
-                }
-            }
-            
-            // Fixed Progress Header (top)
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, top = 40.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                ProgressBar3D(
-                    progress = 0.25f,
-                    currentStep = 1,
-                    totalSteps = 4,
-                    stepLabel = "Теорія"
-                )
-            }
-            
-            // Fixed Bottom Navigation
-            Column(
-                modifier = Modifier
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.Bottom
-            ) {
-                BottomNavRow(
-                    onPrevious = onNavigateBack,
-                    onNext = { /* Navigate to next step */ }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun BigTitle(
-    text: String,
-    modifier: Modifier = Modifier
-) {
-    androidx.compose.material3.Text(
-        text = text,
-        style = com.aivoicepower.ui.theme.AppTypography.displayLarge,
-        color = com.aivoicepower.ui.theme.TextColors.onDarkPrimary,
-        fontSize = 36.sp,
-        lineHeight = 40.sp,
-        letterSpacing = (-1.5).sp,
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun LessonScreenPreview() {
-    AIVoicePowerTheme {
-        LessonScreen(
-            courseId = "course_1",
-            lessonId = "lesson_1",
-            onNavigateBack = {},
-            onNavigateToResults = {}
-        )
-    }
-}
-Оновити ui/theme/components/Content.kt (виправити HighlightBox - left border замість рамки):
-kotlin@Composable
-fun HighlightBox(
-    title: String,
-    content: String,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.fillMaxWidth()
-    ) {
-        // Orange left border (3dp)
-        Box(
-            modifier = Modifier
-                .width(3.dp)
-                .height(IntrinsicSize.Min)
-                .background(Color(0xFFF59E0B))
-        )
-        
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .background(Gradients.highlightBox, RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Text(
-                text = title,
-                style = AppTypography.titleMedium,
-                color = TextColors.onLightPrimary,
-                fontWeight = FontWeight.Bold,
-                fontSize = 15.sp
-            )
-            
-            Text(
-                text = content,
-                style = AppTypography.bodyMedium,
-                color = TextColors.onLightSecondary,
-                fontSize = 14.sp,
-                lineHeight = 21.sp
-            )
-        }
-    }
-}
-Оновити ui/theme/components/Content.kt (додати clickable hover ефект до TipRow):
-kotlin@Composable
 fun TipRow(
     number: Int,
     text: String,
@@ -253,17 +9,26 @@ fun TipRow(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     
+    val offsetX by animateDpAsState(
+        targetValue = if (isPressed) 6.dp else 0.dp,
+        animationSpec = tween(300),
+        label = "offset"
+    )
+    
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .offset(x = offsetX)
             .background(
                 color = Color(0xFFF9FAFB),
                 shape = RoundedCornerShape(12.dp)
             )
             .clickable(
                 interactionSource = interactionSource,
-                indication = null
-            ) { /* Tip clicked */ }
+                indication = ripple(color = Color(0xFFA78BFA)) // Додали ripple!
+            ) { 
+                // Tip clicked
+            }
             .padding(16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.Top
@@ -274,7 +39,7 @@ fun TipRow(
                 .shadow(
                     elevation = if (isPressed) 8.dp else 4.dp,
                     shape = CircleShape,
-                    spotColor = Color(0x40A78BFA)
+                    spotColor = Color(0x66A78BFA)
                 )
                 .background(
                     brush = Gradients.tagPrimary,
@@ -301,9 +66,150 @@ fun TipRow(
         )
     }
 }
-Оновити imports в Content.kt (додати потрібні для TipRow):
-kotlinimport androidx.compose.foundation.clickable
+```
+
+Додати import в Content.kt:
+```kotlin
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.ui.draw.shadow
-Компіляція та перевірка: ./gradlew clean, ./gradlew :app:compileDebugKotlin, ./gradlew assembleDebug, ./gradlew installDebug. Що виправлено: видалено TopStatusRow (1/4 та Урок 1 зникнули), ProgressBar тепер фіксований вгорі екрану (видно при скролі), BottomNavRow фіксований внизу екрану (не рухається при скролі), HighlightBox тепер з orange left border замість рамки навколо (як в Design_Example), PracticeCard використовує правильний gradient (cardHeaderPractice), TipRow тепер реагує на натискання з shadow pulse ефектом, main content тепер має padding для фіксованих елементів. Відкрий застосунок і перевір зміни!
+import androidx.compose.material.ripple.ripple
+```
+
+Код для Cards.kt — PracticeCard з debug log і fallback gradient:
+```kotlin
+@Composable
+fun PracticeCard(
+    modifier: Modifier = Modifier,
+    header: @Composable ColumnScope.() -> Unit,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    // DEBUG: Перевірка чи існує gradient
+    val practiceGradient = try {
+        Gradients.cardHeaderPractice
+    } catch (e: Exception) {
+        android.util.Log.e("PracticeCard", "cardHeaderPractice не знайдено, використовую cardHeaderTheory")
+        Gradients.cardHeaderTheory
+    }
+    
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = Elevation.PracticeCard.elevation,
+                shape = RoundedCornerShape(32.dp),
+                spotColor = Elevation.PracticeCard.color
+            ),
+        shape = RoundedCornerShape(32.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = BackgroundColors.surface
+        )
+    ) {
+        Column {
+            // Header (альтернативний темний градієнт)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(practiceGradient) // Використовуємо перевірений gradient
+                    .padding(start = 28.dp, end = 28.dp, top = 28.dp, bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                header()
+            }
+            
+            // Body (білий фон)
+            CardBody(content = content)
+        }
+    }
+}
+```
+
+Код для Buttons.kt — RecordButton з animated border:
+```kotlin
+@Composable
+fun RecordButton(
+    isRecording: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    // Pulse animation для idle стану
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val scale by infiniteTransition.animateFloat(
+        initialValue = RecordButtonPulse.scaleFrom,
+        targetValue = RecordButtonPulse.scaleTo,
+        animationSpec = RecordButtonPulse.animationSpec(),
+        label = "scale"
+    )
+    
+    // Border animation для recording стану
+    val borderAlpha by infiniteTransition.animateFloat(
+        initialValue = if (isRecording) 0.3f else 0f,
+        targetValue = if (isRecording) 0.8f else 0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "borderAlpha"
+    )
+    
+    Box(
+        modifier = modifier.size(140.dp), // Збільшено для border
+        contentAlignment = Alignment.Center
+    ) {
+        // Animated border (тільки коли recording)
+        if (isRecording) {
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .border(
+                        width = 3.dp,
+                        color = Color(0xFF667EEA).copy(alpha = borderAlpha),
+                        shape = CircleShape
+                    )
+            )
+        }
+        
+        // Wave rings (тільки коли recording)
+        if (isRecording) {
+            WaveRing(delay = WaveRingExpansion.delay1)
+            WaveRing(delay = WaveRingExpansion.delay2)
+            WaveRing(delay = WaveRingExpansion.delay3)
+        }
+        
+        // Main button
+        Box(
+            modifier = Modifier
+                .size(110.dp)
+                .scale(if (!isRecording) scale else 1f)
+                .shadow(
+                    elevation = if (isRecording) 
+                        Elevation.RecordButton.activeElevation 
+                    else 
+                        Elevation.RecordButton.idleElevation,
+                    shape = CircleShape,
+                    spotColor = if (isRecording)
+                        Elevation.RecordButton.activeColor
+                    else
+                        Elevation.RecordButton.idleColor
+                )
+                .background(Gradients.recordButton, CircleShape)
+                .clickable { onClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = if (isRecording) "⏸️" else "🎤",
+                fontSize = 44.sp
+            )
+        }
+    }
+}
+```
+
+Додати imports в Buttons.kt:
+```kotlin
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.foundation.border
+```
+
+Компіляція: ./gradlew clean, ./gradlew assembleDebug, ./gradlew installDebug. Що виправлено: TipRow тепер з ripple indication для візуальної реакції, PracticeCard має debug log та fallback на cardHeaderTheory якщо practiceGradient не знайдено, RecordButton має animated border з borderAlpha пульсацією 0.3 до 0.8 при recording стані. Перевір на пристрої всі 3 фікси!

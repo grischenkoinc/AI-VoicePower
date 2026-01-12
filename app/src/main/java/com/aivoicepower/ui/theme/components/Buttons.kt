@@ -48,10 +48,34 @@ fun RecordButton(
         label = "scale"
     )
 
+    // Border animation для recording стану
+    val borderAlpha by infiniteTransition.animateFloat(
+        initialValue = if (isRecording) 0.3f else 0f,
+        targetValue = if (isRecording) 0.8f else 0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "borderAlpha"
+    )
+
     Box(
-        modifier = modifier.size(134.dp), // 110dp + rings space
+        modifier = modifier.size(140.dp), // Збільшено для border
         contentAlignment = Alignment.Center
     ) {
+        // Animated border (тільки коли recording)
+        if (isRecording) {
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .border(
+                        width = 3.dp,
+                        color = Color(0xFF667EEA).copy(alpha = borderAlpha),
+                        shape = CircleShape
+                    )
+            )
+        }
+
         // Wave rings (тільки коли recording)
         if (isRecording) {
             WaveRing(delay = WaveRingExpansion.delay1)
