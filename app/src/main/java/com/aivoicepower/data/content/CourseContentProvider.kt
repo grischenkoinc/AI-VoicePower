@@ -55,7 +55,7 @@ object CourseContentProvider {
             description = "Покращ дикцію та чіткість вимови за 3 тижні. Щоденні вправи зі скоромовками та артикуляцією.",
             iconEmoji = "🗣️",
             totalLessons = 21,
-            isPremium = true,
+            isPremium = false,
             estimatedDays = 21,
             difficulty = Difficulty.BEGINNER,
             skills = listOf(SkillType.DICTION, SkillType.TEMPO),
