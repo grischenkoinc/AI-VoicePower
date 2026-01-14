@@ -50,7 +50,7 @@ fun NavGraph(
 
         composable(route = Screen.Onboarding.route) {
             OnboardingScreen(
-                onNavigateToDiagnostic = {
+                onComplete = {
                     navController.navigate(Screen.Diagnostic.route) {
                         popUpTo(Screen.Onboarding.route) { inclusive = true }
                     }
@@ -60,7 +60,7 @@ fun NavGraph(
 
         composable(route = Screen.Diagnostic.route) {
             DiagnosticScreen(
-                onNavigateToHome = {
+                onComplete = {
                     // After diagnostic completion, go to DiagnosticResult
                     navController.navigate(Screen.DiagnosticResult.route) {
                         popUpTo(Screen.Diagnostic.route) { inclusive = true }

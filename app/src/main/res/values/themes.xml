@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.AIVoicePower" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.AIVoicePower" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- Прозорий статус бар -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <!-- Білий navigation bar -->
+        <item name="android:navigationBarColor">#FFFFFF</item>
+        <!-- Темні іконки на світлому фоні -->
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
 </resources>

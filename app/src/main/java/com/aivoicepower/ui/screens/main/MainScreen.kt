@@ -1,11 +1,14 @@
 package com.aivoicepower.ui.screens.main
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -43,7 +46,11 @@ fun MainScreen(
     Scaffold(
         bottomBar = {
             if (shouldShowBottomBar) {
-                NavigationBar {
+                NavigationBar(
+                    containerColor = Color.White,
+                    contentColor = Color.Black,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     bottomNavItems.forEach { item ->
                         val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
 
@@ -51,11 +58,20 @@ fun MainScreen(
                             icon = {
                                 Icon(
                                     imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                    contentDescription = item.label
+                                    contentDescription = item.label,
+                                    tint = if (selected) item.selectedColor else Color(0xFF9CA3AF)
                                 )
                             },
-                            label = { Text(item.label) },
+                            label = {
+                                Text(
+                                    text = item.label,
+                                    color = if (selected) Color.Black else Color(0xFF9CA3AF)
+                                )
+                            },
                             selected = selected,
+                            colors = NavigationBarItemDefaults.colors(
+                                indicatorColor = Color.Transparent
+                            ),
                             onClick = {
                                 if (!selected) {
                                     navController.navigate(item.route) {
@@ -107,40 +123,46 @@ sealed class BottomNavItem(
     val route: String,
     val label: String,
     val selectedIcon: ImageVector,
-    val unselectedIcon: ImageVector
+    val unselectedIcon: ImageVector,
+    val selectedColor: Color
 ) {
     object Home : BottomNavItem(
         route = Screen.Home.route,
         label = "Головна",
         selectedIcon = Icons.Filled.Home,
-        unselectedIcon = Icons.Filled.Home
+        unselectedIcon = Icons.Outlined.Home,
+        selectedColor = Color(0xFF667EEA)
     )
 
     object Courses : BottomNavItem(
         route = Screen.Courses.route,
         label = "Курси",
         selectedIcon = Icons.Filled.School,
-        unselectedIcon = Icons.Filled.School
+        unselectedIcon = Icons.Outlined.School,
+        selectedColor = Color(0xFF8B5CF6)
     )
 
     object Warmup : BottomNavItem(
         route = Screen.Warmup.route,
         label = "Розминка",
         selectedIcon = Icons.Filled.FitnessCenter,
-        unselectedIcon = Icons.Filled.FitnessCenter
+        unselectedIcon = Icons.Outlined.FitnessCenter,
+        selectedColor = Color(0xFFEC4899)
     )
 
     object Improvisation : BottomNavItem(
         route = Screen.Improvisation.route,
-        label = "Імпровізація",
+        label = "Improv",
         selectedIcon = Icons.Filled.Lightbulb,
-        unselectedIcon = Icons.Filled.Lightbulb
+        unselectedIcon = Icons.Outlined.Lightbulb,
+        selectedColor = Color(0xFFF59E0B)
     )
 
     object Progress : BottomNavItem(
         route = Screen.Progress.route,
         label = "Прогрес",
         selectedIcon = Icons.Filled.TrendingUp,
-        unselectedIcon = Icons.Filled.TrendingUp
+        unselectedIcon = Icons.Outlined.TrendingUp,
+        selectedColor = Color(0xFF10B981)
     )
 }
