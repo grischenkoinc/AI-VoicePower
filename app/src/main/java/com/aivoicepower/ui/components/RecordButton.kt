@@ -16,6 +16,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aivoicepower.ui.theme.*
+import com.aivoicepower.ui.theme.modifiers.*
 
 @Composable
 fun RecordButton(
@@ -113,11 +114,26 @@ fun RecordButton(
         Box(
             modifier = Modifier
                 .size(115.dp)
+                .then(
+                    if (!isRecording) {
+                        Modifier.pulseAnimation(
+                            scaleFrom = 1f,
+                            scaleTo = 1.05f,
+                            duration = 1500
+                        )
+                    } else Modifier
+                )
+                .multiLayerShadow(
+                    elevation = if (isRecording) 24.dp else 16.dp,
+                    spotColor = if (isRecording)
+                        Color(0xFF3B82F6).copy(alpha = 0.5f)
+                    else
+                        Color(0xFF60A5FA).copy(alpha = 0.4f)
+                )
                 .gradientBackground(
                     Gradients.recordButton,
                     CircleShape
                 )
-                .shadowPreset(ShadowPreset.RECORD_BUTTON, CircleShape)
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center
         ) {

@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.aivoicepower.domain.model.course.Course
 import com.aivoicepower.ui.theme.*
+import com.aivoicepower.ui.theme.modifiers.*
 import com.aivoicepower.ui.theme.components.*
 
 enum class CourseFilter {
@@ -248,13 +249,13 @@ private fun FilterTab(
             )
             .then(
                 if (isActive) {
-                    Modifier.shadow(
+                    Modifier.multiLayerShadow(
                         elevation = 4.dp,
-                        shape = RoundedCornerShape(14.dp),
                         spotColor = Color.White.copy(alpha = 0.3f)
                     )
                 } else Modifier
             )
+            .scaleOnPress(pressedScale = 0.95f)
             .clickable { onClick() }
             .padding(horizontal = 16.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center
@@ -349,7 +350,10 @@ private fun CourseCardItem(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .shadow(8.dp, RoundedCornerShape(24.dp), spotColor = Color.Black.copy(alpha = 0.15f))
+            .multiLayerShadow(
+                elevation = 8.dp,
+                spotColor = Color.Black.copy(alpha = 0.15f)
+            )
     ) {
         Column(
             modifier = Modifier

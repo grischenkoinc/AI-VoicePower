@@ -1,105 +1,202 @@
 package com.aivoicepower.ui.screens.onboarding
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.aivoicepower.ui.screens.onboarding.components.*
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.aivoicepower.ui.theme.*
+import com.aivoicepower.ui.theme.components.*
 import kotlinx.coroutines.launch
+
+data class OnboardingPage(
+    val emoji: String,
+    val title: String,
+    val description: String
+)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun OnboardingScreen(
-    viewModel: OnboardingViewModel = hiltViewModel(),
-    onNavigateToDiagnostic: () -> Unit
+    onComplete: () -> Unit
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    val pagerState = rememberPagerState(pageCount = { 4 })
+    val pages = remember {
+        listOf(
+            OnboardingPage(
+                emoji = "🎤",
+                title = "Розвивай голос",
+                description = "Тренуй дикцію, артикуляцію та інтонацію з AI-наставником"
+            ),
+            OnboardingPage(
+                emoji = "⚡",
+                title = "21-денні курси",
+                description = "Структуровані програми від основ до харизматичних виступів"
+            ),
+            OnboardingPage(
+                emoji = "🎯",
+                title = "Персональний коучинг",
+                description = "AI аналізує твоє мовлення та дає поради для покращення"
+            ),
+            OnboardingPage(
+                emoji = "🚀",
+                title = "Почни зараз",
+                description = "Перша діагностика — безкоштовно. Дізнайся свій рівень!"
+            )
+        )
+    }
+
+    val pagerState = rememberPagerState(pageCount = { pages.size })
     val scope = rememberCoroutineScope()
 
-    // Синхронізація pagerState з state.currentPage
-    LaunchedEffect(state.currentPage) {
-        if (pagerState.currentPage != state.currentPage) {
-            pagerState.animateScrollToPage(state.currentPage)
-        }
-    }
+    GradientBackground(
+        content = {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+            // Pager з слайдами
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.weight(1f)
+            ) { page ->
+                OnboardingPageContent(
+                    page = pages[page],
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
 
-    // Синхронізація state.currentPage з pagerState
-    LaunchedEffect(pagerState.currentPage) {
-        snapshotFlow { pagerState.currentPage }.collect { page ->
-            viewModel.onEvent(OnboardingEvent.PageChanged(page))
-        }
-    }
-
-    // Навігація після завершення onboarding
-    LaunchedEffect(state.isNavigating) {
-        if (state.isNavigating) {
-            onNavigateToDiagnostic()
-        }
-    }
-
-    HorizontalPager(
-        state = pagerState,
-        modifier = Modifier.fillMaxSize()
-    ) { page ->
-        when (page) {
-            0 -> OnboardingPage1(
-                onNextClick = {
-                    scope.launch {
-                        viewModel.onEvent(OnboardingEvent.NextClicked)
-                    }
+            // Page indicators
+            Row(
+                modifier = Modifier.padding(vertical = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                repeat(pages.size) { index ->
+                    PageIndicator(
+                        isActive = index == pagerState.currentPage
+                    )
                 }
-            )
+            }
 
-            1 -> OnboardingPage2(
-                selectedGoal = state.selectedGoal,
-                onGoalSelected = { goal ->
-                    viewModel.onEvent(OnboardingEvent.GoalSelected(goal))
-                },
-                onNextClick = {
-                    scope.launch {
-                        viewModel.onEvent(OnboardingEvent.NextClicked)
-                    }
-                },
-                onBackClick = {
-                    scope.launch {
-                        viewModel.onEvent(OnboardingEvent.BackClicked)
-                    }
-                }
-            )
+            // Navigation buttons
+            if (pagerState.currentPage < pages.size - 1) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 32.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Skip button
+                    NavButton(
+                        text = "Пропустити",
+                        icon = "→",
+                        isPrimary = false,
+                        onClick = onComplete,
+                        modifier = Modifier.weight(1f)
+                    )
 
-            2 -> OnboardingPage3(
-                selectedMinutes = state.dailyMinutes,
-                onMinutesSelected = { minutes ->
-                    viewModel.onEvent(OnboardingEvent.MinutesSelected(minutes))
-                },
-                onNextClick = {
-                    scope.launch {
-                        viewModel.onEvent(OnboardingEvent.NextClicked)
-                    }
-                },
-                onBackClick = {
-                    scope.launch {
-                        viewModel.onEvent(OnboardingEvent.BackClicked)
-                    }
+                    // Next button
+                    NavButton(
+                        text = "Далі",
+                        icon = "→",
+                        isPrimary = true,
+                        onClick = {
+                            scope.launch {
+                                pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                            }
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
                 }
-            )
-
-            3 -> OnboardingPage4(
-                onStartDiagnostic = {
-                    viewModel.onEvent(OnboardingEvent.StartDiagnosticClicked)
-                },
-                onBackClick = {
-                    scope.launch {
-                        viewModel.onEvent(OnboardingEvent.BackClicked)
-                    }
-                }
-            )
+            } else {
+                // Start button (остання сторінка)
+                NavButton(
+                    text = "Почати",
+                    icon = "🚀",
+                    isPrimary = true,
+                    onClick = onComplete,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 32.dp)
+                )
+            }
         }
+    })
+}
+
+@Composable
+private fun OnboardingPageContent(
+    page: OnboardingPage,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.padding(top = 80.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(32.dp)
+    ) {
+        // Emoji illustration
+        Text(
+            text = page.emoji,
+            fontSize = 120.sp
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Title
+        Text(
+            text = page.title,
+            style = AppTypography.displayLarge,
+            color = TextColors.onDarkPrimary,
+            textAlign = TextAlign.Center,
+            fontSize = 42.sp,
+            lineHeight = 48.sp
+        )
+
+        // Description
+        Text(
+            text = page.description,
+            style = AppTypography.bodyLarge,
+            color = TextColors.onDarkSecondary,
+            textAlign = TextAlign.Center,
+            fontSize = 18.sp,
+            lineHeight = 28.sp,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
     }
+}
+
+@Composable
+private fun PageIndicator(
+    isActive: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val width by animateDpAsState(
+        targetValue = if (isActive) 32.dp else 8.dp,
+        animationSpec = tween(300),
+        label = "width"
+    )
+
+    Box(
+        modifier = modifier
+            .width(width)
+            .height(8.dp)
+            .background(
+                color = if (isActive)
+                    androidx.compose.ui.graphics.Color.White
+                else
+                    androidx.compose.ui.graphics.Color.White.copy(alpha = 0.3f),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp)
+            )
+    )
 }

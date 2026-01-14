@@ -17,12 +17,13 @@ object Gradients {
 
     /**
      * Основний фон застосунку
-     * CSS: linear-gradient(135deg, #667eea 0%, #764ba2 100%)
+     * CSS: linear-gradient(135deg, #4ECDC4 0%, #667eea 50%, #764ba2 100%)
      */
     val appBackground = Brush.linearGradient(
         colors = listOf(
-            Color(0xFF667EEA),  // Індиго
-            Color(0xFF764BA2)   // Фіолетовий
+            Color(0xFF4ECDC4),  // Бірюзовий
+            Color(0xFF667EEA),  // Світло-фіолетовий
+            Color(0xFF764BA2)   // Темно-фіолетовий
         ),
         start = Offset(0f, 0f),
         end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY) // 135° діагональ

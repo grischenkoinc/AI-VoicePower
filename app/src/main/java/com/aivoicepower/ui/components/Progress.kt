@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.aivoicepower.ui.theme.*
+import com.aivoicepower.ui.theme.modifiers.*
 
 /**
  * Circular Progress - круговий індикатор прогресу
@@ -194,10 +195,14 @@ fun SkillProgressBar(
             if (animatedProgress > 0f) {
                 Box(
                     modifier = Modifier
-                        .fillMaxHeight()
                         .fillMaxWidth(animatedProgress)
+                        .fillMaxHeight()
+                        .glowShadow(
+                            glowRadius = 16.dp,
+                            glowColor = Color(0xFF22C55E),
+                            intensity = 0.7f
+                        )
                         .gradientBackground(Gradients.progressFill, RoundedCornerShape(CornerRadius.full))
-                        .shadowPreset(ShadowPreset.SUCCESS_RING, RoundedCornerShape(CornerRadius.full))
                 )
             }
         }

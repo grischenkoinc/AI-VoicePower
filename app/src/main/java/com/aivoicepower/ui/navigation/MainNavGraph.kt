@@ -14,6 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.aivoicepower.ui.screens.courses.CourseDetailScreen
 import com.aivoicepower.ui.screens.courses.CoursesListScreen
+import com.aivoicepower.ui.screens.courses.CoursesScreen
 import com.aivoicepower.ui.screens.home.HomeScreen
 import com.aivoicepower.ui.screens.improvisation.*
 import com.aivoicepower.ui.screens.lesson.LessonScreen
@@ -50,27 +51,18 @@ fun MainNavGraph(
                 onNavigateToCourse = { courseId ->
                     navController.navigate(Screen.CourseDetail.createRoute(courseId))
                 },
-                onNavigateToAiCoach = onNavigateToAiCoach,
-                onNavigateToLesson = { courseId, lessonId ->
-                    navController.navigate(Screen.Lesson.createRoute(courseId, lessonId))
-                },
-                onNavigateToWarmup = {
-                    navController.navigate(Screen.Warmup.route)
-                },
-                onNavigateToCourses = {
-                    navController.navigate(Screen.Courses.route)
-                },
                 onNavigateToImprovisation = {
                     navController.navigate(Screen.Improvisation.route)
                 },
-                onNavigateToProgress = {
+                onNavigateToAICoach = onNavigateToAiCoach,
+                onNavigateToWarmup = {
+                    navController.navigate(Screen.Warmup.route)
+                },
+                onNavigateToRecord = {
+                    // TODO: Navigate to record screen
+                },
+                onNavigateToAnalytics = {
                     navController.navigate(Screen.Progress.route)
-                },
-                onNavigateToQuickWarmup = {
-                    navController.navigate(Screen.WarmupQuick.route)
-                },
-                onNavigateToRandomTopic = {
-                    navController.navigate(Screen.RandomTopic.route)
                 },
                 onNavigateToSettings = {
                     navController.navigate(Screen.Settings.route)
@@ -80,9 +72,13 @@ fun MainNavGraph(
 
         // ===== COURSES =====
         composable(route = Screen.Courses.route) {
-            CoursesListScreen(
+            CoursesScreen(
+                onNavigateBack = { navController.popBackStack() },
                 onNavigateToCourse = { courseId ->
                     navController.navigate(Screen.CourseDetail.createRoute(courseId))
+                },
+                onSearch = {
+                    // TODO: Navigate to search
                 }
             )
         }
