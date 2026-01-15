@@ -1,99 +1,114 @@
 package com.aivoicepower.ui.screens.diagnostic
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.aivoicepower.ui.screens.diagnostic.components.*
+import androidx.compose.ui.unit.sp
+import com.aivoicepower.ui.theme.*
+import com.aivoicepower.ui.theme.components.*
+import com.aivoicepower.ui.theme.modifiers.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiagnosticResultScreen(
-    viewModel: DiagnosticResultViewModel = hiltViewModel(),
-    onNavigateToHome: () -> Unit
+    onNavigateToHome: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
+    val scrollState = rememberScrollState()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Результати діагностики") },
-                actions = {
-                    IconButton(onClick = onNavigateToHome) {
-                        Icon(Icons.Default.Close, contentDescription = "Закрити")
-                    }
-                }
+    Box(modifier = modifier.fillMaxSize()) {
+        GradientBackground(content = {})
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(horizontal = 24.dp)
+                .padding(top = 60.dp, bottom = 40.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            // Header
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(text = "🎉", fontSize = 64.sp)
+
+                Text(
+                    text = "Діагностика завершена!",
+                    style = AppTypography.displayLarge,
+                    color = Color.White,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Black,
+                    textAlign = TextAlign.Center,
+                    letterSpacing = (-1).sp
+                )
+
+                Text(
+                    text = "Ось ваші результати",
+                    style = AppTypography.bodyMedium,
+                    color = Color.White.copy(alpha = 0.9f),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            // Overall Score
+            OverallScoreCard(score = 75)
+
+            // Skills
+            SkillScoreCard(
+                icon = "📖",
+                title = "Читання",
+                score = 80,
+                color = Color(0xFF6366F1)
             )
-        }
-    ) { paddingValues ->
-        when {
-            state.isLoading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        CircularProgressIndicator()
-                        Text("Аналізуємо твоє мовлення...")
-                    }
-                }
-            }
 
-            state.error != null -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.padding(32.dp)
-                    ) {
-                        Text(
-                            text = "😔",
-                            style = MaterialTheme.typography.displayMedium
-                        )
-                        Text(
-                            text = state.error ?: "Помилка",
-                            style = MaterialTheme.typography.bodyLarge,
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Button(
-                            onClick = { viewModel.retryAnalysis() },
-                            modifier = Modifier.fillMaxWidth(0.7f)
-                        ) {
-                            Text("Спробувати знову")
-                        }
-                        TextButton(onClick = onNavigateToHome) {
-                            Text("Пропустити і перейти до тренувань")
-                        }
-                    }
-                }
-            }
+            SkillScoreCard(
+                icon = "🎯",
+                title = "Дикція",
+                score = 70,
+                color = Color(0xFFEC4899)
+            )
 
-            state.result != null -> {
-                DiagnosticResultContent(
-                    result = state.result!!,
-                    onNavigateToHome = onNavigateToHome,
-                    modifier = Modifier.padding(paddingValues)
+            SkillScoreCard(
+                icon = "🎭",
+                title = "Емоційність",
+                score = 75,
+                color = Color(0xFFF59E0B)
+            )
+
+            SkillScoreCard(
+                icon = "💬",
+                title = "Вільна мова",
+                score = 78,
+                color = Color(0xFF10B981)
+            )
+
+            // Continue Button
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+            ) {
+                PrimaryButton(
+                    text = "Почати навчання",
+                    onClick = onNavigateToHome
                 )
             }
         }
@@ -101,115 +116,169 @@ fun DiagnosticResultScreen(
 }
 
 @Composable
-private fun DiagnosticResultContent(
-    result: DiagnosticResultDisplay,
-    onNavigateToHome: () -> Unit,
+private fun OverallScoreCard(
+    score: Int,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 24.dp,
+                shape = RoundedCornerShape(32.dp),
+                spotColor = Color.Black.copy(alpha = 0.2f)
+            )
+            .background(Color.White, RoundedCornerShape(32.dp))
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        // Header
-        item {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "🎉 Діагностика завершена!",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    textAlign = TextAlign.Center
-                )
+        Text(
+            text = "Загальний рівень",
+            style = AppTypography.titleMedium,
+            color = TextColors.onLightSecondary,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold
+        )
 
-                Text(
-                    text = "Ось що ми дізналися про твоє мовлення:",
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .shadow(
+                    elevation = 12.dp,
+                    shape = CircleShape,
+                    spotColor = Color(0xFF667EEA).copy(alpha = 0.4f)
                 )
-            }
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(Color(0xFF667EEA), Color(0xFF764BA2))
+                    ),
+                    CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "$score",
+                style = AppTypography.displayLarge,
+                color = Color.White,
+                fontSize = 48.sp,
+                fontWeight = FontWeight.Black
+            )
         }
 
-        // Radar Chart
-        item {
-            SkillRadarChart(
-                metrics = result.metrics,
+        Text(
+            text = "Хороший старт! 💪",
+            style = AppTypography.bodyMedium,
+            color = TextColors.onLightPrimary,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+private fun SkillScoreCard(
+    icon: String,
+    title: String,
+    score: Int,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 12.dp,
+                shape = RoundedCornerShape(24.dp),
+                spotColor = Color.Black.copy(alpha = 0.1f)
+            )
+            .background(Color.White, RoundedCornerShape(24.dp))
+            .padding(20.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(56.dp)
+                .shadow(
+                    elevation = 6.dp,
+                    shape = RoundedCornerShape(16.dp),
+                    spotColor = color.copy(alpha = 0.3f)
+                )
+                .background(color, RoundedCornerShape(16.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = icon, fontSize = 28.sp)
+        }
+
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = title,
+                style = AppTypography.titleMedium,
+                color = TextColors.onLightPrimary,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
+
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp)
-            )
-        }
-
-        item {
-            Divider()
-        }
-
-        // Detailed Scores
-        item {
-            Text(
-                text = "📊 Детальні оцінки",
-                style = MaterialTheme.typography.titleLarge
-            )
-        }
-
-        items(result.metrics) { metric ->
-            SkillScoreCard(metric = metric)
-        }
-
-        item {
-            Divider()
-        }
-
-        // Strengths
-        item {
-            FeedbackSection(
-                title = "✅ Твої сильні сторони:",
-                items = result.strengths,
-                isPositive = true
-            )
-        }
-
-        // Improvements
-        item {
-            FeedbackSection(
-                title = "🎯 Зони для покращення:",
-                items = result.improvements,
-                isPositive = false
-            )
-        }
-
-        item {
-            Divider()
-        }
-
-        // Recommendations
-        item {
-            Text(
-                text = "💡 Персоналізовані рекомендації:",
-                style = MaterialTheme.typography.titleLarge
-            )
-        }
-
-        items(result.recommendations) { recommendation ->
-            RecommendationCard(
-                recommendation = recommendation,
-                onClick = { /* TODO: Navigate to recommendation.actionRoute */ }
-            )
-        }
-
-        // Start button
-        item {
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Button(
-                onClick = onNavigateToHome,
-                modifier = Modifier.fillMaxWidth()
+                    .height(6.dp)
+                    .background(Color(0xFFE5E5EA), RoundedCornerShape(3.dp))
             ) {
-                Text("Почати тренування →")
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(score / 100f)
+                        .fillMaxHeight()
+                        .background(color, RoundedCornerShape(3.dp))
+                )
             }
         }
+
+        Text(
+            text = "$score",
+            style = AppTypography.titleLarge,
+            color = color,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Black
+        )
+    }
+}
+
+@Composable
+private fun PrimaryButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(64.dp)
+            .shadow(
+                elevation = 12.dp,
+                shape = RoundedCornerShape(20.dp),
+                spotColor = Color(0xFF667EEA).copy(alpha = 0.4f)
+            )
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(Color(0xFF667EEA), Color(0xFF764BA2))
+                ),
+                RoundedCornerShape(20.dp)
+            )
+            .scaleOnPress()
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            style = AppTypography.titleMedium,
+            color = Color.White,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.ExtraBold
+        )
     }
 }

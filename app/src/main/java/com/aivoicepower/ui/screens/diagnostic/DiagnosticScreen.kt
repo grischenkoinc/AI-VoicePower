@@ -1,6 +1,7 @@
 package com.aivoicepower.ui.screens.diagnostic
 
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -9,83 +10,129 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.aivoicepower.ui.theme.*
 import com.aivoicepower.ui.theme.components.*
 import com.aivoicepower.ui.theme.modifiers.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-private data class TaskItem(
+data class DiagnosticTask(
     val number: Int,
     val title: String,
     val subtitle: String,
     val icon: String,
-    val prompt: String,
+    val prompt: Any, // String or AnnotatedString
     val tip: String,
     val isScrollable: Boolean = false,
-    val hasEmotions: Boolean = false
+    val hasEmotions: Boolean = false,
+    val isFreeSpeech: Boolean = false
 )
 
 @Composable
 fun DiagnosticScreen(
-    onComplete: () -> Unit,
+    onComplete: (List<String>) -> Unit, // Передаємо список шляхів до записів
     modifier: Modifier = Modifier
 ) {
     var currentTask by remember { mutableIntStateOf(0) }
     var isRecording by remember { mutableStateOf(false) }
-    val scrollState = rememberScrollState()
+    var showRecordingDialog by remember { mutableStateOf(false) }
+    var currentRecordings by remember { mutableStateOf(mutableMapOf<Int, String>()) }
+    var recordingTime by remember { mutableIntStateOf(0) }
+    var isPlaying by remember { mutableStateOf(false) }
+
+    val scope = rememberCoroutineScope()
+    val maxRecordingTime = 45 // секунд
 
     val tasks = remember {
         listOf(
-            TaskItem(
+            DiagnosticTask(
                 number = 1,
                 title = "Читання",
                 subtitle = "Прочитайте текст природно",
                 icon = "📖",
-                prompt = "Мистецтво публічного виступу полягає не лише в тому, що ви говорите, але й у тому, як ви це робите. Впевненість, чіткість та емоційність — ключові складові успішної комунікації.",
+                prompt = "Ваш голос — це потужний інструмент впливу. Коли ви говорите впевнено та чітко, люди слухають вас уважніше. Розвивайте свої навички публічних виступів, і ви зможете надихати інших своїми ідеями!",
                 tip = "Читайте спокійно, ніби розмовляєте з другом",
                 isScrollable = true
             ),
-            TaskItem(
+            DiagnosticTask(
                 number = 2,
                 title = "Дикція",
                 subtitle = "Чітко вимовте скоромовку",
                 icon = "🎯",
-                prompt = "Коси коса, поки роса. Роса долі — коси додому.",
-                tip = "Не поспішайте, головне — чіткість кожного звуку"
+                prompt = "Їхав Грек через річку, бачить Грек — у річці рак. Сунув Грек руку в річку, рак за руку Грека цап!",
+                tip = "Не поспішайте, вимовляйте кожен звук чітко"
             ),
-            TaskItem(
+            DiagnosticTask(
                 number = 3,
                 title = "Емоції",
                 subtitle = "Читайте з відповідними емоціями",
                 icon = "🎭",
-                prompt = "emotions",
-                tip = "Уявіть що переживаєте ці емоції насправді",
-                hasEmotions = true
+                prompt = buildAnnotatedString {
+                    withStyle(SpanStyle(color = Color(0xFF10B981), fontWeight = FontWeight.Bold)) {
+                        append("Сьогодні чудовий день! ")
+                    }
+                    withStyle(SpanStyle(color = Color(0xFF6366F1), fontWeight = FontWeight.Bold)) {
+                        append("Іноді буває важко, але я не здаюсь. ")
+                    }
+                    withStyle(SpanStyle(color = Color(0xFFF59E0B), fontWeight = FontWeight.Bold)) {
+                        append("Я впевнений, що все вийде!")
+                    }
+                },
+                tip = "Передайте емоції через інтонацію голосу",
+                hasEmotions = true,
+                isScrollable = true
             ),
-            TaskItem(
+            DiagnosticTask(
                 number = 4,
                 title = "Вільна мова",
-                subtitle = "Розкажіть про себе",
+                subtitle = "Розкажіть про себе 30-45 сек",
                 icon = "💬",
-                prompt = "Чому ви хочете покращити мовлення? Що ви сподіваєтесь досягти?",
-                tip = "Будьте природними та щирими"
+                prompt = "Розкажіть, чому ви хочете покращити своє мовлення? Які у вас цілі? Що ви сподіваєтесь досягти завдяки тренуванням?",
+                tip = "Говоріть природно, 30-45 секунд",
+                isFreeSpeech = true
             )
         )
     }
 
+    // Timer for free speech
+    LaunchedEffect(isRecording, currentTask) {
+        if (isRecording && tasks[currentTask].isFreeSpeech) {
+            while (isRecording && recordingTime < maxRecordingTime) {
+                delay(1000)
+                recordingTime++
+            }
+            if (recordingTime >= maxRecordingTime) {
+                // Auto stop after 45 seconds
+                isRecording = false
+                currentRecordings[currentTask] = "recording_${currentTask}.mp3" // Mock path
+                showRecordingDialog = true
+                recordingTime = 0
+            }
+        }
+    }
+
     val currentTaskData = tasks[currentTask]
+    val scrollState = rememberScrollState()
 
     Box(modifier = modifier.fillMaxSize()) {
         GradientBackground(content = {})
@@ -94,68 +141,585 @@ fun DiagnosticScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(horizontal = 20.dp)
-                .padding(top = 48.dp, bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 24.dp)
+                .padding(top = 60.dp, bottom = 40.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Progress dots
-            ProgressDots(
-                current = currentTask,
-                total = tasks.size
-            )
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                ProgressDots(current = currentTask, total = tasks.size)
 
-            // Title
-            Text(
-                text = "Діагностика",
-                style = AppTypography.displayLarge,
-                color = Color.White,
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = (-1).sp
-            )
+                Text(
+                    text = "Діагностика",
+                    style = AppTypography.displayLarge,
+                    color = Color.White,
+                    fontSize = 40.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = (-1.5).sp
+                )
+            }
 
-            // Task card
             TaskCardNew(
                 task = currentTaskData,
                 isRecording = isRecording,
-                onRecordClick = { isRecording = !isRecording }
+                hasRecording = currentRecordings[currentTask] != null,
+                recordingProgress = if (currentTaskData.isFreeSpeech)
+                    recordingTime.toFloat() / maxRecordingTime
+                else 0f,
+                onRecordClick = {
+                    if (isRecording) {
+                        isRecording = false
+                        // Save recording
+                        currentRecordings[currentTask] = "recording_${currentTask}.mp3" // TODO: Real path
+                        showRecordingDialog = true
+                        recordingTime = 0
+                    } else {
+                        isRecording = true
+                        recordingTime = 0
+                    }
+                }
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            // Navigation (тільки Назад, без Пропустити)
+            if (currentTask > 0) {
+                SecondaryButton(
+                    text = "Назад",
+                    onClick = {
+                        currentTask--
+                        isRecording = false
+                        showRecordingDialog = false
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                Spacer(modifier = Modifier.height(64.dp))
+            }
+        }
 
-            // Bottom navigation
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+        // Recording Dialog (по центру, не dismissable)
+        if (showRecordingDialog) {
+            RecordingDialog(
+                taskNumber = currentTask + 1,
+                audioPath = currentRecordings[currentTask] ?: "",
+                isPlaying = isPlaying,
+                onListen = {
+                    // TODO: Play audio
+                    isPlaying = !isPlaying
+                },
+                onReRecord = {
+                    currentRecordings.remove(currentTask)
+                    showRecordingDialog = false
+                    isRecording = true
+                    recordingTime = 0
+                },
+                onNext = {
+                    showRecordingDialog = false
+                    if (currentTask < tasks.size - 1) {
+                        currentTask++
+                    } else {
+                        // All tasks completed
+                        onComplete(currentRecordings.values.toList())
+                    }
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun RecordingDialog(
+    taskNumber: Int,
+    audioPath: String,
+    isPlaying: Boolean,
+    onListen: () -> Unit,
+    onReRecord: () -> Unit,
+    onNext: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Dialog(onDismissRequest = { /* Non-dismissable */ }) {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = 32.dp,
+                    shape = RoundedCornerShape(32.dp),
+                    spotColor = Color.Black.copy(alpha = 0.3f)
+                )
+                .background(Color.White, RoundedCornerShape(32.dp))
+                .padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            // Success icon
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(Color(0xFF22C55E), Color(0xFF16A34A))
+                        ),
+                        CircleShape
+                    ),
+                contentAlignment = Alignment.Center
             ) {
-                if (currentTask > 0) {
-                    SecondaryButton(
-                        text = "Назад",
-                        onClick = {
-                            currentTask--
-                            isRecording = false
-                        },
-                        modifier = Modifier.weight(1f)
+                Text(text = "✓", color = Color.White, fontSize = 48.sp, fontWeight = FontWeight.Black)
+            }
+
+            Text(
+                text = "Запис збережено!",
+                style = AppTypography.titleLarge,
+                color = TextColors.onLightPrimary,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
+
+            // Audio file visual
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFF8F9FA), RoundedCornerShape(16.dp))
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "🎵", fontSize = 32.sp)
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Завдання $taskNumber",
+                        style = AppTypography.bodyMedium,
+                        color = TextColors.onLightPrimary,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "0:${if (taskNumber * 5 < 10) "0" else ""}${taskNumber * 5}", // Mock duration
+                        style = AppTypography.bodySmall,
+                        color = TextColors.onLightSecondary,
+                        fontSize = 13.sp
                     )
                 }
+            }
 
-                PrimaryButton(
-                    text = when {
-                        currentTask < tasks.size - 1 -> "Далі"
-                        else -> "Завершити"
-                    },
-                    onClick = {
-                        if (currentTask < tasks.size - 1) {
-                            currentTask++
-                            isRecording = false
-                        } else {
-                            onComplete()
-                        }
-                    },
-                    modifier = Modifier.weight(if (currentTask > 0) 1.5f else 1f)
+            // Actions
+            DialogActionButton(
+                icon = if (isPlaying) "⏸" else "🔊",
+                text = if (isPlaying) "Зупинити" else "Прослухати",
+                onClick = onListen
+            )
+
+            DialogActionButton(
+                icon = "🔄",
+                text = "Перезаписати",
+                onClick = onReRecord
+            )
+
+            // Next button
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .shadow(
+                        elevation = 12.dp,
+                        shape = RoundedCornerShape(16.dp),
+                        spotColor = Color(0xFF667EEA).copy(alpha = 0.4f)
+                    )
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(Color(0xFF667EEA), Color(0xFF764BA2))
+                        ),
+                        RoundedCornerShape(16.dp)
+                    )
+                    .scaleOnPress()
+                    .clickable(onClick = onNext),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Далі →",
+                    style = AppTypography.titleMedium,
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.ExtraBold
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun DialogActionButton(
+    icon: String,
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(52.dp)
+            .background(Color(0xFFF8F9FA), RoundedCornerShape(14.dp))
+            .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(14.dp))
+            .scaleOnPress()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = icon, fontSize = 22.sp)
+        Text(
+            text = text,
+            style = AppTypography.bodyMedium,
+            color = TextColors.onLightPrimary,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+private fun TaskCardNew(
+    task: DiagnosticTask,
+    isRecording: Boolean,
+    hasRecording: Boolean,
+    recordingProgress: Float,
+    onRecordClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "border")
+    val borderAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.4f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "alpha"
+    )
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 24.dp,
+                shape = RoundedCornerShape(32.dp),
+                spotColor = Color.Black.copy(alpha = 0.2f)
+            )
+            .background(Color.White, RoundedCornerShape(32.dp))
+            .then(
+                if (isRecording) {
+                    Modifier.border(
+                        width = 4.dp,
+                        color = Color(0xFF667EEA).copy(alpha = borderAlpha),
+                        shape = RoundedCornerShape(32.dp)
+                    )
+                } else Modifier
+            )
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(28.dp)
+    ) {
+        // Icon
+        Box(
+            modifier = Modifier
+                .size(80.dp)
+                .shadow(
+                    elevation = 12.dp,
+                    shape = RoundedCornerShape(24.dp),
+                    spotColor = Color(0xFF667EEA).copy(alpha = 0.4f)
+                )
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(Color(0xFF667EEA), Color(0xFF764BA2))
+                    ),
+                    RoundedCornerShape(24.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = task.icon, fontSize = 40.sp)
+        }
+
+        // Title
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "Завдання ${task.number}/4",
+                style = AppTypography.labelMedium,
+                color = Color(0xFF667EEA),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 1.sp
+            )
+            Text(
+                text = task.title,
+                style = AppTypography.displayLarge,
+                color = TextColors.onLightPrimary,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Black,
+                textAlign = TextAlign.Center,
+                letterSpacing = (-0.8).sp
+            )
+            Text(
+                text = task.subtitle,
+                style = AppTypography.bodyMedium,
+                color = TextColors.onLightSecondary,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center
+            )
+        }
+
+        // Prompt
+        if (task.hasEmotions) {
+            EmotionalTextPrompt()
+        } else {
+            val promptScrollState = rememberScrollState()
+            val canScroll = task.isScrollable && promptScrollState.maxValue > 0
+            val showScrollIndicator = canScroll && !promptScrollState.canScrollForward.not()
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 100.dp, max = if (task.isScrollable) 140.dp else 180.dp)
+                        .background(Color(0xFFF8F9FA), RoundedCornerShape(20.dp))
+                        .border(
+                            width = 1.dp,
+                            color = if (task.isScrollable) Color(0xFFE5E7EB) else Color.Transparent,
+                            shape = RoundedCornerShape(20.dp)
+                        )
+                        .padding(20.dp)
+                ) {
+                    when (val prompt = task.prompt) {
+                        is String -> Text(
+                            text = prompt,
+                            style = AppTypography.bodyMedium,
+                            color = TextColors.onLightPrimary,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            lineHeight = 24.sp,
+                            textAlign = if (task.isScrollable) TextAlign.Start else TextAlign.Center,
+                            modifier = if (task.isScrollable) Modifier.verticalScroll(promptScrollState) else Modifier
+                        )
+                        else -> Text(
+                            text = prompt as androidx.compose.ui.text.AnnotatedString,
+                            style = AppTypography.bodyMedium,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            lineHeight = 24.sp,
+                            textAlign = TextAlign.Start,
+                            modifier = if (task.isScrollable) Modifier.verticalScroll(promptScrollState) else Modifier
+                        )
+                    }
+                }
+
+                // Scroll indicator at bottom
+                if (task.isScrollable) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 8.dp)
+                    ) {
+                        Text(
+                            text = "⌄",
+                            color = Color(0xFF667EEA).copy(alpha = if (showScrollIndicator) 0.6f else 0f),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
+
+        // Tip
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFFFFFBEB), RoundedCornerShape(16.dp))
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = "💡", fontSize = 24.sp)
+            Text(
+                text = task.tip,
+                style = AppTypography.bodySmall,
+                color = Color(0xFF92400E),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                lineHeight = 20.sp,
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        // Record Button with wave rings and timer
+        Box(
+            contentAlignment = Alignment.Center
+        ) {
+            // Circular timer for free speech
+            if (task.isFreeSpeech && isRecording) {
+                CircularTimer(progress = recordingProgress)
+            }
+
+            // Wave rings when recording
+            if (isRecording && !task.isFreeSpeech) {
+                repeat(3) { index ->
+                    WaveRing(
+                        delay = index * 600,
+                        color = Color(0xFF667EEA)
+                    )
+                }
+            }
+
+            // Main button (НЕ червоний!)
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .shadow(
+                        elevation = 16.dp,
+                        shape = CircleShape,
+                        spotColor = Color(0xFF667EEA).copy(alpha = 0.4f)
+                    )
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(Color(0xFF667EEA), Color(0xFF764BA2)) // Завжди фіолетовий!
+                        ),
+                        CircleShape
+                    )
+                    .scaleOnPress(pressedScale = 0.92f)
+                    .clickable(onClick = onRecordClick),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = if (isRecording) "⏹" else if (hasRecording) "✓" else "🎤",
+                    fontSize = 48.sp
+                )
+            }
+        }
+
+        // Status
+        if (isRecording) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .pulseAnimation()
+                        .background(Color(0xFFEF4444), CircleShape)
+                )
+                Text(
+                    text = if (task.isFreeSpeech) "Запис... ${recordingProgress.times(45).toInt()}с" else "Запис...",
+                    style = AppTypography.bodyMedium,
+                    color = Color(0xFFEF4444),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CircularTimer(
+    progress: Float,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier.size(160.dp)) {
+        val strokeWidth = 6.dp.toPx()
+        drawArc(
+            color = Color(0xFF667EEA),
+            startAngle = -90f,
+            sweepAngle = 360f * progress,
+            useCenter = false,
+            style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+        )
+    }
+}
+
+@Composable
+private fun EmotionalTextPrompt(
+    modifier: Modifier = Modifier
+) {
+    val scrollState = rememberScrollState()
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(max = 200.dp)
+            .background(Color(0xFFF8F9FA), RoundedCornerShape(20.dp))
+            .padding(20.dp)
+            .verticalScroll(scrollState),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Legend
+        Text(
+            text = "Читайте текст з відповідними емоціями:",
+            style = AppTypography.labelSmall,
+            color = TextColors.onLightSecondary,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            LegendItem(color = Color(0xFF10B981), label = "Радість")
+            LegendItem(color = Color(0xFF6366F1), label = "Сум")
+            LegendItem(color = Color(0xFFF59E0B), label = "Впевненість")
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        // Colored text
+        Text(
+            text = buildAnnotatedString {
+                withStyle(SpanStyle(color = Color(0xFF10B981), fontWeight = FontWeight.Bold)) {
+                    append("Сьогодні чудовий день! ")
+                }
+                withStyle(SpanStyle(color = Color(0xFF6366F1), fontWeight = FontWeight.Bold)) {
+                    append("Іноді буває важко, але я не здаюсь. ")
+                }
+                withStyle(SpanStyle(color = Color(0xFFF59E0B), fontWeight = FontWeight.Bold)) {
+                    append("Я впевнений, що все вийде!")
+                }
+            },
+            fontSize = 15.sp,
+            lineHeight = 22.sp
+        )
+    }
+}
+
+@Composable
+private fun LegendItem(
+    color: Color,
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(12.dp)
+                .background(color, CircleShape)
+        )
+        Text(
+            text = label,
+            style = AppTypography.bodySmall,
+            color = TextColors.onLightSecondary,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.SemiBold
+        )
     }
 }
 
@@ -181,308 +745,6 @@ private fun ProgressDots(
                         else
                             Color.White.copy(alpha = 0.3f)
                     )
-            )
-        }
-    }
-}
-
-@Composable
-private fun TaskCardNew(
-    task: TaskItem,
-    isRecording: Boolean,
-    onRecordClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    // Border pulse animation
-    val infiniteTransition = rememberInfiniteTransition(label = "border")
-    val borderAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.4f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "alpha"
-    )
-
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .shadow(
-                elevation = 16.dp,
-                shape = RoundedCornerShape(24.dp),
-                spotColor = Color.Black.copy(alpha = 0.15f)
-            )
-            .background(Color.White, RoundedCornerShape(24.dp))
-            .then(
-                if (isRecording) {
-                    Modifier.border(
-                        width = 3.dp,
-                        color = Color(0xFF667EEA).copy(alpha = borderAlpha),
-                        shape = RoundedCornerShape(24.dp)
-                    )
-                } else Modifier
-            )
-            .padding(20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Icon
-        Box(
-            modifier = Modifier
-                .size(56.dp)
-                .shadow(
-                    elevation = 8.dp,
-                    shape = RoundedCornerShape(16.dp),
-                    spotColor = Color(0xFF667EEA).copy(alpha = 0.3f)
-                )
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(Color(0xFF667EEA), Color(0xFF764BA2))
-                    ),
-                    RoundedCornerShape(16.dp)
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = task.icon, fontSize = 28.sp)
-        }
-
-        // Title
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                text = "Завдання ${task.number}/4",
-                style = AppTypography.labelMedium,
-                color = Color(0xFF667EEA),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = 1.sp
-            )
-            Text(
-                text = task.title,
-                style = AppTypography.displayLarge,
-                color = TextColors.onLightPrimary,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Black,
-                textAlign = TextAlign.Center
-            )
-            Text(
-                text = task.subtitle,
-                style = AppTypography.bodyMedium,
-                color = TextColors.onLightSecondary,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.Center
-            )
-        }
-
-        // Prompt
-        if (task.hasEmotions) {
-            EmotionalTextPrompt()
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Color(0xFFF8F9FA),
-                        RoundedCornerShape(16.dp)
-                    )
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = task.prompt,
-                    style = AppTypography.bodyMedium,
-                    color = TextColors.onLightPrimary,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Medium,
-                    lineHeight = 22.sp,
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
-
-        // Tip
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Color(0xFFFFFBEB),
-                    RoundedCornerShape(12.dp)
-                )
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(text = "💡", fontSize = 20.sp)
-            Text(
-                text = task.tip,
-                style = AppTypography.bodySmall,
-                color = Color(0xFF92400E),
-                fontSize = 13.sp,
-                fontWeight = FontWeight.SemiBold,
-                lineHeight = 18.sp,
-                modifier = Modifier.weight(1f)
-            )
-        }
-
-        // Record Button with wave rings
-        Box(
-            modifier = Modifier.padding(vertical = 8.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            // Wave rings when recording
-            if (isRecording) {
-                repeat(3) { index ->
-                    WaveRing(
-                        delay = index * 600,
-                        color = Color(0xFF667EEA)
-                    )
-                }
-            }
-
-            // Main button (КРУГЛИЙ!)
-            Box(
-                modifier = Modifier
-                    .size(100.dp)
-                    .shadow(
-                        elevation = if (isRecording) 16.dp else 12.dp,
-                        shape = CircleShape,
-                        spotColor = if (isRecording)
-                            Color(0xFFEF4444).copy(alpha = 0.5f)
-                        else
-                            Color(0xFF667EEA).copy(alpha = 0.4f)
-                    )
-                    .background(
-                        if (isRecording)
-                            Brush.linearGradient(
-                                colors = listOf(Color(0xFFEF4444), Color(0xFFDC2626))
-                            )
-                        else
-                            Brush.linearGradient(
-                                colors = listOf(Color(0xFF667EEA), Color(0xFF764BA2))
-                            ),
-                        CircleShape
-                    )
-                    .clip(CircleShape)
-                    .clickable(onClick = onRecordClick),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = if (isRecording) "⏹" else "🎤",
-                    fontSize = 40.sp
-                )
-            }
-        }
-
-        // Status
-        if (isRecording) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .pulseAnimation()
-                        .background(Color(0xFFEF4444), CircleShape)
-                )
-                Text(
-                    text = "Запис...",
-                    style = AppTypography.bodyMedium,
-                    color = Color(0xFFEF4444),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun EmotionalTextPrompt(
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(
-                Color(0xFFF8F9FA),
-                RoundedCornerShape(16.dp)
-            )
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        // Радісно
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = "😊", fontSize = 16.sp)
-                Text(
-                    text = "Радісно:",
-                    style = AppTypography.labelMedium,
-                    color = Color(0xFF10B981),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
-            }
-            Text(
-                text = "Сьогодні чудовий день! Я радий бути тут!",
-                style = AppTypography.bodySmall,
-                color = TextColors.onLightPrimary,
-                fontSize = 13.sp,
-                lineHeight = 18.sp
-            )
-        }
-
-        // Сумно
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = "😢", fontSize = 16.sp)
-                Text(
-                    text = "Сумно:",
-                    style = AppTypography.labelMedium,
-                    color = Color(0xFF6366F1),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
-            }
-            Text(
-                text = "Іноді буває важко, але завтра буде новий день.",
-                style = AppTypography.bodySmall,
-                color = TextColors.onLightPrimary,
-                fontSize = 13.sp,
-                lineHeight = 18.sp
-            )
-        }
-
-        // Впевнено
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = "💪", fontSize = 16.sp)
-                Text(
-                    text = "Впевнено:",
-                    style = AppTypography.labelMedium,
-                    color = Color(0xFFF59E0B),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
-            }
-            Text(
-                text = "Я впевнений у собі та досягну своїх цілей!",
-                style = AppTypography.bodySmall,
-                color = TextColors.onLightPrimary,
-                fontSize = 13.sp,
-                lineHeight = 18.sp
             )
         }
     }
@@ -528,41 +790,6 @@ private fun WaveRing(
                 shape = CircleShape
             )
     )
-}
-
-@Composable
-private fun PrimaryButton(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .height(56.dp)
-            .shadow(
-                elevation = 8.dp,
-                shape = RoundedCornerShape(16.dp),
-                spotColor = Color(0xFF667EEA).copy(alpha = 0.4f)
-            )
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(Color(0xFF667EEA), Color(0xFF764BA2))
-                ),
-                RoundedCornerShape(16.dp)
-            )
-            .clip(RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = text,
-            style = AppTypography.titleMedium,
-            color = Color.White,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.ExtraBold,
-            textAlign = TextAlign.Center
-        )
-    }
 }
 
 @Composable

@@ -5,6 +5,7 @@ sealed class Screen(val route: String) {
     object Splash : Screen("splash")
     object Onboarding : Screen("onboarding")
     object Diagnostic : Screen("diagnostic")
+    object DiagnosticAnalysis : Screen("diagnostic_analysis")
     object DiagnosticResult : Screen("diagnostic_result")
 
     // Main screens (Bottom Navigation)

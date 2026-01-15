@@ -13,11 +13,22 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.aivoicepower.ui.screens.aicoach.AiCoachScreen
+import com.aivoicepower.ui.screens.diagnostic.DiagnosticAnalysisScreen
+import com.aivoicepower.ui.screens.diagnostic.DiagnosticResult
 import com.aivoicepower.ui.screens.diagnostic.DiagnosticResultScreen
 import com.aivoicepower.ui.screens.diagnostic.DiagnosticScreen
 import com.aivoicepower.ui.screens.main.MainScreen
 import com.aivoicepower.ui.screens.onboarding.OnboardingScreen
 import com.aivoicepower.ui.screens.onboarding.SplashScreen
+
+/**
+ * Temporary data holder for diagnostic flow
+ * TODO: Replace with proper state management (ViewModel or SavedStateHandle)
+ */
+object DiagnosticDataHolder {
+    var recordingPaths: List<String> = emptyList()
+    var result: DiagnosticResult? = null
+}
 
 /**
  * Root navigation graph for the app
@@ -50,7 +61,7 @@ fun NavGraph(
 
         composable(route = Screen.Onboarding.route) {
             OnboardingScreen(
-                onComplete = {
+                onNavigateToDiagnostic = {
                     navController.navigate(Screen.Diagnostic.route) {
                         popUpTo(Screen.Onboarding.route) { inclusive = true }
                     }
@@ -60,10 +71,25 @@ fun NavGraph(
 
         composable(route = Screen.Diagnostic.route) {
             DiagnosticScreen(
-                onComplete = {
-                    // After diagnostic completion, go to DiagnosticResult
-                    navController.navigate(Screen.DiagnosticResult.route) {
+                onComplete = { recordingPaths ->
+                    // Store recording paths temporarily
+                    DiagnosticDataHolder.recordingPaths = recordingPaths
+                    // Navigate to analysis screen
+                    navController.navigate(Screen.DiagnosticAnalysis.route) {
                         popUpTo(Screen.Diagnostic.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(route = Screen.DiagnosticAnalysis.route) {
+            DiagnosticAnalysisScreen(
+                recordingPaths = DiagnosticDataHolder.recordingPaths,
+                onAnalysisComplete = { result ->
+                    // Store result for DiagnosticResultScreen
+                    DiagnosticDataHolder.result = result
+                    navController.navigate(Screen.DiagnosticResult.route) {
+                        popUpTo(Screen.DiagnosticAnalysis.route) { inclusive = true }
                     }
                 }
             )
