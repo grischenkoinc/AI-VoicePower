@@ -80,7 +80,7 @@ fun DiagnosticAnalysisScreen(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "🤖", fontSize = 56.sp)
+                Text(text = "✨", fontSize = 56.sp)
             }
 
             Spacer(modifier = Modifier.height(40.dp))

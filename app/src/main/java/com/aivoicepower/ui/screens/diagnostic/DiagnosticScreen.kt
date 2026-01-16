@@ -1,5 +1,8 @@
 package com.aivoicepower.ui.screens.diagnostic
 
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -30,6 +33,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.aivoicepower.ui.theme.*
 import com.aivoicepower.ui.theme.components.*
 import com.aivoicepower.ui.theme.modifiers.*
@@ -51,17 +55,35 @@ data class DiagnosticTask(
 @Composable
 fun DiagnosticScreen(
     onComplete: (List<String>) -> Unit, // Передаємо список шляхів до записів
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: DiagnosticViewModel = hiltViewModel()
 ) {
+    val audioRecorder = viewModel.audioRecorder
+    val audioPlayer = viewModel.audioPlayer
+    val isPlaying by audioPlayer.isPlaying.collectAsState()
+
     var currentTask by remember { mutableIntStateOf(0) }
     var isRecording by remember { mutableStateOf(false) }
     var showRecordingDialog by remember { mutableStateOf(false) }
     var currentRecordings by remember { mutableStateOf(mutableMapOf<Int, String>()) }
     var recordingTime by remember { mutableIntStateOf(0) }
-    var isPlaying by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
     val maxRecordingTime = 45 // секунд
+
+    // Permission launcher
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // Start recording
+            scope.launch {
+                val filePath = audioRecorder.startRecording()
+                isRecording = true
+                recordingTime = 0
+            }
+        }
+    }
 
     val tasks = remember {
         listOf(
@@ -79,7 +101,7 @@ fun DiagnosticScreen(
                 title = "Дикція",
                 subtitle = "Чітко вимовте скоромовку",
                 icon = "🎯",
-                prompt = "Їхав Грек через річку, бачить Грек — у річці рак. Сунув Грек руку в річку, рак за руку Грека цап!",
+                prompt = "Кричав Архип, Архип охрип. Не треба Архипу кричати до хрипу.",
                 tip = "Не поспішайте, вимовляйте кожен звук чітко"
             ),
             DiagnosticTask(
@@ -88,14 +110,16 @@ fun DiagnosticScreen(
                 subtitle = "Читайте з відповідними емоціями",
                 icon = "🎭",
                 prompt = buildAnnotatedString {
-                    withStyle(SpanStyle(color = Color(0xFF10B981), fontWeight = FontWeight.Bold)) {
-                        append("Сьогодні чудовий день! ")
+                    withStyle(SpanStyle(color = Color(0xFF0D9668), fontWeight = FontWeight.Bold)) {
+                        append("Сьогодні чудовий день! Я радий бути тут і ділитися своїми думками. Кожна мить наповнена можливостями та новими відкриттями!")
                     }
+                    append(" ")
                     withStyle(SpanStyle(color = Color(0xFF6366F1), fontWeight = FontWeight.Bold)) {
-                        append("Іноді буває важко, але я не здаюсь. ")
+                        append("Іноді буває важко, і це абсолютно нормально. Але я не здаюсь і продовжую йти вперед, навіть коли здається складно. Кожен крок — це досвід.")
                     }
+                    append(" ")
                     withStyle(SpanStyle(color = Color(0xFFF59E0B), fontWeight = FontWeight.Bold)) {
-                        append("Я впевнений, що все вийде!")
+                        append("Я впевнений у собі! Я знаю свої сильні сторони і вірю у власні можливості. Я досягну всіх своїх цілей, бо маю чітке бачення!")
                     }
                 },
                 tip = "Передайте емоції через інтонацію голосу",
@@ -123,9 +147,12 @@ fun DiagnosticScreen(
             }
             if (recordingTime >= maxRecordingTime) {
                 // Auto stop after 45 seconds
+                val filePath = audioRecorder.stopRecording()
                 isRecording = false
-                currentRecordings[currentTask] = "recording_${currentTask}.mp3" // Mock path
-                showRecordingDialog = true
+                if (filePath != null) {
+                    currentRecordings[currentTask] = filePath
+                    showRecordingDialog = true
+                }
                 recordingTime = 0
             }
         }
@@ -170,14 +197,25 @@ fun DiagnosticScreen(
                 else 0f,
                 onRecordClick = {
                     if (isRecording) {
+                        // Stop recording
+                        val filePath = audioRecorder.stopRecording()
                         isRecording = false
-                        // Save recording
-                        currentRecordings[currentTask] = "recording_${currentTask}.mp3" // TODO: Real path
-                        showRecordingDialog = true
+                        if (filePath != null) {
+                            currentRecordings[currentTask] = filePath
+                            showRecordingDialog = true
+                        }
                         recordingTime = 0
                     } else {
-                        isRecording = true
-                        recordingTime = 0
+                        // Request permission and start recording
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+                        } else {
+                            scope.launch {
+                                val filePath = audioRecorder.startRecording()
+                                isRecording = true
+                                recordingTime = 0
+                            }
+                        }
                     }
                 }
             )
@@ -190,6 +228,7 @@ fun DiagnosticScreen(
                         currentTask--
                         isRecording = false
                         showRecordingDialog = false
+                        audioPlayer.stop()
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -200,26 +239,47 @@ fun DiagnosticScreen(
 
         // Recording Dialog (по центру, не dismissable)
         if (showRecordingDialog) {
+            val audioPath = currentRecordings[currentTask] ?: ""
             RecordingDialog(
                 taskNumber = currentTask + 1,
-                audioPath = currentRecordings[currentTask] ?: "",
+                audioPath = audioPath,
+                audioDuration = audioPlayer.getDuration(audioPath),
                 isPlaying = isPlaying,
+                isLastTask = currentTask == tasks.size - 1,
                 onListen = {
-                    // TODO: Play audio
-                    isPlaying = !isPlaying
+                    if (isPlaying) {
+                        audioPlayer.pause()
+                    } else {
+                        audioPlayer.play(audioPath) {
+                            // Playback completed - do nothing
+                        }
+                    }
                 },
                 onReRecord = {
                     currentRecordings.remove(currentTask)
+                    audioPlayer.stop()
                     showRecordingDialog = false
-                    isRecording = true
-                    recordingTime = 0
+
+                    // Request permission and start new recording
+                    scope.launch {
+                        delay(200)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+                        } else {
+                            val filePath = audioRecorder.startRecording()
+                            isRecording = true
+                            recordingTime = 0
+                        }
+                    }
                 },
                 onNext = {
+                    audioPlayer.stop()
                     showRecordingDialog = false
+
                     if (currentTask < tasks.size - 1) {
                         currentTask++
                     } else {
-                        // All tasks completed
+                        // All tasks completed - pass recording paths
                         onComplete(currentRecordings.values.toList())
                     }
                 }
@@ -232,7 +292,9 @@ fun DiagnosticScreen(
 private fun RecordingDialog(
     taskNumber: Int,
     audioPath: String,
+    audioDuration: Int,
     isPlaying: Boolean,
+    isLastTask: Boolean,
     onListen: () -> Unit,
     onReRecord: () -> Unit,
     onNext: () -> Unit,
@@ -294,7 +356,7 @@ private fun RecordingDialog(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "0:${if (taskNumber * 5 < 10) "0" else ""}${taskNumber * 5}", // Mock duration
+                        text = formatDuration(audioDuration),
                         style = AppTypography.bodySmall,
                         color = TextColors.onLightSecondary,
                         fontSize = 13.sp
@@ -336,7 +398,7 @@ private fun RecordingDialog(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Далі →",
+                    text = if (isLastTask) "Завершити діагностику" else "Далі →",
                     style = AppTypography.titleMedium,
                     color = Color.White,
                     fontSize = 16.sp,
@@ -486,7 +548,10 @@ private fun TaskCardNew(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 100.dp, max = if (task.isScrollable) 140.dp else 180.dp)
+                        .heightIn(
+                            min = 120.dp,
+                            max = if (task.number == 1) 240.dp else 180.dp
+                        )
                         .background(Color(0xFFF8F9FA), RoundedCornerShape(20.dp))
                         .border(
                             width = 1.dp,
@@ -652,13 +717,12 @@ private fun EmotionalTextPrompt(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(max = 200.dp)
+            .heightIn(max = 270.dp) // ВИПРАВЛЕНО: було 180dp, +50%
             .background(Color(0xFFF8F9FA), RoundedCornerShape(20.dp))
             .padding(20.dp)
             .verticalScroll(scrollState),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Legend
         Text(
             text = "Читайте текст з відповідними емоціями:",
             style = AppTypography.labelSmall,
@@ -671,24 +735,25 @@ private fun EmotionalTextPrompt(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            LegendItem(color = Color(0xFF10B981), label = "Радість")
+            LegendItem(color = Color(0xFF0D9668), label = "Радість") // ТЕМНІШИЙ зелений
             LegendItem(color = Color(0xFF6366F1), label = "Сум")
             LegendItem(color = Color(0xFFF59E0B), label = "Впевненість")
         }
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Colored text
         Text(
             text = buildAnnotatedString {
-                withStyle(SpanStyle(color = Color(0xFF10B981), fontWeight = FontWeight.Bold)) {
-                    append("Сьогодні чудовий день! ")
+                withStyle(SpanStyle(color = Color(0xFF0D9668), fontWeight = FontWeight.Bold)) { // ТЕМНІШИЙ
+                    append("Сьогодні чудовий день! Кожна мить наповнена можливостями та новими відкриттями!")
                 }
+                append(" ")
                 withStyle(SpanStyle(color = Color(0xFF6366F1), fontWeight = FontWeight.Bold)) {
-                    append("Іноді буває важко, але я не здаюсь. ")
+                    append("Іноді буває важко, і це абсолютно нормально. Але я не здаюсь і продовжую йти вперед, навіть коли здається складно. ")
                 }
+                append(" ")
                 withStyle(SpanStyle(color = Color(0xFFF59E0B), fontWeight = FontWeight.Bold)) {
-                    append("Я впевнений, що все вийде!")
+                    append("Я знаю свої сильні сторони і вірю у власні можливості. Я досягну всіх своїх цілей, бо маю чітке бачення!")
                 }
             },
             fontSize = 15.sp,
@@ -821,3 +886,15 @@ private fun SecondaryButton(
         )
     }
 }
+
+// Helper functions
+private fun formatDuration(seconds: Int): String {
+    val minutes = seconds / 60
+    val secs = seconds % 60
+    return if (minutes > 0) {
+        String.format("%d:%02d", minutes, secs)
+    } else {
+        String.format("0:%02d", secs)
+    }
+}
+

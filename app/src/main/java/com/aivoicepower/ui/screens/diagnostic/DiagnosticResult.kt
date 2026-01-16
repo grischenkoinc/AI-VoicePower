@@ -2,52 +2,44 @@ package com.aivoicepower.ui.screens.diagnostic
 
 data class DiagnosticResult(
     val overallScore: Int,
-    val readingScore: Int,
-    val dictionScore: Int,
-    val emotionalScore: Int,
-    val freeSpeechScore: Int,
-    val readingFeedback: TaskFeedback,
-    val dictionFeedback: TaskFeedback,
-    val emotionalFeedback: TaskFeedback,
-    val freeSpeechFeedback: TaskFeedback,
-    val recommendations: List<String>,
+
+    // 6 core metrics
+    val dictionScore: Int,        // Чіткість дикції
+    val tempoScore: Int,           // Темп мовлення
+    val intonationScore: Int,      // Інтонація та виразність
+    val structureScore: Int,       // Структура думок
+    val confidenceScore: Int,      // Впевненість
+    val fillerWordsScore: Int,     // Слова-паразити (інвертовано: менше = краще)
+
+    // Detailed feedback
     val strengths: List<String>,
-    val areasToImprove: List<String>
+    val areasToImprove: List<String>,
+    val recommendations: List<String>
 ) {
     companion object {
         fun mock() = DiagnosticResult(
-            overallScore = 75,
-            readingScore = 80,
-            dictionScore = 70,
-            emotionalScore = 75,
-            freeSpeechScore = 78,
-            readingFeedback = TaskFeedback(
-                strengths = listOf("Чіткість", "Темп"),
-                improvements = listOf("Інтонація")
+            overallScore = 72,
+            dictionScore = 75,
+            tempoScore = 70,
+            intonationScore = 68,
+            structureScore = 65,
+            confidenceScore = 78,
+            fillerWordsScore = 85, // Високий = мало слів-паразитів
+            strengths = listOf(
+                "Впевнений голос",
+                "Гарна артикуляція",
+                "Стабільний темп"
             ),
-            dictionFeedback = TaskFeedback(
-                strengths = listOf("Артикуляція"),
-                improvements = listOf("Складні звуки")
-            ),
-            emotionalFeedback = TaskFeedback(
-                strengths = listOf("Виразність"),
-                improvements = listOf("Діапазон емоцій")
-            ),
-            freeSpeechFeedback = TaskFeedback(
-                strengths = listOf("Впевненість"),
-                improvements = listOf("Структура")
+            areasToImprove = listOf(
+                "Інтонаційна виразність",
+                "Структура викладу думок",
+                "Зменшити слова-паразити"
             ),
             recommendations = listOf(
                 "Почніть з курсу 'Чітке мовлення'",
-                "Практикуйте скоромовки щодня"
-            ),
-            strengths = listOf("Гарна дикція", "Впевнений темп"),
-            areasToImprove = listOf("Емоційна виразність", "Інтонація")
+                "Практикуйте скоромовки щодня",
+                "Записуйте себе і аналізуйте"
+            )
         )
     }
 }
-
-data class TaskFeedback(
-    val strengths: List<String>,
-    val improvements: List<String>
-)

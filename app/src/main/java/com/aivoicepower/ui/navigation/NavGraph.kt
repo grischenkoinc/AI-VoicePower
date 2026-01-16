@@ -97,7 +97,7 @@ fun NavGraph(
 
         composable(route = Screen.DiagnosticResult.route) {
             DiagnosticResultScreen(
-                onNavigateToHome = {
+                onContinue = {
                     navController.navigate(Screen.Main.route) {
                         popUpTo(Screen.DiagnosticResult.route) { inclusive = true }
                     }
