@@ -1,22 +1,25 @@
 package com.aivoicepower.ui.screens.courses.components
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.Divider
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.aivoicepower.domain.model.course.Lesson
+import com.aivoicepower.ui.theme.*
+import com.aivoicepower.ui.theme.components.*
 
 @Composable
 fun TheoryPhaseContent(
@@ -24,87 +27,107 @@ fun TheoryPhaseContent(
     onStartExercises: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Theory card
-        lesson.theory?.let { theory ->
-            Card(
-                modifier = Modifier.fillMaxWidth()
+    val scrollState = rememberScrollState()
+
+    GradientBackground(
+        content = {
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .padding(horizontal = 24.dp)
+                    .padding(top = 60.dp, bottom = 40.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = "Теорiя",
-                        style = MaterialTheme.typography.titleLarge
+                // Theory Card з premium дизайном
+                lesson.theory?.let { theory ->
+                    MainCard(
+                        header = {
+                            SectionTag(
+                                emoji = "📖",
+                                text = "Теорія",
+                                isPractice = false
+                            )
+
+                            // BigTitle inline
+                            Text(
+                                text = lesson.title,
+                                style = AppTypography.displayLarge,
+                                color = TextColors.onDarkPrimary,
+                                fontSize = 36.sp,
+                                lineHeight = 40.sp,
+                                letterSpacing = (-1.5).sp
+                            )
+
+                            LevelPill(
+                                emoji = "📚",
+                                level = lesson.dayNumber
+                            )
+                        },
+                        content = {
+                            ContentText(
+                                text = theory.text
+                            )
+
+                            // Поради як numbered tips
+                            if (theory.tips.isNotEmpty()) {
+                                HighlightBox(
+                                    title = "💡 Поради",
+                                    content = ""
+                                )
+
+                                NumberedTips(tips = theory.tips)
+                            }
+                        }
                     )
+                }
 
-                    Text(
-                        text = theory.text,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-
-                    if (theory.tips.isNotEmpty()) {
-                        Divider()
-
-                        Text(
-                            text = "Поради:",
-                            style = MaterialTheme.typography.titleMedium
+                // Exercises Preview Card
+                MainCard(
+                    header = {
+                        SectionTag(
+                            emoji = "🔥",
+                            text = "Вправи • ${lesson.exercises.size}",
+                            isPractice = true
                         )
 
-                        theory.tips.forEach { tip ->
-                            Text(
-                                text = "- $tip",
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(start = 8.dp)
-                            )
+                        Text(
+                            text = "План тренування",
+                            style = AppTypography.displayLarge,
+                            color = TextColors.onDarkPrimary,
+                            fontSize = 36.sp,
+                            lineHeight = 40.sp,
+                            letterSpacing = (-1.5).sp
+                        )
+                    },
+                    content = {
+                        ContentText(
+                            title = "Тривалість",
+                            text = "~${lesson.estimatedMinutes} хвилин практики"
+                        )
+
+                        // Exercise list
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            lesson.exercises.forEachIndexed { index, exercise ->
+                                ContentText(
+                                    text = "${index + 1}. ${exercise.title}"
+                                )
+                            }
                         }
                     }
-                }
-            }
-        }
-
-        // Exercises info
-        Card(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "Вправи",
-                    style = MaterialTheme.typography.titleLarge
                 )
 
-                Text(
-                    text = "${lesson.exercises.size} вправи - ~${lesson.estimatedMinutes} хв",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                // Start Button - використовуємо NavButton
+                NavButton(
+                    text = "Почати вправи",
+                    icon = "🚀",
+                    isPrimary = true,
+                    onClick = onStartExercises,
+                    modifier = Modifier.fillMaxWidth()
                 )
-
-                lesson.exercises.forEachIndexed { index, exercise ->
-                    Text(
-                        text = "${index + 1}. ${exercise.title}",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
             }
         }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        Button(
-            onClick = onStartExercises,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Почати вправи")
-        }
-    }
+    )
 }

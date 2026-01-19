@@ -1,24 +1,18 @@
 package com.aivoicepower.ui.screens.courses.components
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.aivoicepower.domain.model.course.Lesson
 import com.aivoicepower.ui.screens.courses.ExerciseState
 import com.aivoicepower.ui.screens.courses.LessonEvent
+import com.aivoicepower.ui.theme.*
+import com.aivoicepower.ui.theme.components.*
 
 @Composable
 fun ExercisePhaseContent(
@@ -32,62 +26,123 @@ fun ExercisePhaseContent(
 ) {
     if (exerciseState == null) return
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Progress indicator
-        Text(
-            text = "Вправа ${currentExerciseIndex + 1}/$totalExercises",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary
-        )
+    val scrollState = rememberScrollState()
 
-        LinearProgressIndicator(
-            progress = (currentExerciseIndex + 1) / totalExercises.toFloat(),
-            modifier = Modifier.fillMaxWidth()
-        )
+    Box(modifier = modifier.fillMaxSize()) {
+        GradientBackground(
+            content = {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    // Fixed Progress Header
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 24.dp, end = 24.dp, top = 40.dp),
+                        verticalArrangement = Arrangement.spacedBy(24.dp)
+                    ) {
+                        ProgressBar3D(
+                            progress = (currentExerciseIndex + 1) / totalExercises.toFloat(),
+                            currentStep = currentExerciseIndex + 1,
+                            totalSteps = totalExercises,
+                            stepLabel = "Вправа"
+                        )
+                    }
 
-        // Exercise card
-        ExerciseCard(exerciseState = exerciseState)
+                    // Scrollable Content
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(top = 20.dp)
+                            .verticalScroll(scrollState)
+                            .padding(horizontal = 24.dp),
+                        verticalArrangement = Arrangement.spacedBy(20.dp)
+                    ) {
+                        // Exercise Card з premium дизайном
+                        PracticeCard(
+                            header = {
+                                SectionTag(
+                                    emoji = getExerciseEmoji(exerciseState.exercise.type),
+                                    text = "${currentExerciseIndex + 1}/$totalExercises",
+                                    isPractice = true
+                                )
 
-        // Recording controls
-        RecordingControls(
-            exerciseState = exerciseState,
-            isPlaying = isPlaying,
-            onStartRecording = { onEvent(LessonEvent.StartRecordingClicked) },
-            onStopRecording = { onEvent(LessonEvent.StopRecordingClicked) },
-            onPlayRecording = { onEvent(LessonEvent.PlayRecordingClicked) },
-            onStopPlayback = { onEvent(LessonEvent.StopPlaybackClicked) },
-            onReRecord = { onEvent(LessonEvent.ReRecordClicked) },
-            onComplete = { onEvent(LessonEvent.CompleteExerciseClicked) }
-        )
+                                // BigTitle inline
+                                Text(
+                                    text = exerciseState.exercise.title,
+                                    style = AppTypography.displayLarge,
+                                    color = TextColors.onDarkPrimary,
+                                    fontSize = 36.sp,
+                                    lineHeight = 40.sp,
+                                    letterSpacing = (-1.5).sp
+                                )
+                            },
+                            content = {
+                                // Exercise Card (окремий компонент)
+                                ExerciseCard(exerciseState = exerciseState)
 
-        Spacer(modifier = Modifier.weight(1f))
+                                Spacer(modifier = Modifier.height(8.dp))
 
-        // Navigation buttons
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            if (currentExerciseIndex > 0) {
-                OutlinedButton(
-                    onClick = { onEvent(LessonEvent.PreviousExerciseClicked) },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Попередня")
+                                // Recording Controls
+                                RecordingControls(
+                                    exerciseState = exerciseState,
+                                    isPlaying = isPlaying,
+                                    onStartRecording = { onEvent(LessonEvent.StartRecordingClicked) },
+                                    onStopRecording = { onEvent(LessonEvent.StopRecordingClicked) },
+                                    onPlayRecording = { onEvent(LessonEvent.PlayRecordingClicked) },
+                                    onStopPlayback = { onEvent(LessonEvent.StopPlaybackClicked) },
+                                    onReRecord = { onEvent(LessonEvent.ReRecordClicked) },
+                                    onComplete = { onEvent(LessonEvent.CompleteExerciseClicked) }
+                                )
+                            }
+                        )
+
+                        // Navigation
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            if (currentExerciseIndex > 0) {
+                                NavButton(
+                                    text = "Попередня",
+                                    icon = "←",
+                                    isPrimary = false,
+                                    onClick = { onEvent(LessonEvent.PreviousExerciseClicked) },
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+
+                            NavButton(
+                                text = "Пропустити",
+                                icon = "⏭️",
+                                isPrimary = false,
+                                onClick = { onEvent(LessonEvent.SkipExerciseClicked) },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+                    }
                 }
             }
+        )
+    }
+}
 
-            OutlinedButton(
-                onClick = { onEvent(LessonEvent.SkipExerciseClicked) },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("Пропустити")
-            }
-        }
+// Helper для емодзі типів вправ
+private fun getExerciseEmoji(type: com.aivoicepower.domain.model.exercise.ExerciseType): String {
+    return when (type) {
+        com.aivoicepower.domain.model.exercise.ExerciseType.ARTICULATION -> "🗣️"
+        com.aivoicepower.domain.model.exercise.ExerciseType.TONGUE_TWISTER -> "🔥"
+        com.aivoicepower.domain.model.exercise.ExerciseType.READING -> "📖"
+        com.aivoicepower.domain.model.exercise.ExerciseType.EMOTION_READING -> "🎭"
+        com.aivoicepower.domain.model.exercise.ExerciseType.FREE_SPEECH -> "💬"
+        com.aivoicepower.domain.model.exercise.ExerciseType.RETELLING -> "📝"
+        com.aivoicepower.domain.model.exercise.ExerciseType.DIALOGUE -> "💭"
+        com.aivoicepower.domain.model.exercise.ExerciseType.PITCH -> "🎵"
+        com.aivoicepower.domain.model.exercise.ExerciseType.QA -> "❓"
+        com.aivoicepower.domain.model.exercise.ExerciseType.TONGUE_TWISTER_BATTLE -> "⚔️"
+        com.aivoicepower.domain.model.exercise.ExerciseType.MINIMAL_PAIRS -> "👂"
+        com.aivoicepower.domain.model.exercise.ExerciseType.CONTRAST_SOUNDS -> "🔊"
+        com.aivoicepower.domain.model.exercise.ExerciseType.SLOW_MOTION -> "🐌"
+        com.aivoicepower.domain.model.exercise.ExerciseType.BREATHING -> "🌬️"
     }
 }
