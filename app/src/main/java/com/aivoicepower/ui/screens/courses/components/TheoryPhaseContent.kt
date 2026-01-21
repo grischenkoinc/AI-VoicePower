@@ -1,133 +1,151 @@
 package com.aivoicepower.ui.screens.courses.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aivoicepower.domain.model.course.Lesson
-import com.aivoicepower.ui.theme.*
+import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.components.*
 
 @Composable
 fun TheoryPhaseContent(
     lesson: Lesson,
     onStartExercises: () -> Unit,
+    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
 
-    GradientBackground(
-        content = {
-            Column(
-                modifier = modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
-                    .padding(horizontal = 24.dp)
-                    .padding(top = 60.dp, bottom = 40.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                // Theory Card з premium дизайном
-                lesson.theory?.let { theory ->
-                    MainCard(
-                        header = {
-                            SectionTag(
-                                emoji = "📖",
-                                text = "Теорія",
-                                isPractice = false
-                            )
-
-                            // BigTitle inline
-                            Text(
-                                text = lesson.title,
-                                style = AppTypography.displayLarge,
-                                color = TextColors.onDarkPrimary,
-                                fontSize = 36.sp,
-                                lineHeight = 40.sp,
-                                letterSpacing = (-1.5).sp
-                            )
-
-                            LevelPill(
-                                emoji = "📚",
-                                level = lesson.dayNumber
-                            )
-                        },
-                        content = {
-                            ContentText(
-                                text = theory.text
-                            )
-
-                            // Поради як numbered tips
-                            if (theory.tips.isNotEmpty()) {
-                                HighlightBox(
-                                    title = "💡 Поради",
-                                    content = ""
-                                )
-
-                                NumberedTips(tips = theory.tips)
-                            }
-                        }
+    Box(modifier = modifier.fillMaxSize()) {
+        GradientBackground(
+            content = {
+                Column(modifier = Modifier.fillMaxSize()) {
+                // Fixed Header "Урок X: Title"
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .padding(top = 16.dp)
+                ) {
+                    Text(
+                        text = "Урок ${lesson.dayNumber}: ${lesson.title}",
+                        style = AppTypography.displayLarge,
+                        color = Color.White,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = (-1).sp
                     )
                 }
 
-                // Exercises Preview Card
-                MainCard(
-                    header = {
-                        SectionTag(
-                            emoji = "🔥",
-                            text = "Вправи • ${lesson.exercises.size}",
-                            isPractice = true
-                        )
-
-                        Text(
-                            text = "План тренування",
-                            style = AppTypography.displayLarge,
-                            color = TextColors.onDarkPrimary,
-                            fontSize = 36.sp,
-                            lineHeight = 40.sp,
-                            letterSpacing = (-1.5).sp
-                        )
-                    },
-                    content = {
-                        ContentText(
-                            title = "Тривалість",
-                            text = "~${lesson.estimatedMinutes} хвилин практики"
-                        )
-
-                        // Exercise list
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            lesson.exercises.forEachIndexed { index, exercise ->
-                                ContentText(
-                                    text = "${index + 1}. ${exercise.title}"
+                // Scrollable Content
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 16.dp)
+                        .verticalScroll(scrollState)
+                        .padding(horizontal = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    // Theory Card
+                    lesson.theory?.let { theory ->
+                        MainCard(
+                            header = {
+                                SectionTag(
+                                    emoji = "📖",
+                                    text = "Теорія",
+                                    isPractice = false
                                 )
-                            }
-                        }
-                    }
-                )
+                            },
+                            content = {
+                                // Main theory text
+                                ContentText(
+                                    text = theory.text
+                                )
 
-                // Start Button - використовуємо NavButton
-                NavButton(
-                    text = "Почати вправи",
-                    icon = "🚀",
-                    isPrimary = true,
-                    onClick = onStartExercises,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                                // Ключовий інсайт (використати HighlightBox)
+                                if (theory.text.contains("💡 Ключовий інсайт:")) {
+                                    val insightText = theory.text
+                                        .substringAfter("💡 Ключовий інсайт:")
+                                        .substringBefore("🎯", "")
+                                        .substringBefore("💡 Важливо", "")
+                                        .trim()
+
+                                    if (insightText.isNotBlank()) {
+                                        HighlightBox(
+                                            title = "💡 Ключовий інсайт",
+                                            content = insightText
+                                        )
+                                    }
+                                }
+
+                                // Цікавий факт (жовтий фон як NumberedTips)
+                                if (theory.text.contains("🎯 Цікавий факт:")) {
+                                    val factText = theory.text
+                                        .substringAfter("🎯 Цікавий факт:")
+                                        .substringBefore("💡 Важливо", "")
+                                        .trim()
+
+                                    if (factText.isNotBlank()) {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .shadow(
+                                                    elevation = 8.dp,
+                                                    shape = RoundedCornerShape(16.dp),
+                                                    spotColor = Color(0xFFFBBF24).copy(alpha = 0.3f)
+                                                )
+                                                .background(Color(0xFFFFFBEB), RoundedCornerShape(16.dp))
+                                                .padding(20.dp),
+                                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                                        ) {
+                                            Text(
+                                                text = "🎯 Цікавий факт",
+                                                style = AppTypography.titleMedium,
+                                                color = Color(0xFF92400E),
+                                                fontSize = 18.sp,
+                                                fontWeight = FontWeight.ExtraBold
+                                            )
+
+                                            Text(
+                                                text = factText,
+                                                style = AppTypography.bodyMedium,
+                                                color = Color(0xFF92400E),
+                                                fontSize = 16.sp,
+                                                fontWeight = FontWeight.Medium,
+                                                lineHeight = 24.sp
+                                            )
+                                        }
+                                    }
+                                }
+
+                                // Важливо знати (використати NumberedTips)
+                                if (theory.tips.isNotEmpty()) {
+                                    NumberedTips(tips = theory.tips)
+                                }
+                            }
+                        )
+                    }
+
+                    // Navigation (як в зразку)
+                    BottomNavRow(
+                        onPrevious = onNavigateBack,
+                        onNext = onStartExercises
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
             }
         }
-    )
+        )
+    }
 }

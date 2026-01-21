@@ -17,7 +17,7 @@ import com.aivoicepower.ui.screens.courses.CoursesListScreen
 import com.aivoicepower.ui.screens.courses.CoursesScreen
 import com.aivoicepower.ui.screens.home.HomeScreen
 import com.aivoicepower.ui.screens.improvisation.*
-import com.aivoicepower.ui.screens.lesson.LessonScreen
+import com.aivoicepower.ui.screens.courses.LessonScreen
 import com.aivoicepower.ui.screens.progress.AchievementsScreen
 import com.aivoicepower.ui.screens.progress.CompareScreen
 import com.aivoicepower.ui.screens.progress.ProgressScreen
@@ -110,10 +110,7 @@ fun MainNavGraph(
             LessonScreen(
                 courseId = courseId,
                 lessonId = lessonId,
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToResults = { recordingId ->
-                    navController.navigate(Screen.Results.createRoute(lessonId, ""))
-                }
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 
