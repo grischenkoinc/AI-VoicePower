@@ -1,92 +1,100 @@
-Закріпити header "Урок X" в TheoryPhaseContent. Header має бути fixed поверх контенту, gradient фон має скролитись під ним БЕЗ проміжку. Код:
+Мінімальні виправлення HomeScreen. Замінити hardcoded QuickAccess на state.quickActions, додати padding для скролу. Код для HomeScreen.kt:
 ```kotlin
-@Composable
-fun TheoryPhaseContent(
-    lesson: Lesson,
-    onStartExercises: () -> Unit,
-    onNavigateBack: () -> Unit,
-    modifier: Modifier = Modifier
+// Знайти рядок ~40 (Column з verticalScroll) і ДОДАТИ padding:
+Column(
+    modifier = Modifier
+        .fillMaxSize()
+        .verticalScroll(rememberScrollState())
+        .padding(bottom = 80.dp), // ДОДАТИ цей рядок для скролу
+    verticalArrangement = Arrangement.spacedBy(32.dp)
 ) {
-    val scrollState = rememberScrollState()
-    
-    Box(modifier = modifier.fillMaxSize()) {
-        // GradientBackground з контентом (все скролиться)
-        GradientBackground {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
+    // ... весь контент
+}
+
+// Знайти рядок ~139 QuickAccessSection і ЗАМІНИТИ:
+// СТАРИЙ КОД (видалити):
+QuickAccessSection(
+    onWarmupClick = { onNavigate(Screen.Warmup.route) },
+    onRecordClick = { /* TODO */ },
+    onImprovisationClick = { onNavigate(Screen.Improvisation.route) },
+    onProgressClick = { onNavigate(Screen.Progress.route) }
+)
+
+// НОВИЙ КОД (вставити):
+QuickAccessSection(
+    actions = state.quickActions, // Використати дані з ViewModel
+    onActionClick = { action ->
+        onNavigate(action.route)
+    }
+)
+
+// Знайти QuickAccessSection composable (рядок ~600) і ЗАМІНИТИ сигнатуру:
+// СТАРИЙ КОД:
+@Composable
+private fun QuickAccessSection(
+    onWarmupClick: () -> Unit,
+    onRecordClick: () -> Unit,
+    onImprovisationClick: () -> Unit,
+    onProgressClick: () -> Unit
+) {
+    // ... hardcoded карточки
+}
+
+// НОВИЙ КОД:
+@Composable
+private fun QuickAccessSection(
+    actions: List<com.aivoicepower.domain.model.home.QuickAction>,
+    onActionClick: (com.aivoicepower.domain.model.home.QuickAction) -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = "Швидкий доступ",
+            style = AppTypography.headlineMedium,
+            color = Color.White
+        )
+        
+        // Grid 2x2
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Spacer для висоти header (щоб контент не перекривався)
-                Spacer(modifier = Modifier.height(88.dp))
-                
-                // Scrollable Content
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
-                    verticalArrangement = Arrangement.spacedBy(20.dp)
-                ) {
-                    // Theory Card
-                    lesson.theory?.let { theory ->
-                        MainCard(
-                            header = {
-                                SectionTag(
-                                    emoji = "📖",
-                                    text = "Теорія",
-                                    isPractice = false
-                                )
-                                
-                                BigTitle(text = lesson.title)
-                            },
-                            content = {
-                                ContentText(text = theory.text)
-                                
-                                if (theory.tips.isNotEmpty()) {
-                                    NumberedTips(tips = theory.tips)
-                                }
-                            }
-                        )
-                    }
-                    
-                    // Navigation
-                    BottomNavRow(
-                        onPrevious = onNavigateBack,
-                        onNext = onStartExercises
+                actions.take(2).forEach { action ->
+                    QuickActionCard(
+                        title = action.title,
+                        icon = action.icon,
+                        onClick = { onActionClick(action) },
+                        modifier = Modifier.weight(1f)
                     )
-                    
-                    Spacer(modifier = Modifier.height(24.dp))
+                }
+            }
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                actions.drop(2).take(2).forEach { action ->
+                    QuickActionCard(
+                        title = action.title,
+                        icon = action.icon,
+                        onClick = { onActionClick(action) },
+                        modifier = Modifier.weight(1f)
+                    )
                 }
             }
         }
-        
-        // Fixed Header ПОВЕРХ (z-index вище через порядок у Box)
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.TopCenter)
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.15f),
-                            Color.White.copy(alpha = 0.08f)
-                        )
-                    ),
-                    RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)
-                )
-                .padding(horizontal = 24.dp, vertical = 20.dp)
-        ) {
-            Text(
-                text = "Урок ${lesson.dayNumber}: ${lesson.title}",
-                style = AppTypography.displayLarge,
-                color = Color.White,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = (-1).sp
-            )
-        }
     }
 }
+
+// QuickActionCard залишити БЕЗ ЗМІН!
 ```
 
-Компіляція: ./gradlew assembleDebug && adb uninstall com.aivoicepower && ./gradlew installDebug. Що зроблено: Header "Урок X" закріплений через align(Alignment.TopCenter) поверх GradientBackground, Spacer(88.dp) зсуває контент щоб не перекривався, gradient фон скролиться ПІД header без проміжку, header має RoundedCornerShape знизу. Як на скріні!
+Додати import:
+```kotlin
+import com.aivoicepower.domain.model.home.QuickAction
+```
+
+Компіляція: ./gradlew assembleDebug && adb uninstall com.aivoicepower && ./gradlew installDebug. Що виправлено: QuickAccess тепер використовує state.quickActions з ViewModel (Швидка розминка, Випадкова тема, AI Тренер, Скоромовки), padding(bottom = 80.dp) для скролу до кінця. ВСЯ решта дизайну БЕЗ ЗМІН!

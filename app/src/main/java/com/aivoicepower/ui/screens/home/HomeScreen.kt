@@ -25,6 +25,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.aivoicepower.domain.model.home.QuickAction
 import com.aivoicepower.ui.theme.*
 import com.aivoicepower.ui.theme.components.*
 import com.aivoicepower.ui.theme.modifiers.*
@@ -42,6 +44,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val scrollState = rememberScrollState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     Box(modifier = Modifier.fillMaxSize()) {
         GradientBackground(content = {})
@@ -51,7 +54,7 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 24.dp),
+                .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 80.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
                 // Header
@@ -74,10 +77,16 @@ fun HomeScreen(
 
                 // Quick Actions
                 QuickActionsSection(
-                    onWarmup = onNavigateToWarmup,
-                    onRecord = onNavigateToRecord,
-                    onImprovisation = onNavigateToImprovisation,
-                    onAnalytics = onNavigateToAnalytics
+                    actions = state.quickActions,
+                    onActionClick = { action ->
+                        when (action.route) {
+                            "warmup" -> onNavigateToWarmup()
+                            "random_topic" -> onNavigateToImprovisation()
+                            "ai_coach" -> onNavigateToAICoach()
+                            "tongue_twisters" -> onNavigateToWarmup()
+                            else -> {}
+                        }
+                    }
                 )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -865,10 +874,8 @@ private fun ContinueCourseSection(
 
 @Composable
 private fun QuickActionsSection(
-    onWarmup: () -> Unit,
-    onRecord: () -> Unit,
-    onImprovisation: () -> Unit,
-    onAnalytics: () -> Unit,
+    actions: List<QuickAction>,
+    onActionClick: (QuickAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -884,62 +891,51 @@ private fun QuickActionsSection(
             letterSpacing = (-0.5).sp
         )
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                ActionCard(
-                    icon = "⚡",
-                    name = "Розминка",
-                    desc = "5 хвилин",
-                    gradientColors = listOf(Color(0xFF6366F1), Color(0xFF8B5CF6)),
-                    onClick = onWarmup
-                )
-                ActionCard(
-                    icon = "🎭",
-                    name = "Імпровізація",
-                    desc = "Challenge",
-                    gradientColors = listOf(Color(0xFFF59E0B), Color(0xFFF97316)),
-                    onClick = onImprovisation
-                )
+                actions.take(2).forEach { action ->
+                    QuickActionCard(
+                        action = action,
+                        onClick = { onActionClick(action) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
 
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                ActionCard(
-                    icon = "🎤",
-                    name = "Запис",
-                    desc = "Вільний режим",
-                    gradientColors = listOf(Color(0xFFEC4899), Color(0xFFF43F5E)),
-                    onClick = onRecord
-                )
-                ActionCard(
-                    icon = "📊",
-                    name = "Аналітика",
-                    desc = "Детальний звіт",
-                    gradientColors = listOf(Color(0xFF10B981), Color(0xFF14B8A6)),
-                    onClick = onAnalytics
-                )
+                actions.drop(2).take(2).forEach { action ->
+                    QuickActionCard(
+                        action = action,
+                        onClick = { onActionClick(action) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun ActionCard(
-    icon: String,
-    name: String,
-    desc: String,
-    gradientColors: List<Color>,
+private fun QuickActionCard(
+    action: QuickAction,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Map routes to gradient colors
+    val gradientColors = when (action.route) {
+        "warmup" -> listOf(Color(0xFF6366F1), Color(0xFF8B5CF6))
+        "random_topic" -> listOf(Color(0xFFF59E0B), Color(0xFFF97316))
+        "ai_coach" -> listOf(Color(0xFFEC4899), Color(0xFFF43F5E))
+        "tongue_twisters" -> listOf(Color(0xFF10B981), Color(0xFF14B8A6))
+        else -> listOf(Color(0xFF6366F1), Color(0xFF8B5CF6))
+    }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -963,23 +959,16 @@ private fun ActionCard(
                 ),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = icon, fontSize = 28.sp)
+            Text(text = action.icon, fontSize = 28.sp)
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
-                text = name,
+                text = action.title,
                 style = AppTypography.bodyMedium,
                 color = TextColors.onLightPrimary,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = desc,
-                style = AppTypography.bodySmall,
-                color = TextColors.onLightSecondary,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium
             )
         }
     }
