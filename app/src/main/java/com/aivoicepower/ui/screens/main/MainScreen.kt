@@ -1,5 +1,6 @@
 package com.aivoicepower.ui.screens.main
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -10,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -44,11 +46,14 @@ fun MainScreen(
     val shouldShowBottomBar = currentDestination?.route in bottomNavItems.map { it.route }
 
     Scaffold(
+        containerColor = Color.Transparent,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             if (shouldShowBottomBar) {
                 NavigationBar(
                     containerColor = Color.White,
-                    contentColor = Color.Black,
+                    contentColor = Color(0xFF1F2937),
+                    tonalElevation = 0.dp, // ВАЖЛИВО: без elevation
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     bottomNavItems.forEach { item ->
@@ -65,12 +70,16 @@ fun MainScreen(
                             label = {
                                 Text(
                                     text = item.label,
-                                    color = if (selected) Color.Black else Color(0xFF9CA3AF)
+                                    color = if (selected) Color(0xFF1F2937) else Color(0xFF9CA3AF)
                                 )
                             },
                             selected = selected,
                             colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = Color.Transparent
+                                selectedIconColor = item.selectedColor,
+                                unselectedIconColor = Color(0xFF9CA3AF),
+                                selectedTextColor = Color(0xFF1F2937),
+                                unselectedTextColor = Color(0xFF9CA3AF),
+                                indicatorColor = Color.Transparent // БЕЗ індикатора
                             ),
                             onClick = {
                                 if (!selected) {
@@ -105,13 +114,13 @@ fun MainScreen(
                 }
             }
         }
-    ) { paddingValues ->
+    ) {
         MainNavGraph(
             navController = navController,
             rootNavController = rootNavController,
             onNavigateToAiCoach = onNavigateToAiCoach,
             onNavigateToPremium = onNavigateToPremium,
-            modifier = Modifier.padding(paddingValues)
+            modifier = Modifier
         )
     }
 }

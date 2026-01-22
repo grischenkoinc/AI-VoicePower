@@ -2,6 +2,10 @@ package com.aivoicepower.ui.screens.courses.components
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,14 +33,12 @@ fun CompletedPhaseContent(
     onNextLesson: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
-    // Celebration animation
-    val infiniteTransition = rememberInfiniteTransition(label = "celebration")
-    val scale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(800, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
+    // Celebration animation - only on appear
+    val scale by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
         ),
         label = "scale"
     )
@@ -59,17 +61,23 @@ fun CompletedPhaseContent(
                         .shadow(
                             elevation = 24.dp,
                             shape = CircleShape,
-                            spotColor = Color(0xFFFBBF24).copy(alpha = 0.5f)
+                            spotColor = Color(0xFF22C55E).copy(alpha = 0.5f)
                         )
                         .background(
                             Brush.linearGradient(
-                                colors = listOf(Color(0xFFFBBF24), Color(0xFFF59E0B))
+                                colors = listOf(Color(0xFF22C55E), Color(0xFF16A34A))
                             ),
                             CircleShape
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "🎉", fontSize = 64.sp)
+                    Text(
+                        text = "✓",
+                        fontSize = 72.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 0.sp
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -141,10 +149,8 @@ fun CompletedPhaseContent(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     if (nextLesson != null && onNextLesson != null) {
-                        NavButton(
-                            text = "До наступного: ${nextLesson.title}",
-                            icon = "→",
-                            isPrimary = true,
+                        NextLessonButton(
+                            lessonTitle = nextLesson.title,
                             onClick = onNextLesson,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -161,4 +167,50 @@ fun CompletedPhaseContent(
             }
         }
     )
+}
+
+@Composable
+private fun NextLessonButton(
+    lessonTitle: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    Column(
+        modifier = modifier
+            .shadow(
+                elevation = if (isPressed) 12.dp else 16.dp,
+                shape = RoundedCornerShape(20.dp),
+                spotColor = Color(0xFF667EEA).copy(alpha = 0.4f)
+            )
+            .background(Color.White, RoundedCornerShape(20.dp))
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) { onClick() }
+            .padding(horizontal = 24.dp, vertical = 20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Text(
+            text = "ДО НАСТУПНОГО УРОКУ:",
+            style = AppTypography.labelMedium,
+            color = Color(0xFF667EEA),
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.8.sp
+        )
+
+        Text(
+            text = lessonTitle.uppercase(),
+            style = AppTypography.labelLarge,
+            color = Color(0xFF667EEA),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.ExtraBold,
+            letterSpacing = 0.5.sp,
+            textAlign = TextAlign.Center
+        )
+    }
 }

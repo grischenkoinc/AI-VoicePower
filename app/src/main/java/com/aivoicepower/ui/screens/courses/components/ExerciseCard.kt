@@ -1,10 +1,13 @@
 package com.aivoicepower.ui.screens.courses.components
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -12,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aivoicepower.ui.screens.courses.ExerciseState
+import com.aivoicepower.ui.screens.courses.ExerciseStatus
 import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
 
@@ -20,8 +24,33 @@ fun ExerciseCard(
     exerciseState: ExerciseState,
     modifier: Modifier = Modifier
 ) {
+    val isRecording = exerciseState.status == ExerciseStatus.Recording
+
+    // Пульсуюча рамка карточки при записі
+    val infiniteTransition = rememberInfiniteTransition(label = "border")
+    val borderAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.4f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "alpha"
+    )
+
     Column(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .then(
+                if (isRecording) {
+                    Modifier.border(
+                        width = 4.dp,
+                        color = Color(0xFF667EEA).copy(alpha = borderAlpha),
+                        shape = RoundedCornerShape(32.dp)
+                    )
+                } else Modifier
+            )
+            .padding(if (isRecording) 4.dp else 0.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Instruction Box
@@ -63,22 +92,5 @@ fun ExerciseCard(
         ExerciseContentDisplay(
             content = exerciseState.exercise.content
         )
-
-        // Duration
-        if (exerciseState.exercise.durationSeconds > 0) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(text = "⏱️", fontSize = 18.sp)
-                Text(
-                    text = "Тривалість: ${exerciseState.exercise.durationSeconds} сек",
-                    style = AppTypography.bodySmall,
-                    color = TextColors.onLightSecondary,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-        }
     }
 }

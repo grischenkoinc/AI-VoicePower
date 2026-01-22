@@ -1,6 +1,9 @@
 package com.aivoicepower.ui.screens.courses.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -15,9 +19,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.aivoicepower.domain.model.exercise.ExerciseContent
 
 @Composable
@@ -25,38 +32,62 @@ fun ExerciseContentDisplay(
     content: ExerciseContent,
     modifier: Modifier = Modifier
 ) {
-    Card(
+    Column(
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            when (content) {
-                is ExerciseContent.TongueTwister -> {
-                    Text(
-                        text = "Текст:",
-                        style = MaterialTheme.typography.titleSmall
-                    )
-                    Text(
-                        text = content.text,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    if (content.targetSounds.isNotEmpty()) {
-                        Text(
-                            text = "Цiльовi звуки: ${content.targetSounds.joinToString(", ")}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+        when (content) {
+            is ExerciseContent.TongueTwister -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 8.dp,
+                            shape = RoundedCornerShape(24.dp),
+                            spotColor = Color.Black.copy(alpha = 0.1f)
                         )
+                        .background(
+                            color = Color.White,
+                            shape = RoundedCornerShape(24.dp)
+                        )
+                        .border(
+                            width = 2.dp,
+                            color = Color(0xFFE5E7EB),
+                            shape = RoundedCornerShape(24.dp)
+                        )
+                        .padding(28.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = content.text,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontSize = 19.sp,
+                            fontWeight = FontWeight.Bold,
+                            lineHeight = 28.sp,
+                            textAlign = TextAlign.Center,
+                            color = Color(0xFF111827),
+                            letterSpacing = 0.2.sp
+                        )
+                        if (content.targetSounds.isNotEmpty()) {
+                            Text(
+                                text = "Цiльовi звуки: ${content.targetSounds.joinToString(", ")}",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontSize = 14.sp,
+                                color = Color(0xFF6B7280),
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
+            }
 
-                is ExerciseContent.ReadingText -> {
-                    if (content.emotion != null) {
-                        Text(
+            is ExerciseContent.ReadingText -> {
+                if (content.emotion != null) {
+                    Text(
                             text = "${content.emotion.getEmoji()} Емоцiя: ${content.emotion.getDisplayName()}",
                             style = MaterialTheme.typography.titleSmall
                         )
@@ -71,7 +102,7 @@ fun ExerciseContentDisplay(
                     )
                 }
 
-                is ExerciseContent.FreeSpeechTopic -> {
+            is ExerciseContent.FreeSpeechTopic -> {
                     Text(
                         text = "Тема:",
                         style = MaterialTheme.typography.titleSmall
@@ -94,7 +125,7 @@ fun ExerciseContentDisplay(
                     }
                 }
 
-                is ExerciseContent.Retelling -> {
+            is ExerciseContent.Retelling -> {
                     Text(
                         text = "Прочитай i перекажи:",
                         style = MaterialTheme.typography.titleSmall
@@ -117,7 +148,7 @@ fun ExerciseContentDisplay(
                     }
                 }
 
-                is ExerciseContent.Dialogue -> {
+            is ExerciseContent.Dialogue -> {
                     Text(
                         text = "Дiалог:",
                         style = MaterialTheme.typography.titleSmall
@@ -143,7 +174,7 @@ fun ExerciseContentDisplay(
                     }
                 }
 
-                is ExerciseContent.Pitch -> {
+            is ExerciseContent.Pitch -> {
                     Text(
                         text = "Сценарiй:",
                         style = MaterialTheme.typography.titleSmall
@@ -171,21 +202,14 @@ fun ExerciseContentDisplay(
                     }
                 }
 
-                is ExerciseContent.ArticulationExercise -> {
+            is ExerciseContent.ArticulationExercise -> {
                     Text(
                         text = "Виконай вправу за iнструкцiєю",
                         style = MaterialTheme.typography.bodyLarge
                     )
-                    if (content.hasTimer) {
-                        Text(
-                            text = "Час виконання: ${content.durationSeconds} сек",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
                 }
 
-                is ExerciseContent.MinimalPairs -> {
+            is ExerciseContent.MinimalPairs -> {
                     Text(
                         text = "Схожi слова:",
                         style = MaterialTheme.typography.titleSmall
@@ -205,7 +229,7 @@ fun ExerciseContentDisplay(
                     }
                 }
 
-                is ExerciseContent.ContrastSounds -> {
+            is ExerciseContent.ContrastSounds -> {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -258,7 +282,7 @@ fun ExerciseContentDisplay(
                     }
                 }
 
-                is ExerciseContent.TongueTwisterBattle -> {
+            is ExerciseContent.TongueTwisterBattle -> {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -315,7 +339,7 @@ fun ExerciseContentDisplay(
                     }
                 }
 
-                is ExerciseContent.SlowMotion -> {
+            is ExerciseContent.SlowMotion -> {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -352,7 +376,7 @@ fun ExerciseContentDisplay(
                     }
                 }
 
-                is ExerciseContent.BreathingExercise -> {
+            is ExerciseContent.BreathingExercise -> {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -437,7 +461,6 @@ fun ExerciseContentDisplay(
                         }
                     }
                 }
-            }
         }
     }
 }

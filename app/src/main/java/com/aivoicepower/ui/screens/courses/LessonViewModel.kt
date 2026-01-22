@@ -18,6 +18,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -55,6 +56,7 @@ class LessonViewModel @Inject constructor(
     fun onEvent(event: LessonEvent) {
         when (event) {
             LessonEvent.StartExercisesClicked -> startExercises()
+            LessonEvent.NavigateBackClicked -> navigateBackToTheory()
             LessonEvent.StartRecordingClicked -> startRecording()
             LessonEvent.StopRecordingClicked -> stopRecording()
             LessonEvent.PlayRecordingClicked -> playRecording()
@@ -67,6 +69,20 @@ class LessonViewModel @Inject constructor(
             LessonEvent.FinishLessonClicked -> {
                 // Navigation handled in Screen
             }
+            LessonEvent.NextLessonClicked -> {
+                // Navigation handled in Screen
+            }
+        }
+    }
+
+    fun clearToastMessage() {
+        _state.update { it.copy(toastMessage = null) }
+    }
+
+    private fun navigateBackToTheory() {
+        val lesson = _state.value.lesson
+        if (lesson?.theory != null) {
+            _state.update { it.copy(currentPhase = LessonPhase.Theory) }
         }
     }
 
@@ -98,9 +114,13 @@ class LessonViewModel @Inject constructor(
                             )
                         }
 
+                        // Find next lesson
+                        val nextLesson = findNextLesson(lesson.dayNumber)
+
                         _state.update {
                             it.copy(
                                 lesson = lesson,
+                                nextLesson = nextLesson,
                                 currentPhase = if (lesson.theory != null) {
                                     LessonPhase.Theory
                                 } else {
@@ -120,6 +140,16 @@ class LessonViewModel @Inject constructor(
                     )
                 }
             }
+        }
+    }
+
+    private suspend fun findNextLesson(currentDayNumber: Int): com.aivoicepower.domain.model.course.Lesson? {
+        return try {
+            // Get all lessons from course and find the next one
+            val course = courseRepository.getCourseById(courseId)
+            course?.lessons?.firstOrNull { it.dayNumber == currentDayNumber + 1 }
+        } catch (e: Exception) {
+            null
         }
     }
 
@@ -210,7 +240,7 @@ class LessonViewModel @Inject constructor(
                     // Check minimum recording duration (2 seconds)
                     if (currentExerciseState.recordingDurationMs < 2000) {
                         _state.update {
-                            it.copy(error = "Запис занадто короткий. Говоріть принаймні 2 секунди.")
+                            it.copy(toastMessage = "Запис занадто короткий. Говоріть принаймні 2 секунди.")
                         }
                         return@launch
                     }
@@ -219,7 +249,7 @@ class LessonViewModel @Inject constructor(
                     val recordingFile = java.io.File(currentExerciseState.recordingPath)
                     if (!recordingFile.exists() || recordingFile.length() < 1000) {
                         _state.update {
-                            it.copy(error = "Запис порожній або пошкоджений. Спробуйте ще раз.")
+                            it.copy(toastMessage = "Запис порожній або пошкоджений. Спробуйте ще раз.")
                         }
                         return@launch
                     }

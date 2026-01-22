@@ -45,7 +45,6 @@ fun BottomNavRow(
         // Next button
         NavButton(
             text = nextText,
-            icon = "→",
             isPrimary = true,
             onClick = onNext,
             modifier = Modifier.weight(1f)

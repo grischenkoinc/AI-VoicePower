@@ -1,24 +1,5 @@
-Оновлення TheoryPhaseContent з готовими компонентами. Використати HighlightBox, NumberedTips, ContentText зі зразка замість ручного коду. Використати BottomNavRow для навігації (як в зразку). Виділити "Цікавий факт" жовтим фоном як NumberedTips. Код для TheoryPhaseContent.kt:
+Закріпити header "Урок X" в TheoryPhaseContent. Header має бути fixed поверх контенту, gradient фон має скролитись під ним БЕЗ проміжку. Код:
 ```kotlin
-package com.aivoicepower.ui.screens.courses.components
-
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.aivoicepower.domain.model.course.Lesson
-import com.aivoicepower.ui.theme.AppTypography
-import com.aivoicepower.ui.theme.components.*
-
 @Composable
 fun TheoryPhaseContent(
     lesson: Lesson,
@@ -29,33 +10,22 @@ fun TheoryPhaseContent(
     val scrollState = rememberScrollState()
     
     Box(modifier = modifier.fillMaxSize()) {
+        // GradientBackground з контентом (все скролиться)
         GradientBackground {
-            Column(modifier = Modifier.fillMaxSize()) {
-                // Fixed Header "Урок X: Title"
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp)
-                        .padding(top = 16.dp)
-                ) {
-                    Text(
-                        text = "Урок ${lesson.dayNumber}: ${lesson.title}",
-                        style = AppTypography.displayLarge,
-                        color = Color.White,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = (-1).sp
-                    )
-                }
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+            ) {
+                // Spacer для висоти header (щоб контент не перекривався)
+                Spacer(modifier = Modifier.height(88.dp))
                 
                 // Scrollable Content
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 16.dp)
-                        .verticalScroll(scrollState)
+                        .fillMaxWidth()
                         .padding(horizontal = 24.dp),
-                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
                     // Theory Card
                     lesson.theory?.let { theory ->
@@ -66,70 +36,12 @@ fun TheoryPhaseContent(
                                     text = "Теорія",
                                     isPractice = false
                                 )
+                                
+                                BigTitle(text = lesson.title)
                             },
                             content = {
-                                // Main theory text
-                                ContentText(
-                                    text = theory.text
-                                )
+                                ContentText(text = theory.text)
                                 
-                                // Ключовий інсайт (використати HighlightBox)
-                                if (theory.text.contains("💡 Ключовий інсайт:")) {
-                                    val insightText = theory.text
-                                        .substringAfter("💡 Ключовий інсайт:")
-                                        .substringBefore("🎯", "")
-                                        .substringBefore("💡 Важливо", "")
-                                        .trim()
-                                    
-                                    if (insightText.isNotBlank()) {
-                                        HighlightBox(
-                                            title = "💡 Ключовий інсайт",
-                                            content = insightText
-                                        )
-                                    }
-                                }
-                                
-                                // Цікавий факт (жовтий фон як NumberedTips)
-                                if (theory.text.contains("🎯 Цікавий факт:")) {
-                                    val factText = theory.text
-                                        .substringAfter("🎯 Цікавий факт:")
-                                        .substringBefore("💡 Важливо", "")
-                                        .trim()
-                                    
-                                    if (factText.isNotBlank()) {
-                                        Column(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .shadow(
-                                                    elevation = 8.dp,
-                                                    shape = RoundedCornerShape(16.dp),
-                                                    spotColor = Color(0xFFFBBF24).copy(alpha = 0.3f)
-                                                )
-                                                .background(Color(0xFFFFFBEB), RoundedCornerShape(16.dp))
-                                                .padding(20.dp),
-                                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                                        ) {
-                                            Text(
-                                                text = "🎯 Цікавий факт",
-                                                style = AppTypography.titleMedium,
-                                                color = Color(0xFF92400E),
-                                                fontSize = 18.sp,
-                                                fontWeight = FontWeight.ExtraBold
-                                            )
-                                            
-                                            Text(
-                                                text = factText,
-                                                style = AppTypography.bodyMedium,
-                                                color = Color(0xFF92400E),
-                                                fontSize = 16.sp,
-                                                fontWeight = FontWeight.Medium,
-                                                lineHeight = 24.sp
-                                            )
-                                        }
-                                    }
-                                }
-                                
-                                // Важливо знати (використати NumberedTips)
                                 if (theory.tips.isNotEmpty()) {
                                     NumberedTips(tips = theory.tips)
                                 }
@@ -137,7 +49,7 @@ fun TheoryPhaseContent(
                         )
                     }
                     
-                    // Navigation (як в зразку)
+                    // Navigation
                     BottomNavRow(
                         onPrevious = onNavigateBack,
                         onNext = onStartExercises
@@ -147,8 +59,34 @@ fun TheoryPhaseContent(
                 }
             }
         }
+        
+        // Fixed Header ПОВЕРХ (z-index вище через порядок у Box)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.15f),
+                            Color.White.copy(alpha = 0.08f)
+                        )
+                    ),
+                    RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)
+                )
+                .padding(horizontal = 24.dp, vertical = 20.dp)
+        ) {
+            Text(
+                text = "Урок ${lesson.dayNumber}: ${lesson.title}",
+                style = AppTypography.displayLarge,
+                color = Color.White,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = (-1).sp
+            )
+        }
     }
 }
 ```
 
-Компіляція: ./gradlew clean assembleDebug && adb uninstall com.aivoicepower && ./gradlew installDebug. Що виправлено в Блоці 1 (TheoryPhaseContent): використано HighlightBox для "Ключовий інсайт", NumberedTips для "Важливо знати", ContentText для тексту, "Цікавий факт" з жовтим фоном, BottomNavRow для навігації замість кастомної кнопки. ТІЛЬКИ TheoryPhaseContent!
+Компіляція: ./gradlew assembleDebug && adb uninstall com.aivoicepower && ./gradlew installDebug. Що зроблено: Header "Урок X" закріплений через align(Alignment.TopCenter) поверх GradientBackground, Spacer(88.dp) зсуває контент щоб не перекривався, gradient фон скролиться ПІД header без проміжку, header має RoundedCornerShape знизу. Як на скріні!

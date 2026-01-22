@@ -55,7 +55,11 @@
       "Bash(git rm:*)",
       "Bash(bash gradlew:*)",
       "Bash(find:*)",
-      "Bash(gradlew clean:*)"
+      "Bash(gradlew clean:*)",
+      "Bash(adb install:*)",
+      "Bash(adb shell am start:*)",
+      "Bash(adb shell \"ps -A | grep aivoicepower\")",
+      "Bash(adb shell:*)"
     ]
   }
 }

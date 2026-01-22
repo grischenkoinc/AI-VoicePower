@@ -43,32 +43,17 @@ fun HomeScreen(
 ) {
     val scrollState = rememberScrollState()
 
-    GradientBackground(
-        content = {
-            // Gradient overlay for depth
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.radialGradient(
-                            colors = listOf(
-                                Color(0x33A78BFA),
-                                Color.Transparent
-                            ),
-                            center = androidx.compose.ui.geometry.Offset(200f, 300f),
-                            radius = 800f
-                        )
-                    )
-            )
+    Box(modifier = Modifier.fillMaxSize()) {
+        GradientBackground(content = {})
 
-            // Scrollable Content
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
-                    .padding(start = 20.dp, top = 16.dp, end = 20.dp, bottom = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
+        // Scrollable Content
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
                 // Header
                 HomeHeader(onSettings = onNavigateToSettings)
 
@@ -95,10 +80,9 @@ fun HomeScreen(
                     onAnalytics = onNavigateToAnalytics
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
-            }
+            Spacer(modifier = Modifier.height(24.dp))
         }
-    )
+    }
 }
 
 @Composable
@@ -727,10 +711,10 @@ private fun SkillCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(6.dp)
+                .height(13.5.dp)
                 .background(
-                    Color.White.copy(alpha = 0.3f),
-                    RoundedCornerShape(3.dp)
+                    Color.White.copy(alpha = 0.75f),
+                    RoundedCornerShape(6.75.dp)
                 )
         ) {
             Box(
@@ -741,11 +725,11 @@ private fun SkillCard(
                         Brush.linearGradient(
                             colors = listOf(Color(0xFF22C55E), Color(0xFF16A34A))
                         ),
-                        RoundedCornerShape(3.dp)
+                        RoundedCornerShape(6.75.dp)
                     )
                     .shadow(
                         elevation = 4.dp,
-                        shape = RoundedCornerShape(3.dp),
+                        shape = RoundedCornerShape(6.75.dp),
                         spotColor = Color(0xFF22C55E).copy(alpha = 0.5f)
                     )
             )

@@ -81,43 +81,34 @@ fun ExercisePhaseContent(
 
                                 Spacer(modifier = Modifier.height(8.dp))
 
-                                // Recording Controls
-                                RecordingControls(
-                                    exerciseState = exerciseState,
-                                    isPlaying = isPlaying,
-                                    onStartRecording = { onEvent(LessonEvent.StartRecordingClicked) },
-                                    onStopRecording = { onEvent(LessonEvent.StopRecordingClicked) },
-                                    onPlayRecording = { onEvent(LessonEvent.PlayRecordingClicked) },
-                                    onStopPlayback = { onEvent(LessonEvent.StopPlaybackClicked) },
-                                    onReRecord = { onEvent(LessonEvent.ReRecordClicked) },
-                                    onComplete = { onEvent(LessonEvent.CompleteExerciseClicked) }
-                                )
+                                // Recording Controls (не показувати для ARTICULATION та BREATHING)
+                                if (exerciseState.exercise.type != com.aivoicepower.domain.model.exercise.ExerciseType.ARTICULATION &&
+                                    exerciseState.exercise.type != com.aivoicepower.domain.model.exercise.ExerciseType.BREATHING) {
+                                    RecordingControls(
+                                        exerciseState = exerciseState,
+                                        isPlaying = isPlaying,
+                                        onStartRecording = { onEvent(LessonEvent.StartRecordingClicked) },
+                                        onStopRecording = { onEvent(LessonEvent.StopRecordingClicked) },
+                                        onPlayRecording = { onEvent(LessonEvent.PlayRecordingClicked) },
+                                        onStopPlayback = { onEvent(LessonEvent.StopPlaybackClicked) },
+                                        onReRecord = { onEvent(LessonEvent.ReRecordClicked) },
+                                        onComplete = { onEvent(LessonEvent.CompleteExerciseClicked) }
+                                    )
+                                }
                             }
                         )
 
                         // Navigation
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            if (currentExerciseIndex > 0) {
-                                NavButton(
-                                    text = "Попередня",
-                                    icon = "←",
-                                    isPrimary = false,
-                                    onClick = { onEvent(LessonEvent.PreviousExerciseClicked) },
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-
-                            NavButton(
-                                text = "Пропустити",
-                                icon = "⏭️",
-                                isPrimary = false,
-                                onClick = { onEvent(LessonEvent.SkipExerciseClicked) },
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
+                        BottomNavRow(
+                            onPrevious = if (currentExerciseIndex == 0) {
+                                { onEvent(LessonEvent.NavigateBackClicked) }
+                            } else {
+                                { onEvent(LessonEvent.PreviousExerciseClicked) }
+                            },
+                            onNext = { onEvent(LessonEvent.SkipExerciseClicked) },
+                            previousText = if (currentExerciseIndex == 0) "До теорії" else "Назад",
+                            nextText = "Далі"
+                        )
 
                         Spacer(modifier = Modifier.height(24.dp))
                     }

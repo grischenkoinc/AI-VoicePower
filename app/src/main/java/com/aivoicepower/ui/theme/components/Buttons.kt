@@ -13,9 +13,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aivoicepower.ui.theme.*
@@ -154,7 +157,7 @@ private fun WaveRing(
 @Composable
 fun NavButton(
     text: String,
-    icon: String,
+    icon: String = "",
     isPrimary: Boolean = false,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -197,15 +200,88 @@ fun NavButton(
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = icon,
-            fontSize = 15.sp
-        )
+        if (icon.isNotEmpty()) {
+            Text(
+                text = icon,
+                fontSize = 15.sp
+            )
+        }
         Text(
             text = text.uppercase(),
             style = AppTypography.labelLarge,
             color = if (isPrimary) Color(0xFF667EEA) else TextColors.onDarkPrimary,
             letterSpacing = 0.5.sp
+        )
+    }
+}
+
+/**
+ * Primary Button з градієнтним фоном
+ * Використовується для основних дій (Далі, Завершити, тощо)
+ */
+@Composable
+fun PrimaryButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .height(56.dp)
+            .shadow(
+                elevation = 12.dp,
+                shape = RoundedCornerShape(16.dp),
+                spotColor = Color(0xFF667EEA).copy(alpha = 0.4f)
+            )
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(Color(0xFF667EEA), Color(0xFF764BA2))
+                ),
+                RoundedCornerShape(16.dp)
+            )
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            style = AppTypography.titleMedium,
+            color = Color.White,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.ExtraBold
+        )
+    }
+}
+
+/**
+ * Secondary Button з білим фоном та рамкою
+ * Використовується для другорядних дій (Назад, Перезаписати, тощо)
+ */
+@Composable
+fun SecondaryButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .height(56.dp)
+            .shadow(
+                elevation = 4.dp,
+                shape = RoundedCornerShape(16.dp),
+                spotColor = Color.Black.copy(alpha = 0.1f)
+            )
+            .background(Color.White, RoundedCornerShape(16.dp))
+            .border(2.dp, Color(0xFFE5E7EB), RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            style = AppTypography.titleMedium,
+            color = TextColors.onLightPrimary,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.ExtraBold
         )
     }
 }

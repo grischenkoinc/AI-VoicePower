@@ -80,18 +80,71 @@ private fun ProgressTrack(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(14.dp)
+            .height(21.dp)
             .clip(RoundedCornerShape(20.dp))
             .background(Gradients.progressTrack)
     ) {
-        // Simulated inset shadow overlay (темний верх)
+        // Deboss effect - inner shadow top (темна тінь зверху)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.5f)
+                .height(4.dp)
+                .align(Alignment.TopCenter)
                 .background(
-                    brush = Gradients.progressTrackHighlight,
-                    shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+                    androidx.compose.ui.graphics.Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Black.copy(alpha = 0.15f),
+                            Color.Transparent
+                        )
+                    )
+                )
+        )
+
+        // Deboss effect - inner shadow bottom (світла тінь знизу)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(3.dp)
+                .align(Alignment.BottomCenter)
+                .background(
+                    androidx.compose.ui.graphics.Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.White.copy(alpha = 0.5f)
+                        )
+                    )
+                )
+        )
+
+        // Deboss effect - inner shadow left (темна тінь зліва)
+        Box(
+            modifier = Modifier
+                .width(3.dp)
+                .fillMaxHeight()
+                .align(Alignment.CenterStart)
+                .background(
+                    androidx.compose.ui.graphics.Brush.horizontalGradient(
+                        colors = listOf(
+                            Color.Black.copy(alpha = 0.1f),
+                            Color.Transparent
+                        )
+                    )
+                )
+        )
+
+        // Deboss effect - inner shadow right (світла тінь справа)
+        Box(
+            modifier = Modifier
+                .width(2.dp)
+                .fillMaxHeight()
+                .align(Alignment.CenterEnd)
+                .background(
+                    androidx.compose.ui.graphics.Brush.horizontalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.White.copy(alpha = 0.3f)
+                        )
+                    )
                 )
         )
 

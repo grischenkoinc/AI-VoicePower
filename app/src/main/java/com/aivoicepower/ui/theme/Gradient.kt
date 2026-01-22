@@ -44,11 +44,11 @@ object Gradients {
 
     /**
      * Practice Card Header (альтернативна темна шапка)
-     * CSS: linear-gradient(135deg, #2d2640, #1f1f2e)
+     * CSS: linear-gradient(135deg, #3d266a, #1f1f2e)
      */
     val cardHeaderPractice = Brush.linearGradient(
         colors = listOf(
-            Color(0xFF2D2640),  // Темний фіолетово-сірий
+            Color(0xFF3D266A),  // Темний фіолетовий (як у теорії)
             Color(0xFF1F1F2E)   // Майже чорний
         ),
         start = Offset(0f, 0f),
@@ -104,8 +104,8 @@ object Gradients {
      */
     val progressTrack = Brush.linearGradient(
         colors = listOf(
-            Color(0xFFC4B5FD),  // Світло-фіолетовий
-            Color(0xFFA78BFA)   // Фіолетовий
+            Color(0xFFF5F3FF),  // Майже білий з фіолетовим відтінком
+            Color(0xFFE9E5FF)   // Світло-світло-фіолетовий
         ),
         start = Offset(0f, 0f),
         end = Offset(0f, Float.POSITIVE_INFINITY) // Вертикальний (180°)

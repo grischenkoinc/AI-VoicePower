@@ -1,32 +1,29 @@
 package com.aivoicepower.ui.screens.courses.components
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.aivoicepower.ui.screens.courses.ExerciseState
 import com.aivoicepower.ui.screens.courses.ExerciseStatus
+import com.aivoicepower.ui.theme.AppTypography
+import com.aivoicepower.ui.theme.TextColors
+import com.aivoicepower.ui.theme.components.PrimaryButton
+import com.aivoicepower.ui.theme.components.SecondaryButton
 
 @Composable
 fun RecordingControls(
@@ -40,117 +37,147 @@ fun RecordingControls(
     onComplete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer
-        )
+    val isRecording = exerciseState.status == ExerciseStatus.Recording
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Text(
-                text = "Запис",
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            when (exerciseState.status) {
-                ExerciseStatus.NotStarted -> {
-                    Button(
-                        onClick = onStartRecording,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(Icons.Default.Mic, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Почати запис")
+        when (exerciseState.status) {
+            ExerciseStatus.NotStarted, ExerciseStatus.Recording -> {
+                // Record Button з хвилями
+                Box(
+                    contentAlignment = Alignment.Center
+                ) {
+                    // Wave rings коли записує
+                    if (isRecording) {
+                        repeat(3) { index ->
+                            WaveRing(
+                                delay = index * 600,
+                                color = Color(0xFF667EEA)
+                            )
+                        }
                     }
-                }
 
-                ExerciseStatus.Recording -> {
-                    // Recording indicator
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
+                    // Main button
+                    Box(
+                        modifier = Modifier
+                            .size(120.dp)
+                            .shadow(
+                                elevation = 16.dp,
+                                shape = CircleShape,
+                                spotColor = Color(0xFF667EEA).copy(alpha = 0.4f)
+                            )
+                            .background(
+                                Brush.linearGradient(
+                                    colors = listOf(Color(0xFF667EEA), Color(0xFF764BA2))
+                                ),
+                                CircleShape
+                            )
+                            .clickable(onClick = if (isRecording) onStopRecording else onStartRecording),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "[REC] Запис...",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.error
+                            text = if (isRecording) "⏹" else "🎤",
+                            fontSize = 48.sp
                         )
                     }
-
-                    Button(
-                        onClick = onStopRecording,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error
-                        )
-                    ) {
-                        Icon(Icons.Default.Stop, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Зупинити")
-                    }
                 }
 
-                ExerciseStatus.Recorded -> {
-                    Text(
-                        text = "Запис збережено (${formatDuration(exerciseState.recordingDurationMs)})",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
+                Text(
+                    text = if (isRecording) "Йде запис..." else "Натисни для запису",
+                    style = AppTypography.bodyMedium,
+                    color = TextColors.onLightSecondary,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            ExerciseStatus.Recorded -> {
+                Text(
+                    text = "Запис збережено",
+                    style = AppTypography.titleMedium,
+                    color = Color(0xFF22C55E),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    SecondaryButton(
+                        text = if (isPlaying) "Стоп" else "Слухати",
+                        onClick = if (isPlaying) onStopPlayback else onPlayRecording,
+                        modifier = Modifier.weight(1f)
                     )
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        OutlinedButton(
-                            onClick = if (isPlaying) onStopPlayback else onPlayRecording,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(
-                                if (isPlaying) Icons.Default.Stop else Icons.Default.PlayArrow,
-                                contentDescription = null
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(if (isPlaying) "Стоп" else "Слухати")
-                        }
-
-                        OutlinedButton(
-                            onClick = onReRecord,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(Icons.Default.Refresh, contentDescription = null)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Перезаписати")
-                        }
-                    }
-
-                    Button(
-                        onClick = onComplete,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(Icons.Default.Check, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Завершити вправу")
-                    }
-                }
-
-                ExerciseStatus.Completed -> {
-                    Text(
-                        text = "Вправа виконана",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
+                    SecondaryButton(
+                        text = "Перезаписати",
+                        onClick = onReRecord,
+                        modifier = Modifier.weight(1f)
                     )
                 }
+
+                PrimaryButton(
+                    text = "Завершити вправу",
+                    onClick = onComplete,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            ExerciseStatus.Completed -> {
+                Text(
+                    text = "✓ Вправа виконана",
+                    style = AppTypography.titleMedium,
+                    color = Color(0xFF22C55E),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
 }
 
-private fun formatDuration(durationMs: Long): String {
-    val seconds = (durationMs / 1000) % 60
-    val minutes = (durationMs / 1000) / 60
-    return String.format("%02d:%02d", minutes, seconds)
+@Composable
+private fun WaveRing(
+    delay: Int,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "wave")
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, delayMillis = delay, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "scale"
+    )
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 0.6f,
+        targetValue = 0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, delayMillis = delay, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "alpha"
+    )
+
+    Box(
+        modifier = modifier
+            .size(100.dp)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .background(
+                color = color.copy(alpha = alpha),
+                shape = CircleShape
+            )
+    )
 }

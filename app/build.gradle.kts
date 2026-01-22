@@ -79,7 +79,7 @@ dependencies {
     implementation(libs.material)
 
     // Compose
-    val composeBom = platform("androidx.compose:compose-bom:2023.10.01")
+    val composeBom = platform("androidx.compose:compose-bom:2024.04.00")
     implementation(composeBom)
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
@@ -87,6 +87,9 @@ dependencies {
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
+
+    // Accompanist для керування system UI
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.34.0")
 
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.7.5")

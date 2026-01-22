@@ -5,11 +5,13 @@ import com.aivoicepower.domain.model.course.Lesson
 
 data class LessonState(
     val lesson: Lesson? = null,
+    val nextLesson: Lesson? = null,
     val currentPhase: LessonPhase = LessonPhase.Theory,
     val currentExerciseIndex: Int = 0,
     val exerciseStates: List<ExerciseState> = emptyList(),
     val isLoading: Boolean = true,
     val error: String? = null,
+    val toastMessage: String? = null,
     val isPlaying: Boolean = false
 )
 

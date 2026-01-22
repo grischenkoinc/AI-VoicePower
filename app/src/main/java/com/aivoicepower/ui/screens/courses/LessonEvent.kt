@@ -13,10 +13,12 @@ sealed class LessonEvent {
     object CompleteExerciseClicked : LessonEvent()
 
     // Navigation
+    object NavigateBackClicked : LessonEvent()
     object NextExerciseClicked : LessonEvent()
     object PreviousExerciseClicked : LessonEvent()
     object SkipExerciseClicked : LessonEvent()
 
     // Completion
     object FinishLessonClicked : LessonEvent()
+    object NextLessonClicked : LessonEvent()
 }

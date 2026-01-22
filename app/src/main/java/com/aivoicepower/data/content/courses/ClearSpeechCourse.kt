@@ -164,11 +164,11 @@ object ClearSpeechCourse {
                 id = "ex_1_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2",
-                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: чіткість звуків К, Ч, Ц та закінчень слів.",
+                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: чіткість звуків К, Ч та закінчень слів.",
                 content = ExerciseContent.TongueTwister(
                     text = "Ходить квочка коло кілочка, водить діточок коло квіточок.",
                     difficulty = 2,
-                    targetSounds = listOf("К", "Ч", "Ц")
+                    targetSounds = listOf("К", "Ч")
                 ),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)

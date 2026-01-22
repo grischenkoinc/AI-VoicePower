@@ -110,7 +110,12 @@ fun MainNavGraph(
             LessonScreen(
                 courseId = courseId,
                 lessonId = lessonId,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToNextLesson = { nextCourseId, nextLessonId ->
+                    navController.navigate(Screen.Lesson.createRoute(nextCourseId, nextLessonId)) {
+                        popUpTo(Screen.Lesson.createRoute(courseId, lessonId)) { inclusive = true }
+                    }
+                }
             )
         }
 
