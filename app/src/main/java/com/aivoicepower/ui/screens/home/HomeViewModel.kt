@@ -27,6 +27,7 @@ class HomeViewModel @Inject constructor(
 
     init {
         loadHomeData()
+        observeCourseProgress()
     }
 
     fun onEvent(event: HomeEvent) {
@@ -343,5 +344,48 @@ class HomeViewModel @Inject constructor(
     private fun getCurrentDateString(): String {
         val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         return sdf.format(Date())
+    }
+
+    private fun observeCourseProgress() {
+        viewModelScope.launch {
+            // Спочатку завантажуємо preferences, щоб визначити поточний курс
+            userPreferencesDataStore.userPreferencesFlow.collect { preferences ->
+                val courseId = when (preferences.userGoal) {
+                    "CLEAR_SPEECH" -> "course_1"
+                    "PUBLIC_SPEAKING" -> "course_3"
+                    "BETTER_VOICE" -> "course_2"
+                    else -> "course_1"
+                }
+
+                // Підписуємося на зміни прогресу цього курсу
+                courseProgressDao.getCourseProgress(courseId).collect { courseProgress ->
+                    // Знаходимо наступний невиконаний урок
+                    val nextLessonNumber = (1..21).firstOrNull { lessonNumber ->
+                        val lessonId = "lesson_$lessonNumber"
+                        courseProgress.none { it.lessonId == lessonId && it.isCompleted }
+                    }
+
+                    // Оновлюємо currentCourse в state
+                    if (nextLessonNumber != null) {
+                        val (courseName, courseColor, courseIcon) = getCourseData(courseId)
+
+                        val updatedCourse = CurrentCourse(
+                            courseId = courseId,
+                            courseName = courseName,
+                            nextLessonNumber = nextLessonNumber,
+                            totalLessons = 21,
+                            color = courseColor,
+                            icon = courseIcon,
+                            navigationRoute = Screen.Lesson.createRoute(courseId, "lesson_$nextLessonNumber")
+                        )
+
+                        _state.update { it.copy(currentCourse = updatedCourse) }
+                    } else {
+                        // Курс завершено
+                        _state.update { it.copy(currentCourse = null) }
+                    }
+                }
+            }
+        }
     }
 }
