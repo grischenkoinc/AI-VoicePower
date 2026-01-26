@@ -59,7 +59,11 @@
       "Bash(adb install:*)",
       "Bash(adb shell am start:*)",
       "Bash(adb shell \"ps -A | grep aivoicepower\")",
-      "Bash(adb shell:*)"
+      "Bash(adb shell:*)",
+      "Bash(\"C:/Users/Lenovo/AppData/Local/Android/Sdk/platform-tools/adb.exe\" uninstall com.aivoicepower)",
+      "Bash(\"C:/Users/Lenovo/AppData/Local/Android/Sdk/platform-tools/adb.exe\" install \"D:/AI VoicePower/app/build/outputs/apk/debug/app-debug.apk\")",
+      "Bash(git reset:*)",
+      "Bash(\"C:/Users/Lenovo/AppData/Local/Android/Sdk/platform-tools/adb.exe\" devices)"
     ]
   }
 }

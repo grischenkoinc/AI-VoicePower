@@ -35,7 +35,7 @@ fun OnboardingPage1(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(24.dp)
-                .padding(top = 32.dp, bottom = 24.dp),
+                .padding(top = 32.dp, bottom = 34.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {

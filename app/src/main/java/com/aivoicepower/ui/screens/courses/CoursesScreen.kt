@@ -102,7 +102,7 @@ fun CoursesScreen(
             // Scrollable Content
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 0.dp, bottom = 24.dp),
+                contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 0.dp, bottom = 110.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item {
