@@ -278,32 +278,78 @@ class HomeViewModel @Inject constructor(
     }
 
     private suspend fun getCurrentCourse(preferences: com.aivoicepower.data.local.datastore.UserPreferences): CurrentCourse? {
-        // Визначити рекомендований курс
-        val courseId = when (preferences.userGoal) {
+        // Список всіх курсів по порядку
+        val allCourses = listOf("course_1", "course_2", "course_3", "course_4", "course_5", "course_6")
+
+        // Знайти курс з найбільш недавньою активністю (останній завершений урок)
+        var mostRecentCourse: String? = null
+        var mostRecentTimestamp = 0L
+
+        for (courseId in allCourses) {
+            val progress = courseProgressDao.getCourseProgress(courseId).first()
+            val latestLesson = progress.filter { it.isCompleted }.maxByOrNull { it.completedAt ?: 0 }
+            if (latestLesson != null && (latestLesson.completedAt ?: 0) > mostRecentTimestamp) {
+                mostRecentTimestamp = latestLesson.completedAt ?: 0
+                mostRecentCourse = courseId
+            }
+        }
+
+        // Якщо є активний курс - перевірити, чи є в ньому незавершені уроки
+        if (mostRecentCourse != null) {
+            val courseProgress = courseProgressDao.getCourseProgress(mostRecentCourse).first()
+            val nextLessonNumber = (1..21).firstOrNull { lessonNumber ->
+                val lessonId = "lesson_$lessonNumber"
+                courseProgress.none { it.lessonId == lessonId && it.isCompleted }
+            }
+
+            if (nextLessonNumber != null) {
+                // Є незавершений урок - показати його
+                val (courseName, courseColor, courseIcon) = getCourseData(mostRecentCourse)
+                return CurrentCourse(
+                    courseId = mostRecentCourse,
+                    courseName = courseName,
+                    nextLessonNumber = nextLessonNumber,
+                    totalLessons = 21,
+                    color = courseColor,
+                    icon = courseIcon,
+                    navigationRoute = Screen.Lesson.createRoute(mostRecentCourse, "lesson_$nextLessonNumber")
+                )
+            }
+
+            // Курс завершено - знайти наступний курс зі списку
+            val currentIndex = allCourses.indexOf(mostRecentCourse)
+            if (currentIndex < allCourses.size - 1) {
+                val nextCourse = allCourses[currentIndex + 1]
+                val (courseName, courseColor, courseIcon) = getCourseData(nextCourse)
+                return CurrentCourse(
+                    courseId = nextCourse,
+                    courseName = courseName,
+                    nextLessonNumber = 1,
+                    totalLessons = 21,
+                    color = courseColor,
+                    icon = courseIcon,
+                    navigationRoute = Screen.Lesson.createRoute(nextCourse, "lesson_1")
+                )
+            }
+        }
+
+        // Якщо немає активного курсу - рекомендувати курс на основі цілі
+        val recommendedCourse = when (preferences.userGoal) {
             "CLEAR_SPEECH" -> "course_1"
             "PUBLIC_SPEAKING" -> "course_3"
             "BETTER_VOICE" -> "course_2"
             else -> "course_1"
         }
 
-        // Знайти наступний урок
-        val courseProgress = courseProgressDao.getCourseProgress(courseId).first()
-        val nextLessonNumber = (1..21).firstOrNull { lessonNumber ->
-            val lessonId = "lesson_$lessonNumber"
-            courseProgress.none { it.lessonId == lessonId && it.isCompleted }
-        } ?: return null // Курс завершено
-
-        // Отримати дані курсу
-        val (courseName, courseColor, courseIcon) = getCourseData(courseId)
-
+        val (courseName, courseColor, courseIcon) = getCourseData(recommendedCourse)
         return CurrentCourse(
-            courseId = courseId,
+            courseId = recommendedCourse,
             courseName = courseName,
-            nextLessonNumber = nextLessonNumber,
+            nextLessonNumber = 1,
             totalLessons = 21,
             color = courseColor,
             icon = courseIcon,
-            navigationRoute = Screen.Lesson.createRoute(courseId, "lesson_$nextLessonNumber")
+            navigationRoute = Screen.Lesson.createRoute(recommendedCourse, "lesson_1")
         )
     }
 
@@ -348,43 +394,21 @@ class HomeViewModel @Inject constructor(
 
     private fun observeCourseProgress() {
         viewModelScope.launch {
-            // Спочатку завантажуємо preferences, щоб визначити поточний курс
-            userPreferencesDataStore.userPreferencesFlow.collect { preferences ->
-                val courseId = when (preferences.userGoal) {
-                    "CLEAR_SPEECH" -> "course_1"
-                    "PUBLIC_SPEAKING" -> "course_3"
-                    "BETTER_VOICE" -> "course_2"
-                    else -> "course_1"
+            // Підписуємося на зміни прогресу всіх курсів
+            val allCourses = listOf("course_1", "course_2", "course_3", "course_4", "course_5", "course_6")
+
+            // Комбінуємо Flow з усіх курсів
+            combine(
+                allCourses.map { courseId ->
+                    courseProgressDao.getCourseProgress(courseId)
                 }
-
-                // Підписуємося на зміни прогресу цього курсу
-                courseProgressDao.getCourseProgress(courseId).collect { courseProgress ->
-                    // Знаходимо наступний невиконаний урок
-                    val nextLessonNumber = (1..21).firstOrNull { lessonNumber ->
-                        val lessonId = "lesson_$lessonNumber"
-                        courseProgress.none { it.lessonId == lessonId && it.isCompleted }
-                    }
-
-                    // Оновлюємо currentCourse в state
-                    if (nextLessonNumber != null) {
-                        val (courseName, courseColor, courseIcon) = getCourseData(courseId)
-
-                        val updatedCourse = CurrentCourse(
-                            courseId = courseId,
-                            courseName = courseName,
-                            nextLessonNumber = nextLessonNumber,
-                            totalLessons = 21,
-                            color = courseColor,
-                            icon = courseIcon,
-                            navigationRoute = Screen.Lesson.createRoute(courseId, "lesson_$nextLessonNumber")
-                        )
-
-                        _state.update { it.copy(currentCourse = updatedCourse) }
-                    } else {
-                        // Курс завершено
-                        _state.update { it.copy(currentCourse = null) }
-                    }
-                }
+            ) { progressArrays ->
+                progressArrays.toList()
+            }.collect {
+                // Перезавантажуємо currentCourse при будь-якій зміні
+                val preferences = userPreferencesDataStore.userPreferencesFlow.first()
+                val updatedCourse = getCurrentCourse(preferences)
+                _state.update { it.copy(currentCourse = updatedCourse) }
             }
         }
     }

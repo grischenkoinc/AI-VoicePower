@@ -2,11 +2,10 @@ package com.aivoicepower.ui.screens.courses
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aivoicepower.data.local.database.dao.CourseProgressDao
 import com.aivoicepower.domain.repository.CourseRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -16,7 +15,8 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class CoursesListViewModel @Inject constructor(
-    private val courseRepository: CourseRepository
+    private val courseRepository: CourseRepository,
+    private val courseProgressDao: CourseProgressDao
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CoursesListState())
@@ -41,14 +41,18 @@ class CoursesListViewModel @Inject constructor(
     private fun loadCourses() {
         viewModelScope.launch {
             courseRepository.getAllCourses().collect { courses ->
-                // Convert Course to CourseWithProgress
+                // Load progress for each course from database
                 val coursesWithProgress = courses.map { course ->
+                    // Get progress from database
+                    val progressList = courseProgressDao.getCourseProgress(course.id).first()
+                    val completedCount = progressList.count { it.isCompleted }
+
                     CourseWithProgress(
                         course = course,
-                        completedLessons = course.completedLessons,
+                        completedLessons = completedCount,
                         totalLessons = course.totalLessons,
                         progressPercent = if (course.totalLessons > 0) {
-                            (course.completedLessons * 100) / course.totalLessons
+                            (completedCount * 100) / course.totalLessons
                         } else 0
                     )
                 }
