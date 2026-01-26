@@ -11,6 +11,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.aivoicepower.ui.theme.AIVoicePowerTheme
 import com.aivoicepower.ui.theme.AppTypography
@@ -23,10 +24,16 @@ fun LessonScreen(
     lessonId: String,
     onNavigateBack: () -> Unit,
     onNavigateToResults: (String) -> Unit,
-    viewModel: LessonViewModel = viewModel()
+    viewModel: LessonViewModel = androidx.hilt.navigation.compose.hiltViewModel()
 ) {
     var isRecording by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
+
+    // Функція для завершення уроку
+    val completeLesson = {
+        viewModel.completeLessonWithScore(courseId, lessonId, score = 100)
+        onNavigateBack() // Повертаємося на попередній екран після завершення
+    }
 
     GradientBackground(
         content = {
@@ -164,7 +171,7 @@ fun LessonScreen(
                         // Bottom Navigation (НЕфіксований — в кінці контенту)
                         BottomNavRow(
                             onPrevious = onNavigateBack,
-                            onNext = { /* Navigate to next step */ }
+                            onNext = completeLesson
                         )
 
                         Spacer(modifier = Modifier.height(24.dp))

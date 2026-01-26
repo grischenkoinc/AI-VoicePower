@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.aivoicepower.domain.model.home.CurrentCourse
 import com.aivoicepower.domain.model.home.QuickAction
 import com.aivoicepower.ui.theme.*
 import com.aivoicepower.ui.theme.components.*
@@ -35,6 +36,7 @@ import java.util.Calendar
 @Composable
 fun HomeScreen(
     onNavigateToCourse: (String) -> Unit,
+    onNavigateToLesson: (String, String) -> Unit,
     onNavigateToImprovisation: () -> Unit,
     onNavigateToAICoach: () -> Unit,
     onNavigateToWarmup: () -> Unit,
@@ -73,7 +75,17 @@ fun HomeScreen(
                 SkillsSection()
 
                 // Continue Course
-                ContinueCourseSection(onNavigateToCourse = onNavigateToCourse)
+                state.currentCourse?.let { course ->
+                    ContinueCourseSection(
+                        course = course,
+                        onCourseClick = {
+                            onNavigateToLesson(
+                                course.courseId,
+                                "lesson_${course.nextLessonNumber}"
+                            )
+                        }
+                    )
+                }
 
                 // Quick Actions
                 QuickActionsSection(
@@ -756,114 +768,101 @@ private fun SkillCard(
 
 @Composable
 private fun ContinueCourseSection(
-    onNavigateToCourse: (String) -> Unit,
+    course: com.aivoicepower.domain.model.home.CurrentCourse,
+    onCourseClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "Продовжити",
-            style = AppTypography.titleLarge,
-            color = TextColors.onDarkPrimary,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.ExtraBold,
-            letterSpacing = (-0.5).sp
+            text = "Продовжити навчання",
+            style = AppTypography.headlineMedium,
+            color = Color.White
         )
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .shadow(
-                    elevation = 12.dp,
-                    shape = RoundedCornerShape(20.dp),
-                    spotColor = Color.Black.copy(alpha = 0.15f)
+                    elevation = 16.dp,
+                    shape = RoundedCornerShape(24.dp),
+                    spotColor = Color.Black.copy(alpha = 0.2f)
                 )
-                .background(BackgroundColors.surface, RoundedCornerShape(20.dp))
-                .clickable { onNavigateToCourse("course_1") }
+                .background(Color.White, RoundedCornerShape(24.dp))
+                .clickable(onClick = onCourseClick)
+                .padding(0.dp)
         ) {
+            // Header з кольором курсу (замість gradient)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp)
-                    .background(Gradients.appBackground),
+                    .background(
+                        Color(android.graphics.Color.parseColor(course.color)),
+                        RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+                    ),
                 contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(52.dp)
-                        .background(GlassColors.background, CircleShape)
-                        .border(2.dp, GlassColors.borderMedium, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "▶", color = Color.White, fontSize = 20.sp)
-                }
+                // Іконка курсу
+                Text(
+                    text = course.icon,
+                    fontSize = 56.sp
+                )
             }
 
+            // Content
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "КУРС 1",
-                        style = AppTypography.labelSmall,
-                        color = Color(0xFF667EEA),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        letterSpacing = 0.5.sp
-                    )
-                    Text(
-                        text = "9/15 уроків",
-                        style = AppTypography.bodySmall,
-                        color = TextColors.onLightMuted,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-
                 Text(
-                    text = "Чітке мовлення",
-                    style = AppTypography.titleLarge,
+                    text = course.courseName,
+                    style = AppTypography.titleMedium,
                     color = TextColors.onLightPrimary,
-                    fontSize = 18.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.ExtraBold
                 )
 
-                Text(
-                    text = "Наступний: Урок 10 • Інтонація та паузи",
-                    style = AppTypography.bodySmall,
-                    color = TextColors.onLightSecondary,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Урок ${course.nextLessonNumber}",
+                        style = AppTypography.bodyMedium,
+                        color = TextColors.onLightSecondary,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
 
+                    Text(text = "•", color = TextColors.onLightSecondary)
+
+                    Text(
+                        text = "${course.nextLessonNumber}/${course.totalLessons}",
+                        style = AppTypography.bodySmall,
+                        color = TextColors.onLightSecondary,
+                        fontSize = 14.sp
+                    )
+                }
+
+                // Progress bar
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(6.dp)
-                        .background(Color(0xFFE5E5EA), RoundedCornerShape(3.dp))
+                        .height(8.dp)
+                        .background(Color(0xFFE5E7EB), RoundedCornerShape(4.dp))
                 ) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(0.6f)
-                            .fillMaxHeight()
+                            .fillMaxWidth(course.nextLessonNumber.toFloat() / course.totalLessons)
+                            .height(8.dp)
                             .background(
-                                Brush.linearGradient(
-                                    colors = listOf(Color(0xFF667EEA), Color(0xFF764BA2))
-                                ),
-                                RoundedCornerShape(3.dp)
-                            )
-                            .shadow(
-                                elevation = 4.dp,
-                                shape = RoundedCornerShape(3.dp),
-                                spotColor = Color(0xFF667EEA).copy(alpha = 0.5f)
+                                Color(android.graphics.Color.parseColor(course.color)),
+                                RoundedCornerShape(4.dp)
                             )
                     )
                 }

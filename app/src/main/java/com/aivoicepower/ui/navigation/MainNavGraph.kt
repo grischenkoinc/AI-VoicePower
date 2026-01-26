@@ -51,6 +51,9 @@ fun MainNavGraph(
                 onNavigateToCourse = { courseId ->
                     navController.navigate(Screen.CourseDetail.createRoute(courseId))
                 },
+                onNavigateToLesson = { courseId, lessonId ->
+                    navController.navigate(Screen.Lesson.createRoute(courseId, lessonId))
+                },
                 onNavigateToImprovisation = {
                     navController.navigate(Screen.Improvisation.route)
                 },

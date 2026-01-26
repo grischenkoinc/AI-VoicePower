@@ -1,100 +1,160 @@
-Мінімальні виправлення HomeScreen. Замінити hardcoded QuickAccess на state.quickActions, додати padding для скролу. Код для HomeScreen.kt:
+ПРОДОВЖЕННЯ оновлення HomeScreen + виправлення DiagnosticResultScreen. Додати блок "Продовжити навчання" з кольором курсу в HomeScreen, додати padding для кнопки в DiagnosticResultScreen. Код для HomeScreen.kt:
 ```kotlin
-// Знайти рядок ~40 (Column з verticalScroll) і ДОДАТИ padding:
+// Знайти ContentSection (рядок ~60-80) і ДОДАТИ блок "Продовжити" ПЕРЕД TodayPlanSection:
+
 Column(
     modifier = Modifier
-        .fillMaxSize()
-        .verticalScroll(rememberScrollState())
-        .padding(bottom = 80.dp), // ДОДАТИ цей рядок для скролу
+        .fillMaxWidth()
+        .padding(horizontal = 24.dp),
     verticalArrangement = Arrangement.spacedBy(32.dp)
 ) {
-    // ... весь контент
-}
-
-// Знайти рядок ~139 QuickAccessSection і ЗАМІНИТИ:
-// СТАРИЙ КОД (видалити):
-QuickAccessSection(
-    onWarmupClick = { onNavigate(Screen.Warmup.route) },
-    onRecordClick = { /* TODO */ },
-    onImprovisationClick = { onNavigate(Screen.Improvisation.route) },
-    onProgressClick = { onNavigate(Screen.Progress.route) }
-)
-
-// НОВИЙ КОД (вставити):
-QuickAccessSection(
-    actions = state.quickActions, // Використати дані з ViewModel
-    onActionClick = { action ->
-        onNavigate(action.route)
+    // Continue Course Section (ДОДАТИ)
+    state.currentCourse?.let { course ->
+        ContinueCourseSection(
+            course = course,
+            onCourseClick = { onNavigate(course.navigationRoute) }
+        )
     }
-)
-
-// Знайти QuickAccessSection composable (рядок ~600) і ЗАМІНИТИ сигнатуру:
-// СТАРИЙ КОД:
-@Composable
-private fun QuickAccessSection(
-    onWarmupClick: () -> Unit,
-    onRecordClick: () -> Unit,
-    onImprovisationClick: () -> Unit,
-    onProgressClick: () -> Unit
-) {
-    // ... hardcoded карточки
+    
+    // Today's Plan
+    TodayPlanSection(
+        plan = state.todayPlan,
+        onActivityClick = { activity ->
+            onNavigate(activity.navigationRoute)
+        }
+    )
+    
+    // ... решта як було
 }
 
-// НОВИЙ КОД:
+// ДОДАТИ новий composable в кінець файлу (перед останньої дужки):
 @Composable
-private fun QuickAccessSection(
-    actions: List<com.aivoicepower.domain.model.home.QuickAction>,
-    onActionClick: (com.aivoicepower.domain.model.home.QuickAction) -> Unit
+private fun ContinueCourseSection(
+    course: CurrentCourse,
+    onCourseClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "Швидкий доступ",
+            text = "Продовжити навчання",
             style = AppTypography.headlineMedium,
             color = Color.White
         )
         
-        // Grid 2x2
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = 16.dp,
+                    shape = RoundedCornerShape(24.dp),
+                    spotColor = Color.Black.copy(alpha = 0.2f)
+                )
+                .background(Color.White, RoundedCornerShape(24.dp))
+                .clickable(onClick = onCourseClick)
+                .padding(0.dp)
+        ) {
+            // Header з кольором курсу (замість gradient)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .background(
+                        Color(android.graphics.Color.parseColor(course.color)),
+                        RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+                    ),
+                contentAlignment = Alignment.Center
             ) {
-                actions.take(2).forEach { action ->
-                    QuickActionCard(
-                        title = action.title,
-                        icon = action.icon,
-                        onClick = { onActionClick(action) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                // Іконка курсу
+                Text(
+                    text = course.icon,
+                    fontSize = 56.sp
+                )
             }
             
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            // Content
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                actions.drop(2).take(2).forEach { action ->
-                    QuickActionCard(
-                        title = action.title,
-                        icon = action.icon,
-                        onClick = { onActionClick(action) },
-                        modifier = Modifier.weight(1f)
+                Text(
+                    text = course.courseName,
+                    style = AppTypography.titleMedium,
+                    color = TextColors.onLightPrimary,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+                
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Урок ${course.nextLessonNumber}",
+                        style = AppTypography.bodyMedium,
+                        color = TextColors.onLightSecondary,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    
+                    Text(text = "•", color = TextColors.onLightSecondary)
+                    
+                    Text(
+                        text = "${course.nextLessonNumber}/${course.totalLessons}",
+                        style = AppTypography.bodySmall,
+                        color = TextColors.onLightSecondary,
+                        fontSize = 14.sp
+                    )
+                }
+                
+                // Progress bar
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .background(Color(0xFFE5E7EB), RoundedCornerShape(4.dp))
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(course.nextLessonNumber.toFloat() / course.totalLessons)
+                            .height(8.dp)
+                            .background(
+                                Color(android.graphics.Color.parseColor(course.color)),
+                                RoundedCornerShape(4.dp)
+                            )
                     )
                 }
             }
         }
     }
 }
-
-// QuickActionCard залишити БЕЗ ЗМІН!
 ```
 
 Додати import:
 ```kotlin
-import com.aivoicepower.domain.model.home.QuickAction
+import androidx.compose.ui.draw.shadow
 ```
 
-Компіляція: ./gradlew assembleDebug && adb uninstall com.aivoicepower && ./gradlew installDebug. Що виправлено: QuickAccess тепер використовує state.quickActions з ViewModel (Швидка розминка, Випадкова тема, AI Тренер, Скоромовки), padding(bottom = 80.dp) для скролу до кінця. ВСЯ решта дизайну БЕЗ ЗМІН!
+Код для DiagnosticResultScreen.kt:
+```kotlin
+// Знайти Column з кнопкою "Почати навчання" (в кінці файлу) і ДОДАТИ padding:
+Column(
+    modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 24.dp)
+        .padding(bottom = 100.dp), // ДОДАНО: було 80dp, тепер 100dp
+    verticalArrangement = Arrangement.spacedBy(12.dp)
+) {
+    PrimaryButton(
+        text = "Почати навчання",
+        onClick = onStartLearning,
+        modifier = Modifier.fillMaxWidth()
+    )
+}
+```
+
+Компіляція: ./gradlew assembleDebug && adb uninstall com.aivoicepower && ./gradlew installDebug. Що виправлено: додано блок "Продовжити навчання" з кольором та іконкою курсу (замість gradient), DiagnosticResultScreen кнопка тепер НЕ перекрита нижнім баром (padding 100dp). Колір курсу автоматично підтягується з getCourseData()!

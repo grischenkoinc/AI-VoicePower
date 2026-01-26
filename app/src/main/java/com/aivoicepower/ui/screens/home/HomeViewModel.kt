@@ -68,6 +68,9 @@ class HomeViewModel @Inject constructor(
                 // Get quick actions
                 val quickActions = getQuickActions()
 
+                // Get current course
+                val currentCourse = getCurrentCourse(preferences)
+
                 _state.update {
                     it.copy(
                         userName = null, // TODO: Add name field to UserPreferences if needed
@@ -76,6 +79,7 @@ class HomeViewModel @Inject constructor(
                         todayPlan = todayPlan,
                         weekProgress = weekProgress,
                         quickActions = quickActions,
+                        currentCourse = currentCourse,
                         isLoading = false,
                         error = null
                     )
@@ -272,6 +276,36 @@ class HomeViewModel @Inject constructor(
         )
     }
 
+    private suspend fun getCurrentCourse(preferences: com.aivoicepower.data.local.datastore.UserPreferences): CurrentCourse? {
+        // Визначити рекомендований курс
+        val courseId = when (preferences.userGoal) {
+            "CLEAR_SPEECH" -> "course_1"
+            "PUBLIC_SPEAKING" -> "course_3"
+            "BETTER_VOICE" -> "course_2"
+            else -> "course_1"
+        }
+
+        // Знайти наступний урок
+        val courseProgress = courseProgressDao.getCourseProgress(courseId).first()
+        val nextLessonNumber = (1..21).firstOrNull { lessonNumber ->
+            val lessonId = "lesson_$lessonNumber"
+            courseProgress.none { it.lessonId == lessonId && it.isCompleted }
+        } ?: return null // Курс завершено
+
+        // Отримати дані курсу
+        val (courseName, courseColor, courseIcon) = getCourseData(courseId)
+
+        return CurrentCourse(
+            courseId = courseId,
+            courseName = courseName,
+            nextLessonNumber = nextLessonNumber,
+            totalLessons = 21,
+            color = courseColor,
+            icon = courseIcon,
+            navigationRoute = Screen.Lesson.createRoute(courseId, "lesson_$nextLessonNumber")
+        )
+    }
+
     private fun getGreetingByTime(): String {
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         return when {
@@ -291,6 +325,18 @@ class HomeViewModel @Inject constructor(
             "course_5" -> "Ділова комунікація"
             "course_6" -> "Харизматичний оратор"
             else -> "Курс"
+        }
+    }
+
+    private fun getCourseData(courseId: String): Triple<String, String, String> {
+        return when (courseId) {
+            "course_1" -> Triple("Чітке мовлення", "#667EEA", "🗣️")
+            "course_2" -> Triple("Магія інтонації", "#EC4899", "🎭")
+            "course_3" -> Triple("Впевнений спікер", "#F59E0B", "💼")
+            "course_4" -> Triple("Чисте мовлення", "#8B5CF6", "✨")
+            "course_5" -> Triple("Ділова комунікація", "#10B981", "📊")
+            "course_6" -> Triple("Харизматичний оратор", "#EF4444", "🎤")
+            else -> Triple("Курс", "#667EEA", "📖")
         }
     }
 

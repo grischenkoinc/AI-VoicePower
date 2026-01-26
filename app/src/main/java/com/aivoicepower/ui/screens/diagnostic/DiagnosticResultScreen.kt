@@ -152,7 +152,7 @@ private fun SuccessContent(
             .fillMaxSize()
             .verticalScroll(scrollState)
             .padding(horizontal = 24.dp)
-            .padding(top = 60.dp, bottom = 40.dp),
+            .padding(top = 60.dp, bottom = 100.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         // Header
