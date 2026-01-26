@@ -277,70 +277,87 @@ class HomeViewModel @Inject constructor(
 
     private suspend fun getCurrentCourse(preferences: com.aivoicepower.data.local.datastore.UserPreferences): CurrentCourse? {
         // Список всіх курсів по порядку
-        val allCourses = listOf("course_1", "course_2", "course_3", "course_4", "course_5", "course_6")
+        val allCourses = listOf("course_1", "course_2", "course_3", "course_4", "course_5", "course_6", "course_7")
 
         // Знайти курс з найбільш недавньою активністю (останній завершений урок)
         var mostRecentCourse: String? = null
         var mostRecentTimestamp = 0L
+        var mostRecentLessonId: String? = null
 
         for (courseId in allCourses) {
             val progress = courseProgressDao.getCourseProgress(courseId).first()
-            val latestLesson = progress.filter { it.isCompleted }.maxByOrNull { it.completedAt ?: 0 }
-            if (latestLesson != null && (latestLesson.completedAt ?: 0) > mostRecentTimestamp) {
-                mostRecentTimestamp = latestLesson.completedAt ?: 0
-                mostRecentCourse = courseId
+            val completedLessons = progress.filter { it.isCompleted }
+
+            if (completedLessons.isNotEmpty()) {
+                val latestLesson = completedLessons.maxByOrNull { it.completedAt ?: 0 }
+                val timestamp = latestLesson?.completedAt ?: 0
+
+                android.util.Log.d("HomeViewModel", "Course $courseId: latest lesson = ${latestLesson?.lessonId}, timestamp = $timestamp")
+
+                if (timestamp > mostRecentTimestamp) {
+                    mostRecentTimestamp = timestamp
+                    mostRecentCourse = courseId
+                    mostRecentLessonId = latestLesson?.lessonId
+                }
             }
         }
 
-        // Якщо є активний курс - перевірити, чи є в ньому незавершені уроки
-        if (mostRecentCourse != null) {
-            val courseProgress = courseProgressDao.getCourseProgress(mostRecentCourse).first()
+        android.util.Log.d("HomeViewModel", "Most recent course: $mostRecentCourse, lesson: $mostRecentLessonId")
 
-            // Знайти останній виконаний урок
-            val lastCompletedLesson = courseProgress
-                .filter { it.isCompleted }
-                .mapNotNull {
-                    val lessonNumber = it.lessonId.removePrefix("lesson_").toIntOrNull()
-                    lessonNumber
+        // Якщо є активний курс - показати наступний урок після останнього виконаного
+        if (mostRecentCourse != null && mostRecentLessonId != null) {
+            // Витягнути номер останнього виконаного уроку з різних форматів:
+            // lesson_1, voice_lesson_1, speaker_lesson_1, etc.
+            val substringResult = mostRecentLessonId.substringAfterLast("_")
+            android.util.Log.d("HomeViewModel", "Parsing lessonId: '$mostRecentLessonId' -> substring: '$substringResult'")
+
+            val lastCompletedNumber = substringResult.toIntOrNull()
+            android.util.Log.d("HomeViewModel", "Last completed number: $lastCompletedNumber")
+
+            if (lastCompletedNumber != null) {
+                val nextLessonNumber = lastCompletedNumber + 1
+
+                android.util.Log.d("HomeViewModel", "Next lesson number: $nextLessonNumber")
+
+                // Перевірити, чи не виходить за межі курсу
+                if (nextLessonNumber <= 21) {
+                    // Використовуємо функцію для визначення правильного формату lessonId
+                    val nextLessonId = getLessonIdFormat(mostRecentCourse, nextLessonNumber)
+
+                    android.util.Log.d("HomeViewModel", "Next lesson ID: $nextLessonId")
+
+                    // Є незавершений урок - показати його
+                    val (courseName, courseColor, courseIcon) = getCourseData(mostRecentCourse)
+                    android.util.Log.d("HomeViewModel", "Returning: $mostRecentCourse lesson $nextLessonNumber")
+                    return CurrentCourse(
+                        courseId = mostRecentCourse,
+                        courseName = courseName,
+                        nextLessonNumber = nextLessonNumber,
+                        nextLessonId = nextLessonId,
+                        totalLessons = 21,
+                        color = courseColor,
+                        icon = courseIcon,
+                        navigationRoute = Screen.Lesson.createRoute(mostRecentCourse, nextLessonId)
+                    )
                 }
-                .maxOrNull()
 
-            // Наступний урок = останній виконаний + 1 (або 1, якщо немає виконаних)
-            val nextLessonNumber = if (lastCompletedLesson != null) {
-                lastCompletedLesson + 1
-            } else {
-                1
-            }
-
-            // Перевірити, чи не виходить за межі курсу
-            if (nextLessonNumber <= 21) {
-                // Є незавершений урок - показати його
-                val (courseName, courseColor, courseIcon) = getCourseData(mostRecentCourse)
-                return CurrentCourse(
-                    courseId = mostRecentCourse,
-                    courseName = courseName,
-                    nextLessonNumber = nextLessonNumber,
-                    totalLessons = 21,
-                    color = courseColor,
-                    icon = courseIcon,
-                    navigationRoute = Screen.Lesson.createRoute(mostRecentCourse, "lesson_$nextLessonNumber")
-                )
-            }
-
-            // Курс завершено - знайти наступний курс зі списку
-            val currentIndex = allCourses.indexOf(mostRecentCourse)
-            if (currentIndex < allCourses.size - 1) {
-                val nextCourse = allCourses[currentIndex + 1]
-                val (courseName, courseColor, courseIcon) = getCourseData(nextCourse)
-                return CurrentCourse(
-                    courseId = nextCourse,
-                    courseName = courseName,
-                    nextLessonNumber = 1,
-                    totalLessons = 21,
-                    color = courseColor,
-                    icon = courseIcon,
-                    navigationRoute = Screen.Lesson.createRoute(nextCourse, "lesson_1")
-                )
+                // Курс завершено - знайти наступний курс зі списку
+                val currentIndex = allCourses.indexOf(mostRecentCourse)
+                if (currentIndex < allCourses.size - 1) {
+                    val nextCourse = allCourses[currentIndex + 1]
+                    val nextLessonId = getLessonIdFormat(nextCourse, 1)
+                    val (courseName, courseColor, courseIcon) = getCourseData(nextCourse)
+                    return CurrentCourse(
+                        courseId = nextCourse,
+                        courseName = courseName,
+                        nextLessonNumber = 1,
+                        nextLessonId = nextLessonId,
+                        totalLessons = 21,
+                        color = courseColor,
+                        icon = courseIcon,
+                        navigationRoute = Screen.Lesson.createRoute(nextCourse, nextLessonId)
+                    )
+                }
             }
         }
 
@@ -352,15 +369,19 @@ class HomeViewModel @Inject constructor(
             else -> "course_1"
         }
 
+        android.util.Log.d("HomeViewModel", "No recent course, returning recommended: $recommendedCourse")
+
+        val firstLessonId = getLessonIdFormat(recommendedCourse, 1)
         val (courseName, courseColor, courseIcon) = getCourseData(recommendedCourse)
         return CurrentCourse(
             courseId = recommendedCourse,
             courseName = courseName,
             nextLessonNumber = 1,
+            nextLessonId = firstLessonId,
             totalLessons = 21,
             color = courseColor,
             icon = courseIcon,
-            navigationRoute = Screen.Lesson.createRoute(recommendedCourse, "lesson_1")
+            navigationRoute = Screen.Lesson.createRoute(recommendedCourse, firstLessonId)
         )
     }
 
@@ -378,10 +399,11 @@ class HomeViewModel @Inject constructor(
         return when (courseId) {
             "course_1" -> "Чітке мовлення"
             "course_2" -> "Магія інтонації"
-            "course_3" -> "Впевнений спікер"
-            "course_4" -> "Чисте мовлення"
-            "course_5" -> "Ділова комунікація"
-            "course_6" -> "Харизматичний оратор"
+            "course_3" -> "Сила голосу"
+            "course_4" -> "Впевнений спікер"
+            "course_5" -> "Чисте мовлення"
+            "course_6" -> "Ділова комунікація"
+            "course_7" -> "Харизматичний оратор"
             else -> "Курс"
         }
     }
@@ -390,11 +412,26 @@ class HomeViewModel @Inject constructor(
         return when (courseId) {
             "course_1" -> Triple("Чітке мовлення", "#667EEA", "🗣️")
             "course_2" -> Triple("Магія інтонації", "#EC4899", "🎭")
-            "course_3" -> Triple("Впевнений спікер", "#F59E0B", "💼")
-            "course_4" -> Triple("Чисте мовлення", "#8B5CF6", "✨")
-            "course_5" -> Triple("Ділова комунікація", "#10B981", "📊")
-            "course_6" -> Triple("Харизматичний оратор", "#EF4444", "🎤")
+            "course_3" -> Triple("Сила голосу", "#F59E0B", "💪")
+            "course_4" -> Triple("Впевнений спікер", "#8B5CF6", "💼")
+            "course_5" -> Triple("Чисте мовлення", "#10B981", "✨")
+            "course_6" -> Triple("Ділова комунікація", "#3B82F6", "📊")
+            "course_7" -> Triple("Харизматичний оратор", "#EF4444", "🎤")
             else -> Triple("Курс", "#667EEA", "📖")
+        }
+    }
+
+    private fun getLessonIdFormat(courseId: String, lessonNumber: Int): String {
+        // Визначає формат lessonId для різних курсів
+        return when (courseId) {
+            "course_1" -> "lesson_$lessonNumber"
+            "course_2" -> "intonation_lesson_$lessonNumber"
+            "course_3" -> "voice_lesson_$lessonNumber"
+            "course_4" -> "speaker_lesson_$lessonNumber"
+            "course_5" -> "clean_lesson_$lessonNumber"
+            "course_6" -> "business_lesson_$lessonNumber"
+            "course_7" -> "charisma_lesson_$lessonNumber"
+            else -> "lesson_$lessonNumber"
         }
     }
 
@@ -415,7 +452,7 @@ class HomeViewModel @Inject constructor(
 
         // Також створюємо окремі підписки на зміни прогресу кожного курсу
         viewModelScope.launch {
-            val allCourses = listOf("course_1", "course_2", "course_3", "course_4", "course_5", "course_6")
+            val allCourses = listOf("course_1", "course_2", "course_3", "course_4", "course_5", "course_6", "course_7")
             allCourses.forEach { courseId ->
                 launch {
                     courseProgressDao.getCourseProgress(courseId).collect {

@@ -81,7 +81,7 @@ fun HomeScreen(
                         onCourseClick = {
                             onNavigateToLesson(
                                 course.courseId,
-                                "lesson_${course.nextLessonNumber}"
+                                course.nextLessonId
                             )
                         }
                     )
