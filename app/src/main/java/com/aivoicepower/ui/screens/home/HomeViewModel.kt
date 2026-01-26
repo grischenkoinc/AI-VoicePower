@@ -297,12 +297,25 @@ class HomeViewModel @Inject constructor(
         // Якщо є активний курс - перевірити, чи є в ньому незавершені уроки
         if (mostRecentCourse != null) {
             val courseProgress = courseProgressDao.getCourseProgress(mostRecentCourse).first()
-            val nextLessonNumber = (1..21).firstOrNull { lessonNumber ->
-                val lessonId = "lesson_$lessonNumber"
-                courseProgress.none { it.lessonId == lessonId && it.isCompleted }
+
+            // Знайти останній виконаний урок
+            val lastCompletedLesson = courseProgress
+                .filter { it.isCompleted }
+                .mapNotNull {
+                    val lessonNumber = it.lessonId.removePrefix("lesson_").toIntOrNull()
+                    lessonNumber
+                }
+                .maxOrNull()
+
+            // Наступний урок = останній виконаний + 1 (або 1, якщо немає виконаних)
+            val nextLessonNumber = if (lastCompletedLesson != null) {
+                lastCompletedLesson + 1
+            } else {
+                1
             }
 
-            if (nextLessonNumber != null) {
+            // Перевірити, чи не виходить за межі курсу
+            if (nextLessonNumber <= 21) {
                 // Є незавершений урок - показати його
                 val (courseName, courseColor, courseIcon) = getCourseData(mostRecentCourse)
                 return CurrentCourse(
