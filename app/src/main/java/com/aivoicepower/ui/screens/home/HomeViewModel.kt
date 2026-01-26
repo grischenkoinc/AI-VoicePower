@@ -69,8 +69,7 @@ class HomeViewModel @Inject constructor(
                 // Get quick actions
                 val quickActions = getQuickActions()
 
-                // Get current course
-                val currentCourse = getCurrentCourse(preferences)
+                // Don't load currentCourse here - it will be loaded by observeCourseProgress()
 
                 _state.update {
                     it.copy(
@@ -80,7 +79,6 @@ class HomeViewModel @Inject constructor(
                         todayPlan = todayPlan,
                         weekProgress = weekProgress,
                         quickActions = quickActions,
-                        currentCourse = currentCourse,
                         isLoading = false,
                         error = null
                     )
@@ -407,21 +405,26 @@ class HomeViewModel @Inject constructor(
 
     private fun observeCourseProgress() {
         viewModelScope.launch {
-            // Підписуємося на зміни прогресу всіх курсів
-            val allCourses = listOf("course_1", "course_2", "course_3", "course_4", "course_5", "course_6")
-
-            // Комбінуємо Flow з усіх курсів
-            combine(
-                allCourses.map { courseId ->
-                    courseProgressDao.getCourseProgress(courseId)
-                }
-            ) { progressArrays ->
-                progressArrays.toList()
-            }.collect {
-                // Перезавантажуємо currentCourse при будь-якій зміні
-                val preferences = userPreferencesDataStore.userPreferencesFlow.first()
+            // Просто підписуємося на preferences і перезавантажуємо currentCourse
+            // при будь-якій зміні (getCurrentCourse() сам завантажить актуальні дані з DAO)
+            userPreferencesDataStore.userPreferencesFlow.collect { preferences ->
                 val updatedCourse = getCurrentCourse(preferences)
                 _state.update { it.copy(currentCourse = updatedCourse) }
+            }
+        }
+
+        // Також створюємо окремі підписки на зміни прогресу кожного курсу
+        viewModelScope.launch {
+            val allCourses = listOf("course_1", "course_2", "course_3", "course_4", "course_5", "course_6")
+            allCourses.forEach { courseId ->
+                launch {
+                    courseProgressDao.getCourseProgress(courseId).collect {
+                        // При зміні будь-якого курсу - перезавантажуємо currentCourse
+                        val preferences = userPreferencesDataStore.userPreferencesFlow.first()
+                        val updatedCourse = getCurrentCourse(preferences)
+                        _state.update { it.copy(currentCourse = updatedCourse) }
+                    }
+                }
             }
         }
     }

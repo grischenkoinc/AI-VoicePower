@@ -41,25 +41,29 @@ class CoursesListViewModel @Inject constructor(
     private fun loadCourses() {
         viewModelScope.launch {
             courseRepository.getAllCourses().collect { courses ->
-                // Load progress for each course from database
-                val coursesWithProgress = courses.map { course ->
-                    // Get progress from database
-                    val progressList = courseProgressDao.getCourseProgress(course.id).first()
-                    val completedCount = progressList.count { it.isCompleted }
-
-                    CourseWithProgress(
-                        course = course,
-                        completedLessons = completedCount,
-                        totalLessons = course.totalLessons,
-                        progressPercent = if (course.totalLessons > 0) {
-                            (completedCount * 100) / course.totalLessons
-                        } else 0
+                // Підписуємося на зміни прогресу всіх курсів
+                combine(
+                    courses.map { course ->
+                        courseProgressDao.getCourseProgress(course.id).map { progressList ->
+                            val completedCount = progressList.count { it.isCompleted }
+                            CourseWithProgress(
+                                course = course,
+                                completedLessons = completedCount,
+                                totalLessons = course.totalLessons,
+                                progressPercent = if (course.totalLessons > 0) {
+                                    (completedCount * 100) / course.totalLessons
+                                } else 0
+                            )
+                        }
+                    }
+                ) { coursesArray ->
+                    coursesArray.toList()
+                }.collect { coursesWithProgress ->
+                    _state.value = _state.value.copy(
+                        courses = coursesWithProgress,
+                        isLoading = false
                     )
                 }
-                _state.value = _state.value.copy(
-                    courses = coursesWithProgress,
-                    isLoading = false
-                )
             }
         }
     }
