@@ -39,11 +39,13 @@ fun BreathingExerciseDialog(
     currentPhase: BreathingPhase,
     phaseProgress: Float,
     isRunning: Boolean,
+    showInstructions: Boolean,
     onDismiss: () -> Unit,
     onStart: () -> Unit,
     onPause: () -> Unit,
     onMarkCompleted: () -> Unit,
-    onSkip: () -> Unit
+    onSkip: () -> Unit,
+    onHideInstructions: () -> Unit
 ) {
     val context = LocalContext.current
 
@@ -60,7 +62,8 @@ fun BreathingExerciseDialog(
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(
-            usePlatformDefaultWidth = false
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false
         )
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -257,6 +260,150 @@ fun BreathingExerciseDialog(
                                 fontWeight = FontWeight.Bold
                             )
                         }
+                    }
+                }
+            }
+        }
+
+        // Instruction overlay (white window on top)
+        if (showInstructions) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White)
+                    .padding(horizontal = 24.dp, vertical = 60.dp)
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(24.dp)
+                    ) {
+                        // Title
+                        Text(
+                            text = exercise.title,
+                            style = AppTypography.displayLarge,
+                            color = TextColors.onLightPrimary,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            letterSpacing = (-0.7).sp
+                        )
+
+                        // Main card with description and benefit
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .shadow(
+                                    elevation = 8.dp,
+                                    shape = RoundedCornerShape(24.dp),
+                                    spotColor = Color(0xFF667EEA).copy(alpha = 0.15f)
+                                )
+                                .background(Color(0xFFF8F9FA), RoundedCornerShape(24.dp))
+                                .padding(24.dp),
+                            verticalArrangement = Arrangement.spacedBy(20.dp)
+                        ) {
+                            // Description section
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                Text(
+                                    text = "📋 Як виконувати",
+                                    style = AppTypography.labelLarge,
+                                    color = Color(0xFF4ECDC4),
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = exercise.description,
+                                    style = AppTypography.bodyLarge,
+                                    color = TextColors.onLightPrimary,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    lineHeight = 24.sp
+                                )
+                            }
+
+                            // Divider
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(1.dp)
+                                    .background(Color(0xFFE5E7EB))
+                            )
+
+                            // Speech benefit section
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                Text(
+                                    text = "🎤 Користь для мовлення",
+                                    style = AppTypography.labelLarge,
+                                    color = Color(0xFF667EEA),
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = exercise.speechBenefit,
+                                    style = AppTypography.bodyLarge,
+                                    color = TextColors.onLightPrimary,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    lineHeight = 24.sp
+                                )
+                            }
+
+                            // Duration info
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "⏱️ Тривалість: ",
+                                    style = AppTypography.bodyMedium,
+                                    color = TextColors.onLightSecondary,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = "${exercise.durationSeconds} сек",
+                                    style = AppTypography.bodyMedium,
+                                    color = TextColors.onLightPrimary,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+
+                    // Start button
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(
+                                elevation = 12.dp,
+                                shape = RoundedCornerShape(16.dp),
+                                spotColor = Color(0xFF10B981).copy(alpha = 0.3f)
+                            )
+                            .background(
+                                Brush.linearGradient(
+                                    colors = listOf(Color(0xFF10B981), Color(0xFF14B8A6))
+                                ),
+                                RoundedCornerShape(16.dp)
+                            )
+                            .clickable { onHideInstructions() }
+                            .padding(vertical = 18.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Почати вправу",
+                            style = AppTypography.labelLarge,
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
             }

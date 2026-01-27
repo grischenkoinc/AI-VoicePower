@@ -224,6 +224,7 @@ fun QuickWarmupScreen(
                                 currentPhase = BreathingPhase.INHALE,
                                 phaseProgress = 0f,
                                 isRunning = false,
+                                showInstructions = false,
                                 onDismiss = { /* Не дозволяємо закривати */ },
                                 onStart = { /* Handle in local state */ },
                                 onPause = { /* Handle in local state */ },
@@ -232,7 +233,8 @@ fun QuickWarmupScreen(
                                 },
                                 onSkip = {
                                     viewModel.onEvent(QuickWarmupEvent.CurrentExerciseCompleted)
-                                }
+                                },
+                                onHideInstructions = { /* No instructions in quick warmup */ }
                             )
                         }
                     }

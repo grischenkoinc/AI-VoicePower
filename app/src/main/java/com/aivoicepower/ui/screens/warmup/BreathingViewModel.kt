@@ -38,7 +38,8 @@ class BreathingViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         selectedExercise = event.exercise,
-                        isInstructionDialogOpen = true,
+                        isExerciseDialogOpen = true,
+                        showInstructions = true,
                         totalSeconds = event.exercise.durationSeconds,
                         elapsedSeconds = 0,
                         currentPhase = BreathingPhase.INHALE,
@@ -48,21 +49,9 @@ class BreathingViewModel @Inject constructor(
                 }
             }
 
-            BreathingEvent.InstructionDialogDismissed -> {
+            BreathingEvent.HideInstructions -> {
                 _state.update {
-                    it.copy(
-                        selectedExercise = null,
-                        isInstructionDialogOpen = false
-                    )
-                }
-            }
-
-            BreathingEvent.StartExerciseFromInstruction -> {
-                _state.update {
-                    it.copy(
-                        isInstructionDialogOpen = false,
-                        isExerciseDialogOpen = true
-                    )
+                    it.copy(showInstructions = false)
                 }
             }
 
@@ -71,7 +60,8 @@ class BreathingViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         selectedExercise = null,
-                        isExerciseDialogOpen = false
+                        isExerciseDialogOpen = false,
+                        showInstructions = false
                     )
                 }
             }
@@ -109,7 +99,8 @@ class BreathingViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         selectedExercise = null,
-                        isExerciseDialogOpen = false
+                        isExerciseDialogOpen = false,
+                        showInstructions = false
                     )
                 }
             }
