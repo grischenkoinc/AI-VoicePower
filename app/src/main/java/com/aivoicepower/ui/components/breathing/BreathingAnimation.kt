@@ -18,9 +18,12 @@ fun BreathingAnimation(
     progress: Float,
     modifier: Modifier = Modifier
 ) {
-    // Кольори для градієнту (як у кнопки мікрофона)
-    val gradientStart = Color(0xFF667EEA)  // Індиго
-    val gradientEnd = Color(0xFF764BA2)    // Фіолетовий
+    // Кольори для градієнту (точно як у кнопки мікрофона - appBackground)
+    val gradientColors = listOf(
+        Color(0xFF4ECDC4),  // Бірюзовий
+        Color(0xFF667EEA),  // Світло-фіолетовий
+        Color(0xFF764BA2)   // Темно-фіолетовий
+    )
 
     // Розрахунок масштабу на основі фази та прогресу
     val targetScale = when (phase) {
@@ -51,12 +54,12 @@ fun BreathingAnimation(
         0f
     }
 
-    // Плавна анімація з еластичним згладжуванням
+    // Плавна анімація без стрибків
     val animatedScale by animateFloatAsState(
         targetValue = targetScale + vibrationOffset,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioLowBouncy,
-            stiffness = Spring.StiffnessLow
+        animationSpec = tween(
+            durationMillis = 300,
+            easing = FastOutSlowInEasing
         ),
         label = "breathing_scale"
     )
@@ -66,13 +69,10 @@ fun BreathingAnimation(
         val maxRadius = size.minDimension / 2f * 0.9f // 90% розміру для відступу
         val currentRadius = maxRadius * animatedScale
 
-        // Заповнене градієнтне коло (як у мікрофона)
+        // Заповнене градієнтне коло (точно як у мікрофона)
         drawCircle(
             brush = Brush.radialGradient(
-                colors = listOf(
-                    gradientStart.copy(alpha = 0.9f),
-                    gradientEnd.copy(alpha = 0.9f)
-                ),
+                colors = gradientColors.map { it.copy(alpha = 0.95f) },
                 center = center,
                 radius = currentRadius
             ),

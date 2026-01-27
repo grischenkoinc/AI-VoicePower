@@ -18,7 +18,8 @@ data class BreathingExercise(
     val title: String,
     val durationSeconds: Int,
     val pattern: BreathingPattern,
-    val description: String
+    val description: String,
+    val speechBenefit: String
 )
 
 data class BreathingPattern(
@@ -54,7 +55,8 @@ private fun getBreathingExercises(): List<BreathingExercise> {
                 inhaleSeconds = 4,
                 exhaleSeconds = 4
             ),
-            description = "Глибоке дихання животом. Покладіть руку на живіт і відчуйте як він піднімається на вдиху."
+            description = "Глибоке дихання животом. Покладіть руку на живіт і відчуйте як він піднімається на вдиху.",
+            speechBenefit = "Розвиває правильну опору дихання для довгих фраз. Зміцнює діафрагму - основний м'яз для сильного голосу."
         ),
         BreathingExercise(
             id = 2,
@@ -66,7 +68,8 @@ private fun getBreathingExercises(): List<BreathingExercise> {
                 exhaleSeconds = 4,
                 exhaleHoldSeconds = 4
             ),
-            description = "Рівні інтервали для кожної фази. Допомагає зосередитися та заспокоїтися."
+            description = "Рівні інтервали для кожної фази. Допомагає зосередитися та заспокоїтися.",
+            speechBenefit = "Покращує контроль видиху та паузацію. Допомагає чітко вимовляти слова без задишки."
         ),
         BreathingExercise(
             id = 3,
@@ -77,7 +80,8 @@ private fun getBreathingExercises(): List<BreathingExercise> {
                 inhaleHoldSeconds = 7,
                 exhaleSeconds = 8
             ),
-            description = "Техніка для швидкого заспокоєння. Довгий видих активує парасимпатичну нервову систему."
+            description = "Техніка для швидкого заспокоєння. Довгий видих активує парасимпатичну нервову систему.",
+            speechBenefit = "Знижує хвилювання перед виступом. Довгий видих допомагає говорити впевнено та спокійно."
         ),
         BreathingExercise(
             id = 4,
@@ -87,7 +91,8 @@ private fun getBreathingExercises(): List<BreathingExercise> {
                 inhaleSeconds = 3,
                 exhaleSeconds = 5
             ),
-            description = "Довший видих допомагає розслабитися. Ідеально перед сном."
+            description = "Довший видих допомагає розслабитися. Ідеально перед сном.",
+            speechBenefit = "Розслабляє голосові зв'язки. Усуває напругу в горлі для м'якого звучання голосу."
         ),
         BreathingExercise(
             id = 5,
@@ -97,7 +102,8 @@ private fun getBreathingExercises(): List<BreathingExercise> {
                 inhaleSeconds = 2,
                 exhaleSeconds = 2
             ),
-            description = "Швидке ритмічне дихання для підвищення енергії. Будьте обережні, не перестарайтеся."
+            description = "Швидке ритмічне дихання для підвищення енергії. Будьте обережні, не перестарайтеся.",
+            speechBenefit = "Активізує дихальну систему перед довгим мовленням. Додає енергії та динаміки голосу."
         ),
         BreathingExercise(
             id = 6,
@@ -107,7 +113,8 @@ private fun getBreathingExercises(): List<BreathingExercise> {
                 inhaleSeconds = 6,
                 exhaleSeconds = 6
             ),
-            description = "Повільне глибоке дихання насичує організм киснем. Дихайте через ніс."
+            description = "Повільне глибоке дихання насичує організм киснем. Дихайте через ніс.",
+            speechBenefit = "Максимально наповнює легені повітрям. Забезпечує потужну підтримку голосу для гучного мовлення."
         ),
         BreathingExercise(
             id = 7,
@@ -117,7 +124,8 @@ private fun getBreathingExercises(): List<BreathingExercise> {
                 inhaleSeconds = 4,
                 exhaleSeconds = 8
             ),
-            description = "Подвійна тривалість видиху максимально розслабляє. Відчуйте напругу що йде."
+            description = "Подвійна тривалість видиху максимально розслабляє. Відчуйте напругу що йде.",
+            speechBenefit = "Тренує контроль видиху на довгих фразах. Допомагає економно витрачати повітря під час мовлення."
         ),
         BreathingExercise(
             id = 8,
@@ -129,7 +137,8 @@ private fun getBreathingExercises(): List<BreathingExercise> {
                 exhaleSeconds = 3,
                 exhaleHoldSeconds = 3
             ),
-            description = "Рівний ритм створює медитативний стан. Зосередьтеся на рахунку."
+            description = "Рівний ритм створює медитативний стан. Зосередьтеся на рахунку.",
+            speechBenefit = "Вирівнює темп мовлення. Допомагає підтримувати стабільний ритм під час довгих промов."
         )
     )
 }

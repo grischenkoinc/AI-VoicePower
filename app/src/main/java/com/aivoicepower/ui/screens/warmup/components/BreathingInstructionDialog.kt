@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.aivoicepower.ui.screens.warmup.BreathingExercise
-import com.aivoicepower.ui.screens.warmup.BreathingPattern
 import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
 import com.aivoicepower.ui.theme.components.GradientBackground
@@ -57,70 +56,98 @@ fun BreathingInstructionDialog(
                         letterSpacing = (-0.7).sp
                     )
 
-                    // Description card
+                    // Main card with description and benefit
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .shadow(
-                                elevation = 16.dp,
-                                shape = RoundedCornerShape(20.dp),
-                                spotColor = Color.Black.copy(alpha = 0.2f)
+                                elevation = 20.dp,
+                                shape = RoundedCornerShape(24.dp),
+                                spotColor = Color(0xFF667EEA).copy(alpha = 0.3f)
                             )
-                            .background(Color.White.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
-                            .padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                            .background(
+                                Brush.linearGradient(
+                                    colors = listOf(
+                                        Color.White.copy(alpha = 0.25f),
+                                        Color.White.copy(alpha = 0.15f)
+                                    )
+                                ),
+                                RoundedCornerShape(24.dp)
+                            )
+                            .padding(24.dp),
+                        verticalArrangement = Arrangement.spacedBy(20.dp)
                     ) {
-                        Text(
-                            text = "Опис вправи",
-                            style = AppTypography.labelLarge,
-                            color = TextColors.onDarkSecondary,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Text(
-                            text = exercise.description,
-                            style = AppTypography.bodyLarge,
-                            color = TextColors.onDarkPrimary,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            lineHeight = 24.sp
-                        )
-                    }
+                        // Description section
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Text(
+                                text = "📋 Як виконувати",
+                                style = AppTypography.labelLarge,
+                                color = Color(0xFF4ECDC4),
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = exercise.description,
+                                style = AppTypography.bodyLarge,
+                                color = TextColors.onDarkPrimary,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                lineHeight = 24.sp
+                            )
+                        }
 
-                    // Pattern info card
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .shadow(
-                                elevation = 16.dp,
-                                shape = RoundedCornerShape(20.dp),
-                                spotColor = Color.Black.copy(alpha = 0.2f)
+                        // Divider
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(1.dp)
+                                .background(Color.White.copy(alpha = 0.2f))
+                        )
+
+                        // Speech benefit section
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Text(
+                                text = "🎤 Користь для мовлення",
+                                style = AppTypography.labelLarge,
+                                color = Color(0xFF667EEA),
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold
                             )
-                            .background(Color.White.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
-                            .padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text(
-                            text = "Паттерн дихання",
-                            style = AppTypography.labelLarge,
-                            color = TextColors.onDarkSecondary,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Text(
-                            text = formatPatternDescription(exercise.pattern),
-                            style = AppTypography.bodyLarge,
-                            color = TextColors.onDarkPrimary,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Text(
-                            text = "Тривалість: ${exercise.durationSeconds} сек",
-                            style = AppTypography.bodyMedium,
-                            color = TextColors.onDarkSecondary,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
-                        )
+                            Text(
+                                text = exercise.speechBenefit,
+                                style = AppTypography.bodyLarge,
+                                color = TextColors.onDarkPrimary,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                lineHeight = 24.sp
+                            )
+                        }
+
+                        // Duration info
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "⏱️ Тривалість: ",
+                                style = AppTypography.bodyMedium,
+                                color = TextColors.onDarkSecondary,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = "${exercise.durationSeconds} сек",
+                                style = AppTypography.bodyMedium,
+                                color = TextColors.onDarkPrimary,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
 
@@ -156,13 +183,3 @@ fun BreathingInstructionDialog(
     }
 }
 
-private fun formatPatternDescription(pattern: BreathingPattern): String {
-    val parts = mutableListOf<String>()
-
-    parts.add("${pattern.inhaleSeconds}с вдих")
-    if (pattern.inhaleHoldSeconds > 0) parts.add("${pattern.inhaleHoldSeconds}с затримка")
-    parts.add("${pattern.exhaleSeconds}с видих")
-    if (pattern.exhaleHoldSeconds > 0) parts.add("${pattern.exhaleHoldSeconds}с затримка")
-
-    return parts.joinToString(" → ")
-}
