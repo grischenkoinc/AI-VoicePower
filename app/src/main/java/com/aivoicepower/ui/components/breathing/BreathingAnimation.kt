@@ -25,15 +25,16 @@ fun BreathingAnimation(
         Color(0xFF764BA2)   // Темно-фіолетовий
     )
 
-    // Розрахунок масштабу на основі фази та прогресу
-    val targetScale = when (phase) {
+    // Розрахунок масштабу на основі фази та прогресу (БЕЗ згладжування - пряма синхронізація)
+    val currentScale = when (phase) {
         BreathingPhase.INHALE -> {
             // При вдиху коло розширюється від 0.5 до 1.0
             0.5f + (progress * 0.5f)
         }
         BreathingPhase.INHALE_HOLD -> {
             // При затримці після вдиху - коло залишається великим (1.0)
-            1.0f
+            // Додаємо невелику вібрацію (±2%)
+            1.0f + (sin(progress * 40f) * 0.02f)
         }
         BreathingPhase.EXHALE -> {
             // При видиху коло звужується від 1.0 до 0.5
@@ -41,40 +42,22 @@ fun BreathingAnimation(
         }
         BreathingPhase.EXHALE_HOLD -> {
             // При затримці після видиху - коло залишається маленьким (0.5)
-            0.5f
+            // Додаємо невелику вібрацію (±2%)
+            0.5f + (sin(progress * 40f) * 0.02f)
         }
     }
-
-    // Вібрація для затримок
-    val vibrationOffset = if (phase == BreathingPhase.INHALE_HOLD || phase == BreathingPhase.EXHALE_HOLD) {
-        // Додаємо невелику вібрацію (±2%)
-        val vibration = sin(progress * 40f) * 0.02f
-        vibration
-    } else {
-        0f
-    }
-
-    // Плавна анімація без стрибків
-    val animatedScale by animateFloatAsState(
-        targetValue = targetScale + vibrationOffset,
-        animationSpec = tween(
-            durationMillis = 300,
-            easing = FastOutSlowInEasing
-        ),
-        label = "breathing_scale"
-    )
 
     Canvas(modifier = modifier.fillMaxSize()) {
         val center = Offset(size.width / 2f, size.height / 2f)
         val maxRadius = size.minDimension / 2f * 0.9f // 90% розміру для відступу
-        val currentRadius = maxRadius * animatedScale
+        val currentRadius = maxRadius * currentScale
 
-        // Заповнене градієнтне коло (точно як у мікрофона)
+        // Заповнене градієнтне коло (точно як у мікрофона - linearGradient 135°)
         drawCircle(
-            brush = Brush.radialGradient(
-                colors = gradientColors.map { it.copy(alpha = 0.95f) },
-                center = center,
-                radius = currentRadius
+            brush = Brush.linearGradient(
+                colors = gradientColors,
+                start = Offset(center.x - currentRadius, center.y - currentRadius),
+                end = Offset(center.x + currentRadius, center.y + currentRadius) // 135° діагональ
             ),
             radius = currentRadius,
             center = center

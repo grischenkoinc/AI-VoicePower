@@ -144,17 +144,19 @@ class BreathingViewModel @Inject constructor(
             val startTime = System.currentTimeMillis() - (elapsed * 1000L)
 
             while (_state.value.isRunning && elapsed < _state.value.totalSeconds) {
-                delay(50) // Оновлюємо кожні 50ms для плавної анімації
+                delay(16) // Оновлюємо кожні 16ms (~60 FPS) для максимальної плавності
 
-                // Розрахунок реального часу
+                // Розрахунок реального часу в мілісекундах
                 val currentTime = System.currentTimeMillis()
-                elapsed = ((currentTime - startTime) / 1000).toInt()
+                val elapsedMillis = currentTime - startTime
+                val elapsedFloat = (elapsedMillis / 1000f)
+                elapsed = elapsedFloat.toInt()
                 elapsed = minOf(elapsed, _state.value.totalSeconds)
 
-                // Розрахунок позиції в поточному циклі
-                val cyclePosition = elapsed % pattern.cycleDurationSeconds
+                // Розрахунок позиції в поточному циклі (Float для плавності)
+                val cyclePositionFloat = elapsedFloat % pattern.cycleDurationSeconds
 
-                val (phase, progress) = calculatePhaseAndProgress(cyclePosition, pattern)
+                val (phase, progress) = calculatePhaseAndProgress(cyclePositionFloat, pattern)
 
                 onEvent(BreathingEvent.Tick(elapsed, phase, progress))
             }
@@ -167,32 +169,32 @@ class BreathingViewModel @Inject constructor(
     }
 
     private fun calculatePhaseAndProgress(
-        secondsInCycle: Int,
+        secondsInCycle: Float,
         pattern: BreathingPattern
     ): Pair<BreathingPhase, Float> {
         var remaining = secondsInCycle
 
         // INHALE
         if (remaining < pattern.inhaleSeconds) {
-            return BreathingPhase.INHALE to (remaining.toFloat() / pattern.inhaleSeconds)
+            return BreathingPhase.INHALE to (remaining / pattern.inhaleSeconds)
         }
         remaining -= pattern.inhaleSeconds
 
         // INHALE_HOLD
         if (pattern.inhaleHoldSeconds > 0 && remaining < pattern.inhaleHoldSeconds) {
-            return BreathingPhase.INHALE_HOLD to (remaining.toFloat() / pattern.inhaleHoldSeconds)
+            return BreathingPhase.INHALE_HOLD to (remaining / pattern.inhaleHoldSeconds)
         }
         remaining -= pattern.inhaleHoldSeconds
 
         // EXHALE
         if (remaining < pattern.exhaleSeconds) {
-            return BreathingPhase.EXHALE to (remaining.toFloat() / pattern.exhaleSeconds)
+            return BreathingPhase.EXHALE to (remaining / pattern.exhaleSeconds)
         }
         remaining -= pattern.exhaleSeconds
 
         // EXHALE_HOLD
         if (pattern.exhaleHoldSeconds > 0 && remaining < pattern.exhaleHoldSeconds) {
-            return BreathingPhase.EXHALE_HOLD to (remaining.toFloat() / pattern.exhaleHoldSeconds)
+            return BreathingPhase.EXHALE_HOLD to (remaining / pattern.exhaleHoldSeconds)
         }
 
         return BreathingPhase.INHALE to 0f
