@@ -71,6 +71,13 @@ fun BreathingExerciseDialog(
         val previousNavigationBarColor = window?.navigationBarColor
 
         window?.let {
+            // Clear translucent flags that add dark scrim/overlay
+            it.clearFlags(android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+            it.clearFlags(android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
+
+            // Enable drawing under system bars
+            it.addFlags(android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+
             // Make status bars fully transparent (no dark overlay)
             it.statusBarColor = android.graphics.Color.TRANSPARENT
             it.navigationBarColor = android.graphics.Color.TRANSPARENT

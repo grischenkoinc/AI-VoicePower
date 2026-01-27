@@ -26,6 +26,11 @@ class MainActivity : ComponentActivity() {
         // Налаштування для малювання під системними барами
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
+        // Remove any translucent flags that add dark scrim
+        window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+        window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
+        window.addFlags(android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+
         setContent {
             AIVoicePowerTheme {
                 Surface(
