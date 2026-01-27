@@ -16,8 +16,6 @@ import androidx.compose.ui.unit.sp
 import com.aivoicepower.ui.screens.warmup.WarmupCategory
 import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
-import java.text.SimpleDateFormat
-import java.util.*
 
 @Composable
 fun WarmupCategoryCard(
@@ -74,15 +72,6 @@ fun WarmupCategoryCard(
             fontWeight = FontWeight.Medium
         )
 
-        // Last completed
-        Text(
-            text = "Останнє: ${formatLastCompleted(category.lastCompletedDate)}",
-            style = AppTypography.bodySmall,
-            color = TextColors.onLightMuted,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Medium
-        )
-
         // Progress
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -104,26 +93,5 @@ fun WarmupCategoryCard(
                 fontWeight = FontWeight.Bold
             )
         }
-    }
-}
-
-private fun formatLastCompleted(date: String?): String {
-    if (date == null) return "ніколи"
-
-    return try {
-        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val completedDate = sdf.parse(date) ?: return "невідомо"
-        val today = Date()
-
-        val diffInDays = ((today.time - completedDate.time) / (1000 * 60 * 60 * 24)).toInt()
-
-        when (diffInDays) {
-            0 -> "сьогодні"
-            1 -> "вчора"
-            in 2..4 -> "$diffInDays дні тому"
-            else -> "$diffInDays днів тому"
-        }
-    } catch (e: Exception) {
-        "невідомо"
     }
 }
