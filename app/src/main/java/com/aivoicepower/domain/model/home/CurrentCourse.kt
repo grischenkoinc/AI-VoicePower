@@ -5,6 +5,7 @@ data class CurrentCourse(
     val courseName: String,
     val nextLessonNumber: Int,
     val nextLessonId: String, // The actual lessonId (e.g., "lesson_1", "intonation_lesson_1", etc.)
+    val nextLessonTitle: String, // The title of the next lesson
     val totalLessons: Int,
     val color: String, // Hex color
     val icon: String, // Emoji

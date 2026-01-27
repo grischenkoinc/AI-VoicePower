@@ -60,14 +60,14 @@ fun LessonListItem(
             )
             .scaleOnPress(pressedScale = 0.97f)
             .clickable(enabled = !isLocked, onClick = onClick)
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+            .padding(14.dp),
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Status icon
         Box(
             modifier = Modifier
-                .size(56.dp)
+                .size(48.dp)
                 .shadow(
                     elevation = if (isCompleted) 8.dp else 4.dp,
                     shape = CircleShape,

@@ -79,9 +79,6 @@ fun MainNavGraph(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToCourse = { courseId ->
                     navController.navigate(Screen.CourseDetail.createRoute(courseId))
-                },
-                onSearch = {
-                    // TODO: Navigate to search
                 }
             )
         }

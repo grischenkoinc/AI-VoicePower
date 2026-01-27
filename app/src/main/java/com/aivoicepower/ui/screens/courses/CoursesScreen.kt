@@ -39,7 +39,6 @@ enum class CourseFilter {
 fun CoursesScreen(
     onNavigateBack: () -> Unit,
     onNavigateToCourse: (String) -> Unit,
-    onSearch: () -> Unit,
     viewModel: CoursesListViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -88,7 +87,6 @@ fun CoursesScreen(
             // Header
             CoursesHeader(
                 onNavigateBack = onNavigateBack,
-                onSearch = onSearch,
                 totalCourses = courses.size,
                 totalLessons = courses.sumOf { it.totalLessons }
             )
@@ -135,7 +133,6 @@ fun CoursesScreen(
 @Composable
 private fun CoursesHeader(
     onNavigateBack: () -> Unit,
-    onSearch: () -> Unit,
     totalCourses: Int,
     totalLessons: Int,
     modifier: Modifier = Modifier
@@ -147,30 +144,31 @@ private fun CoursesHeader(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier
+                .shadow(
+                    elevation = 12.dp,
+                    shape = RoundedCornerShape(16.dp),
+                    spotColor = Color.Black.copy(alpha = 0.2f)
+                )
+                .background(Color.White, RoundedCornerShape(16.dp))
+                .clickable { onNavigateBack() }
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .background(GlassColors.background, CircleShape)
-                    .border(1.dp, GlassColors.borderLight, CircleShape)
-                    .clickable { onNavigateBack() },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "←", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            }
-
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .background(GlassColors.background, CircleShape)
-                    .border(1.dp, GlassColors.borderLight, CircleShape)
-                    .clickable { onSearch() },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "🔍", fontSize = 18.sp)
-            }
+            Text(
+                text = "←",
+                fontSize = 24.sp,
+                color = Color(0xFF667EEA),
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Назад",
+                style = AppTypography.bodyMedium,
+                color = TextColors.onLightPrimary,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -238,22 +236,20 @@ private fun FilterTab(
 ) {
     Box(
         modifier = modifier
-            .background(
-                if (isActive) Color.White else GlassColors.background,
-                RoundedCornerShape(14.dp)
-            )
-            .border(
-                1.5.dp,
-                if (isActive) Color.White else GlassColors.borderLight,
-                RoundedCornerShape(14.dp)
-            )
             .then(
                 if (isActive) {
-                    Modifier.multiLayerShadow(
-                        elevation = 4.dp,
-                        spotColor = Color.White.copy(alpha = 0.3f)
+                    Modifier.shadow(
+                        elevation = 12.dp,
+                        shape = RoundedCornerShape(14.dp),
+                        spotColor = Color.Black.copy(alpha = 0.15f)
                     )
-                } else Modifier
+                } else {
+                    Modifier
+                }
+            )
+            .background(
+                if (isActive) Color.White else Color.White.copy(alpha = 0.25f),
+                RoundedCornerShape(14.dp)
             )
             .scaleOnPress(pressedScale = 0.95f)
             .clickable { onClick() }
@@ -263,7 +259,7 @@ private fun FilterTab(
         Text(
             text = text,
             style = AppTypography.labelMedium,
-            color = if (isActive) Color(0xFF667EEA) else TextColors.onDarkSecondary,
+            color = if (isActive) Color(0xFF667EEA) else Color.White.copy(alpha = 0.8f),
             fontSize = 13.sp,
             fontWeight = FontWeight.Bold
         )
@@ -280,10 +276,13 @@ private fun StatsBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(GlassColors.background, RoundedCornerShape(16.dp))
-            .border(1.5.dp, GlassColors.borderLight, RoundedCornerShape(16.dp))
-            .shadow(8.dp, RoundedCornerShape(16.dp), spotColor = Color.Black.copy(alpha = 0.15f))
-            .padding(10.dp),
+            .shadow(
+                elevation = 12.dp,
+                shape = RoundedCornerShape(20.dp),
+                spotColor = Color.Black.copy(alpha = 0.15f)
+            )
+            .background(Color.White, RoundedCornerShape(20.dp))
+            .padding(16.dp),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         StatItem(value = active.toString(), label = "Активний")
@@ -301,21 +300,21 @@ private fun StatItem(
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Text(
             text = value,
             style = AppTypography.displayLarge,
-            color = TextColors.onDarkPrimary,
-            fontSize = 20.sp,
+            color = Color(0xFF667EEA),
+            fontSize = 28.sp,
             fontWeight = FontWeight.Black
         )
         Text(
             text = label.uppercase(),
             style = AppTypography.labelSmall,
-            color = TextColors.onDarkSecondary,
-            fontSize = 9.sp,
-            fontWeight = FontWeight.SemiBold,
+            color = TextColors.onLightSecondary,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
             letterSpacing = 0.5.sp
         )
     }
@@ -348,16 +347,16 @@ private fun CourseCardItem(
     val isLocked = course.isPremium && !courseWithProgress.isStarted
 
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .multiLayerShadow(
-                elevation = 8.dp,
-                spotColor = Color.Black.copy(alpha = 0.15f)
-            )
+        modifier = modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .shadow(
+                    elevation = 16.dp,
+                    shape = RoundedCornerShape(24.dp),
+                    spotColor = Color.Black.copy(alpha = 0.15f)
+                )
                 .background(BackgroundColors.surface, RoundedCornerShape(24.dp))
                 .clickable(enabled = !isLocked) { onClick() }
         ) {

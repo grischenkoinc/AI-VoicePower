@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.local.database.dao.*
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.domain.model.home.*
+import com.aivoicepower.domain.repository.CourseRepository
 import com.aivoicepower.ui.navigation.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -19,7 +20,8 @@ class HomeViewModel @Inject constructor(
     private val userProgressDao: UserProgressDao,
     private val diagnosticResultDao: DiagnosticResultDao,
     private val warmupCompletionDao: WarmupCompletionDao,
-    private val courseProgressDao: CourseProgressDao
+    private val courseProgressDao: CourseProgressDao,
+    private val courseRepository: CourseRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeState())
@@ -328,12 +330,14 @@ class HomeViewModel @Inject constructor(
 
                     // Є незавершений урок - показати його
                     val (courseName, courseColor, courseIcon) = getCourseData(mostRecentCourse)
+                    val lessonTitle = getLessonTitle(mostRecentCourse, nextLessonId)
                     android.util.Log.d("HomeViewModel", "Returning: $mostRecentCourse lesson $nextLessonNumber")
                     return CurrentCourse(
                         courseId = mostRecentCourse,
                         courseName = courseName,
                         nextLessonNumber = nextLessonNumber,
                         nextLessonId = nextLessonId,
+                        nextLessonTitle = lessonTitle,
                         totalLessons = 21,
                         color = courseColor,
                         icon = courseIcon,
@@ -347,11 +351,13 @@ class HomeViewModel @Inject constructor(
                     val nextCourse = allCourses[currentIndex + 1]
                     val nextLessonId = getLessonIdFormat(nextCourse, 1)
                     val (courseName, courseColor, courseIcon) = getCourseData(nextCourse)
+                    val lessonTitle = getLessonTitle(nextCourse, nextLessonId)
                     return CurrentCourse(
                         courseId = nextCourse,
                         courseName = courseName,
                         nextLessonNumber = 1,
                         nextLessonId = nextLessonId,
+                        nextLessonTitle = lessonTitle,
                         totalLessons = 21,
                         color = courseColor,
                         icon = courseIcon,
@@ -373,11 +379,13 @@ class HomeViewModel @Inject constructor(
 
         val firstLessonId = getLessonIdFormat(recommendedCourse, 1)
         val (courseName, courseColor, courseIcon) = getCourseData(recommendedCourse)
+        val lessonTitle = getLessonTitle(recommendedCourse, firstLessonId)
         return CurrentCourse(
             courseId = recommendedCourse,
             courseName = courseName,
             nextLessonNumber = 1,
             nextLessonId = firstLessonId,
+            nextLessonTitle = lessonTitle,
             totalLessons = 21,
             color = courseColor,
             icon = courseIcon,
@@ -432,6 +440,15 @@ class HomeViewModel @Inject constructor(
             "course_6" -> "business_lesson_$lessonNumber"
             "course_7" -> "charisma_lesson_$lessonNumber"
             else -> "lesson_$lessonNumber"
+        }
+    }
+
+    private suspend fun getLessonTitle(courseId: String, lessonId: String): String {
+        return try {
+            val lesson = courseRepository.getLessonById(courseId, lessonId).first()
+            lesson?.title ?: "Урок $lessonId"
+        } catch (e: Exception) {
+            "Урок $lessonId"
         }
     }
 

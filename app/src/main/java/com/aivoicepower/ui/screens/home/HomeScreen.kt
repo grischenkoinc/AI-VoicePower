@@ -794,22 +794,116 @@ private fun ContinueCourseSection(
                 .clickable(onClick = onCourseClick)
                 .padding(0.dp)
         ) {
-            // Header з кольором курсу (замість gradient)
+            // Header з градієнтом курсу
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp)
+                    .height(140.dp)
                     .background(
-                        Color(android.graphics.Color.parseColor(course.color)),
+                        Brush.linearGradient(
+                            colors = listOf(
+                                Color(android.graphics.Color.parseColor(course.color)),
+                                Color(android.graphics.Color.parseColor(course.color)).copy(alpha = 0.85f)
+                            )
+                        ),
                         RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
-                    ),
-                contentAlignment = Alignment.Center
+                    )
             ) {
-                // Іконка курсу
-                Text(
-                    text = course.icon,
-                    fontSize = 56.sp
+                // Легкий темний градієнт зверху
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp)
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Black.copy(alpha = 0.08f),
+                                    Color.Transparent
+                                )
+                            ),
+                            RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+                        )
                 )
+
+                // Іконка курсу внизу справа
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = 8.dp, end = 8.dp),
+                    contentAlignment = Alignment.BottomEnd
+                ) {
+                    Text(
+                        text = course.icon,
+                        fontSize = 80.sp,
+                        color = Color.White.copy(alpha = 0.80f)
+                    )
+                }
+
+                // Назва курсу у верхньому лівому куті з 3D ефектом
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(20.dp),
+                    contentAlignment = Alignment.TopStart
+                ) {
+                    // Глибока тінь для 3D ефекту (темний шар знизу)
+                    Text(
+                        text = course.courseName,
+                        style = AppTypography.titleLarge,
+                        color = Color.Black.copy(alpha = 0.35f),
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = (-0.5).sp,
+                        lineHeight = 38.sp,
+                        modifier = Modifier.offset(x = 3.dp, y = 3.dp)
+                    )
+
+                    // Середній шар для глибини (світліша тінь)
+                    Text(
+                        text = course.courseName,
+                        style = AppTypography.titleLarge,
+                        color = Color.Black.copy(alpha = 0.15f),
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = (-0.5).sp,
+                        lineHeight = 38.sp,
+                        modifier = Modifier.offset(x = 2.dp, y = 2.dp)
+                    )
+
+                    // Основний текст з легким відтінком кольору курсу
+                    Text(
+                        text = course.courseName,
+                        style = AppTypography.titleLarge,
+                        color = Color.White.copy(alpha = 0.98f),
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = (-0.5).sp,
+                        lineHeight = 38.sp
+                    )
+
+                    // Кольоровий відтінок поверх основного тексту
+                    Text(
+                        text = course.courseName,
+                        style = AppTypography.titleLarge,
+                        color = Color(android.graphics.Color.parseColor(course.color)).copy(alpha = 0.12f),
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = (-0.5).sp,
+                        lineHeight = 38.sp
+                    )
+
+                    // Світловий highlight зверху для 3D глибини
+                    Text(
+                        text = course.courseName,
+                        style = AppTypography.titleLarge,
+                        color = Color.White.copy(alpha = 0.35f),
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = (-0.5).sp,
+                        lineHeight = 38.sp,
+                        modifier = Modifier.offset(x = (-1).dp, y = (-1).dp)
+                    )
+                }
             }
 
             // Content
@@ -817,37 +911,47 @@ private fun ContinueCourseSection(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(
-                    text = course.courseName,
-                    style = AppTypography.titleMedium,
-                    color = TextColors.onLightPrimary,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
-
+                // Урок N • N/NN
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = "Урок ${course.nextLessonNumber}",
-                        style = AppTypography.bodyMedium,
-                        color = TextColors.onLightSecondary,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.SemiBold
+                        style = AppTypography.titleMedium,
+                        color = TextColors.onLightPrimary,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
                     )
 
-                    Text(text = "•", color = TextColors.onLightSecondary)
+                    Text(
+                        text = "•",
+                        color = TextColors.onLightSecondary,
+                        fontSize = 16.sp
+                    )
 
                     Text(
                         text = "${course.nextLessonNumber}/${course.totalLessons}",
-                        style = AppTypography.bodySmall,
+                        style = AppTypography.bodyMedium,
                         color = TextColors.onLightSecondary,
-                        fontSize = 14.sp
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
+
+                // Назва уроку (велика, до 2 рядків)
+                Text(
+                    text = course.nextLessonTitle,
+                    style = AppTypography.titleLarge,
+                    color = TextColors.onLightPrimary,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    lineHeight = 26.sp,
+                    maxLines = 2,
+                    letterSpacing = (-0.5).sp
+                )
 
                 // Progress bar
                 Box(

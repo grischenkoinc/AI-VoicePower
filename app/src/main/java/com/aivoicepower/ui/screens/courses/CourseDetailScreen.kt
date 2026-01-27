@@ -102,23 +102,36 @@ fun CourseDetailScreen(
                         top = 60.dp,
                         bottom = 130.dp
                     ),
-                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                    verticalArrangement = Arrangement.spacedBy(17.dp)
                 ) {
                     // Back button
                     item {
-                        Box(
+                        Row(
                             modifier = Modifier
-                                .size(48.dp)
                                 .shadow(
                                     elevation = 12.dp,
-                                    shape = CircleShape,
+                                    shape = RoundedCornerShape(16.dp),
                                     spotColor = Color.Black.copy(alpha = 0.2f)
                                 )
-                                .background(Color.White, CircleShape)
-                                .clickable { onNavigateBack() },
-                            contentAlignment = Alignment.Center
+                                .background(Color.White, RoundedCornerShape(16.dp))
+                                .clickable { onNavigateBack() }
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = "←", fontSize = 24.sp, color = TextColors.onLightPrimary)
+                            Text(
+                                text = "←",
+                                fontSize = 24.sp,
+                                color = Color(0xFF667EEA),
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "Назад",
+                                style = AppTypography.bodyMedium,
+                                color = TextColors.onLightPrimary,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
 
