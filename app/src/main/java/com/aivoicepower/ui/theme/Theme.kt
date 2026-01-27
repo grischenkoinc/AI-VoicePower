@@ -102,13 +102,15 @@ fun AIVoicePowerTheme(
 ) {
     val colorScheme = DarkColorScheme
     
-    // Set status bar color
+    // Set status bar color to transparent (no dark overlay)
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = BackgroundColors.primary.toArgb()
+            window.statusBarColor = android.graphics.Color.TRANSPARENT
+            window.navigationBarColor = android.graphics.Color.TRANSPARENT
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
+            WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = false
         }
     }
     

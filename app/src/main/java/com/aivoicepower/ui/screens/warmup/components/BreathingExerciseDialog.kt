@@ -64,17 +64,29 @@ fun BreathingExerciseDialog(
         }
     }
 
-    // Remove status bar dimming
-    SideEffect {
+    // Remove status bar dimming - make fully transparent
+    DisposableEffect(showInstructions) {
         val window = (view.context as? Activity)?.window
+        val previousStatusBarColor = window?.statusBarColor
+        val previousNavigationBarColor = window?.navigationBarColor
+
         window?.let {
-            // Make status bars transparent
+            // Make status bars fully transparent (no dark overlay)
             it.statusBarColor = android.graphics.Color.TRANSPARENT
             it.navigationBarColor = android.graphics.Color.TRANSPARENT
 
             // Set light status bars when instructions are shown (white background)
-            WindowCompat.getInsetsController(it, view).isAppearanceLightStatusBars = showInstructions
-            WindowCompat.getInsetsController(it, view).isAppearanceLightNavigationBars = showInstructions
+            val insetsController = WindowCompat.getInsetsController(it, view)
+            insetsController.isAppearanceLightStatusBars = showInstructions
+            insetsController.isAppearanceLightNavigationBars = showInstructions
+        }
+
+        onDispose {
+            // Restore previous colors when dialog closes
+            window?.let {
+                previousStatusBarColor?.let { color -> it.statusBarColor = color }
+                previousNavigationBarColor?.let { color -> it.navigationBarColor = color }
+            }
         }
     }
 
@@ -199,14 +211,14 @@ fun BreathingExerciseDialog(
                             .shadow(
                                 elevation = 8.dp,
                                 shape = RoundedCornerShape(16.dp),
-                                spotColor = if (isRunning) Color(0xFFF59E0B).copy(alpha = 0.4f) else Color(0xFF10B981).copy(alpha = 0.4f)
+                                spotColor = if (isRunning) Color(0xFFF59E0B).copy(alpha = 0.4f) else Color(0xFF667EEA).copy(alpha = 0.4f)
                             )
                             .background(
                                 Brush.linearGradient(
                                     colors = if (isRunning) {
                                         listOf(Color(0xFFF59E0B), Color(0xFFF97316))
                                     } else {
-                                        listOf(Color(0xFF10B981), Color(0xFF14B8A6))
+                                        listOf(Color(0xFF667EEA), Color(0xFF764BA2))
                                     }
                                 ),
                                 RoundedCornerShape(16.dp)
@@ -288,12 +300,13 @@ fun BreathingExerciseDialog(
         if (showInstructions) {
             Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.TopCenter
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp)
+                        .padding(top = 120.dp)
                         .shadow(
                             elevation = 32.dp,
                             shape = RoundedCornerShape(32.dp),
@@ -396,11 +409,11 @@ fun BreathingExerciseDialog(
                             .shadow(
                                 elevation = 12.dp,
                                 shape = RoundedCornerShape(16.dp),
-                                spotColor = Color(0xFF10B981).copy(alpha = 0.3f)
+                                spotColor = Color(0xFF667EEA).copy(alpha = 0.4f)
                             )
                             .background(
                                 Brush.linearGradient(
-                                    colors = listOf(Color(0xFF10B981), Color(0xFF14B8A6))
+                                    colors = listOf(Color(0xFF667EEA), Color(0xFF764BA2))
                                 ),
                                 RoundedCornerShape(16.dp)
                             )
