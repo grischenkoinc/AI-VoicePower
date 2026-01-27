@@ -5,21 +5,31 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.aivoicepower.ui.components.breathing.BreathingAnimation
 import com.aivoicepower.ui.screens.warmup.BreathingExercise
 import com.aivoicepower.ui.screens.warmup.BreathingPattern
 import com.aivoicepower.ui.screens.warmup.BreathingPhase
-import com.aivoicepower.ui.components.breathing.BreathingAnimation
+import com.aivoicepower.ui.theme.AppTypography
+import com.aivoicepower.ui.theme.TextColors
+import com.aivoicepower.ui.theme.components.GradientBackground
 
 @Composable
 fun BreathingExerciseDialog(
@@ -53,70 +63,90 @@ fun BreathingExerciseDialog(
             usePlatformDefaultWidth = false
         )
     ) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            GradientBackground(content = {})
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(24.dp),
+                    .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 40.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Header
+                // Header with close button
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = exercise.title,
-                        style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.weight(1f)
-                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(
+                            text = exercise.title,
+                            style = AppTypography.displayLarge,
+                            color = TextColors.onDarkPrimary,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            letterSpacing = (-0.6).sp
+                        )
+                    }
 
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Закрити")
+                    // Close button
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(
+                                Brush.linearGradient(
+                                    colors = listOf(Color(0xFFEF4444), Color(0xFFDC2626))
+                                ),
+                                CircleShape
+                            )
+                            .clickable { onDismiss() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "×", fontSize = 24.sp, color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 }
 
                 // Breathing Animation (CENTER)
-                Box(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
-                    contentAlignment = Alignment.Center
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(24.dp)
-                    ) {
-                        // Animated Circle
-                        BreathingAnimation(
-                            phase = currentPhase,
-                            progress = phaseProgress,
-                            modifier = Modifier.size(250.dp)
-                        )
+                    // Animated Circle
+                    BreathingAnimation(
+                        phase = currentPhase,
+                        progress = phaseProgress,
+                        modifier = Modifier.size(280.dp)
+                    )
 
-                        // Phase text
-                        Text(
-                            text = getPhaseText(currentPhase),
-                            style = MaterialTheme.typography.headlineLarge,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                    Spacer(modifier = Modifier.height(32.dp))
 
-                        // Timer
-                        Text(
-                            text = "%02d:%02d / %02d:%02d".format(
-                                elapsedSeconds / 60,
-                                elapsedSeconds % 60,
-                                totalSeconds / 60,
-                                totalSeconds % 60
-                            ),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+                    // Phase text
+                    Text(
+                        text = getPhaseText(currentPhase),
+                        style = AppTypography.headlineLarge,
+                        color = Color.White,
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Timer
+                    Text(
+                        text = "%02d:%02d / %02d:%02d".format(
+                            elapsedSeconds / 60,
+                            elapsedSeconds % 60,
+                            totalSeconds / 60,
+                            totalSeconds % 60
+                        ),
+                        style = AppTypography.titleMedium,
+                        color = TextColors.onDarkSecondary,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
 
                 // Bottom controls
@@ -125,58 +155,129 @@ fun BreathingExerciseDialog(
                 ) {
                     // Progress
                     LinearProgressIndicator(
-                        progress = elapsedSeconds.toFloat() / totalSeconds,
-                        modifier = Modifier.fillMaxWidth()
+                        progress = { elapsedSeconds.toFloat() / totalSeconds },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(8.dp),
+                        color = Color(0xFF6366F1),
+                        trackColor = Color(0xFF4C1D95).copy(alpha = 0.3f)
                     )
 
                     // Pattern description
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
-                        )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(
+                                elevation = 16.dp,
+                                shape = RoundedCornerShape(16.dp),
+                                spotColor = Color.Black.copy(alpha = 0.2f)
+                            )
+                            .background(Color.White.copy(alpha = 0.15f), RoundedCornerShape(16.dp))
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Text(
-                                text = "Паттерн:",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                            Text(
-                                text = formatPatternDescription(exercise.pattern),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                        }
+                        Text(
+                            text = "Паттерн дихання:",
+                            style = AppTypography.labelMedium,
+                            color = TextColors.onDarkSecondary,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = formatPatternDescription(exercise.pattern),
+                            style = AppTypography.bodyMedium,
+                            color = TextColors.onDarkPrimary,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
 
                     // Start/Pause button
-                    Button(
-                        onClick = if (isRunning) onPause else onStart,
-                        modifier = Modifier.fillMaxWidth()
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(
+                                elevation = 8.dp,
+                                shape = RoundedCornerShape(16.dp),
+                                spotColor = if (isRunning) Color(0xFFF59E0B).copy(alpha = 0.4f) else Color(0xFF10B981).copy(alpha = 0.4f)
+                            )
+                            .background(
+                                Brush.linearGradient(
+                                    colors = if (isRunning) {
+                                        listOf(Color(0xFFF59E0B), Color(0xFFF97316))
+                                    } else {
+                                        listOf(Color(0xFF10B981), Color(0xFF14B8A6))
+                                    }
+                                ),
+                                RoundedCornerShape(16.dp)
+                            )
+                            .clickable { if (isRunning) onPause() else onStart() }
+                            .padding(vertical = 16.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text(if (isRunning) "⏸️ Пауза" else "▶️ Старт")
+                        Text(
+                            text = if (isRunning) "⏸ Пауза" else "▶ Почати",
+                            style = AppTypography.labelLarge,
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
 
                     // Action buttons
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        OutlinedButton(
-                            onClick = onSkip,
-                            modifier = Modifier.weight(1f)
+                        // Skip button
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .shadow(
+                                    elevation = 8.dp,
+                                    shape = RoundedCornerShape(16.dp),
+                                    spotColor = Color.Black.copy(alpha = 0.15f)
+                                )
+                                .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(16.dp))
+                                .clickable { onSkip() }
+                                .padding(vertical = 14.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Text("Пропустити")
+                            Text(
+                                text = "Пропустити",
+                                style = AppTypography.labelLarge,
+                                color = Color.White,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
 
-                        Button(
-                            onClick = onMarkCompleted,
-                            modifier = Modifier.weight(1f)
+                        // Complete button
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .shadow(
+                                    elevation = 8.dp,
+                                    shape = RoundedCornerShape(16.dp),
+                                    spotColor = Color(0xFF6366F1).copy(alpha = 0.4f)
+                                )
+                                .background(
+                                    Brush.linearGradient(
+                                        colors = listOf(Color(0xFF6366F1), Color(0xFF8B5CF6))
+                                    ),
+                                    RoundedCornerShape(16.dp)
+                                )
+                                .clickable { onMarkCompleted() }
+                                .padding(vertical = 14.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Text("Готово ✓")
+                            Text(
+                                text = "Готово ✓",
+                                style = AppTypography.labelLarge,
+                                color = Color.White,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                 }
@@ -187,20 +288,20 @@ fun BreathingExerciseDialog(
 
 private fun getPhaseText(phase: BreathingPhase): String {
     return when (phase) {
-        BreathingPhase.INHALE -> "Вдих..."
-        BreathingPhase.INHALE_HOLD -> "Затримка..."
-        BreathingPhase.EXHALE -> "Видих..."
-        BreathingPhase.EXHALE_HOLD -> "Затримка..."
+        BreathingPhase.INHALE -> "Вдих"
+        BreathingPhase.INHALE_HOLD -> "Затримка"
+        BreathingPhase.EXHALE -> "Видих"
+        BreathingPhase.EXHALE_HOLD -> "Затримка"
     }
 }
 
 private fun formatPatternDescription(pattern: BreathingPattern): String {
     val parts = mutableListOf<String>()
 
-    parts.add("${pattern.inhaleSeconds} сек вдих")
-    if (pattern.inhaleHoldSeconds > 0) parts.add("${pattern.inhaleHoldSeconds} сек затримка")
-    parts.add("${pattern.exhaleSeconds} сек видих")
-    if (pattern.exhaleHoldSeconds > 0) parts.add("${pattern.exhaleHoldSeconds} сек затримка")
+    parts.add("${pattern.inhaleSeconds}с вдих")
+    if (pattern.inhaleHoldSeconds > 0) parts.add("${pattern.inhaleHoldSeconds}с затримка")
+    parts.add("${pattern.exhaleSeconds}с видих")
+    if (pattern.exhaleHoldSeconds > 0) parts.add("${pattern.exhaleHoldSeconds}с затримка")
 
     return parts.joinToString(" → ")
 }

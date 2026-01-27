@@ -37,12 +37,18 @@ enum class BreathingPhase {
     EXHALE_HOLD    // Затримка після видиху
 }
 
+// Helper function to calculate actual duration based on desired duration and cycle
+private fun calculateActualDuration(desiredSeconds: Int, cycleDuration: Int): Int {
+    val cycles = desiredSeconds / cycleDuration
+    return cycles * cycleDuration
+}
+
 private fun getBreathingExercises(): List<BreathingExercise> {
     return listOf(
         BreathingExercise(
             id = 1,
             title = "Діафрагмальне дихання",
-            durationSeconds = 60,
+            durationSeconds = calculateActualDuration(60, 8), // 4+4=8, 7 циклів = 56 сек
             pattern = BreathingPattern(
                 inhaleSeconds = 4,
                 exhaleSeconds = 4
@@ -52,7 +58,7 @@ private fun getBreathingExercises(): List<BreathingExercise> {
         BreathingExercise(
             id = 2,
             title = "Квадратне дихання",
-            durationSeconds = 60,
+            durationSeconds = calculateActualDuration(60, 16), // 4+4+4+4=16, 3 цикли = 48 сек
             pattern = BreathingPattern(
                 inhaleSeconds = 4,
                 inhaleHoldSeconds = 4,
@@ -64,7 +70,7 @@ private fun getBreathingExercises(): List<BreathingExercise> {
         BreathingExercise(
             id = 3,
             title = "4-7-8 дихання",
-            durationSeconds = 60,
+            durationSeconds = calculateActualDuration(60, 19), // 4+7+8=19, 3 цикли = 57 сек
             pattern = BreathingPattern(
                 inhaleSeconds = 4,
                 inhaleHoldSeconds = 7,
@@ -75,7 +81,7 @@ private fun getBreathingExercises(): List<BreathingExercise> {
         BreathingExercise(
             id = 4,
             title = "Спокійне дихання",
-            durationSeconds = 45,
+            durationSeconds = calculateActualDuration(48, 8), // 3+5=8, 6 циклів = 48 сек
             pattern = BreathingPattern(
                 inhaleSeconds = 3,
                 exhaleSeconds = 5
@@ -85,7 +91,7 @@ private fun getBreathingExercises(): List<BreathingExercise> {
         BreathingExercise(
             id = 5,
             title = "Енергійне дихання",
-            durationSeconds = 30,
+            durationSeconds = calculateActualDuration(30, 4), // 2+2=4, 7 циклів = 28 сек
             pattern = BreathingPattern(
                 inhaleSeconds = 2,
                 exhaleSeconds = 2
@@ -95,7 +101,7 @@ private fun getBreathingExercises(): List<BreathingExercise> {
         BreathingExercise(
             id = 6,
             title = "Глибоке дихання",
-            durationSeconds = 60,
+            durationSeconds = calculateActualDuration(60, 12), // 6+6=12, 5 циклів = 60 сек
             pattern = BreathingPattern(
                 inhaleSeconds = 6,
                 exhaleSeconds = 6
@@ -105,7 +111,7 @@ private fun getBreathingExercises(): List<BreathingExercise> {
         BreathingExercise(
             id = 7,
             title = "Розслаблююче дихання",
-            durationSeconds = 60,
+            durationSeconds = calculateActualDuration(60, 12), // 4+8=12, 5 циклів = 60 сек
             pattern = BreathingPattern(
                 inhaleSeconds = 4,
                 exhaleSeconds = 8
@@ -115,7 +121,7 @@ private fun getBreathingExercises(): List<BreathingExercise> {
         BreathingExercise(
             id = 8,
             title = "Ритмічне дихання",
-            durationSeconds = 45,
+            durationSeconds = calculateActualDuration(48, 12), // 3+3+3+3=12, 4 цикли = 48 сек
             pattern = BreathingPattern(
                 inhaleSeconds = 3,
                 inhaleHoldSeconds = 3,

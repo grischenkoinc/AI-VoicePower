@@ -119,22 +119,22 @@ class BreathingViewModel @Inject constructor(
 
         breathingJob = viewModelScope.launch {
             var elapsed = _state.value.elapsedSeconds
-            var cycleStart = elapsed % pattern.cycleDurationSeconds
+            val startTime = System.currentTimeMillis() - (elapsed * 1000L)
 
             while (_state.value.isRunning && elapsed < _state.value.totalSeconds) {
-                delay(100) // Оновлюємо кожні 100ms для плавної анімації
+                delay(50) // Оновлюємо кожні 50ms для плавної анімації
 
-                elapsed = minOf(elapsed + 1, _state.value.totalSeconds)
-                cycleStart += 1
+                // Розрахунок реального часу
+                val currentTime = System.currentTimeMillis()
+                elapsed = ((currentTime - startTime) / 1000).toInt()
+                elapsed = minOf(elapsed, _state.value.totalSeconds)
 
-                val (phase, progress) = calculatePhaseAndProgress(cycleStart, pattern)
+                // Розрахунок позиції в поточному циклі
+                val cyclePosition = elapsed % pattern.cycleDurationSeconds
+
+                val (phase, progress) = calculatePhaseAndProgress(cyclePosition, pattern)
 
                 onEvent(BreathingEvent.Tick(elapsed, phase, progress))
-
-                // Reset cycle
-                if (cycleStart >= pattern.cycleDurationSeconds) {
-                    cycleStart = 0
-                }
             }
         }
     }

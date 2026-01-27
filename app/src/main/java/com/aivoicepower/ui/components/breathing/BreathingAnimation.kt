@@ -3,7 +3,6 @@ package com.aivoicepower.ui.components.breathing
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -11,6 +10,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import com.aivoicepower.ui.screens.warmup.BreathingPhase
+import kotlin.math.sin
 
 @Composable
 fun BreathingAnimation(
@@ -18,34 +18,64 @@ fun BreathingAnimation(
     progress: Float,
     modifier: Modifier = Modifier
 ) {
-    val primaryColor = MaterialTheme.colorScheme.primary
-    val secondaryColor = MaterialTheme.colorScheme.secondary
+    // Кольори для різних фаз
+    val inhaleColor = Color(0xFF6366F1)     // Фіолетовий для вдиху
+    val exhaleColor = Color(0xFF8B5CF6)     // Темно-фіолетовий для видиху
+    val holdColor = Color(0xFFA78BFA)       // Світло-фіолетовий для затримки
 
-    // Calculate scale based on phase
+    // Розрахунок масштабу на основі фази та прогресу
     val targetScale = when (phase) {
-        BreathingPhase.INHALE -> 0.5f + (progress * 0.5f) // 0.5 → 1.0
-        BreathingPhase.INHALE_HOLD -> 1.0f
-        BreathingPhase.EXHALE -> 1.0f - (progress * 0.5f) // 1.0 → 0.5
-        BreathingPhase.EXHALE_HOLD -> 0.5f
+        BreathingPhase.INHALE -> {
+            // При вдиху коло розширюється від 0.5 до 1.0
+            0.5f + (progress * 0.5f)
+        }
+        BreathingPhase.INHALE_HOLD -> {
+            // При затримці після вдиху - коло залишається великим (1.0)
+            1.0f
+        }
+        BreathingPhase.EXHALE -> {
+            // При видиху коло звужується від 1.0 до 0.5
+            1.0f - (progress * 0.5f)
+        }
+        BreathingPhase.EXHALE_HOLD -> {
+            // При затримці після видиху - коло залишається маленьким (0.5)
+            0.5f
+        }
     }
 
-    val animatedScale by animateFloatAsState(
-        targetValue = targetScale,
-        animationSpec = tween(durationMillis = 300, easing = LinearEasing),
-        label = "breathing_scale"
-    )
+    // Вібрація для затримок
+    val vibrationOffset = if (phase == BreathingPhase.INHALE_HOLD || phase == BreathingPhase.EXHALE_HOLD) {
+        // Додаємо невелику вібрацію (±2%)
+        val vibration = sin(progress * 40f) * 0.02f
+        vibration
+    } else {
+        0f
+    }
+
+    val finalScale = targetScale + vibrationOffset
+
+    // Колір залежно від фази
+    val primaryColor = when (phase) {
+        BreathingPhase.INHALE -> inhaleColor
+        BreathingPhase.INHALE_HOLD -> holdColor
+        BreathingPhase.EXHALE -> exhaleColor
+        BreathingPhase.EXHALE_HOLD -> holdColor
+    }
+
+    val secondaryColor = primaryColor.copy(alpha = 0.3f)
 
     Canvas(modifier = modifier.fillMaxSize()) {
         val center = Offset(size.width / 2f, size.height / 2f)
-        val maxRadius = size.minDimension / 2f
-        val currentRadius = maxRadius * animatedScale
+        val maxRadius = size.minDimension / 2f * 0.9f // 90% розміру для відступу
+        val currentRadius = maxRadius * finalScale
 
-        // Gradient circle
+        // Внутрішнє градієнтне коло
         drawCircle(
             brush = Brush.radialGradient(
                 colors = listOf(
-                    primaryColor.copy(alpha = 0.3f),
-                    secondaryColor.copy(alpha = 0.1f)
+                    primaryColor.copy(alpha = 0.4f),
+                    secondaryColor.copy(alpha = 0.1f),
+                    Color.Transparent
                 ),
                 center = center,
                 radius = currentRadius
@@ -54,12 +84,20 @@ fun BreathingAnimation(
             center = center
         )
 
-        // Outer ring
+        // Зовнішнє кільце (основне)
         drawCircle(
-            color = primaryColor.copy(alpha = 0.5f),
+            color = primaryColor.copy(alpha = 0.7f),
             radius = currentRadius,
             center = center,
-            style = Stroke(width = 4f)
+            style = Stroke(width = 6f)
+        )
+
+        // Додаткове внутрішнє кільце для більш виразного ефекту
+        drawCircle(
+            color = primaryColor.copy(alpha = 0.3f),
+            radius = currentRadius * 0.85f,
+            center = center,
+            style = Stroke(width = 2f)
         )
     }
 }
