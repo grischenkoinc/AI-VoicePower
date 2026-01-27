@@ -4,6 +4,7 @@ data class BreathingState(
     val exercises: List<BreathingExercise> = getBreathingExercises(),
     val completedToday: Set<Int> = emptySet(),
     val selectedExercise: BreathingExercise? = null,
+    val isInstructionDialogOpen: Boolean = false,
     val isExerciseDialogOpen: Boolean = false,
     val totalSeconds: Int = 0,
     val elapsedSeconds: Int = 0,

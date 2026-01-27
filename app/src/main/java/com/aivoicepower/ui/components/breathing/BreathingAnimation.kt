@@ -18,10 +18,9 @@ fun BreathingAnimation(
     progress: Float,
     modifier: Modifier = Modifier
 ) {
-    // Кольори для різних фаз
-    val inhaleColor = Color(0xFF6366F1)     // Фіолетовий для вдиху
-    val exhaleColor = Color(0xFF8B5CF6)     // Темно-фіолетовий для видиху
-    val holdColor = Color(0xFFA78BFA)       // Світло-фіолетовий для затримки
+    // Кольори для градієнту (як у кнопки мікрофона)
+    val gradientStart = Color(0xFF667EEA)  // Індиго
+    val gradientEnd = Color(0xFF764BA2)    // Фіолетовий
 
     // Розрахунок масштабу на основі фази та прогресу
     val targetScale = when (phase) {
@@ -52,30 +51,27 @@ fun BreathingAnimation(
         0f
     }
 
-    val finalScale = targetScale + vibrationOffset
-
-    // Колір залежно від фази
-    val primaryColor = when (phase) {
-        BreathingPhase.INHALE -> inhaleColor
-        BreathingPhase.INHALE_HOLD -> holdColor
-        BreathingPhase.EXHALE -> exhaleColor
-        BreathingPhase.EXHALE_HOLD -> holdColor
-    }
-
-    val secondaryColor = primaryColor.copy(alpha = 0.3f)
+    // Плавна анімація з еластичним згладжуванням
+    val animatedScale by animateFloatAsState(
+        targetValue = targetScale + vibrationOffset,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioLowBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "breathing_scale"
+    )
 
     Canvas(modifier = modifier.fillMaxSize()) {
         val center = Offset(size.width / 2f, size.height / 2f)
         val maxRadius = size.minDimension / 2f * 0.9f // 90% розміру для відступу
-        val currentRadius = maxRadius * finalScale
+        val currentRadius = maxRadius * animatedScale
 
-        // Внутрішнє градієнтне коло
+        // Заповнене градієнтне коло (як у мікрофона)
         drawCircle(
             brush = Brush.radialGradient(
                 colors = listOf(
-                    primaryColor.copy(alpha = 0.4f),
-                    secondaryColor.copy(alpha = 0.1f),
-                    Color.Transparent
+                    gradientStart.copy(alpha = 0.9f),
+                    gradientEnd.copy(alpha = 0.9f)
                 ),
                 center = center,
                 radius = currentRadius
@@ -84,20 +80,26 @@ fun BreathingAnimation(
             center = center
         )
 
-        // Зовнішнє кільце (основне)
+        // Зовнішнє кільце для чіткості
         drawCircle(
-            color = primaryColor.copy(alpha = 0.7f),
+            color = Color.White.copy(alpha = 0.3f),
             radius = currentRadius,
             center = center,
-            style = Stroke(width = 6f)
+            style = Stroke(width = 3f)
         )
 
-        // Додаткове внутрішнє кільце для більш виразного ефекту
+        // Внутрішнє світіння
         drawCircle(
-            color = primaryColor.copy(alpha = 0.3f),
-            radius = currentRadius * 0.85f,
-            center = center,
-            style = Stroke(width = 2f)
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    Color.White.copy(alpha = 0.4f),
+                    Color.Transparent
+                ),
+                center = center,
+                radius = currentRadius * 0.6f
+            ),
+            radius = currentRadius * 0.6f,
+            center = center
         )
     }
 }

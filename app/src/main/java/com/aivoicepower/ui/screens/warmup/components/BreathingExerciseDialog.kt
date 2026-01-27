@@ -72,38 +72,16 @@ fun BreathingExerciseDialog(
                     .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 40.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Header with close button
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Text(
-                            text = exercise.title,
-                            style = AppTypography.displayLarge,
-                            color = TextColors.onDarkPrimary,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            letterSpacing = (-0.6).sp
-                        )
-                    }
-
-                    // Close button
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(
-                                Brush.linearGradient(
-                                    colors = listOf(Color(0xFFEF4444), Color(0xFFDC2626))
-                                ),
-                                CircleShape
-                            )
-                            .clickable { onDismiss() },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "×", fontSize = 24.sp, color = Color.White, fontWeight = FontWeight.Bold)
-                    }
+                // Header
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        text = exercise.title,
+                        style = AppTypography.displayLarge,
+                        color = TextColors.onDarkPrimary,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = (-0.6).sp
+                    )
                 }
 
                 // Breathing Animation (CENTER)

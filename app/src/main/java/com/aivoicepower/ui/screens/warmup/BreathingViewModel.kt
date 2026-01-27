@@ -38,12 +38,30 @@ class BreathingViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         selectedExercise = event.exercise,
-                        isExerciseDialogOpen = true,
+                        isInstructionDialogOpen = true,
                         totalSeconds = event.exercise.durationSeconds,
                         elapsedSeconds = 0,
                         currentPhase = BreathingPhase.INHALE,
                         phaseProgress = 0f,
                         isRunning = false
+                    )
+                }
+            }
+
+            BreathingEvent.InstructionDialogDismissed -> {
+                _state.update {
+                    it.copy(
+                        selectedExercise = null,
+                        isInstructionDialogOpen = false
+                    )
+                }
+            }
+
+            BreathingEvent.StartExerciseFromInstruction -> {
+                _state.update {
+                    it.copy(
+                        isInstructionDialogOpen = false,
+                        isExerciseDialogOpen = true
                     )
                 }
             }
@@ -103,9 +121,13 @@ class BreathingViewModel @Inject constructor(
             val today = getCurrentDateString()
             val completion = warmupCompletionDao.getCompletion(today, "breathing")
 
-            if (completion != null) {
+            // Only load completions if they're from today (24-hour reset logic)
+            if (completion != null && completion.date == today) {
                 val completed = (1..completion.exercisesCompleted).toSet()
                 _state.update { it.copy(completedToday = completed) }
+            } else {
+                // Reset completions if date doesn't match or no completion exists
+                _state.update { it.copy(completedToday = emptySet()) }
             }
         }
     }

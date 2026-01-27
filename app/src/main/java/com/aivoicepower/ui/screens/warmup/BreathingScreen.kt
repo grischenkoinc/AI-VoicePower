@@ -164,6 +164,19 @@ fun BreathingScreen(
             }
         }
 
+        // Instruction dialog (fullscreen)
+        if (state.isInstructionDialogOpen && state.selectedExercise != null) {
+            BreathingInstructionDialog(
+                exercise = state.selectedExercise!!,
+                onDismiss = {
+                    viewModel.onEvent(BreathingEvent.InstructionDialogDismissed)
+                },
+                onStartExercise = {
+                    viewModel.onEvent(BreathingEvent.StartExerciseFromInstruction)
+                }
+            )
+        }
+
         // Exercise dialog (fullscreen)
         if (state.isExerciseDialogOpen && state.selectedExercise != null) {
             BreathingExerciseDialog(
