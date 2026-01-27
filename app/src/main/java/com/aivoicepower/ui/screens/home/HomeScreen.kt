@@ -60,19 +60,30 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
                 // Header
-                HomeHeader(onSettings = onNavigateToSettings)
+                HomeHeader(
+                    userName = state.userName,
+                    greeting = state.greeting,
+                    onSettings = onNavigateToSettings
+                )
 
                 // Streak Card
-                StreakCard()
+                StreakCard(
+                    currentStreak = state.currentStreak,
+                    weekProgress = state.weekProgress
+                )
 
                 // Motivation Card
-                MotivationCard()
+                state.dailyTip?.let { tip ->
+                    MotivationCard(tip = tip)
+                }
 
                 // Daily Goal
-                DailyGoalCard()
+                state.todayPlan?.let { plan ->
+                    DailyGoalCard(plan = plan)
+                }
 
                 // Skills Section
-                SkillsSection()
+                SkillsSection(skills = state.skills)
 
                 // Continue Course
                 state.currentCourse?.let { course ->
@@ -108,21 +119,11 @@ fun HomeScreen(
 
 @Composable
 private fun HomeHeader(
+    userName: String?,
+    greeting: String,
     onSettings: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Визначаємо час доби
-    val calendar = remember { Calendar.getInstance() }
-    val hour = calendar.get(Calendar.HOUR_OF_DAY)
-
-    val greeting = when (hour) {
-        in 0..5 -> "Доброї ночі!"
-        in 6..11 -> "Доброго ранку!"
-        in 12..17 -> "Доброго дня!"
-        in 18..22 -> "Доброго вечора!"
-        else -> "Доброї ночі!"
-    }
-
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -137,7 +138,7 @@ private fun HomeHeader(
                 fontWeight = FontWeight.SemiBold
             )
             Text(
-                text = "Євгеній",
+                text = userName ?: "Користувач",
                 style = AppTypography.displayLarge,
                 color = TextColors.onDarkPrimary,
                 fontSize = 28.sp,
@@ -166,6 +167,8 @@ private fun HomeHeader(
 
 @Composable
 private fun StreakCard(
+    currentStreak: Int,
+    weekProgress: com.aivoicepower.domain.model.home.WeekProgress?,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -224,7 +227,7 @@ private fun StreakCard(
                     letterSpacing = 0.5.sp
                 )
                 Text(
-                    text = "7 днів",
+                    text = if (currentStreak == 0) "Перший день" else "$currentStreak ${getDaysWord(currentStreak)}",
                     style = AppTypography.displayLarge,
                     color = TextColors.onDarkPrimary,
                     fontSize = 32.sp,
@@ -235,18 +238,31 @@ private fun StreakCard(
         }
 
         // Week circles
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)
-        ) {
-            DayCircle("Пн", filled = true)
-            DayCircle("Вт", filled = true)
-            DayCircle("Ср", filled = true)
-            DayCircle("Чт", filled = true)
-            DayCircle("Пт", filled = true)
-            DayCircle("Сб", filled = true)
-            DayCircle("Нд", filled = true, isToday = true)
+        if (weekProgress != null && weekProgress.days.isNotEmpty()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)
+            ) {
+                val calendar = Calendar.getInstance()
+                val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(calendar.time)
+
+                weekProgress.days.forEach { day ->
+                    DayCircle(
+                        label = day.dayName,
+                        filled = day.isCompleted,
+                        isToday = day.date == today
+                    )
+                }
+            }
         }
+    }
+}
+
+private fun getDaysWord(count: Int): String {
+    return when {
+        count % 10 == 1 && count % 100 != 11 -> "день"
+        count % 10 in 2..4 && (count % 100 < 10 || count % 100 >= 20) -> "дні"
+        else -> "днів"
     }
 }
 
@@ -311,6 +327,7 @@ private fun DayCircle(
 
 @Composable
 private fun MotivationCard(
+    tip: com.aivoicepower.domain.model.home.DailyTip,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -362,7 +379,7 @@ private fun MotivationCard(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
-                    text = "Порада дня",
+                    text = tip.title,
                     style = AppTypography.labelMedium,
                     color = Color(0xFFD97706), // Темно-помаранчевий
                     fontSize = 12.sp,
@@ -370,7 +387,7 @@ private fun MotivationCard(
                     letterSpacing = 0.5.sp
                 )
                 Text(
-                    text = "Перші 20 секунд виступу визначають 80% враження аудиторії",
+                    text = tip.content,
                     style = AppTypography.bodyMedium,
                     color = Color(0xFF92400E), // Темно-коричневий
                     fontSize = 14.sp,
@@ -384,8 +401,13 @@ private fun MotivationCard(
 
 @Composable
 private fun DailyGoalCard(
+    plan: com.aivoicepower.domain.model.home.TodayPlan,
     modifier: Modifier = Modifier
 ) {
+    val completedTasks = plan.activities.count { it.isCompleted }
+    val totalTasks = plan.activities.size
+    val remainingMinutes = plan.activities.filter { !it.isCompleted }.sumOf { it.estimatedMinutes }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -427,10 +449,10 @@ private fun DailyGoalCard(
             horizontalArrangement = Arrangement.spacedBy(20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Progress Ring з 3 сегментами
+            // Progress Ring з реальними даними
             ProgressRingSegmented(
-                completedTasks = 1,
-                totalTasks = 3
+                completedTasks = completedTasks,
+                totalTasks = totalTasks
             )
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -446,7 +468,7 @@ private fun DailyGoalCard(
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = "1 з 3",
+                        text = "$completedTasks з $totalTasks",
                         style = AppTypography.bodyMedium,
                         color = TextColors.onLightPrimary,
                         fontSize = 15.sp,
@@ -465,7 +487,7 @@ private fun DailyGoalCard(
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = "~15 хв",
+                        text = "~$remainingMinutes хв",
                         style = AppTypography.bodyMedium,
                         color = TextColors.onLightPrimary,
                         fontSize = 15.sp,
@@ -477,21 +499,17 @@ private fun DailyGoalCard(
 
         // Tasks list
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            TaskRow(
-                title = "Ранкова розминка",
-                meta = "5 хв • Завершено",
-                completed = true
-            )
-            TaskRow(
-                title = "Урок 3: Темп мовлення",
-                meta = "12 хв • Чітке мовлення",
-                completed = false
-            )
-            TaskRow(
-                title = "Імпровізація дня",
-                meta = "3 хв • Challenge",
-                completed = false
-            )
+            plan.activities.forEach { activity ->
+                TaskRow(
+                    title = activity.title,
+                    meta = buildString {
+                        append("${activity.estimatedMinutes} хв")
+                        activity.subtitle?.let { append(" • $it") }
+                        if (activity.isCompleted) append(" • Завершено")
+                    },
+                    completed = activity.isCompleted
+                )
+            }
         }
     }
 }
@@ -625,6 +643,7 @@ private fun TaskRow(
 
 @Composable
 private fun SkillsSection(
+    skills: List<com.aivoicepower.domain.model.home.Skill>,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -659,40 +678,23 @@ private fun SkillsSection(
                 .horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            SkillCard(
-                emoji = "📢",
-                name = "Дикція",
-                percentage = 89,
-                growth = "+5%",
-                gradientColors = listOf(Color(0xFF6366F1), Color(0xFF8B5CF6))
-            )
-            SkillCard(
-                emoji = "⚡",
-                name = "Темп",
-                percentage = 92,
-                growth = "+3%",
-                gradientColors = listOf(Color(0xFFEC4899), Color(0xFFF43F5E))
-            )
-            SkillCard(
-                emoji = "🎭",
-                name = "Емоції",
-                percentage = 85,
-                growth = "+7%",
-                gradientColors = listOf(Color(0xFFF59E0B), Color(0xFFF97316))
-            )
+            skills.forEach { skill ->
+                SkillCard(skill = skill)
+            }
         }
     }
 }
 
 @Composable
 private fun SkillCard(
-    emoji: String,
-    name: String,
-    percentage: Int,
-    growth: String,
-    gradientColors: List<Color>,
+    skill: com.aivoicepower.domain.model.home.Skill,
     modifier: Modifier = Modifier
 ) {
+    // Конвертуємо hex кольори в Color об'єкти
+    val gradientColors = skill.gradientColors.map { hexColor ->
+        Color(android.graphics.Color.parseColor(hexColor))
+    }
+
     Column(
         modifier = modifier
             .width(160.dp)
@@ -718,11 +720,11 @@ private fun SkillCard(
                 ),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = emoji, fontSize = 28.sp)
+            Text(text = skill.emoji, fontSize = 28.sp)
         }
 
         Text(
-            text = name,
+            text = skill.name,
             style = AppTypography.bodyMedium,
             color = TextColors.onDarkPrimary,
             fontSize = 15.sp,
@@ -740,7 +742,7 @@ private fun SkillCard(
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(percentage / 100f)
+                    .fillMaxWidth(skill.percentage / 100f)
                     .fillMaxHeight()
                     .background(
                         Brush.linearGradient(
@@ -757,7 +759,7 @@ private fun SkillCard(
         }
 
         Text(
-            text = "$percentage% • ↗ $growth",
+            text = "${skill.percentage}% • ↗ ${skill.growth}",
             style = AppTypography.bodySmall,
             color = TextColors.onDarkSecondary,
             fontSize = 13.sp,

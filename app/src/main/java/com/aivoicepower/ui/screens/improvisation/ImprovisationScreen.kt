@@ -1,15 +1,27 @@
 package com.aivoicepower.ui.screens.improvisation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aivoicepower.ui.screens.improvisation.components.ImprovisationModeCard
+import com.aivoicepower.ui.theme.*
+import com.aivoicepower.ui.theme.components.GradientBackground
 
 @Composable
 fun ImprovisationScreen(
@@ -19,53 +31,68 @@ fun ImprovisationScreen(
     onNavigateToDebate: () -> Unit,
     onNavigateToSales: () -> Unit,
     onNavigateToChallenge: () -> Unit,
-    onNavigateToPremium: () -> Unit
+    onNavigateToPremium: () -> Unit,
+    onNavigateBack: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    Box(modifier = Modifier.fillMaxSize()) {
+        GradientBackground(content = {})
+
+        ImprovisationContent(
+            state = state,
+            viewModel = viewModel,
+            onNavigateToRandomTopic = onNavigateToRandomTopic,
+            onNavigateToStorytelling = onNavigateToStorytelling,
+            onNavigateToDebate = onNavigateToDebate,
+            onNavigateToSales = onNavigateToSales,
+            onNavigateToChallenge = onNavigateToChallenge,
+            onNavigateToPremium = onNavigateToPremium,
+            onNavigateBack = onNavigateBack
+        )
+    }
+}
+
+@Composable
+private fun ImprovisationContent(
+    state: ImprovisationState,
+    viewModel: ImprovisationViewModel,
+    onNavigateToRandomTopic: () -> Unit,
+    onNavigateToStorytelling: () -> Unit,
+    onNavigateToDebate: () -> Unit,
+    onNavigateToSales: () -> Unit,
+    onNavigateToChallenge: () -> Unit,
+    onNavigateToPremium: () -> Unit,
+    onNavigateBack: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val scrollState = rememberScrollState()
+
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+            .verticalScroll(scrollState)
+            .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 130.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Header
-        Text(
-            text = "🎭 Імпровізація",
-            style = MaterialTheme.typography.headlineMedium
-        )
+        ImprovisationHeader(onNavigateBack = onNavigateBack)
 
+        // Subtitle
         Text(
             text = "Тренуй спонтанне мовлення",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = AppTypography.bodyLarge,
+            color = TextColors.onDarkSecondary,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Medium
         )
 
         // Stats card (for free users)
         if (!state.isPremium) {
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                )
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "📊 Сьогодні:",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = "${state.completedToday}/${state.dailyLimit}",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
+            StatsCard(
+                completedToday = state.completedToday,
+                dailyLimit = state.dailyLimit
+            )
         }
 
         // Mode cards
@@ -151,30 +178,167 @@ fun ImprovisationScreen(
 
         // Premium prompt (if needed)
         if (!state.isPremium && state.completedToday >= state.dailyLimit) {
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
+            PremiumPromptCard(onNavigateToPremium = onNavigateToPremium)
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+    }
+}
+
+@Composable
+private fun ImprovisationHeader(
+    onNavigateBack: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                text = "Спонтанне мовлення",
+                style = AppTypography.labelMedium,
+                color = TextColors.onDarkSecondary,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = "Імпровізація",
+                style = AppTypography.displayLarge,
+                color = TextColors.onDarkPrimary,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = (-0.8).sp
+            )
+        }
+
+        // Back button з gradient
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(Color(0xFFF59E0B), Color(0xFFF97316))
+                    ),
+                    CircleShape
                 )
+                .clickable { onNavigateBack() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = "←", fontSize = 20.sp, color = Color.White)
+        }
+    }
+}
+
+@Composable
+private fun StatsCard(
+    completedToday: Int,
+    dailyLimit: Int,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 16.dp,
+                shape = RoundedCornerShape(20.dp),
+                spotColor = Color(0xFF667EEA).copy(alpha = 0.3f),
+                ambientColor = Color.Black.copy(alpha = 0.1f)
+            )
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(
+                        Color(0x73667EEA), // 45% opacity
+                        Color(0x59764BA2)  // 35% opacity
+                    )
+                ),
+                RoundedCornerShape(20.dp)
+            )
+            .padding(20.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "📊 Сьогодні:",
+                style = AppTypography.titleMedium,
+                color = TextColors.onDarkPrimary,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "$completedToday/$dailyLimit",
+                style = AppTypography.displayMedium,
+                color = Color(0xFFFBBF24),
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Black
+            )
+        }
+    }
+}
+
+@Composable
+private fun PremiumPromptCard(
+    onNavigateToPremium: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 16.dp,
+                shape = RoundedCornerShape(20.dp),
+                spotColor = Color(0xFFFBBF24).copy(alpha = 0.3f)
+            )
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(
+                        Color(0xFFFFFBEB),
+                        Color(0xFFFEF3C7)
+                    )
+                ),
+                RoundedCornerShape(20.dp)
+            )
+            .clickable { onNavigateToPremium() }
+            .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(Color(0xFFFBBF24), Color(0xFFF59E0B))
+                        ),
+                        RoundedCornerShape(16.dp)
+                    ),
+                contentAlignment = Alignment.Center
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "⭐ Ліміт вичерпано",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = "Отримай Premium для необмеженої практики",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Button(
-                        onClick = onNavigateToPremium,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Дізнатись більше")
-                    }
-                }
+                Text(text = "⭐", fontSize = 32.sp)
+            }
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Ліміт вичерпано",
+                    style = AppTypography.titleMedium,
+                    color = Color(0xFFD97706),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Отримай Premium для необмеженої практики",
+                    style = AppTypography.bodyMedium,
+                    color = Color(0xFF92400E),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                )
             }
         }
     }

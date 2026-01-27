@@ -23,7 +23,10 @@ data class UserPreferences(
     val userName: String? = null,
     val userGoal: String? = null,
     val dailyGoalMinutes: Int = 15,
-    val freeImprovisationsToday: Int = 0
+    val freeImprovisationsToday: Int = 0,
+    val lastTipUpdateTime: Long = 0, // Час останнього оновлення пораді
+    val currentTipId: String? = null, // ID поточної пораді
+    val lastDailyPlanDate: String? = null // Дата останнього оновлення денного плану (yyyy-MM-dd)
 )
 
 @Singleton
@@ -41,6 +44,9 @@ class UserPreferencesDataStore @Inject constructor(
         val DAILY_GOAL_MINUTES = intPreferencesKey("daily_goal_minutes")
         val LAST_ACTIVITY_DATE = stringPreferencesKey("last_activity_date")
         val FREE_IMPROVISATIONS_TODAY = intPreferencesKey("free_improvisations_today")
+        val LAST_TIP_UPDATE_TIME = longPreferencesKey("last_tip_update_time")
+        val CURRENT_TIP_ID = stringPreferencesKey("current_tip_id")
+        val LAST_DAILY_PLAN_DATE = stringPreferencesKey("last_daily_plan_date")
     }
 
     val userPreferencesFlow: Flow<UserPreferences> = context.dataStore.data
@@ -61,7 +67,10 @@ class UserPreferencesDataStore @Inject constructor(
                 userName = preferences[PreferencesKeys.USER_NAME],
                 userGoal = preferences[PreferencesKeys.USER_GOAL],
                 dailyGoalMinutes = preferences[PreferencesKeys.DAILY_GOAL_MINUTES] ?: 15,
-                freeImprovisationsToday = preferences[PreferencesKeys.FREE_IMPROVISATIONS_TODAY] ?: 0
+                freeImprovisationsToday = preferences[PreferencesKeys.FREE_IMPROVISATIONS_TODAY] ?: 0,
+                lastTipUpdateTime = preferences[PreferencesKeys.LAST_TIP_UPDATE_TIME] ?: 0,
+                currentTipId = preferences[PreferencesKeys.CURRENT_TIP_ID],
+                lastDailyPlanDate = preferences[PreferencesKeys.LAST_DAILY_PLAN_DATE]
             )
         }
 
@@ -166,6 +175,19 @@ class UserPreferencesDataStore @Inject constructor(
         context.dataStore.edit { preferences ->
             val current = preferences[PreferencesKeys.FREE_IMPROVISATIONS_TODAY] ?: 0
             preferences[PreferencesKeys.FREE_IMPROVISATIONS_TODAY] = current + 1
+        }
+    }
+
+    suspend fun updateDailyTip(tipId: String, updateTime: Long) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.CURRENT_TIP_ID] = tipId
+            preferences[PreferencesKeys.LAST_TIP_UPDATE_TIME] = updateTime
+        }
+    }
+
+    suspend fun updateDailyPlanDate(date: String) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.LAST_DAILY_PLAN_DATE] = date
         }
     }
 

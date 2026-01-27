@@ -21,7 +21,8 @@ class HomeViewModel @Inject constructor(
     private val diagnosticResultDao: DiagnosticResultDao,
     private val warmupCompletionDao: WarmupCompletionDao,
     private val courseProgressDao: CourseProgressDao,
-    private val courseRepository: CourseRepository
+    private val courseRepository: CourseRepository,
+    private val dailyTipsRepository: com.aivoicepower.data.repository.DailyTipsRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeState())
@@ -30,6 +31,7 @@ class HomeViewModel @Inject constructor(
     init {
         loadHomeData()
         observeCourseProgress()
+        observeDailyPlan()
     }
 
     fun onEvent(event: HomeEvent) {
@@ -71,6 +73,12 @@ class HomeViewModel @Inject constructor(
                 // Get quick actions
                 val quickActions = getQuickActions()
 
+                // Load skills
+                val skills = loadSkills(progress)
+
+                // Load daily tip
+                val dailyTip = getDailyTip()
+
                 // Don't load currentCourse here - it will be loaded by observeCourseProgress()
 
                 _state.update {
@@ -81,6 +89,8 @@ class HomeViewModel @Inject constructor(
                         todayPlan = todayPlan,
                         weekProgress = weekProgress,
                         quickActions = quickActions,
+                        skills = skills,
+                        dailyTip = dailyTip,
                         isLoading = false,
                         error = null
                     )
@@ -133,28 +143,89 @@ class HomeViewModel @Inject constructor(
 
         // 2. Recommend course lesson based on goal
         val recommendedCourse = when (preferences.userGoal) {
-            "CLEAR_SPEECH" -> "course_1" // Чітке мовлення
-            "PUBLIC_SPEAKING" -> "course_3" // Впевнений спікер
-            "BETTER_VOICE" -> "course_2" // Магія інтонації
+            "CLEAR_SPEECH" -> "course_1" // Чітке мовлення (завжди доступний)
+            "PUBLIC_SPEAKING" -> if (preferences.isPremium) "course_3" else "course_1"
+            "BETTER_VOICE" -> if (preferences.isPremium) "course_2" else "course_1"
             else -> "course_1"
         }
 
         // Find next incomplete lesson
         val courseProgress = courseProgressDao.getCourseProgress(recommendedCourse).first()
-        val nextLesson = (1..21).firstOrNull { lessonNumber ->
-            val lessonId = "lesson_$lessonNumber"
-            courseProgress.none { it.lessonId == lessonId && it.isCompleted }
-        } ?: 1
+        var nextLessonNumber = 1
+        var nextLessonId = getLessonIdFormat(recommendedCourse, nextLessonNumber)
+        var isLessonCompleted = false
+
+        // Спочатку шукаємо останній урок завершений сьогодні
+        var lastLessonCompletedToday: Pair<Int, String>? = null
+
+        for (lessonNumber in 1..21) {
+            val lessonId = getLessonIdFormat(recommendedCourse, lessonNumber)
+            val lessonProgress = courseProgress.find { it.lessonId == lessonId }
+
+            if (lessonProgress != null && lessonProgress.isCompleted) {
+                // Перевіряємо чи урок був завершений сьогодні
+                val completedToday = lessonProgress.completedAt?.let { completedTime ->
+                    val completedDate = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                        .format(java.util.Date(completedTime))
+                    completedDate == today
+                } ?: false
+
+                if (completedToday) {
+                    lastLessonCompletedToday = Pair(lessonNumber, lessonId)
+                }
+            }
+        }
+
+        // Якщо є урок завершений сьогодні - показуємо його
+        if (lastLessonCompletedToday != null) {
+            nextLessonNumber = lastLessonCompletedToday.first
+            nextLessonId = lastLessonCompletedToday.second
+            isLessonCompleted = true
+            android.util.Log.d("HomeViewModel", "Found lesson completed today: $nextLessonNumber")
+        } else {
+            // Інакше шукаємо перший незавершений урок, доступний для користувача
+            for (lessonNumber in 1..21) {
+                val lessonId = getLessonIdFormat(recommendedCourse, lessonNumber)
+                val lessonProgress = courseProgress.find { it.lessonId == lessonId }
+
+                // Перевіряємо чи урок доступний для Free користувача
+                val lessonIndex = lessonNumber - 1 // 0-based index
+                val canAccess = com.aivoicepower.utils.PremiumChecker.canAccessLesson(
+                    isPremium = preferences.isPremium,
+                    lessonIndex = lessonIndex
+                )
+
+                if (!canAccess) {
+                    android.util.Log.d("HomeViewModel", "Lesson $lessonNumber not accessible for Free user, skipping")
+                    continue
+                }
+
+                if (lessonProgress == null || !lessonProgress.isCompleted) {
+                    nextLessonNumber = lessonNumber
+                    nextLessonId = lessonId
+                    isLessonCompleted = false
+                    android.util.Log.d("HomeViewModel", "Found next incomplete lesson: $nextLessonNumber")
+                    break
+                }
+            }
+        }
+
+        val lessonTitle = try {
+            val lesson = courseRepository.getLessonById(recommendedCourse, nextLessonId).first()
+            lesson?.title ?: "Урок $nextLessonNumber"
+        } catch (e: Exception) {
+            "Урок $nextLessonNumber"
+        }
 
         activities.add(
             PlanActivity(
-                id = "lesson_${recommendedCourse}_$nextLesson",
+                id = "lesson_${recommendedCourse}_$nextLessonNumber",
                 type = ActivityType.LESSON,
-                title = "Урок $nextLesson: ${getCourseName(recommendedCourse)}",
-                subtitle = "Курс \"${getCourseName(recommendedCourse)}\"",
+                title = lessonTitle,
+                subtitle = getCourseName(recommendedCourse),
                 estimatedMinutes = 15,
-                isCompleted = false,
-                navigationRoute = Screen.Lesson.createRoute(recommendedCourse, "lesson_$nextLesson")
+                isCompleted = isLessonCompleted,
+                navigationRoute = Screen.Lesson.createRoute(recommendedCourse, nextLessonId)
             )
         )
 
@@ -275,6 +346,120 @@ class HomeViewModel @Inject constructor(
                 route = Screen.Courses.route  // Поки що веде на курси
             )
         )
+    }
+
+    private suspend fun loadSkills(progress: com.aivoicepower.data.local.database.entity.UserProgressEntity?): List<com.aivoicepower.domain.model.home.Skill> {
+        // Визначаємо звідки брати дані
+        var dictionLevel = progress?.dictionLevel ?: 1
+        var tempoLevel = progress?.tempoLevel ?: 1
+        var intonationLevel = progress?.intonationLevel ?: 1
+
+        // Якщо прогресу немає або всі значення дефолтні - беремо з діагностики
+        if (progress == null || (dictionLevel == 1 && tempoLevel == 1 && intonationLevel == 1)) {
+            android.util.Log.d("HomeViewModel", "No progress data, trying to load from diagnostic")
+
+            // Завантажуємо останню діагностику
+            val diagnosticResult = try {
+                diagnosticResultDao.getLatestDiagnostic().first()
+            } catch (e: Exception) {
+                android.util.Log.e("HomeViewModel", "Error loading diagnostic", e)
+                null
+            }
+
+            if (diagnosticResult != null) {
+                dictionLevel = diagnosticResult.diction
+                tempoLevel = diagnosticResult.tempo
+                intonationLevel = diagnosticResult.intonation
+                android.util.Log.d("HomeViewModel", "Loaded skills from diagnostic: diction=$dictionLevel, tempo=$tempoLevel, intonation=$intonationLevel")
+            } else {
+                android.util.Log.d("HomeViewModel", "No diagnostic found, using default values")
+            }
+        } else {
+            android.util.Log.d("HomeViewModel", "loadSkills from progress: diction=$dictionLevel, tempo=$tempoLevel, intonation=$intonationLevel")
+        }
+
+        return listOf(
+            com.aivoicepower.domain.model.home.Skill(
+                id = "diction",
+                name = "Дикція",
+                emoji = "📢",
+                percentage = dictionLevel,
+                growth = calculateGrowth(dictionLevel, progress?.lastDictionLevel),
+                gradientColors = listOf("#6366F1", "#8B5CF6")
+            ),
+            com.aivoicepower.domain.model.home.Skill(
+                id = "tempo",
+                name = "Темп",
+                emoji = "⚡",
+                percentage = tempoLevel,
+                growth = calculateGrowth(tempoLevel, progress?.lastTempoLevel),
+                gradientColors = listOf("#EC4899", "#F43F5E")
+            ),
+            com.aivoicepower.domain.model.home.Skill(
+                id = "intonation",
+                name = "Емоції",
+                emoji = "🎭",
+                percentage = intonationLevel,
+                growth = calculateGrowth(intonationLevel, progress?.lastIntonationLevel),
+                gradientColors = listOf("#F59E0B", "#F97316")
+            )
+        )
+    }
+
+    private fun calculateGrowth(currentLevel: Int, previousLevel: Int?): String {
+        // Якщо немає попереднього значення - використовуємо евристику
+        if (previousLevel == null || previousLevel == 0) {
+            val estimatedGrowth = when {
+                currentLevel < 20 -> 2
+                currentLevel < 40 -> 3
+                currentLevel < 60 -> 4
+                currentLevel < 80 -> 5
+                else -> 3
+            }
+            return "+$estimatedGrowth%"
+        }
+
+        // Реальний розрахунок росту
+        val growth = currentLevel - previousLevel
+        return if (growth > 0) "+$growth%" else if (growth < 0) "$growth%" else "0%"
+    }
+
+    private suspend fun getDailyTip(): com.aivoicepower.domain.model.home.DailyTip {
+        val preferences = userPreferencesDataStore.userPreferencesFlow.first()
+        val currentTime = System.currentTimeMillis()
+        val lastUpdateTime = preferences.lastTipUpdateTime
+        val sixHoursInMillis = 6 * 60 * 60 * 1000
+
+        android.util.Log.d("HomeViewModel", "getDailyTip: currentTime=$currentTime, lastUpdate=$lastUpdateTime")
+
+        // Перевіряємо чи минуло 6 годин з останнього оновлення
+        val shouldUpdate = currentTime - lastUpdateTime > sixHoursInMillis
+
+        if (shouldUpdate || preferences.currentTipId == null) {
+            android.util.Log.d("HomeViewModel", "Updating tip (shouldUpdate=$shouldUpdate, currentTipId=${preferences.currentTipId})")
+            // Генеруємо новий seed на основі поточного часу (округленого до 6 годин)
+            val seed = currentTime / sixHoursInMillis
+            val newTip = dailyTipsRepository.getRandomTip(seed)
+
+            // Зберігаємо нову пораду
+            userPreferencesDataStore.updateDailyTip(newTip.id, currentTime)
+
+            return newTip.copy(date = getCurrentDateString())
+        } else {
+            android.util.Log.d("HomeViewModel", "Using cached tip: ${preferences.currentTipId}")
+            // Повертаємо збережену пораду
+            val allTips = dailyTipsRepository.loadTips()
+            val cachedTip = allTips.find { it.id == preferences.currentTipId }
+                ?: allTips.firstOrNull()
+                ?: com.aivoicepower.domain.model.home.DailyTip(
+                    id = "default",
+                    title = "Порада дня",
+                    content = "Розповідай історії замість фактів",
+                    date = getCurrentDateString()
+                )
+
+            return cachedTip.copy(date = getCurrentDateString())
+        }
     }
 
     private suspend fun getCurrentCourse(preferences: com.aivoicepower.data.local.datastore.UserPreferences): CurrentCourse? {
@@ -480,6 +665,52 @@ class HomeViewModel @Inject constructor(
                     }
                 }
             }
+        }
+    }
+
+    private fun observeDailyPlan() {
+        viewModelScope.launch {
+            // Підписуємося на зміни в warmup completions
+            warmupCompletionDao.getRecentCompletions(1000).collect {
+                android.util.Log.d("HomeViewModel", "Warmup completions changed, refreshing daily plan")
+                refreshDailyPlan()
+            }
+        }
+
+        viewModelScope.launch {
+            // Підписуємося на зміни в course progress
+            val allCourses = listOf("course_1", "course_2", "course_3", "course_4", "course_5", "course_6", "course_7")
+            allCourses.forEach { courseId ->
+                launch {
+                    courseProgressDao.getCourseProgress(courseId).collect {
+                        android.util.Log.d("HomeViewModel", "Course $courseId progress changed, refreshing daily plan")
+                        refreshDailyPlan()
+                    }
+                }
+            }
+        }
+
+        // Також перевіряємо чи новий день при кожній зміні preferences
+        viewModelScope.launch {
+            userPreferencesDataStore.userPreferencesFlow.collect { preferences ->
+                val today = getCurrentDateString()
+                if (preferences.lastDailyPlanDate != today) {
+                    android.util.Log.d("HomeViewModel", "New day detected, updating daily plan")
+                    userPreferencesDataStore.updateDailyPlanDate(today)
+                    refreshDailyPlan()
+                }
+            }
+        }
+    }
+
+    private suspend fun refreshDailyPlan() {
+        try {
+            val preferences = userPreferencesDataStore.userPreferencesFlow.first()
+            val progress = userProgressDao.getUserProgressOnce()
+            val todayPlan = generateTodayPlan(preferences, progress)
+            _state.update { it.copy(todayPlan = todayPlan) }
+        } catch (e: Exception) {
+            android.util.Log.e("HomeViewModel", "Error refreshing daily plan", e)
         }
     }
 }

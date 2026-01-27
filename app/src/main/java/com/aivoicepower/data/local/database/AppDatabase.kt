@@ -27,7 +27,7 @@ import com.aivoicepower.data.local.database.entity.WarmupCompletionEntity
         CourseProgressEntity::class,
         DiagnosticResultEntity::class
     ],
-    version = 7,  // Increment version for RecordingEntity exerciseId field
+    version = 8,  // Add lastXXXLevel fields to UserProgressEntity
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {

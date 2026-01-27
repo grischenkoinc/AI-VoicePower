@@ -20,5 +20,13 @@ data class UserProgressEntity(
     val structureLevel: Int = 1,
     val confidenceLevel: Int = 1,
     val fillerWordsLevel: Int = 1,
+    // Поля для відстеження історії прогресу
+    val lastDictionLevel: Int? = null,
+    val lastTempoLevel: Int? = null,
+    val lastIntonationLevel: Int? = null,
+    val lastVolumeLevel: Int? = null,
+    val lastStructureLevel: Int? = null,
+    val lastConfidenceLevel: Int? = null,
+    val lastFillerWordsLevel: Int? = null,
     val updatedAt: Long = System.currentTimeMillis()
 )
