@@ -1,19 +1,28 @@
 package com.aivoicepower.ui.screens.improvisation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.aivoicepower.ui.theme.AppTypography
+import com.aivoicepower.ui.theme.TextColors
+import com.aivoicepower.ui.theme.components.GradientBackground
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DebateScreen(
     viewModel: DebateViewModel = hiltViewModel(),
@@ -21,23 +30,58 @@ fun DebateScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("⚔️ Дебати з AI") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        Box(
+    Box(modifier = Modifier.fillMaxSize()) {
+        GradientBackground(content = {})
+
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 130.dp)
         ) {
+            // Header with back button
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        text = "Імпровізація",
+                        style = AppTypography.labelMedium,
+                        color = TextColors.onDarkSecondary,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "⚔️ Дебати з AI",
+                        style = AppTypography.displayLarge,
+                        color = TextColors.onDarkPrimary,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = (-0.8).sp
+                    )
+                }
+
+                // Back button
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(Color(0xFFF59E0B), Color(0xFFF97316))
+                            ),
+                            CircleShape
+                        )
+                        .clickable { onNavigateBack() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "←", fontSize = 20.sp, color = Color.White)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Box(modifier = Modifier.fillMaxSize()) {
             when (state.phase) {
                 DebatePhase.TopicSelection -> {
                     TopicSelectionContent(
@@ -85,21 +129,35 @@ fun DebateScreen(
                 }
             }
 
-            // Error message
-            state.error?.let { error ->
-                Snackbar(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(16.dp)
-                ) {
-                    Text(error)
+                // Error message
+                state.error?.let { error ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter)
+                            .padding(16.dp)
+                            .shadow(
+                                elevation = 12.dp,
+                                shape = RoundedCornerShape(16.dp),
+                                spotColor = Color(0xFFEF4444).copy(alpha = 0.2f)
+                            )
+                            .background(Color(0xFFFEF2F2), RoundedCornerShape(16.dp))
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = error,
+                            style = AppTypography.bodyMedium,
+                            color = Color(0xFFDC2626),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopicSelectionContent(
     onTopicSelected: (com.aivoicepower.data.content.DebateTopicsProvider.DebateTopic) -> Unit
@@ -107,72 +165,92 @@ private fun TopicSelectionContent(
     val topics = remember { com.aivoicepower.data.content.DebateTopicsProvider().getAllTopics() }
 
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+        modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         item {
             Text(
                 text = "Обери тему для дебатів:",
-                style = MaterialTheme.typography.titleLarge
+                style = AppTypography.titleLarge,
+                color = TextColors.onDarkPrimary,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
             )
         }
 
         items(topics) { topic ->
-            Card(
-                onClick = { onTopicSelected(topic) },
-                modifier = Modifier.fillMaxWidth()
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(
+                        elevation = 12.dp,
+                        shape = RoundedCornerShape(16.dp),
+                        spotColor = Color.Black.copy(alpha = 0.12f)
+                    )
+                    .background(Color.White, RoundedCornerShape(16.dp))
+                    .clickable { onTopicSelected(topic) }
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = topic.topic,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = topic.description,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "Складність: ${topic.difficulty}",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+                Text(
+                    text = topic.topic,
+                    style = AppTypography.titleMedium,
+                    color = TextColors.onLightPrimary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = topic.description,
+                    style = AppTypography.bodyMedium,
+                    color = TextColors.onLightSecondary,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = "Складність: ${topic.difficulty}",
+                    style = AppTypography.labelMedium,
+                    color = Color(0xFF6366F1),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PositionSelectionContent(
     topic: com.aivoicepower.data.content.DebateTopicsProvider.DebateTopic,
     onPositionSelected: (DebatePosition) -> Unit
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+        modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
             text = "Тема:",
-            style = MaterialTheme.typography.titleMedium
+            style = AppTypography.titleMedium,
+            color = TextColors.onDarkPrimary,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold
         )
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer
-            )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = 12.dp,
+                    shape = RoundedCornerShape(16.dp),
+                    spotColor = Color.Black.copy(alpha = 0.12f)
+                )
+                .background(Color.White, RoundedCornerShape(16.dp))
+                .padding(16.dp)
         ) {
             Text(
                 text = topic.topic,
-                modifier = Modifier.padding(16.dp),
-                style = MaterialTheme.typography.titleLarge
+                style = AppTypography.titleLarge,
+                color = TextColors.onLightPrimary,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
             )
         }
 
@@ -180,47 +258,68 @@ private fun PositionSelectionContent(
 
         Text(
             text = "Обери свою позицію:",
-            style = MaterialTheme.typography.titleLarge
+            style = AppTypography.titleLarge,
+            color = TextColors.onDarkPrimary,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
         )
 
-        Card(
-            onClick = { onPositionSelected(DebatePosition.FOR) },
-            modifier = Modifier.fillMaxWidth()
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = 12.dp,
+                    shape = RoundedCornerShape(16.dp),
+                    spotColor = Color(0xFF10B981).copy(alpha = 0.2f)
+                )
+                .background(Color.White, RoundedCornerShape(16.dp))
+                .clickable { onPositionSelected(DebatePosition.FOR) }
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "✅ ЗА",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = "Ти будеш підтримувати цю позицію",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+            Text(
+                text = "✅ ЗА",
+                style = AppTypography.headlineMedium,
+                color = Color(0xFF10B981),
+                fontSize = 24.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
+            Text(
+                text = "Ти будеш підтримувати цю позицію",
+                style = AppTypography.bodyMedium,
+                color = TextColors.onLightSecondary,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium
+            )
         }
 
-        Card(
-            onClick = { onPositionSelected(DebatePosition.AGAINST) },
-            modifier = Modifier.fillMaxWidth()
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = 12.dp,
+                    shape = RoundedCornerShape(16.dp),
+                    spotColor = Color(0xFFEF4444).copy(alpha = 0.2f)
+                )
+                .background(Color.White, RoundedCornerShape(16.dp))
+                .clickable { onPositionSelected(DebatePosition.AGAINST) }
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "❌ ПРОТИ",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.error
-                )
-                Text(
-                    text = "Ти будеш аргументувати проти",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+            Text(
+                text = "❌ ПРОТИ",
+                style = AppTypography.headlineMedium,
+                color = Color(0xFFEF4444),
+                fontSize = 24.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
+            Text(
+                text = "Ти будеш аргументувати проти",
+                style = AppTypography.bodyMedium,
+                color = TextColors.onLightSecondary,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium
+            )
         }
     }
 }

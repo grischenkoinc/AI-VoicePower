@@ -1,20 +1,29 @@
 package com.aivoicepower.ui.screens.improvisation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aivoicepower.data.content.SalesProductsProvider
+import com.aivoicepower.ui.theme.AppTypography
+import com.aivoicepower.ui.theme.TextColors
+import com.aivoicepower.ui.theme.components.GradientBackground
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SalesPitchScreen(
     viewModel: SalesPitchViewModel = hiltViewModel(),
@@ -22,23 +31,58 @@ fun SalesPitchScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("💼 Продаж товару") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        Box(
+    Box(modifier = Modifier.fillMaxSize()) {
+        GradientBackground(content = {})
+
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 130.dp)
         ) {
+            // Header with back button
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        text = "Імпровізація",
+                        style = AppTypography.labelMedium,
+                        color = TextColors.onDarkSecondary,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "💼 Продай товар",
+                        style = AppTypography.displayLarge,
+                        color = TextColors.onDarkPrimary,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = (-0.8).sp
+                    )
+                }
+
+                // Back button
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(Color(0xFFF59E0B), Color(0xFFF97316))
+                            ),
+                            CircleShape
+                        )
+                        .clickable { onNavigateBack() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "←", fontSize = 20.sp, color = Color.White)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Box(modifier = Modifier.fillMaxSize()) {
             when (state.phase) {
                 SalesPhase.ProductSelection -> {
                     ProductSelectionContent(
@@ -101,21 +145,35 @@ fun SalesPitchScreen(
                 }
             }
 
-            // Error message
-            state.error?.let { error ->
-                Snackbar(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(16.dp)
-                ) {
-                    Text(error)
+                // Error message
+                state.error?.let { error ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter)
+                            .padding(16.dp)
+                            .shadow(
+                                elevation = 12.dp,
+                                shape = RoundedCornerShape(16.dp),
+                                spotColor = Color(0xFFEF4444).copy(alpha = 0.2f)
+                            )
+                            .background(Color(0xFFFEF2F2), RoundedCornerShape(16.dp))
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = error,
+                            style = AppTypography.bodyMedium,
+                            color = Color(0xFFDC2626),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ProductSelectionContent(
     onProductSelected: (SalesProductsProvider.SalesProduct) -> Unit
@@ -123,61 +181,72 @@ private fun ProductSelectionContent(
     val products = remember { SalesProductsProvider().getAllProducts(includeAbsurd = true) }
 
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+        modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         item {
             Text(
                 text = "Обери товар для продажу:",
-                style = MaterialTheme.typography.titleLarge
+                style = AppTypography.titleLarge,
+                color = TextColors.onDarkPrimary,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
             )
         }
 
         items(products) { product ->
-            Card(
-                onClick = { onProductSelected(product) },
-                modifier = Modifier.fillMaxWidth(),
-                colors = if (product.isAbsurd) {
-                    CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
-                    )
-                } else {
-                    CardDefaults.cardColors()
-                }
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = product.name,
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        if (product.isAbsurd) {
-                            Text(
-                                text = "🎪 Абсурдний",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.tertiary
-                            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(
+                        elevation = 12.dp,
+                        shape = RoundedCornerShape(16.dp),
+                        spotColor = if (product.isAbsurd) {
+                            Color(0xFFA855F7).copy(alpha = 0.2f)
+                        } else {
+                            Color.Black.copy(alpha = 0.12f)
                         }
+                    )
+                    .background(Color.White, RoundedCornerShape(16.dp))
+                    .clickable { onProductSelected(product) }
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = product.name,
+                        style = AppTypography.titleMedium,
+                        color = TextColors.onLightPrimary,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    if (product.isAbsurd) {
+                        Text(
+                            text = "🎪 Абсурдний",
+                            style = AppTypography.labelSmall,
+                            color = Color(0xFFA855F7),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     }
-                    Text(
-                        text = product.description,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "Ціна: ${product.price}",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
                 }
+                Text(
+                    text = product.description,
+                    style = AppTypography.bodyMedium,
+                    color = TextColors.onLightSecondary,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = "Ціна: ${product.price}",
+                    style = AppTypography.labelLarge,
+                    color = Color(0xFF6366F1),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
