@@ -1,12 +1,15 @@
 package com.aivoicepower.ui.screens.warmup
 
 data class QuickWarmupState(
-    val exercises: List<QuickWarmupExercise> = getQuickWarmupExercises(),
+    val exercises: List<QuickWarmupExercise> = generateRandomQuickWarmupExercises(),
     val currentExerciseIndex: Int = 0,
     val completedExercises: Set<Int> = emptySet(),
     val isExerciseDialogOpen: Boolean = false,
     val totalElapsedSeconds: Int = 0,
-    val isCompleted: Boolean = false
+    val isCompleted: Boolean = false,
+    val timerSeconds: Int = 0,
+    val isTimerRunning: Boolean = false,
+    val showCompletionOverlay: Boolean = false
 )
 
 data class QuickWarmupExercise(
@@ -21,72 +24,62 @@ data class QuickWarmupExercise(
     val voiceExercise: VoiceExercise? = null
 )
 
-private fun getQuickWarmupExercises(): List<QuickWarmupExercise> {
-    return listOf(
-        // 1. Артикуляція: Усмішка-хоботок
+private fun generateRandomQuickWarmupExercises(): List<QuickWarmupExercise> {
+    // Отримуємо всі вправи з кожної категорії
+    val articulationExercises = ArticulationState().exercises
+    val breathingExercises = BreathingState().exercises
+    val voiceExercises = VoiceWarmupState().exercises
+
+    // Цільовий час: ~5 хвилин (300 секунд)
+    // Розподіл: приблизно порівну з кожної категорії
+    val result = mutableListOf<QuickWarmupExercise>()
+
+    // Вибираємо по 3-4 вправи з кожної категорії
+    val articulationCount = 4
+    val breathingCount = 3
+    val voiceCount = 3
+
+    // Вибираємо рандомні вправи з артикуляції
+    val selectedArticulation = articulationExercises.shuffled().take(articulationCount).map { exercise ->
         QuickWarmupExercise(
-            id = 1,
-            title = "Усмішка-хоботок",
+            id = result.size + 1,
+            title = exercise.title,
             category = WarmupCategoryType.ARTICULATION,
-            durationSeconds = 30,
-            instruction = "Широко посміхнись, показуючи зуби. Потім витягни губи вперед трубочкою. Чергуй ці положення.",
-            articulationExercise = ArticulationExercise(
-                id = 1,
-                title = "Усмішка-хоботок",
-                durationSeconds = 30,
-                instruction = "Широко посміхнись, показуючи зуби. Потім витягни губи вперед трубочкою. Чергуй ці положення."
-            )
-        ),
-
-        // 2. Артикуляція: Язик вліво-вправо
-        QuickWarmupExercise(
-            id = 2,
-            title = "Язик вліво-вправо",
-            category = WarmupCategoryType.ARTICULATION,
-            durationSeconds = 20,
-            instruction = "Рухай язиком вліво-вправо, торкаючись куточків губ. Виконуй повільно та ритмічно.",
-            articulationExercise = ArticulationExercise(
-                id = 2,
-                title = "Язик вліво-вправо",
-                durationSeconds = 20,
-                instruction = "Рухай язиком вліво-вправо, торкаючись куточків губ. Виконуй повільно та ритмічно."
-            )
-        ),
-
-        // 3. Дихання: Діафрагмальне
-        QuickWarmupExercise(
-            id = 3,
-            title = "Діафрагмальне дихання",
-            category = WarmupCategoryType.BREATHING,
-            durationSeconds = 60,
-            instruction = "Глибоке дихання животом. Покладіть руку на живіт і відчуйте як він піднімається на вдиху.",
-            breathingExercise = BreathingExercise(
-                id = 1,
-                title = "Діафрагмальне дихання",
-                durationSeconds = 60,
-                pattern = BreathingPattern(
-                    inhaleSeconds = 4,
-                    exhaleSeconds = 4
-                ),
-                description = "Глибоке дихання животом. Покладіть руку на живіт і відчуйте як він піднімається на вдиху.",
-                speechBenefit = "Розвиває правильну опору дихання для довгих фраз. Зміцнює діафрагму - основний м'яз для сильного голосу."
-            )
-        ),
-
-        // 4. Голос: Гумкання
-        QuickWarmupExercise(
-            id = 4,
-            title = "Гумкання",
-            category = WarmupCategoryType.VOICE,
-            durationSeconds = 30,
-            instruction = "Закрийте рот і гучно \"ммм\" на комфортній для вас ноті. Відчуйте вібрацію в носі та губах.",
-            voiceExercise = VoiceExercise(
-                id = 1,
-                title = "Гумкання",
-                durationSeconds = 30,
-                instruction = "Закрийте рот і гучно \"ммм\" на комфортній для вас ноті. Відчуйте вібрацію в носі та губах.",
-                audioExampleUrl = null
-            )
+            durationSeconds = exercise.durationSeconds,
+            instruction = exercise.instruction,
+            articulationExercise = exercise
         )
-    )
+    }
+
+    // Вибираємо рандомні вправи з дихання
+    val selectedBreathing = breathingExercises.shuffled().take(breathingCount).map { exercise ->
+        QuickWarmupExercise(
+            id = result.size + selectedArticulation.size + 1,
+            title = exercise.title,
+            category = WarmupCategoryType.BREATHING,
+            durationSeconds = exercise.durationSeconds,
+            instruction = exercise.description,
+            breathingExercise = exercise
+        )
+    }
+
+    // Вибираємо рандомні вправи з голосу
+    val selectedVoice = voiceExercises.shuffled().take(voiceCount).map { exercise ->
+        QuickWarmupExercise(
+            id = result.size + selectedArticulation.size + selectedBreathing.size + 1,
+            title = exercise.title,
+            category = WarmupCategoryType.VOICE,
+            durationSeconds = exercise.durationSeconds,
+            instruction = exercise.instruction,
+            voiceExercise = exercise
+        )
+    }
+
+    // Об'єднуємо всі вправи та перемішуємо
+    result.addAll(selectedArticulation)
+    result.addAll(selectedBreathing)
+    result.addAll(selectedVoice)
+
+    // Перемішуємо щоб вправи різних категорій чергувались
+    return result.shuffled()
 }

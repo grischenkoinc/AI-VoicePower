@@ -173,6 +173,7 @@ fun ArticulationScreen(
                 exercise = state.selectedExercise!!,
                 timerSeconds = state.timerSeconds,
                 isTimerRunning = state.isTimerRunning,
+                showCompletionOverlay = state.showCompletionOverlay,
                 onDismiss = {
                     viewModel.onEvent(ArticulationEvent.ExerciseDialogDismissed)
                 },

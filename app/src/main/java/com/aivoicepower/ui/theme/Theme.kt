@@ -1,14 +1,9 @@
 package com.aivoicepower.ui.theme
 
-import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
 
 /**
  * AI VoicePower Main Theme
@@ -101,29 +96,10 @@ fun AIVoicePowerTheme(
     content: @Composable () -> Unit
 ) {
     val colorScheme = DarkColorScheme
-    
-    // Set status bar color to transparent (no dark overlay)
-    val view = LocalView.current
-    if (!view.isInEditMode) {
-        SideEffect {
-            val window = (view.context as Activity).window
 
-            // Clear translucent flags that add dark scrim
-            window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-            window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
+    // Статус бари налаштовуються тільки в MainActivity.kt
+    // Не перезаписуємо тут, щоб уникнути конфліктів
 
-            // Enable drawing under system bars
-            window.addFlags(android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-
-            // Set fully transparent colors
-            window.statusBarColor = android.graphics.Color.TRANSPARENT
-            window.navigationBarColor = android.graphics.Color.TRANSPARENT
-
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
-            WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = false
-        }
-    }
-    
     MaterialTheme(
         colorScheme = colorScheme,
         typography = AppTypography,

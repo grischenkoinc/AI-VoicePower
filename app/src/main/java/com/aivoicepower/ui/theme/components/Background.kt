@@ -4,12 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.aivoicepower.ui.theme.*
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 /**
  * AI VoicePower Background Components v2.0
@@ -29,15 +27,8 @@ fun GradientBackground(
     content: @Composable BoxScope.() -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val systemUiController = rememberSystemUiController()
-
-    // Встановити прозорий status bar, щоб показувати градієнт
-    SideEffect {
-        systemUiController.setStatusBarColor(
-            color = Color.Transparent, // Прозорий, щоб показувати градієнт
-            darkIcons = true // Темні іконки (чорні) для світлого градієнта
-        )
-    }
+    // Статус бар налаштовується глобально в Theme.kt і MainActivity.kt
+    // Не перезаписуємо тут, щоб уникнути конфліктів
 
     Box(
         modifier = modifier

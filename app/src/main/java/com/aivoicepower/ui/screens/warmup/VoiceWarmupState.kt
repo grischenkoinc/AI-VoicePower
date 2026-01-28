@@ -7,7 +7,8 @@ data class VoiceWarmupState(
     val isExerciseDialogOpen: Boolean = false,
     val timerSeconds: Int = 0,
     val isTimerRunning: Boolean = false,
-    val isAudioPlaying: Boolean = false
+    val isAudioPlaying: Boolean = false,
+    val showCompletionOverlay: Boolean = false
 )
 
 data class VoiceExercise(

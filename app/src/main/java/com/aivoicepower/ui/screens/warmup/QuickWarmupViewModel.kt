@@ -6,6 +6,8 @@ import com.aivoicepower.data.local.database.dao.WarmupCompletionDao
 import com.aivoicepower.data.local.database.entity.WarmupCompletionEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,6 +25,8 @@ class QuickWarmupViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(QuickWarmupState())
     val state: StateFlow<QuickWarmupState> = _state.asStateFlow()
+
+    private var timerJob: Job? = null
 
     fun onEvent(event: QuickWarmupEvent) {
         when (event) {
@@ -49,6 +53,37 @@ class QuickWarmupViewModel @Inject constructor(
                     it.copy(isCompleted = false)
                 }
             }
+
+            QuickWarmupEvent.StartTimer -> {
+                startTimer()
+            }
+
+            QuickWarmupEvent.PauseTimer -> {
+                stopTimer()
+            }
+
+            is QuickWarmupEvent.TimerTick -> {
+                _state.update { it.copy(timerSeconds = event.secondsRemaining) }
+
+                if (event.secondsRemaining <= 0) {
+                    stopTimer()
+                    markCurrentExerciseCompleted()
+                }
+            }
+
+            QuickWarmupEvent.SkipExercise -> {
+                stopTimer()
+                val nextIndex = _state.value.currentExerciseIndex + 1
+
+                if (nextIndex >= _state.value.exercises.size) {
+                    completeQuickWarmup()
+                } else {
+                    _state.update {
+                        it.copy(currentExerciseIndex = nextIndex)
+                    }
+                    initializeCurrentExerciseTimer()
+                }
+            }
         }
     }
 
@@ -61,27 +96,70 @@ class QuickWarmupViewModel @Inject constructor(
                 isExerciseDialogOpen = true
             )
         }
+        initializeCurrentExerciseTimer()
+    }
+
+    private fun initializeCurrentExerciseTimer() {
+        val currentExercise = _state.value.exercises.getOrNull(_state.value.currentExerciseIndex)
+        _state.update {
+            it.copy(
+                timerSeconds = currentExercise?.durationSeconds ?: 0,
+                isTimerRunning = false
+            )
+        }
+    }
+
+    private fun startTimer() {
+        stopTimer()
+
+        _state.update { it.copy(isTimerRunning = true) }
+
+        timerJob = viewModelScope.launch {
+            while (_state.value.isTimerRunning && _state.value.timerSeconds > 0) {
+                delay(1000)
+                val newSeconds = _state.value.timerSeconds - 1
+                onEvent(QuickWarmupEvent.TimerTick(newSeconds))
+            }
+        }
+    }
+
+    private fun stopTimer() {
+        timerJob?.cancel()
+        _state.update { it.copy(isTimerRunning = false) }
     }
 
     private fun markCurrentExerciseCompleted() {
         val currentIndex = _state.value.currentExerciseIndex
         val currentExerciseId = _state.value.exercises.getOrNull(currentIndex)?.id ?: return
 
-        _state.update {
-            it.copy(
-                completedExercises = it.completedExercises + currentExerciseId
-            )
-        }
+        viewModelScope.launch {
+            // Чекаємо 1 секунду, щоб анімація таймера встигла закінчитися
+            delay(1000)
 
-        // Переходимо до наступної вправи
-        val nextIndex = currentIndex + 1
-
-        if (nextIndex >= _state.value.exercises.size) {
-            // Всі вправи виконано
-            completeQuickWarmup()
-        } else {
+            // Показуємо completion overlay
             _state.update {
-                it.copy(currentExerciseIndex = nextIndex)
+                it.copy(
+                    completedExercises = it.completedExercises + currentExerciseId,
+                    showCompletionOverlay = true
+                )
+            }
+
+            // Через 4 секунди переходимо до наступної вправи або завершуємо
+            delay(4000)
+
+            val nextIndex = currentIndex + 1
+
+            if (nextIndex >= _state.value.exercises.size) {
+                // Всі вправи виконано
+                completeQuickWarmup()
+            } else {
+                _state.update {
+                    it.copy(
+                        currentExerciseIndex = nextIndex,
+                        showCompletionOverlay = false
+                    )
+                }
+                initializeCurrentExerciseTimer()
             }
         }
     }

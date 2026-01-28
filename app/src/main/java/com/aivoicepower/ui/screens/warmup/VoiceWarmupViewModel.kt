@@ -148,15 +148,30 @@ class VoiceWarmupViewModel @Inject constructor(
     private fun markCurrentAsCompleted() {
         val exerciseId = _state.value.selectedExercise?.id ?: return
 
-        _state.update {
-            it.copy(
-                completedToday = it.completedToday + exerciseId,
-                selectedExercise = null,
-                isExerciseDialogOpen = false
-            )
-        }
+        viewModelScope.launch {
+            // Чекаємо 1 секунду, щоб анімація таймера встигла закінчитися
+            delay(1000)
 
-        saveProgress()
+            // Показуємо completion overlay
+            _state.update {
+                it.copy(
+                    completedToday = it.completedToday + exerciseId,
+                    showCompletionOverlay = true
+                )
+            }
+
+            saveProgress()
+
+            // Через 4 секунди закриваємо діалог
+            delay(4000)
+            _state.update {
+                it.copy(
+                    selectedExercise = null,
+                    isExerciseDialogOpen = false,
+                    showCompletionOverlay = false
+                )
+            }
+        }
     }
 
     private fun saveProgress() {

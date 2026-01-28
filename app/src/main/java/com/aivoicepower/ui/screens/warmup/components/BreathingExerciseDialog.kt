@@ -1,11 +1,11 @@
 package com.aivoicepower.ui.screens.warmup.components
 
-import android.app.Activity
 import android.content.Context
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,15 +18,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import androidx.core.view.WindowCompat
 import com.aivoicepower.ui.components.breathing.BreathingAnimation
 import com.aivoicepower.ui.screens.warmup.BreathingExercise
 import com.aivoicepower.ui.screens.warmup.BreathingPattern
@@ -44,7 +39,7 @@ fun BreathingExerciseDialog(
     phaseProgress: Float,
     isRunning: Boolean,
     showInstructions: Boolean,
-    onDismiss: () -> Unit,
+    onDismiss: () -> Unit,  // Використовується через BackHandler
     onStart: () -> Unit,
     onPause: () -> Unit,
     onMarkCompleted: () -> Unit,
@@ -52,7 +47,6 @@ fun BreathingExerciseDialog(
     onHideInstructions: () -> Unit
 ) {
     val context = LocalContext.current
-    val view = LocalView.current
 
     // Haptic feedback on phase change
     var lastPhase by remember { mutableStateOf(currentPhase) }
@@ -64,49 +58,15 @@ fun BreathingExerciseDialog(
         }
     }
 
-    // Remove status bar dimming - make fully transparent
-    DisposableEffect(showInstructions) {
-        val window = (view.context as? Activity)?.window
-        val previousStatusBarColor = window?.statusBarColor
-        val previousNavigationBarColor = window?.navigationBarColor
+    // Handle back button press
+    BackHandler(onBack = onDismiss)
 
-        window?.let {
-            // Clear translucent flags that add dark scrim/overlay
-            it.clearFlags(android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-            it.clearFlags(android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
+    // Замість Dialog використовуємо fullscreen Box (щоб уникнути проблем зі статус барами Dialog)
+    Box(modifier = Modifier.fillMaxSize()) {
+        GradientBackground(content = {})
 
-            // Enable drawing under system bars
-            it.addFlags(android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-
-            // Make status bars fully transparent (no dark overlay)
-            it.statusBarColor = android.graphics.Color.TRANSPARENT
-            it.navigationBarColor = android.graphics.Color.TRANSPARENT
-
-            // Set light status bars when instructions are shown (white background)
-            val insetsController = WindowCompat.getInsetsController(it, view)
-            insetsController.isAppearanceLightStatusBars = showInstructions
-            insetsController.isAppearanceLightNavigationBars = showInstructions
-        }
-
-        onDispose {
-            // Restore previous colors when dialog closes
-            window?.let {
-                previousStatusBarColor?.let { color -> it.statusBarColor = color }
-                previousNavigationBarColor?.let { color -> it.navigationBarColor = color }
-            }
-        }
-    }
-
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(
-            usePlatformDefaultWidth = false,
-            decorFitsSystemWindows = false
-        )
-    ) {
+        // Контент вправи
         Box(modifier = Modifier.fillMaxSize()) {
-            GradientBackground(content = {})
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -301,6 +261,16 @@ fun BreathingExerciseDialog(
                     }
                 }
             }
+        }
+
+        // Scrim затемнення (тільки коли показано інструкції)
+        if (showInstructions) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f))
+                    .clickable { /* Блокує кліки на контент під scrim */ }
+            )
         }
 
         // Instruction overlay (white centered window like RecordingDialog)

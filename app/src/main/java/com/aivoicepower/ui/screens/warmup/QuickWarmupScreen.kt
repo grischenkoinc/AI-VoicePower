@@ -200,16 +200,21 @@ fun QuickWarmupScreen(
                         currentExercise.articulationExercise?.let { exercise ->
                             ArticulationExerciseDialog(
                                 exercise = exercise,
-                                timerSeconds = exercise.durationSeconds,
-                                isTimerRunning = false,
+                                timerSeconds = state.timerSeconds,
+                                isTimerRunning = state.isTimerRunning,
+                                showCompletionOverlay = state.showCompletionOverlay,
                                 onDismiss = { /* Не дозволяємо закривати */ },
-                                onStartTimer = { /* Handle in local state */ },
-                                onPauseTimer = { /* Handle in local state */ },
+                                onStartTimer = {
+                                    viewModel.onEvent(QuickWarmupEvent.StartTimer)
+                                },
+                                onPauseTimer = {
+                                    viewModel.onEvent(QuickWarmupEvent.PauseTimer)
+                                },
                                 onMarkCompleted = {
                                     viewModel.onEvent(QuickWarmupEvent.CurrentExerciseCompleted)
                                 },
                                 onSkip = {
-                                    viewModel.onEvent(QuickWarmupEvent.CurrentExerciseCompleted)
+                                    viewModel.onEvent(QuickWarmupEvent.SkipExercise)
                                 }
                             )
                         }
@@ -243,19 +248,24 @@ fun QuickWarmupScreen(
                         currentExercise.voiceExercise?.let { exercise ->
                             VoiceExerciseDialog(
                                 exercise = exercise,
-                                timerSeconds = exercise.durationSeconds,
-                                isTimerRunning = false,
+                                timerSeconds = state.timerSeconds,
+                                isTimerRunning = state.isTimerRunning,
                                 isAudioPlaying = false,
+                                showCompletionOverlay = state.showCompletionOverlay,
                                 onDismiss = { /* Не дозволяємо закривати */ },
-                                onStartTimer = { /* Handle in local state */ },
-                                onPauseTimer = { /* Handle in local state */ },
+                                onStartTimer = {
+                                    viewModel.onEvent(QuickWarmupEvent.StartTimer)
+                                },
+                                onPauseTimer = {
+                                    viewModel.onEvent(QuickWarmupEvent.PauseTimer)
+                                },
                                 onPlayAudio = { /* Handle in local state */ },
                                 onStopAudio = { /* Handle in local state */ },
                                 onMarkCompleted = {
                                     viewModel.onEvent(QuickWarmupEvent.CurrentExerciseCompleted)
                                 },
                                 onSkip = {
-                                    viewModel.onEvent(QuickWarmupEvent.CurrentExerciseCompleted)
+                                    viewModel.onEvent(QuickWarmupEvent.SkipExercise)
                                 }
                             )
                         }
@@ -268,71 +278,73 @@ fun QuickWarmupScreen(
             }
         }
 
-        // Completion dialog
+        // Final Completion overlay (після всіх вправ)
         if (state.isCompleted) {
-            CompletionDialog(
-                totalExercises = state.exercises.size,
-                elapsedSeconds = state.totalElapsedSeconds,
-                onDismiss = {
-                    viewModel.onEvent(QuickWarmupEvent.DismissCompletionDialog)
-                    onNavigateBack()
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 40.dp)
+                        .shadow(
+                            elevation = 32.dp,
+                            shape = RoundedCornerShape(32.dp),
+                            spotColor = Color.Black.copy(alpha = 0.3f)
+                        )
+                        .background(Color.White, RoundedCornerShape(32.dp))
+                        .padding(40.dp)
+                        .clickable {
+                            viewModel.onEvent(QuickWarmupEvent.DismissCompletionDialog)
+                            onNavigateBack()
+                        },
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Success icon
+                    Box(
+                        modifier = Modifier
+                            .size(80.dp)
+                            .background(
+                                Brush.linearGradient(
+                                    colors = listOf(Color(0xFF10B981), Color(0xFF14B8A6))
+                                ),
+                                CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "✓",
+                            color = Color.White,
+                            fontSize = 48.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    // Success message
+                    Text(
+                        text = "Чудова робота!",
+                        style = AppTypography.displayLarge,
+                        color = TextColors.onLightPrimary,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = (-0.6).sp,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+
+                    Text(
+                        text = "Розминку завершено",
+                        style = AppTypography.bodyMedium,
+                        color = TextColors.onLightSecondary,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
                 }
-            )
+            }
         }
     }
-}
-
-@Composable
-private fun CompletionDialog(
-    totalExercises: Int,
-    elapsedSeconds: Int,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        icon = {
-            Text("🎉", fontSize = 48.sp)
-        },
-        title = {
-            Text(
-                text = "Розминка завершена!",
-                style = AppTypography.titleLarge,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.ExtraBold
-            )
-        },
-        text = {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "Ви виконали $totalExercises вправи",
-                    style = AppTypography.bodyLarge,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    text = "за %d хв %02d сек".format(
-                        elapsedSeconds / 60,
-                        elapsedSeconds % 60
-                    ),
-                    style = AppTypography.bodyMedium,
-                    color = TextColors.onLightMuted,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF6366F1)
-                )
-            ) {
-                Text("Готово", fontWeight = FontWeight.Bold)
-            }
-        }
-    )
 }

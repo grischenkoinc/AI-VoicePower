@@ -6,4 +6,8 @@ sealed class QuickWarmupEvent {
     data class UpdateElapsedTime(val seconds: Int) : QuickWarmupEvent()
     object FinishQuickWarmup : QuickWarmupEvent()
     object DismissCompletionDialog : QuickWarmupEvent()
+    object StartTimer : QuickWarmupEvent()
+    object PauseTimer : QuickWarmupEvent()
+    data class TimerTick(val secondsRemaining: Int) : QuickWarmupEvent()
+    object SkipExercise : QuickWarmupEvent()
 }

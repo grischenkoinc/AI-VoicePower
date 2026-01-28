@@ -172,6 +172,7 @@ fun VoiceWarmupScreen(
                 timerSeconds = state.timerSeconds,
                 isTimerRunning = state.isTimerRunning,
                 isAudioPlaying = state.isAudioPlaying,
+                showCompletionOverlay = state.showCompletionOverlay,
                 onDismiss = {
                     viewModel.onEvent(VoiceWarmupEvent.ExerciseDialogDismissed)
                 },

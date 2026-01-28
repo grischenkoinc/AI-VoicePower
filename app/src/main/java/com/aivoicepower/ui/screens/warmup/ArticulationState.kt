@@ -6,7 +6,8 @@ data class ArticulationState(
     val selectedExercise: ArticulationExercise? = null,
     val isExerciseDialogOpen: Boolean = false,
     val timerSeconds: Int = 0,
-    val isTimerRunning: Boolean = false
+    val isTimerRunning: Boolean = false,
+    val showCompletionOverlay: Boolean = false
 )
 
 data class ArticulationExercise(
