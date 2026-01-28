@@ -41,7 +41,10 @@ fun VoiceExerciseDialog(
     onMarkCompleted: () -> Unit,
     onSkip: () -> Unit,
     onPlayAudio: () -> Unit,
-    onStopAudio: () -> Unit
+    onStopAudio: () -> Unit,
+    currentExerciseNumber: Int = 0,
+    totalExercises: Int = 0,
+    completedExercises: Int = 0
 ) {
     var showInstructions by remember { mutableStateOf(true) }
 
@@ -70,6 +73,30 @@ fun VoiceExerciseDialog(
                         fontWeight = FontWeight.ExtraBold,
                         letterSpacing = (-0.6).sp
                     )
+                }
+
+                // Overall progress bar (Quick Warmup only)
+                if (totalExercises > 0) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "Загальний прогрес",
+                            style = AppTypography.labelMedium,
+                            color = TextColors.onDarkSecondary,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        LinearProgressIndicator(
+                            progress = { completedExercises.toFloat() / totalExercises },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(12.dp),
+                            color = Color(0xFF10B981),
+                            trackColor = Color.White.copy(alpha = 0.3f)
+                        )
+                    }
                 }
 
                 // Circular Timer (CENTER)

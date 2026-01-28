@@ -27,6 +27,7 @@ class QuickWarmupViewModel @Inject constructor(
     val state: StateFlow<QuickWarmupState> = _state.asStateFlow()
 
     private var timerJob: Job? = null
+    private var breathingJob: Job? = null
 
     fun onEvent(event: QuickWarmupEvent) {
         when (event) {
@@ -73,6 +74,7 @@ class QuickWarmupViewModel @Inject constructor(
 
             QuickWarmupEvent.SkipExercise -> {
                 stopTimer()
+                stopBreathing()
                 val nextIndex = _state.value.currentExerciseIndex + 1
 
                 if (nextIndex >= _state.value.exercises.size) {
@@ -82,6 +84,31 @@ class QuickWarmupViewModel @Inject constructor(
                         it.copy(currentExerciseIndex = nextIndex)
                     }
                     initializeCurrentExerciseTimer()
+                }
+            }
+
+            QuickWarmupEvent.StartBreathing -> {
+                startBreathing()
+            }
+
+            QuickWarmupEvent.PauseBreathing -> {
+                stopBreathing()
+            }
+
+            is QuickWarmupEvent.BreathingTick -> {
+                _state.update {
+                    it.copy(
+                        breathingElapsedSeconds = event.elapsedSeconds,
+                        breathingCurrentPhase = event.currentPhase,
+                        breathingPhaseProgress = event.phaseProgress
+                    )
+                }
+
+                // Перевірка чи закінчилась вправа
+                val currentExercise = _state.value.exercises.getOrNull(_state.value.currentExerciseIndex)
+                if (currentExercise != null && event.elapsedSeconds >= currentExercise.durationSeconds) {
+                    stopBreathing()
+                    markCurrentExerciseCompleted()
                 }
             }
         }
@@ -101,10 +128,16 @@ class QuickWarmupViewModel @Inject constructor(
 
     private fun initializeCurrentExerciseTimer() {
         val currentExercise = _state.value.exercises.getOrNull(_state.value.currentExerciseIndex)
+
+        // Скидаємо стейт для всіх типів вправ
         _state.update {
             it.copy(
                 timerSeconds = currentExercise?.durationSeconds ?: 0,
-                isTimerRunning = false
+                isTimerRunning = false,
+                breathingElapsedSeconds = 0,
+                breathingCurrentPhase = BreathingPhase.INHALE,
+                breathingPhaseProgress = 0f,
+                breathingIsRunning = false
             )
         }
     }
@@ -128,6 +161,86 @@ class QuickWarmupViewModel @Inject constructor(
         _state.update { it.copy(isTimerRunning = false) }
     }
 
+    private fun startBreathing() {
+        stopBreathing()
+
+        val currentExercise = _state.value.exercises.getOrNull(_state.value.currentExerciseIndex)
+        val breathingExercise = currentExercise?.breathingExercise ?: return
+
+        _state.update {
+            it.copy(
+                breathingIsRunning = true,
+                breathingElapsedSeconds = 0,
+                breathingCurrentPhase = BreathingPhase.INHALE,
+                breathingPhaseProgress = 0f
+            )
+        }
+
+        breathingJob = viewModelScope.launch {
+            val pattern = breathingExercise.pattern
+            var totalMillis = 0
+            var phaseElapsedMillis = 0
+            var currentPhase = BreathingPhase.INHALE
+
+            fun getCurrentPhaseDuration(): Int {
+                return when (currentPhase) {
+                    BreathingPhase.INHALE -> pattern.inhaleSeconds
+                    BreathingPhase.INHALE_HOLD -> pattern.inhaleHoldSeconds
+                    BreathingPhase.EXHALE -> pattern.exhaleSeconds
+                    BreathingPhase.EXHALE_HOLD -> pattern.exhaleHoldSeconds
+                }
+            }
+
+            fun getNextPhase(): BreathingPhase {
+                return when (currentPhase) {
+                    BreathingPhase.INHALE -> {
+                        if (pattern.inhaleHoldSeconds > 0) BreathingPhase.INHALE_HOLD
+                        else BreathingPhase.EXHALE
+                    }
+                    BreathingPhase.INHALE_HOLD -> BreathingPhase.EXHALE
+                    BreathingPhase.EXHALE -> {
+                        if (pattern.exhaleHoldSeconds > 0) BreathingPhase.EXHALE_HOLD
+                        else BreathingPhase.INHALE
+                    }
+                    BreathingPhase.EXHALE_HOLD -> BreathingPhase.INHALE
+                }
+            }
+
+            while (_state.value.breathingIsRunning) {
+                delay(100) // Оновлення кожні 100мс для плавної анімації
+
+                totalMillis += 100
+                phaseElapsedMillis += 100
+
+                val elapsedSeconds = totalMillis / 1000
+                val phaseDuration = getCurrentPhaseDuration()
+                val phaseElapsedSeconds = phaseElapsedMillis / 1000f
+                val progress = (phaseElapsedSeconds / phaseDuration).coerceIn(0f, 1f)
+
+                onEvent(QuickWarmupEvent.BreathingTick(
+                    elapsedSeconds = elapsedSeconds,
+                    currentPhase = currentPhase,
+                    phaseProgress = progress
+                ))
+
+                // Перехід до наступної фази
+                if (phaseElapsedMillis >= phaseDuration * 1000) {
+                    currentPhase = getNextPhase()
+                    phaseElapsedMillis = 0
+                }
+            }
+        }
+    }
+
+    private fun stopBreathing() {
+        breathingJob?.cancel()
+        _state.update {
+            it.copy(
+                breathingIsRunning = false
+            )
+        }
+    }
+
     private fun markCurrentExerciseCompleted() {
         val currentIndex = _state.value.currentExerciseIndex
         val currentExerciseId = _state.value.exercises.getOrNull(currentIndex)?.id ?: return
@@ -136,28 +249,23 @@ class QuickWarmupViewModel @Inject constructor(
             // Чекаємо 1 секунду, щоб анімація таймера встигла закінчитися
             delay(1000)
 
-            // Показуємо completion overlay
             _state.update {
                 it.copy(
-                    completedExercises = it.completedExercises + currentExerciseId,
-                    showCompletionOverlay = true
+                    completedExercises = it.completedExercises + currentExerciseId
                 )
             }
-
-            // Через 4 секунди переходимо до наступної вправи або завершуємо
-            delay(4000)
 
             val nextIndex = currentIndex + 1
 
             if (nextIndex >= _state.value.exercises.size) {
-                // Всі вправи виконано
+                // Всі вправи виконано - показуємо completion
+                _state.update { it.copy(showCompletionOverlay = true) }
+                delay(4000)
                 completeQuickWarmup()
             } else {
+                // Переходимо до наступної вправи без overlay
                 _state.update {
-                    it.copy(
-                        currentExerciseIndex = nextIndex,
-                        showCompletionOverlay = false
-                    )
+                    it.copy(currentExerciseIndex = nextIndex)
                 }
                 initializeCurrentExerciseTimer()
             }

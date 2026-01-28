@@ -10,4 +10,12 @@ sealed class QuickWarmupEvent {
     object PauseTimer : QuickWarmupEvent()
     data class TimerTick(val secondsRemaining: Int) : QuickWarmupEvent()
     object SkipExercise : QuickWarmupEvent()
+    // Breathing events
+    object StartBreathing : QuickWarmupEvent()
+    object PauseBreathing : QuickWarmupEvent()
+    data class BreathingTick(
+        val elapsedSeconds: Int,
+        val currentPhase: BreathingPhase,
+        val phaseProgress: Float
+    ) : QuickWarmupEvent()
 }

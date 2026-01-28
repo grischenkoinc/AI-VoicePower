@@ -87,6 +87,28 @@ fun QuickWarmupScreen(
                 }
             }
 
+            // Overall progress bar
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Загальний прогрес",
+                    style = AppTypography.labelMedium,
+                    color = TextColors.onDarkSecondary,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                LinearProgressIndicator(
+                    progress = { state.completedExercises.size.toFloat() / state.exercises.size },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(12.dp),
+                    color = Color(0xFF10B981),
+                    trackColor = Color.White.copy(alpha = 0.3f)
+                )
+            }
+
             // Progress card
             Column(
                 modifier = Modifier
@@ -215,7 +237,10 @@ fun QuickWarmupScreen(
                                 },
                                 onSkip = {
                                     viewModel.onEvent(QuickWarmupEvent.SkipExercise)
-                                }
+                                },
+                                currentExerciseNumber = state.currentExerciseIndex + 1,
+                                totalExercises = state.exercises.size,
+                                completedExercises = state.completedExercises.size
                             )
                         }
                     }
@@ -224,22 +249,29 @@ fun QuickWarmupScreen(
                         currentExercise.breathingExercise?.let { exercise ->
                             BreathingExerciseDialog(
                                 exercise = exercise,
-                                elapsedSeconds = 0,
+                                elapsedSeconds = state.breathingElapsedSeconds,
                                 totalSeconds = exercise.durationSeconds,
-                                currentPhase = BreathingPhase.INHALE,
-                                phaseProgress = 0f,
-                                isRunning = false,
+                                currentPhase = state.breathingCurrentPhase,
+                                phaseProgress = state.breathingPhaseProgress,
+                                isRunning = state.breathingIsRunning,
                                 showInstructions = false,
                                 onDismiss = { /* Не дозволяємо закривати */ },
-                                onStart = { /* Handle in local state */ },
-                                onPause = { /* Handle in local state */ },
+                                onStart = {
+                                    viewModel.onEvent(QuickWarmupEvent.StartBreathing)
+                                },
+                                onPause = {
+                                    viewModel.onEvent(QuickWarmupEvent.PauseBreathing)
+                                },
                                 onMarkCompleted = {
                                     viewModel.onEvent(QuickWarmupEvent.CurrentExerciseCompleted)
                                 },
                                 onSkip = {
-                                    viewModel.onEvent(QuickWarmupEvent.CurrentExerciseCompleted)
+                                    viewModel.onEvent(QuickWarmupEvent.SkipExercise)
                                 },
-                                onHideInstructions = { /* No instructions in quick warmup */ }
+                                onHideInstructions = { /* No instructions in quick warmup */ },
+                                currentExerciseNumber = state.currentExerciseIndex + 1,
+                                totalExercises = state.exercises.size,
+                                completedExercises = state.completedExercises.size
                             )
                         }
                     }
@@ -266,7 +298,10 @@ fun QuickWarmupScreen(
                                 },
                                 onSkip = {
                                     viewModel.onEvent(QuickWarmupEvent.SkipExercise)
-                                }
+                                },
+                                currentExerciseNumber = state.currentExerciseIndex + 1,
+                                totalExercises = state.exercises.size,
+                                completedExercises = state.completedExercises.size
                             )
                         }
                     }
