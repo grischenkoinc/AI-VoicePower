@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aivoicepower.data.provider.DailyChallengeProvider
 import com.aivoicepower.ui.theme.AppTypography
+import com.aivoicepower.ui.theme.components.PrimaryButton
 
 @Composable
 fun DailyChallengeRecordingCard(
@@ -103,21 +104,11 @@ fun DailyChallengeRecordingCard(
             )
         }
 
-        Button(
+        PrimaryButton(
+            text = "■ Завершити",
             onClick = onStop,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFEF4444)
-            ),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Text(
-                text = "■ Завершити",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 4.dp)
-            )
-        }
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 

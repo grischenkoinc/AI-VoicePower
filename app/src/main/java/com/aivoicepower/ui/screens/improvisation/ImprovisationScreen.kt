@@ -190,44 +190,25 @@ private fun ImprovisationHeader(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
+    Column(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(
-                text = "Спонтанне мовлення",
-                style = AppTypography.labelMedium,
-                color = TextColors.onDarkSecondary,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = "Імпровізація",
-                style = AppTypography.displayLarge,
-                color = TextColors.onDarkPrimary,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = (-0.8).sp
-            )
-        }
-
-        // Back button з gradient
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(Color(0xFFF59E0B), Color(0xFFF97316))
-                    ),
-                    CircleShape
-                )
-                .clickable { onNavigateBack() },
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = "←", fontSize = 20.sp, color = Color.White)
-        }
+        Text(
+            text = "Спонтанне мовлення",
+            style = AppTypography.labelMedium,
+            color = TextColors.onDarkSecondary,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+        Text(
+            text = "Імпровізація",
+            style = AppTypography.displayLarge,
+            color = TextColors.onDarkPrimary,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.ExtraBold,
+            letterSpacing = (-0.8).sp
+        )
     }
 }
 

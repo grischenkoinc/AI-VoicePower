@@ -25,7 +25,6 @@ import com.aivoicepower.ui.theme.TextColors
 @Composable
 fun OverallLevelCard(
     level: Int,
-    levelLabel: String,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -64,22 +63,13 @@ fun OverallLevelCard(
                 trackColor = Color(0xFFE5E7EB)
             )
 
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "$level",
-                    style = AppTypography.displayMedium,
-                    color = Color(0xFF6366F1),
-                    fontSize = 40.sp,
-                    fontWeight = FontWeight.Black
-                )
-                Text(
-                    text = levelLabel,
-                    style = AppTypography.bodySmall,
-                    color = TextColors.onLightSecondary,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
+            Text(
+                text = "$level",
+                style = AppTypography.displayMedium,
+                color = Color(0xFF6366F1),
+                fontSize = 40.sp,
+                fontWeight = FontWeight.Black
+            )
         }
     }
 }

@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
+import com.aivoicepower.ui.theme.components.SecondaryButton
 
 @Composable
 fun PreparationTimerCard(
@@ -53,20 +54,11 @@ fun PreparationTimerCard(
         )
 
         onGenerateNew?.let { callback ->
-            OutlinedButton(
+            SecondaryButton(
+                text = "🔄 Інша тема",
                 onClick = callback,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = Color(0xFF6366F1)
-                )
-            ) {
-                Text(
-                    text = "🔄 Інша тема",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }

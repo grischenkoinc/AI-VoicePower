@@ -35,4 +35,9 @@ interface UserRepository {
      * Get initial diagnostic result
      */
     fun getInitialDiagnostic(): Flow<DiagnosticResult?>
+
+    /**
+     * Get weekly activity data (last 7 days)
+     */
+    suspend fun getWeeklyActivity(): List<com.aivoicepower.ui.screens.progress.DailyProgress>
 }

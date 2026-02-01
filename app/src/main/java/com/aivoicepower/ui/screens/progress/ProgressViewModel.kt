@@ -44,13 +44,8 @@ class ProgressViewModel @Inject constructor(
                 // Load user progress
                 userRepository.getUserProgress().collect { progress ->
                     if (progress == null) {
-                        // Create default state if no progress exists
-                        _state.update {
-                            it.copy(
-                                isLoading = false,
-                                skillLevels = SkillType.entries.associateWith { 0 }
-                            )
-                        }
+                        // If no progress, try to get initial diagnostic data
+                        loadInitialDiagnosticData()
                         return@collect
                     }
 
@@ -87,18 +82,33 @@ class ProgressViewModel @Inject constructor(
         }
     }
 
+    private suspend fun loadInitialDiagnosticData() {
+        // Get initial diagnostic and use it to populate skills
+        userRepository.getInitialDiagnostic().collect { diagnostic ->
+            if (diagnostic != null) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        skillLevels = diagnostic.toSkillLevelsMap(),
+                        overallLevel = diagnostic.calculateOverallLevel()
+                    )
+                }
+            } else {
+                // Fallback to zeros if no diagnostic exists
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        skillLevels = SkillType.entries.associateWith { 0 }
+                    )
+                }
+            }
+        }
+    }
+
     private fun loadWeeklyProgress() {
         viewModelScope.launch {
-            // Generate weekly data (mock for now - will be replaced with actual data)
-            val weeklyProgress = (0..6).map { daysAgo ->
-                val date = LocalDate.now().minusDays(daysAgo.toLong())
-                DailyProgress(
-                    date = date.toString(),
-                    exercises = if (daysAgo < 3) (5..15).random() else 0,
-                    minutes = if (daysAgo < 3) (10..30).random() else 0
-                )
-            }.reversed()
-
+            // Load real weekly activity data from recordings
+            val weeklyProgress = userRepository.getWeeklyActivity()
             _state.update { it.copy(weeklyProgress = weeklyProgress) }
         }
     }

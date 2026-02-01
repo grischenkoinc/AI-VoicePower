@@ -23,6 +23,7 @@ import com.aivoicepower.data.content.SalesProductsProvider
 import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
 import com.aivoicepower.ui.theme.components.GradientBackground
+import com.aivoicepower.ui.theme.components.PrimaryButton
 
 @Composable
 fun SalesPitchScreen(
@@ -64,19 +65,32 @@ fun SalesPitchScreen(
                 }
 
                 // Back button
-                Box(
+                Row(
                     modifier = Modifier
-                        .size(40.dp)
-                        .background(
-                            Brush.linearGradient(
-                                colors = listOf(Color(0xFFF59E0B), Color(0xFFF97316))
-                            ),
-                            CircleShape
+                        .shadow(
+                            elevation = 12.dp,
+                            shape = RoundedCornerShape(16.dp),
+                            spotColor = Color.Black.copy(alpha = 0.2f)
                         )
-                        .clickable { onNavigateBack() },
-                    contentAlignment = Alignment.Center
+                        .background(Color.White, RoundedCornerShape(16.dp))
+                        .clickable { onNavigateBack() }
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "←", fontSize = 20.sp, color = Color.White)
+                    Text(
+                        text = "←",
+                        fontSize = 24.sp,
+                        color = Color(0xFF667EEA),
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Назад",
+                        style = AppTypography.bodyMedium,
+                        color = TextColors.onLightPrimary,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
 
@@ -264,91 +278,135 @@ private fun CustomerProfileContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = 20.dp,
+                    shape = RoundedCornerShape(20.dp),
+                    spotColor = Color.Black.copy(alpha = 0.18f),
+                    ambientColor = Color.Black.copy(alpha = 0.08f)
+                )
+                .background(Color.White, RoundedCornerShape(20.dp))
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "Твій товар:",
-                    style = MaterialTheme.typography.labelMedium
-                )
-                Text(
-                    text = product.name,
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Text(
-                    text = product.description,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = product.price,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer
+            Text(
+                text = "Твій товар:",
+                style = AppTypography.labelMedium,
+                color = Color(0xFF667EEA),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
             )
+            Text(
+                text = product.name,
+                style = AppTypography.titleLarge,
+                color = TextColors.onLightPrimary,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
+            Text(
+                text = product.description,
+                style = AppTypography.bodyMedium,
+                color = TextColors.onLightSecondary,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium
+            )
+            Text(
+                text = product.price,
+                style = AppTypography.titleMedium,
+                color = Color(0xFF667EEA),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = 20.dp,
+                    shape = RoundedCornerShape(20.dp),
+                    spotColor = Color.Black.copy(alpha = 0.18f),
+                    ambientColor = Color.Black.copy(alpha = 0.08f)
+                )
+                .background(Color.White, RoundedCornerShape(20.dp))
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+            Text(
+                text = "Твій клієнт:",
+                style = AppTypography.labelMedium,
+                color = Color(0xFF764BA2),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = customer.type,
+                style = AppTypography.titleLarge,
+                color = TextColors.onLightPrimary,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
+            Text(
+                text = customer.description,
+                style = AppTypography.bodyMedium,
+                color = TextColors.onLightSecondary,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium
+            )
+            Text(
+                text = "Типові заперечення:",
+                style = AppTypography.labelMedium,
+                color = TextColors.onLightPrimary,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
+            customer.typicalObjections.forEach { objection ->
                 Text(
-                    text = "Твій клієнт:",
-                    style = MaterialTheme.typography.labelMedium
-                )
-                Text(
-                    text = customer.type,
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Text(
-                    text = customer.description,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = "Типові заперечення:",
-                    style = MaterialTheme.typography.labelMedium
-                )
-                customer.typicalObjections.forEach { objection ->
-                    Text(
-                        text = "• $objection",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-            }
-        }
-
-        Card {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "Твоє завдання:",
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Text(
-                    text = "1. Презентуй товар (до 90 сек)\n2. Обробь заперечення клієнта\n3. Закрий продаж",
-                    style = MaterialTheme.typography.bodyMedium
+                    text = "• $objection",
+                    style = AppTypography.bodySmall,
+                    color = TextColors.onLightSecondary,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium
                 )
             }
         }
 
-        Button(
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = 20.dp,
+                    shape = RoundedCornerShape(20.dp),
+                    spotColor = Color.Black.copy(alpha = 0.18f),
+                    ambientColor = Color.Black.copy(alpha = 0.08f)
+                )
+                .background(Color.White, RoundedCornerShape(20.dp))
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "Твоє завдання:",
+                style = AppTypography.titleMedium,
+                color = TextColors.onLightPrimary,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "1. Презентуй товар (до 90 сек)\n2. Обробь заперечення клієнта\n3. Закрий продаж",
+                style = AppTypography.bodyMedium,
+                color = TextColors.onLightSecondary,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+
+        PrimaryButton(
+            text = "🎤 Почати презентацію",
             onClick = onStartPitch,
             modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("🎤 Почати презентацію")
-        }
+        )
     }
 }
 
@@ -367,81 +425,121 @@ private fun PitchRecordingContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Card {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text(
-                    text = "Продаєш: ${product.name}",
-                    style = MaterialTheme.typography.titleMedium
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = 20.dp,
+                    shape = RoundedCornerShape(20.dp),
+                    spotColor = Color.Black.copy(alpha = 0.18f),
+                    ambientColor = Color.Black.copy(alpha = 0.08f)
                 )
-                Text(
-                    text = product.price,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
+                .background(Color.White, RoundedCornerShape(20.dp))
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = "Продаєш: ${product.name}",
+                style = AppTypography.titleMedium,
+                color = TextColors.onLightPrimary,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = product.price,
+                style = AppTypography.labelLarge,
+                color = Color(0xFF667EEA),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
 
         if (isRecording) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer
-                )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(
+                        elevation = 24.dp,
+                        shape = RoundedCornerShape(24.dp),
+                        spotColor = Color(0xFFEF4444).copy(alpha = 0.3f)
+                    )
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(Color(0xFFFEF2F2), Color(0xFFFEE2E2))
+                        ),
+                        RoundedCornerShape(24.dp)
+                    )
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Text(
-                        text = "🔴 Запис презентації...",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Text(
-                        text = "$secondsElapsed / $maxSeconds сек",
-                        style = MaterialTheme.typography.displayMedium
-                    )
-                    LinearProgressIndicator(
-                        progress = secondsElapsed.toFloat() / maxSeconds,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Button(
-                        onClick = onStopRecording,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error
-                        )
-                    ) {
-                        Text("■ Завершити презентацію")
-                    }
-                }
+                Text(
+                    text = "🔴 Запис презентації...",
+                    style = AppTypography.headlineSmall,
+                    color = Color(0xFFEF4444),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+                Text(
+                    text = "$secondsElapsed / $maxSeconds сек",
+                    style = AppTypography.displayMedium,
+                    color = Color(0xFF991B1B),
+                    fontSize = 56.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = (-2).sp
+                )
+                LinearProgressIndicator(
+                    progress = { secondsElapsed.toFloat() / maxSeconds },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(12.dp),
+                    color = Color(0xFFEF4444),
+                    trackColor = Color.White.copy(alpha = 0.5f),
+                    strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
+                )
+                PrimaryButton(
+                    text = "■ Завершити презентацію",
+                    onClick = onStopRecording,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         } else {
-            Card {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "Презентуй товар:",
-                        style = MaterialTheme.typography.titleMedium
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(
+                        elevation = 20.dp,
+                        shape = RoundedCornerShape(20.dp),
+                        spotColor = Color.Black.copy(alpha = 0.18f),
+                        ambientColor = Color.Black.copy(alpha = 0.08f)
                     )
-                    Text(
-                        text = "Розкажи про переваги, унікальність, вартість. Переконай клієнта!",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
+                    .background(Color.White, RoundedCornerShape(20.dp))
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Презентуй товар:",
+                    style = AppTypography.titleMedium,
+                    color = TextColors.onLightPrimary,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Розкажи про переваги, унікальність, вартість. Переконай клієнта!",
+                    style = AppTypography.bodyMedium,
+                    color = TextColors.onLightSecondary,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium
+                )
             }
 
-            Button(
+            Spacer(modifier = Modifier.height(16.dp))
+
+            PrimaryButton(
+                text = "🎤 Почати запис",
                 onClick = onStartRecording,
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("🎤 Почати запис")
-            }
+            )
         }
     }
 }
@@ -459,49 +557,66 @@ private fun CustomerReactionContent(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         if (isThinking) {
-            Card {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    CircularProgressIndicator()
-                    Text(
-                        text = "Клієнт обдумує...",
-                        style = MaterialTheme.typography.titleMedium
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(
+                        elevation = 20.dp,
+                        shape = RoundedCornerShape(20.dp),
+                        spotColor = Color.Black.copy(alpha = 0.18f),
+                        ambientColor = Color.Black.copy(alpha = 0.08f)
                     )
-                }
+                    .background(Color.White, RoundedCornerShape(20.dp))
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                CircularProgressIndicator(color = Color(0xFF667EEA))
+                Text(
+                    text = "Клієнт обдумує...",
+                    style = AppTypography.titleMedium,
+                    color = TextColors.onLightPrimary,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         } else {
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(
+                        elevation = 20.dp,
+                        shape = RoundedCornerShape(20.dp),
+                        spotColor = Color.Black.copy(alpha = 0.18f),
+                        ambientColor = Color.Black.copy(alpha = 0.08f)
+                    )
+                    .background(Color.White, RoundedCornerShape(20.dp))
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "Реакція клієнта:",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                    Text(
-                        text = customerResponse ?: "",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
+                Text(
+                    text = "Реакція клієнта:",
+                    style = AppTypography.labelLarge,
+                    color = Color(0xFF764BA2),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = customerResponse ?: "",
+                    style = AppTypography.bodyLarge,
+                    color = TextColors.onLightPrimary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
             }
 
-            Button(
+            Spacer(modifier = Modifier.height(16.dp))
+
+            PrimaryButton(
+                text = "Відповісти на заперечення",
                 onClick = onContinue,
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Відповісти на заперечення")
-            }
+            )
         }
     }
 }
@@ -521,77 +636,113 @@ private fun ObjectionHandlingContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer
-            )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = 20.dp,
+                    shape = RoundedCornerShape(20.dp),
+                    spotColor = Color.Black.copy(alpha = 0.18f),
+                    ambientColor = Color.Black.copy(alpha = 0.08f)
+                )
+                .background(Color.White, RoundedCornerShape(20.dp))
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "Заперечення клієнта:",
-                    style = MaterialTheme.typography.labelMedium
-                )
-                Text(
-                    text = customerResponse,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+            Text(
+                text = "Заперечення клієнта:",
+                style = AppTypography.labelMedium,
+                color = Color(0xFF764BA2),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = customerResponse,
+                style = AppTypography.bodyMedium,
+                color = TextColors.onLightPrimary,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium
+            )
         }
 
         if (isRecording) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer
-                )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(
+                        elevation = 24.dp,
+                        shape = RoundedCornerShape(24.dp),
+                        spotColor = Color(0xFFEF4444).copy(alpha = 0.3f)
+                    )
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(Color(0xFFFEF2F2), Color(0xFFFEE2E2))
+                        ),
+                        RoundedCornerShape(24.dp)
+                    )
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Text(
-                        text = "🔴 Запис відповіді...",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Text(
-                        text = "$secondsElapsed / $maxSeconds сек",
-                        style = MaterialTheme.typography.displayMedium
-                    )
-                    LinearProgressIndicator(
-                        progress = secondsElapsed.toFloat() / maxSeconds,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Button(
-                        onClick = onStopRecording,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error
-                        )
-                    ) {
-                        Text("■ Завершити відповідь")
-                    }
-                }
+                Text(
+                    text = "🔴 Запис відповіді...",
+                    style = AppTypography.headlineSmall,
+                    color = Color(0xFFEF4444),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+                Text(
+                    text = "$secondsElapsed / $maxSeconds сек",
+                    style = AppTypography.displayMedium,
+                    color = Color(0xFF991B1B),
+                    fontSize = 56.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = (-2).sp
+                )
+                LinearProgressIndicator(
+                    progress = { secondsElapsed.toFloat() / maxSeconds },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(12.dp),
+                    color = Color(0xFFEF4444),
+                    trackColor = Color.White.copy(alpha = 0.5f),
+                    strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
+                )
+                PrimaryButton(
+                    text = "■ Завершити відповідь",
+                    onClick = onStopRecording,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         } else {
-            Card {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(
+                        elevation = 20.dp,
+                        shape = RoundedCornerShape(20.dp),
+                        spotColor = Color.Black.copy(alpha = 0.18f),
+                        ambientColor = Color.Black.copy(alpha = 0.08f)
+                    )
+                    .background(Color.White, RoundedCornerShape(20.dp))
+                    .padding(20.dp)
+            ) {
                 Text(
                     text = "Обробити заперечення клієнта та переконай купити!",
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.bodyMedium
+                    style = AppTypography.bodyMedium,
+                    color = TextColors.onLightPrimary,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium
                 )
             }
 
-            Button(
+            Spacer(modifier = Modifier.height(16.dp))
+
+            PrimaryButton(
+                text = "🎤 Відповісти",
                 onClick = onStartRecording,
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("🎤 Відповісти")
-            }
+            )
         }
     }
 }
@@ -609,52 +760,68 @@ private fun FinalDecisionContent(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         if (isThinking) {
-            Card {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    CircularProgressIndicator()
-                    Text(
-                        text = "Клієнт приймає рішення...",
-                        style = MaterialTheme.typography.titleMedium
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(
+                        elevation = 20.dp,
+                        shape = RoundedCornerShape(20.dp),
+                        spotColor = Color.Black.copy(alpha = 0.18f),
+                        ambientColor = Color.Black.copy(alpha = 0.08f)
                     )
-                }
+                    .background(Color.White, RoundedCornerShape(20.dp))
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                CircularProgressIndicator(color = Color(0xFF667EEA))
+                Text(
+                    text = "Клієнт приймає рішення...",
+                    style = AppTypography.titleMedium,
+                    color = TextColors.onLightPrimary,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         } else {
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = if (decision?.contains("купую", ignoreCase = true) == true ||
-                                         decision?.contains("так", ignoreCase = true) == true)
-                        MaterialTheme.colorScheme.primaryContainer
-                    else
-                        MaterialTheme.colorScheme.errorContainer
-                )
+            val isPositive = decision?.contains("купую", ignoreCase = true) == true ||
+                           decision?.contains("так", ignoreCase = true) == true
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(
+                        elevation = 20.dp,
+                        shape = RoundedCornerShape(20.dp),
+                        spotColor = Color.Black.copy(alpha = 0.18f),
+                        ambientColor = Color.Black.copy(alpha = 0.08f)
+                    )
+                    .background(Color.White, RoundedCornerShape(20.dp))
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "Рішення клієнта:",
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                    Text(
-                        text = decision ?: "",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
+                Text(
+                    text = "Рішення клієнта:",
+                    style = AppTypography.labelLarge,
+                    color = if (isPositive) Color(0xFF667EEA) else Color(0xFFEF4444),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = decision ?: "",
+                    style = AppTypography.bodyLarge,
+                    color = TextColors.onLightPrimary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
             }
 
-            Button(
+            Spacer(modifier = Modifier.height(16.dp))
+
+            PrimaryButton(
+                text = "Завершити",
                 onClick = onFinish,
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Завершити")
-            }
+            )
         }
     }
 }
@@ -671,49 +838,69 @@ private fun SalesCompleteContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = 20.dp,
+                    shape = RoundedCornerShape(20.dp),
+                    spotColor = Color.Black.copy(alpha = 0.18f),
+                    ambientColor = Color.Black.copy(alpha = 0.08f)
+                )
+                .background(Color.White, RoundedCornerShape(20.dp))
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "✓ Продаж завершено!",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = "Товар: ${product.name}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+            Text(
+                text = "✓ Продаж завершено!",
+                style = AppTypography.headlineMedium,
+                color = Color(0xFF667EEA),
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
+            Text(
+                text = "Товар: ${product.name}",
+                style = AppTypography.bodyMedium,
+                color = TextColors.onLightPrimary,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium
+            )
         }
 
-        Card {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "Результат:",
-                    style = MaterialTheme.typography.labelLarge
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = 20.dp,
+                    shape = RoundedCornerShape(20.dp),
+                    spotColor = Color.Black.copy(alpha = 0.18f),
+                    ambientColor = Color.Black.copy(alpha = 0.08f)
                 )
-                Text(
-                    text = decision,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
+                .background(Color.White, RoundedCornerShape(20.dp))
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "Результат:",
+                style = AppTypography.labelLarge,
+                color = Color(0xFF667EEA),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = decision,
+                style = AppTypography.bodyLarge,
+                color = TextColors.onLightPrimary,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium
+            )
         }
 
-        Button(
+        PrimaryButton(
+            text = "Готово",
             onClick = onFinish,
             modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Готово")
-        }
+        )
     }
 }

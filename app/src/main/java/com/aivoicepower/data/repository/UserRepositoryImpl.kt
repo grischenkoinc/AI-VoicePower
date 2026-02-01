@@ -22,7 +22,9 @@ import javax.inject.Singleton
  * TODO Phase 1-2: Implement with UserProfileDao and UserProgressDao
  */
 @Singleton
-class UserRepositoryImpl @Inject constructor() : UserRepository {
+class UserRepositoryImpl @Inject constructor(
+    private val recordingDao: com.aivoicepower.data.local.database.dao.RecordingDao
+) : UserRepository {
 
     private val _userProfile = MutableStateFlow(getMockUserProfile())
     private val _userProgress = MutableStateFlow(getMockUserProgress())
@@ -66,6 +68,28 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
                 isInitial = true
             )
         )
+    }
+
+    override suspend fun getWeeklyActivity(): List<com.aivoicepower.ui.screens.progress.DailyProgress> {
+        val sevenDaysAgo = System.currentTimeMillis() - (7L * 24 * 60 * 60 * 1000)
+        val stats = recordingDao.getWeeklyStats(sevenDaysAgo)
+
+        // Create a map of date -> stats
+        val statsMap = stats.associateBy {
+            java.time.LocalDate.ofEpochDay(it.createdAt / (24 * 60 * 60 * 1000))
+        }
+
+        // Generate list for all 7 days (including days with no activity)
+        return (0..6).map { daysAgo ->
+            val date = java.time.LocalDate.now().minusDays(daysAgo.toLong())
+            val stat = statsMap[date]
+
+            com.aivoicepower.ui.screens.progress.DailyProgress(
+                date = date.toString(),
+                exercises = stat?.exerciseCount ?: 0,
+                minutes = ((stat?.totalDuration ?: 0L) / 60000).toInt()
+            )
+        }.reversed()
     }
 
     private fun getMockUserProfile(): UserProfile {

@@ -11,9 +11,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.aivoicepower.domain.model.user.SkillType
 import com.aivoicepower.domain.model.user.toDisplayString
+import com.aivoicepower.ui.theme.AppTypography
+import com.aivoicepower.ui.theme.TextColors
 
 @Composable
 fun SkillBarChart(
@@ -38,6 +43,8 @@ private fun SkillBar(
     name: String,
     level: Int
 ) {
+    val barColor = getColorForLevel(level)
+
     Column {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -45,23 +52,58 @@ private fun SkillBar(
         ) {
             Text(
                 text = name,
-                style = MaterialTheme.typography.bodySmall
+                style = AppTypography.bodyMedium,
+                color = TextColors.onLightPrimary,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold
             )
             Text(
                 text = "$level",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary
+                style = AppTypography.bodyMedium,
+                color = barColor,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
             )
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
         LinearProgressIndicator(
-            progress = level / 100f,
+            progress = { level / 100f },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(8.dp),
-            trackColor = MaterialTheme.colorScheme.surfaceVariant
+                .height(10.dp),
+            color = barColor,
+            trackColor = Color(0xFFE5E7EB)
         )
+    }
+}
+
+/**
+ * Повертає колір залежно від рівня:
+ * 1 = червоний, 99 = зелений, градієнт між ними
+ */
+private fun getColorForLevel(level: Int): Color {
+    val normalizedLevel = level.coerceIn(1, 99) / 99f
+
+    return when {
+        normalizedLevel < 0.5f -> {
+            // Червоний -> Жовтий (0-50)
+            val progress = normalizedLevel * 2
+            Color(
+                red = 1f,
+                green = progress,
+                blue = 0f
+            )
+        }
+        else -> {
+            // Жовтий -> Зелений (50-99)
+            val progress = (normalizedLevel - 0.5f) * 2
+            Color(
+                red = 1f - progress,
+                green = 1f,
+                blue = 0f
+            )
+        }
     }
 }

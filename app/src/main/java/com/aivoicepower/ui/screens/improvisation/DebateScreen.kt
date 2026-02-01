@@ -22,6 +22,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
 import com.aivoicepower.ui.theme.components.GradientBackground
+import com.aivoicepower.ui.theme.components.PrimaryButton
 
 @Composable
 fun DebateScreen(
@@ -63,19 +64,32 @@ fun DebateScreen(
                 }
 
                 // Back button
-                Box(
+                Row(
                     modifier = Modifier
-                        .size(40.dp)
-                        .background(
-                            Brush.linearGradient(
-                                colors = listOf(Color(0xFFF59E0B), Color(0xFFF97316))
-                            ),
-                            CircleShape
+                        .shadow(
+                            elevation = 12.dp,
+                            shape = RoundedCornerShape(16.dp),
+                            spotColor = Color.Black.copy(alpha = 0.2f)
                         )
-                        .clickable { onNavigateBack() },
-                    contentAlignment = Alignment.Center
+                        .background(Color.White, RoundedCornerShape(16.dp))
+                        .clickable { onNavigateBack() }
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "←", fontSize = 20.sp, color = Color.White)
+                    Text(
+                        text = "←",
+                        fontSize = 24.sp,
+                        color = Color(0xFF667EEA),
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Назад",
+                        style = AppTypography.bodyMedium,
+                        color = TextColors.onLightPrimary,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
 
@@ -341,90 +355,128 @@ private fun UserArgumentContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = 20.dp,
+                    shape = RoundedCornerShape(20.dp),
+                    spotColor = Color.Black.copy(alpha = 0.18f),
+                    ambientColor = Color.Black.copy(alpha = 0.08f)
+                )
+                .background(Color.White, RoundedCornerShape(20.dp))
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "Раунд $roundNumber з 5",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = topic.topic,
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Text(
-                    text = "Твоя позиція: ${if (position == DebatePosition.FOR) "ЗА" else "ПРОТИ"}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+            Text(
+                text = "Раунд $roundNumber з 5",
+                style = AppTypography.labelLarge,
+                color = Color(0xFF667EEA),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = topic.topic,
+                style = AppTypography.titleMedium,
+                color = TextColors.onLightPrimary,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Твоя позиція: ${if (position == DebatePosition.FOR) "ЗА" else "ПРОТИ"}",
+                style = AppTypography.bodyMedium,
+                color = TextColors.onLightSecondary,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium
+            )
         }
 
         if (isRecording) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer
-                )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(
+                        elevation = 24.dp,
+                        shape = RoundedCornerShape(24.dp),
+                        spotColor = Color(0xFFEF4444).copy(alpha = 0.3f)
+                    )
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(Color(0xFFFEF2F2), Color(0xFFFEE2E2))
+                        ),
+                        RoundedCornerShape(24.dp)
+                    )
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Text(
-                        text = "🔴 Запис аргументу...",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Text(
-                        text = "$secondsElapsed / $maxSeconds сек",
-                        style = MaterialTheme.typography.displayMedium
-                    )
-                    LinearProgressIndicator(
-                        progress = secondsElapsed.toFloat() / maxSeconds,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Button(
-                        onClick = onStopRecording,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error
-                        )
-                    ) {
-                        Text("■ Завершити запис")
-                    }
-                }
+                Text(
+                    text = "🔴 Запис аргументу...",
+                    style = AppTypography.headlineSmall,
+                    color = Color(0xFFEF4444),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+                Text(
+                    text = "$secondsElapsed / $maxSeconds сек",
+                    style = AppTypography.displayMedium,
+                    color = Color(0xFF991B1B),
+                    fontSize = 56.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = (-2).sp
+                )
+                LinearProgressIndicator(
+                    progress = { secondsElapsed.toFloat() / maxSeconds },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(12.dp),
+                    color = Color(0xFFEF4444),
+                    trackColor = Color.White.copy(alpha = 0.5f),
+                    strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
+                )
+                PrimaryButton(
+                    text = "■ Завершити запис",
+                    onClick = onStopRecording,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         } else {
-            Card {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "Твій хід:",
-                        style = MaterialTheme.typography.titleMedium
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(
+                        elevation = 20.dp,
+                        shape = RoundedCornerShape(20.dp),
+                        spotColor = Color.Black.copy(alpha = 0.18f),
+                        ambientColor = Color.Black.copy(alpha = 0.08f)
                     )
-                    Text(
-                        text = "Наведи свій аргумент. У тебе є до $maxSeconds секунд.",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
+                    .background(Color.White, RoundedCornerShape(20.dp))
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Твій хід:",
+                    style = AppTypography.titleMedium,
+                    color = TextColors.onLightPrimary,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Наведи свій аргумент. У тебе є до $maxSeconds секунд.",
+                    style = AppTypography.bodyMedium,
+                    color = TextColors.onLightSecondary,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium
+                )
             }
 
-            Button(
+            Spacer(modifier = Modifier.height(16.dp))
+
+            PrimaryButton(
+                text = "🎤 Почати запис аргументу",
                 onClick = onStartRecording,
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("🎤 Почати запис аргументу")
-            }
+            )
         }
     }
 }
@@ -446,93 +498,118 @@ private fun AiResponseContent(
     ) {
         if (isThinking) {
             item {
-                Card {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        CircularProgressIndicator()
-                        Text(
-                            text = "AI обдумує відповідь...",
-                            style = MaterialTheme.typography.titleMedium
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 20.dp,
+                            shape = RoundedCornerShape(20.dp),
+                            spotColor = Color.Black.copy(alpha = 0.18f),
+                            ambientColor = Color.Black.copy(alpha = 0.08f)
                         )
-                    }
+                        .background(Color.White, RoundedCornerShape(20.dp))
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    CircularProgressIndicator(color = Color(0xFF667EEA))
+                    Text(
+                        text = "AI обдумує відповідь...",
+                        style = AppTypography.titleMedium,
+                        color = TextColors.onLightPrimary,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         } else {
             item {
                 Text(
                     text = "Раунд $currentRound:",
-                    style = MaterialTheme.typography.titleLarge
+                    style = AppTypography.titleLarge,
+                    color = TextColors.onDarkPrimary,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.ExtraBold
                 )
             }
 
             rounds.lastOrNull()?.let { lastRound ->
                 item {
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer
-                        )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(
+                                elevation = 20.dp,
+                                shape = RoundedCornerShape(20.dp),
+                                spotColor = Color.Black.copy(alpha = 0.18f),
+                                ambientColor = Color.Black.copy(alpha = 0.08f)
+                            )
+                            .background(Color.White, RoundedCornerShape(20.dp))
+                            .padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = "Твій аргумент:",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Text(
-                                text = lastRound.userArgument,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        }
+                        Text(
+                            text = "Твій аргумент:",
+                            style = AppTypography.labelLarge,
+                            color = Color(0xFF667EEA),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = lastRound.userArgument,
+                            style = AppTypography.bodyLarge,
+                            color = TextColors.onLightPrimary,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
 
                 item {
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
-                        )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(
+                                elevation = 20.dp,
+                                shape = RoundedCornerShape(20.dp),
+                                spotColor = Color.Black.copy(alpha = 0.18f),
+                                ambientColor = Color.Black.copy(alpha = 0.08f)
+                            )
+                            .background(Color.White, RoundedCornerShape(20.dp))
+                            .padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = "Відповідь AI:",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-                            Text(
-                                text = lastRound.aiResponse,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        }
+                        Text(
+                            text = "Відповідь AI:",
+                            style = AppTypography.labelLarge,
+                            color = Color(0xFF764BA2),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = lastRound.aiResponse,
+                            style = AppTypography.bodyLarge,
+                            color = TextColors.onLightPrimary,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
             }
 
             item {
                 if (currentRound < maxRounds) {
-                    Button(
+                    PrimaryButton(
+                        text = "Наступний раунд (${currentRound + 1}/$maxRounds)",
                         onClick = onNextRound,
                         modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Наступний раунд (${currentRound + 1}/$maxRounds)")
-                    }
+                    )
                 } else {
-                    Button(
+                    PrimaryButton(
+                        text = "Завершити дебати",
                         onClick = onFinish,
                         modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Завершити дебати")
-                    }
+                    )
                 }
             }
         }
@@ -552,37 +629,51 @@ private fun DebateCompleteContent(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(
+                        elevation = 20.dp,
+                        shape = RoundedCornerShape(20.dp),
+                        spotColor = Color.Black.copy(alpha = 0.18f),
+                        ambientColor = Color.Black.copy(alpha = 0.08f)
+                    )
+                    .background(Color.White, RoundedCornerShape(20.dp))
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "✓ Дебати завершено!",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = "Тема: ${topic.topic}",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Text(
-                        text = "Проведено ${rounds.size} раундів",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
+                Text(
+                    text = "✓ Дебати завершено!",
+                    style = AppTypography.headlineMedium,
+                    color = Color(0xFF667EEA),
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+                Text(
+                    text = "Тема: ${topic.topic}",
+                    style = AppTypography.bodyMedium,
+                    color = TextColors.onLightPrimary,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = "Проведено ${rounds.size} раундів",
+                    style = AppTypography.bodyMedium,
+                    color = TextColors.onLightSecondary,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium
+                )
             }
         }
 
         item {
             Text(
                 text = "Історія дебатів:",
-                style = MaterialTheme.typography.titleLarge
+                style = AppTypography.titleLarge,
+                color = TextColors.onDarkPrimary,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.ExtraBold
             )
         }
 
@@ -611,12 +702,11 @@ private fun DebateCompleteContent(
         }
 
         item {
-            Button(
+            PrimaryButton(
+                text = "Готово",
                 onClick = onFinish,
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Готово")
-            }
+            )
         }
     }
 }

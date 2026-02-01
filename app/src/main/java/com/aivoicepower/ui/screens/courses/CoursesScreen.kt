@@ -141,53 +141,23 @@ private fun CoursesHeader(
         modifier = modifier
             .fillMaxWidth()
             .padding(start = 20.dp, end = 20.dp, top = 40.dp, bottom = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .shadow(
-                    elevation = 12.dp,
-                    shape = RoundedCornerShape(16.dp),
-                    spotColor = Color.Black.copy(alpha = 0.2f)
-                )
-                .background(Color.White, RoundedCornerShape(16.dp))
-                .clickable { onNavigateBack() }
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "←",
-                fontSize = 24.sp,
-                color = Color(0xFF667EEA),
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "Назад",
-                style = AppTypography.bodyMedium,
-                color = TextColors.onLightPrimary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
-                text = "Курси",
-                style = AppTypography.displayLarge,
-                color = TextColors.onDarkPrimary,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = (-1).sp
-            )
-            Text(
-                text = "$totalCourses курси • $totalLessons уроків",
-                style = AppTypography.bodyMedium,
-                color = TextColors.onDarkSecondary,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
+        Text(
+            text = "Курси",
+            style = AppTypography.displayLarge,
+            color = TextColors.onDarkPrimary,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Black,
+            letterSpacing = (-1).sp
+        )
+        Text(
+            text = "$totalCourses курси • $totalLessons уроків",
+            style = AppTypography.bodyMedium,
+            color = TextColors.onDarkSecondary,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold
+        )
     }
 }
 

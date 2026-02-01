@@ -55,8 +55,7 @@ fun ProgressScreen(
                 onNavigateToCompare = onNavigateToCompare,
                 onNavigateToAchievements = onNavigateToAchievements,
                 onNavigateToHistory = onNavigateToHistory,
-                onNavigateBack = onNavigateBack,
-                onRefresh = { viewModel.onEvent(ProgressEvent.Refresh) }
+                onNavigateBack = onNavigateBack
             )
         }
     }
@@ -69,7 +68,6 @@ private fun ProgressContent(
     onNavigateToAchievements: () -> Unit,
     onNavigateToHistory: () -> Unit,
     onNavigateBack: () -> Unit,
-    onRefresh: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
@@ -83,14 +81,12 @@ private fun ProgressContent(
     ) {
         // Header
         ProgressHeader(
-            onNavigateBack = onNavigateBack,
-            onRefresh = onRefresh
+            onNavigateBack = onNavigateBack
         )
 
         // Overall Level
         OverallLevelCard(
-            level = state.overallLevel,
-            levelLabel = getLevelLabel(state.overallLevel)
+            level = state.overallLevel
         )
 
         // Streak
@@ -254,65 +250,27 @@ private fun ProgressContent(
 @Composable
 private fun ProgressHeader(
     onNavigateBack: () -> Unit,
-    onRefresh: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
+    Column(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(
-                text = "Твої досягнення",
-                style = AppTypography.labelMedium,
-                color = TextColors.onDarkSecondary,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = "Прогрес",
-                style = AppTypography.displayLarge,
-                color = TextColors.onDarkPrimary,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = (-0.8).sp
-            )
-        }
-
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            // Refresh button
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(
-                        Brush.linearGradient(
-                            colors = listOf(Color(0xFF10B981), Color(0xFF14B8A6))
-                        ),
-                        CircleShape
-                    )
-                    .clickable { onRefresh() },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "↻", fontSize = 20.sp, color = Color.White)
-            }
-
-            // Back button
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(
-                        Brush.linearGradient(
-                            colors = listOf(Color(0xFF6366F1), Color(0xFF8B5CF6))
-                        ),
-                        CircleShape
-                    )
-                    .clickable { onNavigateBack() },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "←", fontSize = 20.sp, color = Color.White)
-            }
-        }
+        Text(
+            text = "Твої досягнення",
+            style = AppTypography.labelMedium,
+            color = TextColors.onDarkSecondary,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+        Text(
+            text = "Прогрес",
+            style = AppTypography.displayLarge,
+            color = TextColors.onDarkPrimary,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.ExtraBold,
+            letterSpacing = (-0.8).sp
+        )
     }
 }
 
@@ -375,12 +333,3 @@ private fun ActionCard(
     }
 }
 
-private fun getLevelLabel(level: Int): String {
-    return when {
-        level < 20 -> "Початківець"
-        level < 40 -> "Практикуючий"
-        level < 60 -> "Досвідчений"
-        level < 80 -> "Майстер"
-        else -> "Професіонал"
-    }
-}

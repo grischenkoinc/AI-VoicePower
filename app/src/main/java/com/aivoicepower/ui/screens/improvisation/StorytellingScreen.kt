@@ -27,6 +27,8 @@ import com.aivoicepower.ui.screens.improvisation.components.PreparationTimerCard
 import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
 import com.aivoicepower.ui.theme.components.GradientBackground
+import com.aivoicepower.ui.theme.components.PrimaryButton
+import com.aivoicepower.ui.theme.components.SecondaryButton
 
 @Composable
 fun StorytellingScreen(
@@ -78,19 +80,32 @@ fun StorytellingScreen(
                 }
 
                 // Back button
-                Box(
+                Row(
                     modifier = Modifier
-                        .size(40.dp)
-                        .background(
-                            Brush.linearGradient(
-                                colors = listOf(Color(0xFFF59E0B), Color(0xFFF97316))
-                            ),
-                            CircleShape
+                        .shadow(
+                            elevation = 12.dp,
+                            shape = RoundedCornerShape(16.dp),
+                            spotColor = Color.Black.copy(alpha = 0.2f)
                         )
-                        .clickable { onNavigateBack() },
-                    contentAlignment = Alignment.Center
+                        .background(Color.White, RoundedCornerShape(16.dp))
+                        .clickable { onNavigateBack() }
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "←", fontSize = 20.sp, color = Color.White)
+                    Text(
+                        text = "←",
+                        fontSize = 24.sp,
+                        color = Color(0xFF667EEA),
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Назад",
+                        style = AppTypography.bodyMedium,
+                        color = TextColors.onLightPrimary,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
             when {
@@ -129,24 +144,22 @@ fun StorytellingScreen(
                     )
 
                     if (state.preparationTimeLeft == 0) {
-                        Button(
+                        PrimaryButton(
+                            text = "🎤 Почати розповідь",
                             onClick = {
                                 viewModel.onEvent(StorytellingEvent.StartRecording)
                             },
                             modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("🎤 Почати розповідь")
-                        }
+                        )
                     }
 
-                    OutlinedButton(
+                    SecondaryButton(
+                        text = "← Змінити формат",
                         onClick = {
                             viewModel.onEvent(StorytellingEvent.ResetToFormatSelection)
                         },
                         modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("← Змінити формат")
-                    }
+                    )
                 }
 
                 state.isRecording -> {
@@ -193,7 +206,8 @@ fun StorytellingScreen(
                         )
                     }
 
-                    Button(
+                    PrimaryButton(
+                        text = "Завершити",
                         onClick = {
                             viewModel.onEvent(StorytellingEvent.CompleteTask)
                             state.recordingId?.let { recordingId ->
@@ -201,29 +215,24 @@ fun StorytellingScreen(
                                 onNavigateBack()
                             }
                         },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = state.recordingId != null
-                    ) {
-                        Text("Завершити")
-                    }
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-                    OutlinedButton(
+                    SecondaryButton(
+                        text = "🔄 Нова історія",
                         onClick = {
                             viewModel.onEvent(StorytellingEvent.GenerateNewPrompt)
                         },
                         modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("🔄 Нова історія")
-                    }
+                    )
 
-                    OutlinedButton(
+                    SecondaryButton(
+                        text = "← Змінити формат",
                         onClick = {
                             viewModel.onEvent(StorytellingEvent.ResetToFormatSelection)
                         },
                         modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("← Змінити формат")
-                    }
+                    )
                 }
             }
 

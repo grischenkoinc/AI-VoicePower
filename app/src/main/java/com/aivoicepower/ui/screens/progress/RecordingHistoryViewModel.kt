@@ -20,6 +20,8 @@ data class RecordingHistoryState(
     val recordings: List<RecordingEntity> = emptyList(),
     val selectedFilter: RecordingFilter = RecordingFilter.ALL,
     val playingRecordingId: String? = null,
+    val recordingToDelete: String? = null,
+    val showDeleteConfirmation: Boolean = false,
     val error: String? = null
 )
 
@@ -31,7 +33,9 @@ sealed class RecordingHistoryEvent {
     data class FilterSelected(val filter: RecordingFilter) : RecordingHistoryEvent()
     data class PlayRecording(val recording: RecordingEntity) : RecordingHistoryEvent()
     object StopPlayback : RecordingHistoryEvent()
-    data class DeleteRecording(val recordingId: String) : RecordingHistoryEvent()
+    data class RequestDeleteRecording(val recordingId: String) : RecordingHistoryEvent()
+    object ConfirmDelete : RecordingHistoryEvent()
+    object CancelDelete : RecordingHistoryEvent()
     data class ViewResults(val recordingId: String) : RecordingHistoryEvent()
 }
 
@@ -63,7 +67,33 @@ class RecordingHistoryViewModel @Inject constructor(
             }
             is RecordingHistoryEvent.PlayRecording -> playRecording(event.recording)
             RecordingHistoryEvent.StopPlayback -> stopPlayback()
-            is RecordingHistoryEvent.DeleteRecording -> deleteRecording(event.recordingId)
+            is RecordingHistoryEvent.RequestDeleteRecording -> {
+                _state.update {
+                    it.copy(
+                        recordingToDelete = event.recordingId,
+                        showDeleteConfirmation = true
+                    )
+                }
+            }
+            RecordingHistoryEvent.ConfirmDelete -> {
+                _state.value.recordingToDelete?.let { recordingId ->
+                    deleteRecording(recordingId)
+                }
+                _state.update {
+                    it.copy(
+                        recordingToDelete = null,
+                        showDeleteConfirmation = false
+                    )
+                }
+            }
+            RecordingHistoryEvent.CancelDelete -> {
+                _state.update {
+                    it.copy(
+                        recordingToDelete = null,
+                        showDeleteConfirmation = false
+                    )
+                }
+            }
             is RecordingHistoryEvent.ViewResults -> {
                 // Handled by Screen
             }

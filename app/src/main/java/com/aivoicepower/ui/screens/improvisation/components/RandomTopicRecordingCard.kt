@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.sp
 import com.aivoicepower.domain.model.ImprovisationTopic
 import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
+import com.aivoicepower.ui.theme.components.PrimaryButton
 
 @Composable
 fun RandomTopicRecordingCard(
@@ -83,21 +84,11 @@ fun RandomTopicRecordingCard(
             )
         }
 
-        Button(
+        PrimaryButton(
+            text = "■ Завершити",
             onClick = onStop,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFEF4444)
-            ),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Text(
-                text = "■ Завершити",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 4.dp)
-            )
-        }
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 
