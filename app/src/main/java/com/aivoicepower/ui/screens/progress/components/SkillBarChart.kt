@@ -1,16 +1,21 @@
 package com.aivoicepower.ui.screens.progress.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -43,7 +48,7 @@ private fun SkillBar(
     name: String,
     level: Int
 ) {
-    val barColor = getColorForLevel(level)
+    val barColors = getGradientColorsForLevel(level)
 
     Column {
         Row(
@@ -55,54 +60,91 @@ private fun SkillBar(
                 style = AppTypography.bodyMedium,
                 color = TextColors.onLightPrimary,
                 fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.Bold
             )
             Text(
                 text = "$level",
                 style = AppTypography.bodyMedium,
-                color = barColor,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
+                color = barColors.first,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.ExtraBold
             )
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        LinearProgressIndicator(
-            progress = { level / 100f },
+        // 3D Progress bar with gradient
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(10.dp),
-            color = barColor,
-            trackColor = Color(0xFFE5E7EB)
-        )
+                .height(14.dp)
+        ) {
+            // Background track with subtle shadow
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(14.dp)
+                    .shadow(
+                        elevation = 2.dp,
+                        shape = RoundedCornerShape(7.dp),
+                        spotColor = Color.Black.copy(alpha = 0.15f)
+                    )
+                    .background(
+                        Color(0xFFE5E7EB),
+                        RoundedCornerShape(7.dp)
+                    )
+            )
+
+            // Gradient progress bar with 3D effect
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(level / 100f)
+                    .height(14.dp)
+                    .shadow(
+                        elevation = 4.dp,
+                        shape = RoundedCornerShape(7.dp),
+                        spotColor = barColors.first.copy(alpha = 0.4f)
+                    )
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(barColors.first, barColors.second)
+                        ),
+                        RoundedCornerShape(7.dp)
+                    )
+            )
+        }
     }
 }
 
 /**
- * Повертає колір залежно від рівня:
- * 1 = червоний, 99 = зелений, градієнт між ними
+ * Повертає пару кольорів для градієнта залежно від рівня:
+ * 1 = червоний, 50 = жовтий, 99 = зелений
+ * Плавний перехід між кольорами
  */
-private fun getColorForLevel(level: Int): Color {
+private fun getGradientColorsForLevel(level: Int): Pair<Color, Color> {
     val normalizedLevel = level.coerceIn(1, 99) / 99f
 
     return when {
-        normalizedLevel < 0.5f -> {
-            // Червоний -> Жовтий (0-50)
-            val progress = normalizedLevel * 2
-            Color(
-                red = 1f,
-                green = progress,
-                blue = 0f
+        level < 50 -> {
+            // Червоний → Жовтий (1-49)
+            val progress = level / 50f
+            val red = 1f
+            val green = progress
+
+            Pair(
+                Color(red = red, green = green, blue = 0f),
+                Color(red = red * 0.85f, green = green * 0.85f, blue = 0f)
             )
         }
         else -> {
-            // Жовтий -> Зелений (50-99)
-            val progress = (normalizedLevel - 0.5f) * 2
-            Color(
-                red = 1f - progress,
-                green = 1f,
-                blue = 0f
+            // Жовтий → Зелений (50-99)
+            val progress = (level - 50f) / 49f
+            val red = 1f - progress
+            val green = 1f
+
+            Pair(
+                Color(red = red, green = green, blue = 0f),
+                Color(red = red * 0.85f, green = green * 0.85f, blue = 0f)
             )
         }
     }

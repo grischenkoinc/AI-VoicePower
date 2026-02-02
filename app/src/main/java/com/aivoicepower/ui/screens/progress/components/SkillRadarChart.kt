@@ -111,40 +111,17 @@ fun SkillRadarChart(
             }
         }
 
-        // Мітки з компенсацією розміру
-        val labelDistance = 118.dp
+        // Мітки - розміщуємо точно на кінцях ліній
+        val labelDistance = 125.dp // Трохи далі від радіуса для відступу
         val angleStep = 360f / metrics.size
 
         metrics.forEachIndexed { index, metric ->
             val angleDegrees = angleStep * index - 90
             val angleRadians = Math.toRadians(angleDegrees.toDouble())
 
-            // Базовий offset від центру
-            val baseOffsetX = (labelDistance.value * cos(angleRadians)).dp
-            val baseOffsetY = (labelDistance.value * sin(angleRadians)).dp
-
-            // Розмір мітки
-            val labelWidth = if (metric.label == "Без паразитів") 75.dp else 65.dp
-            val labelHeight = if (metric.label == "Без паразитів") 40.dp else 30.dp
-
-            // Компенсація залежно від кута
-            val correctionX = when {
-                angleDegrees in -30f..30f -> 0.dp
-                angleDegrees in 30f..90f -> -(labelWidth / 2)
-                angleDegrees in 90f..150f -> -(labelWidth / 2)
-                angleDegrees in 150f..210f -> 0.dp
-                angleDegrees in 210f..270f -> (labelWidth / 2)
-                else -> (labelWidth / 2)
-            }
-
-            val correctionY = when {
-                angleDegrees in -90f..-30f -> (labelHeight / 2)
-                angleDegrees in -30f..30f -> 0.dp
-                angleDegrees in 30f..90f -> -(labelHeight / 2)
-                angleDegrees in 90f..150f -> -(labelHeight / 2)
-                angleDegrees in 150f..210f -> -(labelHeight / 2)
-                else -> 0.dp
-            }
+            // Точна позиція від центру
+            val offsetX = (labelDistance.value * cos(angleRadians)).dp
+            val offsetY = (labelDistance.value * sin(angleRadians)).dp
 
             RadarLabel(
                 label = metric.label,
@@ -152,10 +129,7 @@ fun SkillRadarChart(
                 isLong = metric.label == "Без паразитів",
                 modifier = Modifier
                     .align(Alignment.Center)
-                    .offset(
-                        x = baseOffsetX + correctionX,
-                        y = baseOffsetY + correctionY
-                    )
+                    .offset(x = offsetX, y = offsetY)
             )
         }
     }

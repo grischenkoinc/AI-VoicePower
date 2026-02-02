@@ -150,44 +150,25 @@ private fun WarmupHeader(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
+    Column(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(
-                text = "Розігрів голосу",
-                style = AppTypography.labelMedium,
-                color = TextColors.onDarkSecondary,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = "Розминка",
-                style = AppTypography.displayLarge,
-                color = TextColors.onDarkPrimary,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = (-0.8).sp
-            )
-        }
-
-        // Back button з gradient
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(Color(0xFF6366F1), Color(0xFF8B5CF6))
-                    ),
-                    CircleShape
-                )
-                .clickable { onNavigateBack() },
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = "←", fontSize = 20.sp, color = Color.White)
-        }
+        Text(
+            text = "Розігрів голосу",
+            style = AppTypography.labelMedium,
+            color = TextColors.onDarkSecondary,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+        Text(
+            text = "Розминка",
+            style = AppTypography.displayLarge,
+            color = TextColors.onDarkPrimary,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.ExtraBold,
+            letterSpacing = (-0.8).sp
+        )
     }
 }
 

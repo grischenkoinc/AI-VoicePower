@@ -10,9 +10,13 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -27,7 +31,14 @@ class UserRepositoryImpl @Inject constructor(
 ) : UserRepository {
 
     private val _userProfile = MutableStateFlow(getMockUserProfile())
-    private val _userProgress = MutableStateFlow(getMockUserProgress())
+    private val _userProgress = MutableStateFlow<UserProgress?>(null)
+
+    init {
+        // Load real progress data on initialization
+        CoroutineScope(Dispatchers.IO).launch {
+            _userProgress.value = calculateRealUserProgress()
+        }
+    }
 
     override fun getUserProfile(): Flow<UserProfile?> {
         return _userProfile
@@ -43,6 +54,106 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun updateUserProgress(progress: UserProgress) {
         _userProgress.value = progress
+        // Recalculate with real data after update
+        _userProgress.value = calculateRealUserProgress()
+    }
+
+    /**
+     * Calculates real user progress from recordings database
+     */
+    private suspend fun calculateRealUserProgress(): UserProgress {
+        val allRecordings = recordingDao.getAllRecordings().first()
+
+        // Calculate total statistics
+        val totalRecordings = allRecordings.size
+        val totalMinutes = (allRecordings.sumOf { it.durationMs } / 60000).toInt()
+
+        // Count unique exercises (by exerciseId)
+        val totalExercises = allRecordings.mapNotNull { it.exerciseId }.distinct().size
+
+        // Calculate streaks
+        val (currentStreak, longestStreak) = calculateStreaks(allRecordings)
+
+        // Get last activity date
+        val lastActivityDate = allRecordings.maxOfOrNull { it.createdAt } ?: System.currentTimeMillis()
+
+        // For skill levels, use the mock data for now (will be updated by diagnostic results)
+        val mockProgress = getMockUserProgress()
+
+        return UserProgress(
+            userId = "default_user",
+            currentStreak = currentStreak,
+            longestStreak = longestStreak,
+            totalMinutes = totalMinutes,
+            totalExercises = totalExercises,
+            totalRecordings = totalRecordings,
+            lastActivityDate = lastActivityDate,
+            skillLevels = mockProgress.skillLevels,
+            achievements = emptyList()
+        )
+    }
+
+    /**
+     * Calculates current and longest streak from recordings
+     */
+    private fun calculateStreaks(recordings: List<com.aivoicepower.data.local.database.entity.RecordingEntity>): Pair<Int, Int> {
+        if (recordings.isEmpty()) return Pair(0, 0)
+
+        // Group recordings by date
+        val datesWithActivity = recordings.map { recording ->
+            val date = java.util.Date(recording.createdAt)
+            val calendar = java.util.Calendar.getInstance().apply {
+                time = date
+                set(java.util.Calendar.HOUR_OF_DAY, 0)
+                set(java.util.Calendar.MINUTE, 0)
+                set(java.util.Calendar.SECOND, 0)
+                set(java.util.Calendar.MILLISECOND, 0)
+            }
+            java.time.LocalDate.of(
+                calendar.get(java.util.Calendar.YEAR),
+                calendar.get(java.util.Calendar.MONTH) + 1,
+                calendar.get(java.util.Calendar.DAY_OF_MONTH)
+            )
+        }.distinct().sorted()
+
+        // Calculate current streak
+        var currentStreak = 0
+        val today = java.time.LocalDate.now()
+        var checkDate = today
+
+        while (datesWithActivity.contains(checkDate)) {
+            currentStreak++
+            checkDate = checkDate.minusDays(1)
+        }
+
+        // If no activity today, check if there was activity yesterday
+        if (currentStreak == 0 && datesWithActivity.contains(today.minusDays(1))) {
+            currentStreak = 1
+            checkDate = today.minusDays(2)
+            while (datesWithActivity.contains(checkDate)) {
+                currentStreak++
+                checkDate = checkDate.minusDays(1)
+            }
+        }
+
+        // Calculate longest streak
+        var longestStreak = 0
+        var tempStreak = 1
+
+        for (i in 1 until datesWithActivity.size) {
+            val prevDate = datesWithActivity[i - 1]
+            val currDate = datesWithActivity[i]
+
+            if (currDate == prevDate.plusDays(1)) {
+                tempStreak++
+            } else {
+                longestStreak = maxOf(longestStreak, tempStreak)
+                tempStreak = 1
+            }
+        }
+        longestStreak = maxOf(longestStreak, tempStreak)
+
+        return Pair(currentStreak, longestStreak)
     }
 
     override fun getInitialDiagnostic(): Flow<DiagnosticResult?> {
@@ -72,22 +183,34 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun getWeeklyActivity(): List<com.aivoicepower.ui.screens.progress.DailyProgress> {
         val sevenDaysAgo = System.currentTimeMillis() - (7L * 24 * 60 * 60 * 1000)
-        val stats = recordingDao.getWeeklyStats(sevenDaysAgo)
+        val recordings = recordingDao.getRecordingsSince(sevenDaysAgo)
 
-        // Create a map of date -> stats
-        val statsMap = stats.associateBy {
-            java.time.LocalDate.ofEpochDay(it.createdAt / (24 * 60 * 60 * 1000))
+        // Group recordings by date
+        val recordingsByDate = recordings.groupBy { recording ->
+            val date = java.util.Date(recording.createdAt)
+            val calendar = java.util.Calendar.getInstance().apply {
+                time = date
+                set(java.util.Calendar.HOUR_OF_DAY, 0)
+                set(java.util.Calendar.MINUTE, 0)
+                set(java.util.Calendar.SECOND, 0)
+                set(java.util.Calendar.MILLISECOND, 0)
+            }
+            java.time.LocalDate.of(
+                calendar.get(java.util.Calendar.YEAR),
+                calendar.get(java.util.Calendar.MONTH) + 1,
+                calendar.get(java.util.Calendar.DAY_OF_MONTH)
+            )
         }
 
         // Generate list for all 7 days (including days with no activity)
         return (0..6).map { daysAgo ->
             val date = java.time.LocalDate.now().minusDays(daysAgo.toLong())
-            val stat = statsMap[date]
+            val dayRecordings = recordingsByDate[date] ?: emptyList()
 
             com.aivoicepower.ui.screens.progress.DailyProgress(
                 date = date.toString(),
-                exercises = stat?.exerciseCount ?: 0,
-                minutes = ((stat?.totalDuration ?: 0L) / 60000).toInt()
+                exercises = dayRecordings.size,
+                minutes = (dayRecordings.sumOf { it.durationMs } / 60000).toInt()
             )
         }.reversed()
     }

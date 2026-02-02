@@ -84,19 +84,11 @@ private fun ProgressContent(
             onNavigateBack = onNavigateBack
         )
 
-        // Overall Level
-        OverallLevelCard(
-            level = state.overallLevel
-        )
-
-        // Streak
-        StreakCard(
+        // Combined Progress Overview
+        ProgressOverviewCard(
+            overallLevel = state.overallLevel,
             currentStreak = state.currentStreak,
-            longestStreak = state.longestStreak
-        )
-
-        // Stats Overview
-        StatsCard(
+            longestStreak = state.longestStreak,
             totalExercises = state.totalExercises,
             totalMinutes = state.totalMinutes,
             totalRecordings = state.totalRecordings
@@ -130,7 +122,7 @@ private fun ProgressContent(
                 skillLevels = state.skillLevels,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
+                    .height(330.dp)
             )
 
             // Bar Chart

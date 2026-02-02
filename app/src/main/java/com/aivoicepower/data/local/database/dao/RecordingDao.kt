@@ -41,20 +41,6 @@ interface RecordingDao {
     @Query("DELETE FROM recordings WHERE createdAt < :beforeTimestamp")
     suspend fun deleteOldRecordings(beforeTimestamp: Long)
 
-    @Query("""
-        SELECT COUNT(*) as exerciseCount,
-               SUM(durationMs) as totalDuration,
-               createdAt
-        FROM recordings
-        WHERE createdAt >= :startTimestamp
-        GROUP BY date(createdAt / 1000, 'unixepoch')
-        ORDER BY createdAt ASC
-    """)
-    suspend fun getWeeklyStats(startTimestamp: Long): List<DailyStats>
+    @Query("SELECT * FROM recordings WHERE createdAt >= :startTimestamp ORDER BY createdAt ASC")
+    suspend fun getRecordingsSince(startTimestamp: Long): List<RecordingEntity>
 }
-
-data class DailyStats(
-    val exerciseCount: Int,
-    val totalDuration: Long,
-    val createdAt: Long
-)
