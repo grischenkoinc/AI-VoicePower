@@ -31,6 +31,9 @@ fun ImprovisationScreen(
     onNavigateToDebate: () -> Unit,
     onNavigateToSales: () -> Unit,
     onNavigateToChallenge: () -> Unit,
+    onNavigateToJobInterview: () -> Unit,
+    onNavigateToPresentation: () -> Unit,
+    onNavigateToNegotiation: () -> Unit,
     onNavigateToPremium: () -> Unit,
     onNavigateBack: () -> Unit = {}
 ) {
@@ -47,6 +50,9 @@ fun ImprovisationScreen(
             onNavigateToDebate = onNavigateToDebate,
             onNavigateToSales = onNavigateToSales,
             onNavigateToChallenge = onNavigateToChallenge,
+            onNavigateToJobInterview = onNavigateToJobInterview,
+            onNavigateToPresentation = onNavigateToPresentation,
+            onNavigateToNegotiation = onNavigateToNegotiation,
             onNavigateToPremium = onNavigateToPremium,
             onNavigateBack = onNavigateBack
         )
@@ -62,6 +68,9 @@ private fun ImprovisationContent(
     onNavigateToDebate: () -> Unit,
     onNavigateToSales: () -> Unit,
     onNavigateToChallenge: () -> Unit,
+    onNavigateToJobInterview: () -> Unit,
+    onNavigateToPresentation: () -> Unit,
+    onNavigateToNegotiation: () -> Unit,
     onNavigateToPremium: () -> Unit,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
@@ -170,6 +179,54 @@ private fun ImprovisationContent(
                 if (state.isPremium) {
                     viewModel.onEvent(ImprovisationEvent.SalesPitchClicked)
                     onNavigateToSales()
+                } else {
+                    onNavigateToPremium()
+                }
+            }
+        )
+
+        ImprovisationModeCard(
+            emoji = "💼",
+            title = "Співбесіда",
+            description = "Практикуй відповіді на питання HR",
+            isLocked = !state.isPremium,
+            isComingSoon = false,
+            onClick = {
+                if (state.isPremium) {
+                    viewModel.onEvent(ImprovisationEvent.JobInterviewClicked)
+                    onNavigateToJobInterview()
+                } else {
+                    onNavigateToPremium()
+                }
+            }
+        )
+
+        ImprovisationModeCard(
+            emoji = "📊",
+            title = "Презентація",
+            description = "Структура виступу та робота з питаннями",
+            isLocked = !state.isPremium,
+            isComingSoon = false,
+            onClick = {
+                if (state.isPremium) {
+                    viewModel.onEvent(ImprovisationEvent.PresentationClicked)
+                    onNavigateToPresentation()
+                } else {
+                    onNavigateToPremium()
+                }
+            }
+        )
+
+        ImprovisationModeCard(
+            emoji = "🤝",
+            title = "Переговори",
+            description = "Практикуй аргументацію та компроміси",
+            isLocked = !state.isPremium,
+            isComingSoon = false,
+            onClick = {
+                if (state.isPremium) {
+                    viewModel.onEvent(ImprovisationEvent.NegotiationClicked)
+                    onNavigateToNegotiation()
                 } else {
                     onNavigateToPremium()
                 }

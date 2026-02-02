@@ -17,6 +17,9 @@ import com.aivoicepower.ui.screens.courses.CoursesListScreen
 import com.aivoicepower.ui.screens.courses.CoursesScreen
 import com.aivoicepower.ui.screens.home.HomeScreen
 import com.aivoicepower.ui.screens.improvisation.*
+import com.aivoicepower.ui.screens.improvisation.JobInterviewScreen
+import com.aivoicepower.ui.screens.improvisation.PresentationScreen
+import com.aivoicepower.ui.screens.improvisation.NegotiationScreen
 import com.aivoicepower.ui.screens.courses.LessonScreen
 import com.aivoicepower.ui.screens.progress.AchievementsScreen
 import com.aivoicepower.ui.screens.progress.CompareScreen
@@ -201,6 +204,15 @@ fun MainNavGraph(
                 onNavigateToChallenge = {
                     navController.navigate(Screen.DailyChallenge.route)
                 },
+                onNavigateToJobInterview = {
+                    navController.navigate(Screen.JobInterview.route)
+                },
+                onNavigateToPresentation = {
+                    navController.navigate(Screen.Presentation.route)
+                },
+                onNavigateToNegotiation = {
+                    navController.navigate(Screen.Negotiation.route)
+                },
                 onNavigateToPremium = onNavigateToPremium
             )
         }
@@ -241,6 +253,34 @@ fun MainNavGraph(
         composable(route = Screen.SalesPitch.route) {
             SalesPitchScreen(
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // AI Coach simulations (moved from Phase 6 to Improvisation)
+        composable(route = Screen.JobInterview.route) {
+            JobInterviewScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToResults = { recordingId ->
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(route = Screen.Presentation.route) {
+            PresentationScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToResults = { recordingId ->
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(route = Screen.Negotiation.route) {
+            NegotiationScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToResults = { recordingId ->
+                    navController.popBackStack()
+                }
             )
         }
 

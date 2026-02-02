@@ -40,6 +40,11 @@ sealed class Screen(val route: String) {
     object Debate : Screen("improvisation/debate")
     object SalesPitch : Screen("improvisation/sales-pitch")
 
+    // AI Coach simulations moved to Improvisation
+    object JobInterview : Screen("improvisation/job-interview")
+    object Presentation : Screen("improvisation/presentation")
+    object Negotiation : Screen("improvisation/negotiation")
+
     // AI Coach (Phase 6)
     object AiCoach : Screen("ai-coach")
 

@@ -6,4 +6,9 @@ sealed class ImprovisationEvent {
     object DailyChallengeClicked : ImprovisationEvent()
     object DebateClicked : ImprovisationEvent()
     object SalesPitchClicked : ImprovisationEvent()
+
+    // AI Coach simulations moved to Improvisation
+    object JobInterviewClicked : ImprovisationEvent()
+    object PresentationClicked : ImprovisationEvent()
+    object NegotiationClicked : ImprovisationEvent()
 }

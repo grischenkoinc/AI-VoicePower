@@ -37,6 +37,15 @@ class ImprovisationViewModel @Inject constructor(
             ImprovisationEvent.SalesPitchClicked -> {
                 // Phase 5.3
             }
+            ImprovisationEvent.JobInterviewClicked -> {
+                // Navigation handled in Screen
+            }
+            ImprovisationEvent.PresentationClicked -> {
+                // Navigation handled in Screen
+            }
+            ImprovisationEvent.NegotiationClicked -> {
+                // Navigation handled in Screen
+            }
         }
     }
 
