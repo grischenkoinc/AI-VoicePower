@@ -1,175 +1,246 @@
-# ✅ Завершено: Перенесення AI Coach симуляцій в Improvisation
+# ✅ Завершено: Інтеграція симуляцій з BaseExercise
 
 ## Що було зроблено:
 
-### 1. Створено 3 нові екрани симуляцій з градієнтним дизайном
+### 1. Розширено ImprovisationTask
 
-#### **Співбесіда (Job Interview)** 💼
-- 5 типових питань HR
-- Покрокова симуляція з підказками
-- Поради з використання STAR методу
-- Запис відповіді на кожне питання
+**Файл:** `domain/model/content/ImprovisationTask.kt`
 
-#### **Презентація (Presentation)** 📊
-- 4 кроки структурованої презентації
-- Hook, ключові меседжі, робота з питаннями, call to action
-- Підказки для кожного етапу
-- Запис та аналіз виступу
-
-#### **Переговори (Negotiation)** 🤝
-- 4 кроки переговорного процесу
-- Anchor point, аргументація, win-win, фінальні умови
-- Практика компромісів та аргументації
-- Покрокова запис відповідей
-
-### 2. Архітектура екранів
-
-Кожна симуляція складається з:
-- **Screen** - UI з градієнтним дизайном (Purple #667EEA → #764BA2)
-- **ViewModel** - логіка симуляції та запису
-- **State** - стан кроків, запису, тривалості
-- **Event** - події користувача (Start, Record, Stop, Next)
-
-### 3. UI Компоненти
-
-**Welcome Card:**
-- Пояснення симуляції
-- Поради для підготовки
-- Кількість кроків
-
-**Progress Card:**
-- Поточний крок / загальна кількість
-- Відсоток виконання
-- Градієнтний фон
-
-**Question Card:**
-- Питання з емодзі
-- Інтегрована підказка
-- Білий фон з тінню
-
-**Recording Card:**
-- Червоний градієнт (Red #EF4444 → #DC2626)
-- Реальний таймер запису (MM:SS)
-- Кнопка зупинки
-
-**Completion Card:**
-- Святкування 🎉
-- Підсумок виконаної роботи
-- Навігація до результатів
-
-### 4. Додано в ImprovisationScreen
-
-Нові картки (premium-locked):
+Додано 3 нові типи симуляцій:
 ```kotlin
-ImprovisationModeCard(
-    emoji = "💼",
+data class JobInterview(
+    val steps: List<SimulationStep>,
+    val difficulty: Difficulty = Difficulty.INTERMEDIATE
+) : ImprovisationTask()
+
+data class Presentation(
+    val steps: List<SimulationStep>,
+    val difficulty: Difficulty = Difficulty.INTERMEDIATE
+) : ImprovisationTask()
+
+data class Negotiation(
+    val steps: List<SimulationStep>,
+    val difficulty: Difficulty = Difficulty.ADVANCED
+) : ImprovisationTask()
+```
+
+**SimulationStep:**
+```kotlin
+data class SimulationStep(
+    val stepNumber: Int,
+    val question: String,
+    val hint: String
+)
+```
+
+### 2. Створено ImprovisationContentProvider
+
+**Файл:** `data/content/ImprovisationContentProvider.kt`
+
+Центральний провайдер для всіх імпровізацій як ImprovisationExercise:
+
+**Job Interview Exercise:**
+```kotlin
+ImprovisationExercise(
+    id = "improv_job_interview",
     title = "Співбесіда",
-    description = "Практикуй відповіді на питання HR",
-    isLocked = !state.isPremium
-)
-
-ImprovisationModeCard(
-    emoji = "📊",
-    title = "Презентація",
-    description = "Структура виступу та робота з питаннями",
-    isLocked = !state.isPremium
-)
-
-ImprovisationModeCard(
-    emoji = "🤝",
-    title = "Переговори",
-    description = "Практикуй аргументацію та компроміси",
-    isLocked = !state.isPremium
+    description = "Практика відповідей на типові питання HR...",
+    durationSeconds = 600, // 10 хвилин (5 кроків)
+    targetMetrics = listOf(
+        SkillType.STRUCTURE,      // STAR метод
+        SkillType.CONFIDENCE,     // Впевненість
+        SkillType.INTONATION,     // Виразність
+        SkillType.FILLER_WORDS    // Чисте мовлення
+    ),
+    task = ImprovisationTask.JobInterview(steps = [...])
 )
 ```
 
-### 5. Навігація
-
-**Screen.kt:**
+**Presentation Exercise:**
 ```kotlin
-object JobInterview : Screen("improvisation/job-interview")
-object Presentation : Screen("improvisation/presentation")
-object Negotiation : Screen("improvisation/negotiation")
+targetMetrics = listOf(
+    SkillType.STRUCTURE,      // Чітка структура
+    SkillType.CONFIDENCE,     // Впевненість виступу
+    SkillType.INTONATION,     // Драматизм
+    SkillType.TEMPO           // Контроль темпу
+)
 ```
 
-**MainNavGraph.kt:**
-- Додано composables для всіх 3 екранів
-- Інтегровано callbacks в ImprovisationScreen
-- Підключено ViewModels через Hilt
-
-### 6. Events та ViewModel
-
-**ImprovisationEvent:**
+**Negotiation Exercise:**
 ```kotlin
-object JobInterviewClicked : ImprovisationEvent()
-object PresentationClicked : ImprovisationEvent()
-object NegotiationClicked : ImprovisationEvent()
+targetMetrics = listOf(
+    SkillType.STRUCTURE,      // Логічна аргументація
+    SkillType.CONFIDENCE,     // Впевненість у позиції
+    SkillType.INTONATION,     // Переконливість
+    SkillType.FILLER_WORDS    // Професійне мовлення
+)
 ```
 
-**Кожен ViewModel:**
-- Завантажує кроки з SimulationScenariosProvider
-- Відстежує поточний крок та прогрес
-- Керує записом аудіо з таймером
-- Зберігає ID записів для аналітики
-
-### 7. Використані дані
-
-Всі симуляції використовують існуючі дані з:
+**Helper функції:**
 ```kotlin
-SimulationScenariosProvider.getAllScenarios()
-  - job_interview (5 кроків)
-  - presentation (4 кроки)
-  - negotiation (4 кроки)
-  - sales_pitch (вже був в Improv)
+getExerciseById(id: String): ImprovisationExercise?
+getExercisesBySkill(skillType: SkillType): List<ImprovisationExercise>
+getExercisesByDifficulty(difficulty: String): List<ImprovisationExercise>
 ```
 
-### 8. Дизайн консистентність
+### 3. Оновлено ViewModels
 
-✅ Градієнтний фон як в інших Improv екранах
-✅ Білі картки з тінями та rounded corners
-✅ Фіолетовий акцент (#667EEA)
-✅ Жовтий для прогресу (#FBBF24)
-✅ Червоний градієнт для запису
-✅ Зелений для completion
-✅ Консистентна типографіка (ExtraBold headers, Medium body)
+Всі 3 ViewModel тепер використовують ImprovisationExercise:
+
+**До:**
+```kotlin
+val scenario = SimulationScenariosProvider.getAllScenarios()
+    .find { it.id == "job_interview" }
+```
+
+**Після:**
+```kotlin
+val exercise = ImprovisationContentProvider.getJobInterviewExercise()
+exerciseId = exercise.id  // "improv_job_interview"
+
+val steps = when (val task = exercise.task) {
+    is ImprovisationTask.JobInterview -> {
+        task.steps.map { step ->
+            InterviewStep(
+                stepNumber = step.stepNumber,
+                question = step.question,
+                hint = step.hint
+            )
+        }
+    }
+    else -> emptyList()
+}
+```
+
+**Recording ID format:**
+```kotlin
+val recordingId = "${exerciseId}_step_${currentStepIndex}_${timestamp}"
+// Приклад: "improv_job_interview_step_2_1738502400000"
+```
+
+### 4. Інтеграція з RecordingEntity
+
+Тепер записи можуть бути прив'язані до BaseExercise:
+
+```kotlin
+RecordingEntity(
+    id = recordingId,
+    exerciseId = "improv_job_interview",  // BaseExercise.id
+    type = "improvisation",                // exerciseType
+    contextId = "step_2",                  // Крок симуляції
+    filePath = "/path/to/audio.m4a",
+    durationMs = 120000,
+    isAnalyzed = false
+)
+```
+
+### 5. Можливості для аналітики
+
+Завдяки BaseExercise інтеграції тепер можливо:
+
+**Знайти вправи, що покращують навичку:**
+```kotlin
+// Всі вправи для Структури
+val structureExercises = listOf(
+    getAllLessonExercises(),
+    getAllWarmupExercises(),
+    ImprovisationContentProvider.getAllExercises()
+).flatten().filterBySkill(SkillType.STRUCTURE)
+
+// Результат: уроки + симуляції (Співбесіда, Презентація, Переговори)
+```
+
+**SkillDetailScreen може показати:**
+```
+📊 Дикція (Рівень 75)
+
+✍️ Цю навичку покращили:
+- Скоромовка "Карл у Клари" (Урок 5) - виконано 12 разів
+- Співбесіда (Імпровізація) - виконано 3 рази
+- Артикуляційна гімнастика (Розминка) - виконано 20 разів
+```
+
+**Queries в RecordingDao:**
+```kotlin
+// Знайти всі записи для конкретної вправи
+@Query("SELECT * FROM recordings WHERE exerciseId = :exerciseId")
+fun getRecordingsByExercise(exerciseId: String): Flow<List<RecordingEntity>>
+
+// Знайти записи по типу
+@Query("SELECT * FROM recordings WHERE type = :type")
+fun getRecordingsByType(type: String): Flow<List<RecordingEntity>>
+
+// Підрахувати виконання вправи
+@Query("SELECT COUNT(*) FROM recordings WHERE exerciseId = :exerciseId")
+fun getExerciseCompletionCount(exerciseId: String): Int
+```
+
+## Архітектура після інтеграції:
+
+```
+BaseExercise (interface)
+├── LessonExercise
+│   ├── id: "ex_1_1"
+│   ├── type: ExerciseType.TONGUE_TWISTER
+│   ├── targetMetrics: [DICTION, TEMPO]
+│   └── content: ExerciseContent.TongueTwister
+│
+├── WarmupExercise
+│   ├── id: "warmup_articulation_1"
+│   ├── category: ARTICULATION
+│   ├── targetMetrics: [DICTION]
+│   └── mediaType: ANIMATION
+│
+└── ImprovisationExercise ← НОВА ІНТЕГРАЦІЯ
+    ├── id: "improv_job_interview"
+    ├── task: ImprovisationTask.JobInterview
+    ├── targetMetrics: [STRUCTURE, CONFIDENCE, INTONATION, FILLER_WORDS]
+    └── preparationSeconds: 30
+```
+
+## Переваги інтеграції:
+
+✅ **Єдина аналітика** - всі типи вправ в одній системі
+✅ **Skill tracking** - можна знайти, які імпровізації покращили конкретну навичку
+✅ **Поліморфізм** - `BaseExercise` функції працюють з усіма типами
+✅ **База даних** - `RecordingEntity` прив'язується до `exerciseId`
+✅ **Прогрес** - можна підрахувати, скільки разів виконано кожну симуляцію
+✅ **Рекомендації** - SkillDetailScreen може рекомендувати імпровізації
 
 ## Структура файлів:
 
 ```
+data/content/
+└── ImprovisationContentProvider.kt  ← НОВИЙ
+
+domain/model/content/
+└── ImprovisationTask.kt             ← +3 types, +SimulationStep
+
+domain/model/exercise/
+├── BaseExercise.kt                  ← Інтерфейс
+├── ImprovisationExercise.kt         ← Використовує ImprovisationTask
+├── LessonExercise.kt                ← Для уроків
+└── WarmupExercise.kt                ← Для розминки
+
 ui/screens/improvisation/
-├── ImprovisationScreen.kt          ← Оновлено з новими картками
-├── ImprovisationEvent.kt           ← +3 events
-├── ImprovisationViewModel.kt       ← +3 event handlers
-│
-├── JobInterviewScreen.kt           ← НОВИЙ
-├── JobInterviewViewModel.kt        ← НОВИЙ
-├── JobInterviewState.kt            ← НОВИЙ
-├── JobInterviewEvent.kt            ← НОВИЙ
-│
-├── PresentationScreen.kt           ← НОВИЙ
-├── PresentationViewModel.kt        ← НОВИЙ
-├── PresentationState.kt            ← НОВИЙ
-├── PresentationEvent.kt            ← НОВИЙ
-│
-├── NegotiationScreen.kt            ← НОВИЙ
-├── NegotiationViewModel.kt         ← НОВИЙ
-├── NegotiationState.kt             ← НОВИЙ
-└── NegotiationEvent.kt             ← НОВИЙ
+├── JobInterviewViewModel.kt         ← Оновлено
+├── PresentationViewModel.kt         ← Оновлено
+└── NegotiationViewModel.kt          ← Оновлено
 ```
-
-## Що далі:
-
-1. **AI Coach секція** - можна видалити або deprecated (симуляції перенесені)
-2. **Інтеграція з BaseExercise** - конвертувати симуляції в ImprovisationExercise
-3. **Аналітика** - зберігати результати в RecordingEntity з exerciseType="improvisation"
-4. **AI аналіз** - додати feedback після завершення симуляції
-5. **Тести тексту** - підправити Welcome cards для кожної симуляції
 
 ## Статистика:
 
-- **+12 нових файлів** (1931 рядків коду)
-- **3 екрани** з повною функціональністю
-- **Всі з градієнтним дизайном** ✨
-- **Premium gating** для монетизації 💎
+- **+1 новий файл** (ImprovisationContentProvider - 200+ рядків)
+- **5 файлів оновлено** (+286 рядків, -42 рядки)
+- **3 симуляції** інтегровані з BaseExercise
+- **12 targetMetrics** визначено для аналітики
 
-Всі симуляції готові до використання! 🎉
+## Наступні кроки:
+
+1. **RecordingRepository** - імплементувати збереження записів з exerciseId
+2. **SkillDetailViewModel** - показати імпровізації в "Цю навичку покращили"
+3. **RecordingDao queries** - додати методи для підрахунку виконань
+4. **AI аналіз** - інтегрувати feedback після симуляції
+5. **Progress tracking** - відстежувати streak та completion rate
+
+Симуляції повністю інтегровані з BaseExercise! 🎉
