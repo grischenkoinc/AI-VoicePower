@@ -27,4 +27,29 @@ sealed class ImprovisationTask {
         val customer: CustomerProfile,
         val pitchSeconds: Int
     ) : ImprovisationTask()
+
+    // AI Coach simulations (moved from Phase 6)
+    data class JobInterview(
+        val steps: List<SimulationStep>,
+        val difficulty: Difficulty = Difficulty.INTERMEDIATE
+    ) : ImprovisationTask()
+
+    data class Presentation(
+        val steps: List<SimulationStep>,
+        val difficulty: Difficulty = Difficulty.INTERMEDIATE
+    ) : ImprovisationTask()
+
+    data class Negotiation(
+        val steps: List<SimulationStep>,
+        val difficulty: Difficulty = Difficulty.ADVANCED
+    ) : ImprovisationTask()
 }
+
+/**
+ * Step in a multi-step simulation
+ */
+data class SimulationStep(
+    val stepNumber: Int,
+    val question: String,
+    val hint: String
+)

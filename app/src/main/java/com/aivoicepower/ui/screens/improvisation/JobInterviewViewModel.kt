@@ -2,7 +2,8 @@ package com.aivoicepower.ui.screens.improvisation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aivoicepower.data.content.SimulationScenariosProvider
+import com.aivoicepower.data.content.ImprovisationContentProvider
+import com.aivoicepower.domain.model.content.ImprovisationTask
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -17,22 +18,27 @@ class JobInterviewViewModel @Inject constructor() : ViewModel() {
     val state: StateFlow<JobInterviewState> = _state.asStateFlow()
 
     private var recordingJob: Job? = null
+    private var exerciseId: String = ""
 
     init {
-        loadSteps()
+        loadExercise()
     }
 
-    private fun loadSteps() {
-        val scenario = SimulationScenariosProvider.getAllScenarios()
-            .find { it.id == "job_interview" }
-            ?: return
+    private fun loadExercise() {
+        val exercise = ImprovisationContentProvider.getJobInterviewExercise()
+        exerciseId = exercise.id
 
-        val steps = scenario.steps.map { step ->
-            InterviewStep(
-                stepNumber = step.stepNumber,
-                question = step.aiPrompt,
-                hint = step.userHint
-            )
+        val steps = when (val task = exercise.task) {
+            is ImprovisationTask.JobInterview -> {
+                task.steps.map { step ->
+                    InterviewStep(
+                        stepNumber = step.stepNumber,
+                        question = step.question,
+                        hint = step.hint
+                    )
+                }
+            }
+            else -> emptyList()
         }
 
         _state.update { it.copy(steps = steps) }
@@ -76,7 +82,7 @@ class JobInterviewViewModel @Inject constructor() : ViewModel() {
         recordingJob?.cancel()
         recordingJob = null
 
-        val recordingId = "job_interview_step_${_state.value.currentStepIndex}_${System.currentTimeMillis()}"
+        val recordingId = "${exerciseId}_step_${_state.value.currentStepIndex}_${System.currentTimeMillis()}"
 
         _state.update {
             it.copy(
@@ -86,6 +92,10 @@ class JobInterviewViewModel @Inject constructor() : ViewModel() {
         }
 
         // TODO: Save recording to database via repository
+        // RecordingEntity should include:
+        // - exerciseId = exerciseId (improv_job_interview)
+        // - type = "improvisation"
+        // - contextId = "step_${currentStepIndex}"
     }
 
     private fun moveToNextStep() {
