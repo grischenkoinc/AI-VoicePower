@@ -32,7 +32,7 @@ class UserRepositoryImpl @Inject constructor(
 ) : UserRepository {
 
     private val _userProfile = MutableStateFlow(getMockUserProfile())
-    private val _userProgress = MutableStateFlow<UserProgress?>(null)
+    private val _userProgress = MutableStateFlow<UserProgress?>(getMockUserProgress())
 
     init {
         // Load real progress data on initialization
@@ -214,11 +214,15 @@ class UserRepositoryImpl @Inject constructor(
         val result = (0..6).map { daysAgo ->
             val date = java.time.LocalDate.now().minusDays(daysAgo.toLong())
             val dayRecordings = recordingsByDate[date] ?: emptyList()
+            val totalDurationMs = dayRecordings.sumOf { it.durationMs }
+            val minutes = (totalDurationMs / 60000).toInt()
+
+            Log.d("UserRepository", "Day $date: ${dayRecordings.size} recordings, ${totalDurationMs}ms total, $minutes minutes")
 
             com.aivoicepower.ui.screens.progress.DailyProgress(
                 date = date.toString(),
                 exercises = dayRecordings.size,
-                minutes = (dayRecordings.sumOf { it.durationMs } / 60000).toInt()
+                minutes = minutes
             )
         }.reversed()
 

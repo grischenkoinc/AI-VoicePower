@@ -28,8 +28,8 @@ fun ProgressLineChart(
     weeklyProgress: List<DailyProgress>,
     modifier: Modifier = Modifier
 ) {
-    // Check if there's any activity
-    val hasActivity = weeklyProgress.isNotEmpty() && weeklyProgress.any { it.minutes > 0 }
+    // Check if there's any activity (exercises or minutes)
+    val hasActivity = weeklyProgress.isNotEmpty() && weeklyProgress.any { it.exercises > 0 || it.minutes > 0 }
 
     if (!hasActivity) {
         // Empty state

@@ -10,6 +10,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -25,6 +26,7 @@ class ProgressViewModel @Inject constructor(
     val state: StateFlow<ProgressState> = _state.asStateFlow()
 
     init {
+        Log.d("ProgressViewModel", "ProgressViewModel initialized")
         loadProgress()
     }
 
@@ -38,32 +40,35 @@ class ProgressViewModel @Inject constructor(
     }
 
     private fun loadProgress() {
+        Log.d("ProgressViewModel", "loadProgress() called")
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
 
             try {
                 // Load user progress
-                userRepository.getUserProgress().collect { progress ->
-                    if (progress == null) {
-                        // If no progress, try to get initial diagnostic data
-                        loadInitialDiagnosticData()
-                        return@collect
-                    }
+                Log.d("ProgressViewModel", "Getting user progress from repository")
+                val progress = userRepository.getUserProgress().first()
+                Log.d("ProgressViewModel", "Got user progress: $progress")
 
-                    val overallLevel = progress.calculateOverallLevel()
+                if (progress == null) {
+                    // If no progress, try to get initial diagnostic data
+                    loadInitialDiagnosticData()
+                    return@launch
+                }
 
-                    _state.update {
-                        it.copy(
-                            overallLevel = overallLevel,
-                            currentStreak = progress.currentStreak,
-                            longestStreak = progress.longestStreak,
-                            totalExercises = progress.totalExercises,
-                            totalMinutes = progress.totalMinutes,
-                            totalRecordings = progress.totalRecordings,
-                            skillLevels = progress.skillLevels,
-                            isLoading = false
-                        )
-                    }
+                val overallLevel = progress.calculateOverallLevel()
+
+                _state.update {
+                    it.copy(
+                        overallLevel = overallLevel,
+                        currentStreak = progress.currentStreak,
+                        longestStreak = progress.longestStreak,
+                        totalExercises = progress.totalExercises,
+                        totalMinutes = progress.totalMinutes,
+                        totalRecordings = progress.totalRecordings,
+                        skillLevels = progress.skillLevels,
+                        isLoading = false
+                    )
                 }
 
                 // Load weekly progress
@@ -73,6 +78,7 @@ class ProgressViewModel @Inject constructor(
                 loadAchievements()
 
             } catch (e: Exception) {
+                Log.e("ProgressViewModel", "Error loading progress", e)
                 _state.update {
                     it.copy(
                         isLoading = false,
