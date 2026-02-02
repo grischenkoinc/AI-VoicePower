@@ -35,6 +35,7 @@ fun ProgressScreen(
     onNavigateToCompare: () -> Unit,
     onNavigateToAchievements: () -> Unit,
     onNavigateToHistory: () -> Unit,
+    onNavigateToSkillDetail: (com.aivoicepower.domain.model.user.SkillType) -> Unit,
     onNavigateBack: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -55,6 +56,7 @@ fun ProgressScreen(
                 onNavigateToCompare = onNavigateToCompare,
                 onNavigateToAchievements = onNavigateToAchievements,
                 onNavigateToHistory = onNavigateToHistory,
+                onNavigateToSkillDetail = onNavigateToSkillDetail,
                 onNavigateBack = onNavigateBack
             )
         }
@@ -67,6 +69,7 @@ private fun ProgressContent(
     onNavigateToCompare: () -> Unit,
     onNavigateToAchievements: () -> Unit,
     onNavigateToHistory: () -> Unit,
+    onNavigateToSkillDetail: (com.aivoicepower.domain.model.user.SkillType) -> Unit,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -104,6 +107,15 @@ private fun ProgressContent(
             letterSpacing = (-0.5).sp
         )
 
+        // Helper text for interactivity
+        Text(
+            text = "💡 Натисніть на навичку, щоб дізнатися більше",
+            style = AppTypography.bodySmall,
+            color = TextColors.onDarkSecondary,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium
+        )
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -127,36 +139,8 @@ private fun ProgressContent(
 
             // Bar Chart
             SkillBarChart(
-                skillLevels = state.skillLevels
-            )
-        }
-
-        // Weekly Progress Chart
-        Text(
-            text = "Активність (7 днів)",
-            style = AppTypography.titleLarge,
-            color = TextColors.onDarkPrimary,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.ExtraBold,
-            letterSpacing = (-0.5).sp
-        )
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .shadow(
-                    elevation = 20.dp,
-                    shape = RoundedCornerShape(20.dp),
-                    spotColor = Color.Black.copy(alpha = 0.18f)
-                )
-                .background(Color.White, RoundedCornerShape(20.dp))
-                .padding(20.dp)
-        ) {
-            ProgressLineChart(
-                weeklyProgress = state.weeklyProgress,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp)
+                skillLevels = state.skillLevels,
+                onSkillClick = onNavigateToSkillDetail
             )
         }
 

@@ -1,6 +1,7 @@
 package com.aivoicepower.ui.screens.progress.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import com.aivoicepower.ui.theme.TextColors
 @Composable
 fun SkillBarChart(
     skillLevels: Map<SkillType, Int>,
+    onSkillClick: (SkillType) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -36,8 +38,10 @@ fun SkillBarChart(
     ) {
         skillLevels.forEach { (skill, level) ->
             SkillBar(
+                skillType = skill,
                 name = skill.toDisplayString(),
-                level = level
+                level = level,
+                onClick = { onSkillClick(skill) }
             )
         }
     }
@@ -45,12 +49,18 @@ fun SkillBarChart(
 
 @Composable
 private fun SkillBar(
+    skillType: SkillType,
     name: String,
-    level: Int
+    level: Int,
+    onClick: () -> Unit
 ) {
     val barColors = getGradientColorsForLevel(level)
 
-    Column {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween

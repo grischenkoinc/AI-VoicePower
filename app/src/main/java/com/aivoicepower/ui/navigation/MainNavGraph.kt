@@ -22,6 +22,7 @@ import com.aivoicepower.ui.screens.progress.AchievementsScreen
 import com.aivoicepower.ui.screens.progress.CompareScreen
 import com.aivoicepower.ui.screens.progress.ProgressScreen
 import com.aivoicepower.ui.screens.progress.RecordingHistoryScreen
+import com.aivoicepower.ui.screens.progress.SkillDetailScreen
 import com.aivoicepower.ui.screens.results.ResultsScreen
 import com.aivoicepower.ui.screens.premium.PaywallScreen
 import com.aivoicepower.ui.screens.settings.SettingsScreen
@@ -254,6 +255,9 @@ fun MainNavGraph(
                 },
                 onNavigateToHistory = {
                     navController.navigate(Screen.RecordingHistory.route)
+                },
+                onNavigateToSkillDetail = { skillType ->
+                    navController.navigate(Screen.SkillDetail.createRoute(skillType.name))
                 }
             )
         }
@@ -276,6 +280,16 @@ fun MainNavGraph(
                 onNavigateToResults = { recordingId ->
                     // TODO: Navigate to recording results screen
                 }
+            )
+        }
+
+        composable(
+            route = Screen.SkillDetail.route,
+            arguments = listOf(navArgument("skillType") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val skillType = backStackEntry.arguments?.getString("skillType") ?: return@composable
+            SkillDetailScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 
