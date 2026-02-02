@@ -1,5 +1,6 @@
 package com.aivoicepower.data.repository
 
+import android.util.Log
 import com.aivoicepower.domain.model.user.DiagnosticResult
 import com.aivoicepower.domain.model.user.SkillType
 import com.aivoicepower.domain.model.user.UserGoal
@@ -35,8 +36,11 @@ class UserRepositoryImpl @Inject constructor(
 
     init {
         // Load real progress data on initialization
+        Log.d("UserRepository", "UserRepositoryImpl initialized")
         CoroutineScope(Dispatchers.IO).launch {
+            Log.d("UserRepository", "Starting to calculate real user progress")
             _userProgress.value = calculateRealUserProgress()
+            Log.d("UserRepository", "Finished calculating real user progress")
         }
     }
 
@@ -63,10 +67,12 @@ class UserRepositoryImpl @Inject constructor(
      */
     private suspend fun calculateRealUserProgress(): UserProgress {
         val allRecordings = recordingDao.getAllRecordings().first()
+        Log.d("UserRepository", "calculateRealUserProgress: Found ${allRecordings.size} total recordings")
 
         // Calculate total statistics
         val totalRecordings = allRecordings.size
         val totalMinutes = (allRecordings.sumOf { it.durationMs } / 60000).toInt()
+        Log.d("UserRepository", "calculateRealUserProgress: totalRecordings=$totalRecordings, totalMinutes=$totalMinutes")
 
         // Count unique exercises (by exerciseId)
         val totalExercises = allRecordings.mapNotNull { it.exerciseId }.distinct().size
@@ -185,6 +191,8 @@ class UserRepositoryImpl @Inject constructor(
         val sevenDaysAgo = System.currentTimeMillis() - (7L * 24 * 60 * 60 * 1000)
         val recordings = recordingDao.getRecordingsSince(sevenDaysAgo)
 
+        Log.d("UserRepository", "getWeeklyActivity: Found ${recordings.size} recordings in last 7 days")
+
         // Group recordings by date
         val recordingsByDate = recordings.groupBy { recording ->
             val date = java.util.Date(recording.createdAt)
@@ -203,7 +211,7 @@ class UserRepositoryImpl @Inject constructor(
         }
 
         // Generate list for all 7 days (including days with no activity)
-        return (0..6).map { daysAgo ->
+        val result = (0..6).map { daysAgo ->
             val date = java.time.LocalDate.now().minusDays(daysAgo.toLong())
             val dayRecordings = recordingsByDate[date] ?: emptyList()
 
@@ -213,6 +221,10 @@ class UserRepositoryImpl @Inject constructor(
                 minutes = (dayRecordings.sumOf { it.durationMs } / 60000).toInt()
             )
         }.reversed()
+
+        Log.d("UserRepository", "getWeeklyActivity: Returning ${result.size} days, total minutes: ${result.sumOf { it.minutes }}")
+
+        return result
     }
 
     private fun getMockUserProfile(): UserProfile {

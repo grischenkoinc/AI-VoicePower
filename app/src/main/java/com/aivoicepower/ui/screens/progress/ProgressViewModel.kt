@@ -1,5 +1,6 @@
 package com.aivoicepower.ui.screens.progress
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aivoicepower.domain.model.user.SkillType
@@ -109,6 +110,7 @@ class ProgressViewModel @Inject constructor(
         viewModelScope.launch {
             // Load real weekly activity data from recordings
             val weeklyProgress = userRepository.getWeeklyActivity()
+            Log.d("ProgressViewModel", "loadWeeklyProgress: Loaded ${weeklyProgress.size} days")
             _state.update { it.copy(weeklyProgress = weeklyProgress) }
         }
     }

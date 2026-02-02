@@ -28,7 +28,10 @@ fun ProgressLineChart(
     weeklyProgress: List<DailyProgress>,
     modifier: Modifier = Modifier
 ) {
-    if (weeklyProgress.isEmpty()) {
+    // Check if there's any activity
+    val hasActivity = weeklyProgress.isNotEmpty() && weeklyProgress.any { it.minutes > 0 }
+
+    if (!hasActivity) {
         // Empty state
         Box(
             modifier = modifier
@@ -198,7 +201,7 @@ fun ProgressLineChart(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "💪 $activeDays з 7 днів активні",
+                    text = "⚡ $activeDays з 7 днів активні",
                     style = AppTypography.bodySmall,
                     color = TextColors.onLightSecondary,
                     fontSize = 12.sp,

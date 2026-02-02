@@ -60,7 +60,7 @@ fun ProgressOverviewCard(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = "✨",
+                text = "💫",
                 fontSize = 28.sp
             )
             Text(
@@ -209,7 +209,7 @@ fun ProgressOverviewCard(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = "🏆",
+                    text = "🥇",
                     fontSize = 40.sp
                 )
                 Text(
@@ -245,7 +245,7 @@ fun ProgressOverviewCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = "📊",
+                    text = "📈",
                     fontSize = 24.sp
                 )
                 Text(
@@ -262,21 +262,21 @@ fun ProgressOverviewCard(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 StatBox(
-                    icon = "✏️",
+                    icon = "✍️",
                     value = "$totalExercises",
                     label = "вправ",
                     modifier = Modifier.weight(1f)
                 )
 
                 StatBox(
-                    icon = "⏰",
+                    icon = "⏱️",
                     value = "$totalMinutes",
                     label = "хвилин",
                     modifier = Modifier.weight(1f)
                 )
 
                 StatBox(
-                    icon = "🎤",
+                    icon = "🎙️",
                     value = "$totalRecordings",
                     label = "записів",
                     modifier = Modifier.weight(1f)
