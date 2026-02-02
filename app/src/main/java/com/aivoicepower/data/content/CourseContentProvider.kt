@@ -746,6 +746,6 @@ object CourseContentProvider {
         val title: String,
         val description: String,
         val theory: TheoryContent?,
-        val exercises: List<Exercise>
+        val exercises: List<LessonExercise>
     )
 }

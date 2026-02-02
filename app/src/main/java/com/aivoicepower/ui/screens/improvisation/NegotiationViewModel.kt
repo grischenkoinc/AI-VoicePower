@@ -31,7 +31,7 @@ class NegotiationViewModel @Inject constructor() : ViewModel() {
         val steps = when (val task = exercise.task) {
             is ImprovisationTask.Negotiation -> {
                 task.steps.map { step ->
-                    InterviewStep(
+                    NegotiationStep(
                         stepNumber = step.stepNumber,
                         question = step.question,
                         hint = step.hint

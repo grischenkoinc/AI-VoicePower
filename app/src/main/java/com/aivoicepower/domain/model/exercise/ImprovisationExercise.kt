@@ -41,5 +41,8 @@ data class ImprovisationExercise(
             is ImprovisationTask.Storytelling -> "storytelling"
             is ImprovisationTask.Debate -> "debate"
             is ImprovisationTask.SalesPitch -> "sales_pitch"
+            is ImprovisationTask.JobInterview -> "job_interview"
+            is ImprovisationTask.Presentation -> "presentation"
+            is ImprovisationTask.Negotiation -> "negotiation"
         }
 }
