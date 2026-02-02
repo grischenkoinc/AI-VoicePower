@@ -107,15 +107,6 @@ private fun ProgressContent(
             letterSpacing = (-0.5).sp
         )
 
-        // Helper text for interactivity
-        Text(
-            text = "💡 Натисніть на навичку, щоб дізнатися більше",
-            style = AppTypography.bodySmall,
-            color = TextColors.onDarkSecondary,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Medium
-        )
-
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -135,6 +126,16 @@ private fun ProgressContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(330.dp)
+            )
+
+            // Helper text for interactivity
+            Text(
+                text = "💡 Натисніть на навичку, щоб дізнатися більше",
+                style = AppTypography.bodySmall,
+                color = TextColors.onLightSecondary,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.fillMaxWidth()
             )
 
             // Bar Chart
