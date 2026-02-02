@@ -4,7 +4,7 @@ import com.aivoicepower.domain.model.course.Course
 import com.aivoicepower.domain.model.course.Difficulty
 import com.aivoicepower.domain.model.course.Lesson
 import com.aivoicepower.domain.model.course.TheoryContent
-import com.aivoicepower.domain.model.exercise.Exercise
+import com.aivoicepower.domain.model.exercise.LessonExercise
 import com.aivoicepower.domain.model.exercise.ExerciseType
 import com.aivoicepower.domain.model.exercise.ExerciseContent
 import com.aivoicepower.domain.model.user.SkillType
@@ -100,7 +100,7 @@ object BusinessCommunicationCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Формальне привітання",
@@ -112,7 +112,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Трансформація неформального в формальне",
@@ -124,7 +124,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Чітка структура думки",
@@ -136,7 +136,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Впевнений тон голосу",
@@ -148,7 +148,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Без слів-паразитів у бізнес-контексті",
@@ -160,7 +160,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.FILLER_WORDS, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Самопрезентація (формальна)",
@@ -176,7 +176,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 30,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE, SkillType.FILLER_WORDS)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Формальна vs неформальна розповідь",
@@ -237,7 +237,7 @@ object BusinessCommunicationCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Ідеальне перше речення",
@@ -249,7 +249,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Голос + Поза (інтеграція)",
@@ -261,7 +261,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Рукостискання + Привітання (симуляція)",
@@ -273,7 +273,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Посмішка в голосі",
@@ -285,7 +285,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Без перепрошень",
@@ -297,7 +297,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Elevator Pitch: 30 секунд про себе",
@@ -314,7 +314,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 30,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Перша зустріч: повна симуляція",
@@ -393,7 +393,7 @@ object BusinessCommunicationCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Правила етикету (запам'ятовування)",
@@ -405,7 +405,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Культурна незгода",
@@ -417,7 +417,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Активне слухання (вербальні сигнали)",
@@ -429,7 +429,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Прохання vs вимога",
@@ -441,7 +441,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Завершення розмови (культурне)",
@@ -453,7 +453,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Рольова гра: Складна ситуація",
@@ -469,7 +469,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.STRUCTURE, SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Активне слухання + перефразування",
@@ -550,7 +550,7 @@ object BusinessCommunicationCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Структура дзвінка (запам'ятовування)",
@@ -562,7 +562,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Перші 15 секунд дзвінка",
@@ -574,7 +574,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.STRUCTURE, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Усмішка в голосі (телефон)",
@@ -586,7 +586,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Питання замість монологу",
@@ -598,7 +598,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Завершення дзвінка (підсумок)",
@@ -610,7 +610,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Холодний дзвінок: повна симуляція",
@@ -627,7 +627,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Дзвінок існуючому клієнту",
@@ -718,7 +718,7 @@ object BusinessCommunicationCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Правила вибору каналу",
@@ -730,7 +730,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Аналіз ситуацій (вибір каналу)",
@@ -742,7 +742,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Запит на дзвінок (через email)",
@@ -754,7 +754,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Підсумок дзвінка (в email)",
@@ -766,7 +766,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Відмова від невідповідного каналу",
@@ -778,7 +778,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Пояснення вибору каналу",
@@ -795,7 +795,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Гібридний підхід (практика)",
@@ -870,7 +870,7 @@ object BusinessCommunicationCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Структура Problem-Solution-Benefit",
@@ -882,7 +882,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Проблема як крючок",
@@ -894,7 +894,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Рішення як відповідь",
@@ -906,7 +906,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Вигоди в цифрах",
@@ -918,7 +918,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Наступні кроки (конкретний план)",
@@ -930,7 +930,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Повна презентація ідеї (2-3 хв)",
@@ -948,7 +948,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 150,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Адаптація під аудиторію",
@@ -1021,7 +1021,7 @@ object BusinessCommunicationCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Мої досягнення за тиждень",
@@ -1033,7 +1033,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Інтеграція навичок (комбо)",
@@ -1045,7 +1045,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 150,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Повторення ключових фраз",
@@ -1057,7 +1057,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Цілі на другий тиждень",
@@ -1069,7 +1069,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Подяка собі (мотивація)",
@@ -1081,7 +1081,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Рефлексія тижня (що я навчився)",
@@ -1098,7 +1098,7 @@ object BusinessCommunicationCourse {
                 durationSeconds = 150,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Фінальний запис: Повна ділова ситуація",

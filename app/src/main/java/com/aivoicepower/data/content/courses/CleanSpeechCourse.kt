@@ -4,7 +4,7 @@ import com.aivoicepower.domain.model.course.Course
 import com.aivoicepower.domain.model.course.Difficulty
 import com.aivoicepower.domain.model.course.Lesson
 import com.aivoicepower.domain.model.course.TheoryContent
-import com.aivoicepower.domain.model.exercise.Exercise
+import com.aivoicepower.domain.model.exercise.LessonExercise
 import com.aivoicepower.domain.model.exercise.ExerciseType
 import com.aivoicepower.domain.model.exercise.ExerciseContent
 import com.aivoicepower.domain.model.user.SkillType
@@ -97,7 +97,7 @@ object CleanSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Топ-10 паразитів (знайомство)",
@@ -109,7 +109,7 @@ object CleanSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.FILLER_WORDS)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Пауза замість паразита (практика)",
@@ -121,7 +121,7 @@ object CleanSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.FILLER_WORDS, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Повільне мовлення",
@@ -133,7 +133,7 @@ object CleanSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.FILLER_WORDS, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Лічильник паразитів (самоконтроль)",
@@ -145,7 +145,7 @@ object CleanSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.FILLER_WORDS)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Фрази без паразитів (тренування)",
@@ -159,7 +159,7 @@ object CleanSpeechCourse {
             ),
 
             // Вправи з записом
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Діагностичний запис 'до курсу'",
@@ -175,7 +175,7 @@ object CleanSpeechCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.FILLER_WORDS, SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_7",
                 type = ExerciseType.READING,
                 title = "Читання для підрахунку паразитів",
@@ -233,7 +233,7 @@ object CleanSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Аналіз запису з уроку 1",
@@ -245,7 +245,7 @@ object CleanSpeechCourse {
                 durationSeconds = 180,
                 targetMetrics = listOf(SkillType.FILLER_WORDS)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Усвідомлене повторення паразита",
@@ -257,7 +257,7 @@ object CleanSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.FILLER_WORDS)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Фраза без Паразита №1",
@@ -269,7 +269,7 @@ object CleanSpeechCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.FILLER_WORDS)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Ловіння паразита (реальний час)",
@@ -281,7 +281,7 @@ object CleanSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.FILLER_WORDS, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Тригери паразитів (усвідомлення)",
@@ -295,7 +295,7 @@ object CleanSpeechCourse {
             ),
 
             // Вправи з записом
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Розповідь про свої паразити",
@@ -311,7 +311,7 @@ object CleanSpeechCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.FILLER_WORDS, SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Контрольний запис (фокус на Паразит №1)",
@@ -368,7 +368,7 @@ object CleanSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Паузи різної довжини",
@@ -380,7 +380,7 @@ object CleanSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.FILLER_WORDS, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Затиснення зубів (техніка стоп)",
@@ -392,7 +392,7 @@ object CleanSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.FILLER_WORDS)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_3",
                 type = ExerciseType.READING,
                 title = "Читання з паузами після крапок",
@@ -404,7 +404,7 @@ object CleanSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.FILLER_WORDS, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Пауза перед важливим словом",
@@ -416,7 +416,7 @@ object CleanSpeechCourse {
                 durationSeconds = 75,
                 targetMetrics = listOf(SkillType.FILLER_WORDS, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Рахунок з паузами",
@@ -430,7 +430,7 @@ object CleanSpeechCourse {
             ),
 
             // Вправи з записом
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Розповідь з усвідомленими паузами",
@@ -446,7 +446,7 @@ object CleanSpeechCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.FILLER_WORDS, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_7",
                 type = ExerciseType.READING,
                 title = "Читання з максимальними паузами",
@@ -499,7 +499,7 @@ object CleanSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Повільне мовлення (свідоме)",
@@ -511,7 +511,7 @@ object CleanSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.FILLER_WORDS, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Внутрішній спостерігач",
@@ -523,7 +523,7 @@ object CleanSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.FILLER_WORDS, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Лов імпульсу (техніка зупинки)",
@@ -535,7 +535,7 @@ object CleanSpeechCourse {
                 durationSeconds = 75,
                 targetMetrics = listOf(SkillType.FILLER_WORDS)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Рахунок з лічильником паразитів",
@@ -547,7 +547,7 @@ object CleanSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.FILLER_WORDS)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Усвідомлене дихання перед мовленням",
@@ -561,7 +561,7 @@ object CleanSpeechCourse {
             ),
 
             // Вправи з записом
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Розповідь з максимальною увагою",
@@ -577,7 +577,7 @@ object CleanSpeechCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.FILLER_WORDS, SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Контрольний запис з увагою",
@@ -636,7 +636,7 @@ object CleanSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Підготовка до запису (ритуал)",
@@ -648,7 +648,7 @@ object CleanSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.FILLER_WORDS)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Аналіз запису з уроку 4",
@@ -660,7 +660,7 @@ object CleanSpeechCourse {
                 durationSeconds = 180,
                 targetMetrics = listOf(SkillType.FILLER_WORDS)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Створення особистого графіка прогресу",
@@ -672,7 +672,7 @@ object CleanSpeechCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.FILLER_WORDS)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Техніка 'Стоп-Аналіз-Продовжуй'",
@@ -684,7 +684,7 @@ object CleanSpeechCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.FILLER_WORDS, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Запис майбутнього (візуалізація)",
@@ -698,7 +698,7 @@ object CleanSpeechCourse {
             ),
 
             // Вправи з записом
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Щоденний запис: Мій звичайний день",
@@ -714,7 +714,7 @@ object CleanSpeechCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.FILLER_WORDS, SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Аналітичний запис: Мої патерни паразитів",
@@ -784,7 +784,7 @@ object CleanSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Вивчення альтернатив (повторення)",
@@ -796,7 +796,7 @@ object CleanSpeechCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.FILLER_WORDS, SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Заміна паразитів на альтернативи",
@@ -808,7 +808,7 @@ object CleanSpeechCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.FILLER_WORDS, SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Ланцюжок зв'язків",
@@ -820,7 +820,7 @@ object CleanSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.FILLER_WORDS)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Пояснення з 'тому що'",
@@ -832,7 +832,7 @@ object CleanSpeechCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.FILLER_WORDS)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Контраст з 'однак'",
@@ -846,7 +846,7 @@ object CleanSpeechCourse {
             ),
 
             // Вправи з записом
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Розповідь з альтернативами",
@@ -862,7 +862,7 @@ object CleanSpeechCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.FILLER_WORDS, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Аргументація з зв'язками",
@@ -922,7 +922,7 @@ object CleanSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Порівняння записів День 1 vs День 7",
@@ -934,7 +934,7 @@ object CleanSpeechCourse {
                 durationSeconds = 180,
                 targetMetrics = listOf(SkillType.FILLER_WORDS)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Мій список досягнень",
@@ -946,7 +946,7 @@ object CleanSpeechCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.FILLER_WORDS)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Техніки першого тижня (повторення)",
@@ -958,7 +958,7 @@ object CleanSpeechCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.FILLER_WORDS, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Цілі на другий тиждень",
@@ -970,7 +970,7 @@ object CleanSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.FILLER_WORDS)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Подяка собі",
@@ -984,7 +984,7 @@ object CleanSpeechCourse {
             ),
 
             // Вправи з записом
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Мій прогрес за тиждень (рефлексія)",
@@ -1000,7 +1000,7 @@ object CleanSpeechCourse {
                 durationSeconds = 150,
                 targetMetrics = listOf(SkillType.FILLER_WORDS, SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Фінальний запис тижня (майстер-клас)",

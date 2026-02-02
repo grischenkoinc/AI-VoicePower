@@ -1,6 +1,6 @@
 package com.aivoicepower.ui.screens.courses
 
-import com.aivoicepower.domain.model.exercise.Exercise
+import com.aivoicepower.domain.model.exercise.LessonExercise
 import com.aivoicepower.domain.model.course.Lesson
 
 data class LessonState(
@@ -22,7 +22,7 @@ sealed class LessonPhase {
 }
 
 data class ExerciseState(
-    val exercise: Exercise,
+    val exercise: LessonExercise,
     val status: ExerciseStatus,
     val recordingPath: String? = null,
     val recordingDurationMs: Long = 0

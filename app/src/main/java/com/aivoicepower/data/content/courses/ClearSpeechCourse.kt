@@ -86,7 +86,7 @@ object ClearSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "ex_1_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Посмішка-Трубочка",
@@ -98,7 +98,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_1_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Голка",
@@ -110,7 +110,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_1_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Годинник",
@@ -122,7 +122,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_1_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Лев",
@@ -134,7 +134,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_1_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Коник",
@@ -147,7 +147,7 @@ object ClearSpeechCourse {
                 targetMetrics = listOf(SkillType.DICTION)
             ),
             // Скоромовки для запису
-            Exercise(
+            LessonExercise(
                 id = "ex_1_6",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 1",
@@ -160,7 +160,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_1_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2",
@@ -173,7 +173,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_1_8",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 3",
@@ -232,7 +232,7 @@ object ClearSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "ex_2_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Вибухові губи",
@@ -244,7 +244,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_2_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Мотор",
@@ -256,7 +256,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_2_3",
                 type = ExerciseType.ARTICULATION,
                 title = "В-Ф контраст",
@@ -268,7 +268,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_2_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Змикання-Розмикання",
@@ -280,7 +280,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_2_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Губні склади",
@@ -293,7 +293,7 @@ object ClearSpeechCourse {
                 targetMetrics = listOf(SkillType.DICTION)
             ),
             // Скоромовки
-            Exercise(
+            LessonExercise(
                 id = "ex_2_6",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 1",
@@ -306,7 +306,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_2_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2",
@@ -319,7 +319,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_2_8",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 3",
@@ -378,7 +378,7 @@ object ClearSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "ex_3_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Стукалочка",
@@ -390,7 +390,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_3_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Маляр",
@@ -402,7 +402,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_3_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Пароплав",
@@ -414,7 +414,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_3_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Катапульта",
@@ -426,7 +426,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_3_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Язикові склади",
@@ -439,7 +439,7 @@ object ClearSpeechCourse {
                 targetMetrics = listOf(SkillType.DICTION)
             ),
             // Скоромовки
-            Exercise(
+            LessonExercise(
                 id = "ex_3_6",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 1",
@@ -452,7 +452,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_3_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2",
@@ -465,7 +465,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_3_8",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 3",
@@ -524,7 +524,7 @@ object ClearSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "ex_4_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Насос",
@@ -536,7 +536,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_4_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Комарик",
@@ -548,7 +548,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_4_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Кузнечик",
@@ -560,7 +560,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_4_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Контраст С-Ш",
@@ -572,7 +572,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_4_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Свистячі склади",
@@ -585,7 +585,7 @@ object ClearSpeechCourse {
                 targetMetrics = listOf(SkillType.DICTION)
             ),
             // Скоромовки
-            Exercise(
+            LessonExercise(
                 id = "ex_4_6",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 1",
@@ -598,7 +598,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_4_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2",
@@ -611,7 +611,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_4_8",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 3",
@@ -677,7 +677,7 @@ object ClearSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "ex_5_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Чашечка",
@@ -689,7 +689,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_5_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Паровоз",
@@ -701,7 +701,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_5_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Локомотив",
@@ -713,7 +713,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_5_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Округлення губ",
@@ -725,7 +725,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_5_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Шиплячі склади",
@@ -738,7 +738,7 @@ object ClearSpeechCourse {
                 targetMetrics = listOf(SkillType.DICTION)
             ),
             // Скоромовки
-            Exercise(
+            LessonExercise(
                 id = "ex_5_6",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 1",
@@ -751,7 +751,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_5_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2",
@@ -764,7 +764,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_5_8",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 3",
@@ -824,7 +824,7 @@ object ClearSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "ex_6_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Барабанщик",
@@ -836,7 +836,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_6_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Моторчик з Д",
@@ -848,7 +848,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_6_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Коник плюс",
@@ -860,7 +860,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_6_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Тигр",
@@ -872,7 +872,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_6_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Р з приголосними",
@@ -885,7 +885,7 @@ object ClearSpeechCourse {
                 targetMetrics = listOf(SkillType.DICTION)
             ),
             // Скоромовки
-            Exercise(
+            LessonExercise(
                 id = "ex_6_6",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 1",
@@ -898,7 +898,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_6_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2",
@@ -911,7 +911,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_6_8",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 3",
@@ -972,7 +972,7 @@ object ClearSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "ex_7_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Комплексна розминка",
@@ -984,7 +984,7 @@ object ClearSpeechCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_7_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Губні звуки",
@@ -996,7 +996,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_7_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Язикові звуки",
@@ -1008,7 +1008,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_7_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Свистячі та шиплячі",
@@ -1020,7 +1020,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_7_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Звук Р",
@@ -1033,7 +1033,7 @@ object ClearSpeechCourse {
                 targetMetrics = listOf(SkillType.DICTION)
             ),
             // Скоромовки
-            Exercise(
+            LessonExercise(
                 id = "ex_7_6",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 1 (комплексна)",
@@ -1046,7 +1046,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_7_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2 (комплексна)",
@@ -1059,7 +1059,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_7_8",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 3 (фінальний челендж)",
@@ -1108,7 +1108,7 @@ object ClearSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "ex_8_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Насос",
@@ -1120,7 +1120,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_8_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Моторчик",
@@ -1132,7 +1132,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_8_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Кулачки",
@@ -1144,7 +1144,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_8_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Щітка",
@@ -1156,7 +1156,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_8_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Гірка",
@@ -1168,7 +1168,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_8_6",
                 type = ExerciseType.READING,
                 title = "Читання тексту",
@@ -1180,7 +1180,7 @@ object ClearSpeechCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_8_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 1",
@@ -1193,7 +1193,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_8_8",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2",
@@ -1242,7 +1242,7 @@ object ClearSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "ex_9_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Стоп-кадр",
@@ -1254,7 +1254,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_9_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Барабан",
@@ -1266,7 +1266,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_9_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Фінал",
@@ -1278,7 +1278,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_9_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Молоточок",
@@ -1290,7 +1290,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_9_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Затримка",
@@ -1302,7 +1302,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_9_6",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 1",
@@ -1315,7 +1315,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_9_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2",
@@ -1328,7 +1328,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_9_8",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 3",
@@ -1380,7 +1380,7 @@ object ClearSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "ex_10_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Вібрація",
@@ -1392,7 +1392,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_10_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Пари",
@@ -1404,7 +1404,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_10_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Гудок",
@@ -1416,7 +1416,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_10_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Перемикач",
@@ -1428,7 +1428,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_10_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Дзвіночок",
@@ -1440,7 +1440,7 @@ object ClearSpeechCourse {
                 durationSeconds = 30,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_10_6",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 1",
@@ -1453,7 +1453,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_10_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2",
@@ -1466,7 +1466,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_10_8",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 3",
@@ -1479,7 +1479,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_10_9",
                 type = ExerciseType.MINIMAL_PAIRS,
                 title = "Схожі слова",
@@ -1537,7 +1537,7 @@ object ClearSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "ex_11_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Тверде-м'яке",
@@ -1549,7 +1549,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_11_2",
                 type = ExerciseType.ARTICULATION,
                 title = "М'який фінал",
@@ -1561,7 +1561,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_11_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Контраст",
@@ -1573,7 +1573,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_11_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Ланцюжок",
@@ -1585,7 +1585,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_11_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Подвійне пом'якшення",
@@ -1597,7 +1597,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_11_6",
                 type = ExerciseType.READING,
                 title = "Читання тексту",
@@ -1609,7 +1609,7 @@ object ClearSpeechCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_11_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 1",
@@ -1622,7 +1622,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_11_8",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2",
@@ -1675,7 +1675,7 @@ object ClearSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "ex_12_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Носовий гул",
@@ -1687,7 +1687,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_12_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Перехід М-Н",
@@ -1699,7 +1699,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_12_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Носові склади",
@@ -1711,7 +1711,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_12_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Фінальні носові",
@@ -1723,7 +1723,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_12_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Контраст носових і ротових",
@@ -1736,7 +1736,7 @@ object ClearSpeechCourse {
                 targetMetrics = listOf(SkillType.DICTION)
             ),
             // Скоромовки
-            Exercise(
+            LessonExercise(
                 id = "ex_12_6",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 1",
@@ -1749,7 +1749,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_12_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2",
@@ -1762,7 +1762,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_12_8",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 3",
@@ -1815,7 +1815,7 @@ object ClearSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "ex_13_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Свистячий розгін",
@@ -1827,7 +1827,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_13_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Чергування",
@@ -1839,7 +1839,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_13_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Свистячі ланцюжки",
@@ -1851,7 +1851,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_13_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Контраст С-Ш",
@@ -1864,7 +1864,7 @@ object ClearSpeechCourse {
                 targetMetrics = listOf(SkillType.DICTION)
             ),
             // Батл скоромовок
-            Exercise(
+            LessonExercise(
                 id = "ex_13_6",
                 type = ExerciseType.TONGUE_TWISTER_BATTLE,
                 title = "Батл скоромовок",
@@ -1893,7 +1893,7 @@ object ClearSpeechCourse {
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
             // Додаткові скоромовки
-            Exercise(
+            LessonExercise(
                 id = "ex_13_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка (комбінована)",
@@ -1950,7 +1950,7 @@ object ClearSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "ex_14_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Комплексна розминка",
@@ -1962,7 +1962,7 @@ object ClearSpeechCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_14_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Звукосполучення",
@@ -1974,7 +1974,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_14_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Кінцівки слів",
@@ -1986,7 +1986,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_14_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Дзвінкі/глухі та м'які/тверді",
@@ -1998,7 +1998,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_14_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Носові та свистячі",
@@ -2011,7 +2011,7 @@ object ClearSpeechCourse {
                 targetMetrics = listOf(SkillType.DICTION)
             ),
             // Читання тексту
-            Exercise(
+            LessonExercise(
                 id = "ex_14_6",
                 type = ExerciseType.READING,
                 title = "Читання тексту",
@@ -2024,7 +2024,7 @@ object ClearSpeechCourse {
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
             // Скоромовки
-            Exercise(
+            LessonExercise(
                 id = "ex_14_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 1 (комплексна)",
@@ -2037,7 +2037,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_14_8",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2 (фінальний челендж)",
@@ -2090,7 +2090,7 @@ object ClearSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "ex_15_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Подовжені носові",
@@ -2102,7 +2102,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_15_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Подовжені шиплячі",
@@ -2114,7 +2114,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_15_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Подовжені ТТ та ЛЛ",
@@ -2126,7 +2126,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_15_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Контраст одиночний/подвійний",
@@ -2138,7 +2138,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_15_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Ланцюжок подвоєнь",
@@ -2150,7 +2150,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_15_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 1",
@@ -2163,7 +2163,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_15_8",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2",
@@ -2176,7 +2176,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_15_9",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 3 (подвійні подвоєння)",
@@ -2233,7 +2233,7 @@ object ClearSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "ex_16_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Інтенсивна розминка",
@@ -2245,7 +2245,7 @@ object ClearSpeechCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_16_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Розбір складних місць",
@@ -2257,7 +2257,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_16_3",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка-монстр 1",
@@ -2270,7 +2270,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_16_4",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка-монстр 2",
@@ -2283,7 +2283,7 @@ object ClearSpeechCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_16_5",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка-монстр 3",
@@ -2296,7 +2296,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_16_6",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка-монстр 4",
@@ -2309,7 +2309,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_16_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка-монстр 5",
@@ -2368,7 +2368,7 @@ object ClearSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "ex_17_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Розминка на швидкість",
@@ -2380,7 +2380,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_17_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Еластична стрічка",
@@ -2392,7 +2392,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_17_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Злиті слова",
@@ -2404,7 +2404,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_17_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Закінчення під контролем",
@@ -2416,7 +2416,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_17_5",
                 type = ExerciseType.READING,
                 title = "Читання тексту",
@@ -2428,7 +2428,7 @@ object ClearSpeechCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_17_6",
                 type = ExerciseType.MINIMAL_PAIRS,
                 title = "Схожі слова (швидко)",
@@ -2445,7 +2445,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_17_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка (темп)",
@@ -2458,7 +2458,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_17_8",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка (фінальна)",
@@ -2522,7 +2522,7 @@ object ClearSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "ex_18_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Розминка витривалості",
@@ -2534,7 +2534,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_18_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Нарощування складів",
@@ -2546,7 +2546,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_18_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Слова на 5+ складів",
@@ -2558,7 +2558,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_18_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Рекордсмени",
@@ -2570,7 +2570,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_18_5",
                 type = ExerciseType.SLOW_MOTION,
                 title = "Повільна скоромовка",
@@ -2583,7 +2583,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_18_6",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 1",
@@ -2596,7 +2596,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_18_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2",
@@ -2609,7 +2609,7 @@ object ClearSpeechCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_18_8",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 3",
@@ -2674,7 +2674,7 @@ object ClearSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "ex_19_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Розминка перед читанням",
@@ -2686,7 +2686,7 @@ object ClearSpeechCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_19_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Дихання для читання",
@@ -2698,7 +2698,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_19_3",
                 type = ExerciseType.READING,
                 title = "Текст 1: Простий",
@@ -2710,7 +2710,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_19_4",
                 type = ExerciseType.READING,
                 title = "Текст 2: Середній",
@@ -2722,7 +2722,7 @@ object ClearSpeechCourse {
                 durationSeconds = 75,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_19_5",
                 type = ExerciseType.READING,
                 title = "Текст 3: Складний",
@@ -2734,7 +2734,7 @@ object ClearSpeechCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_19_6",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 1",
@@ -2747,7 +2747,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_19_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2",
@@ -2760,7 +2760,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_19_8",
                 type = ExerciseType.READING,
                 title = "Фінальне читання",
@@ -2829,7 +2829,7 @@ object ClearSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "ex_20_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Експрес-розминка",
@@ -2841,7 +2841,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_20_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Тест: Базові групи звуків",
@@ -2853,7 +2853,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_20_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Тест: Звук Р",
@@ -2865,7 +2865,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_20_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Тест: Закінчення та звукосполучення",
@@ -2877,7 +2877,7 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_20_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Тест: М'які, дзвінкі, носові, подвійні",
@@ -2889,7 +2889,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_20_6",
                 type = ExerciseType.TONGUE_TWISTER_BATTLE,
                 title = "Фінальний батл скоромовок",
@@ -2917,7 +2917,7 @@ object ClearSpeechCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_20_7",
                 type = ExerciseType.READING,
                 title = "Комплексне читання",
@@ -2929,7 +2929,7 @@ object ClearSpeechCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_20_8",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Бонусна скоромовка",
@@ -2993,7 +2993,7 @@ object ClearSpeechCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "ex_21_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Церемоніальна розминка",
@@ -3005,7 +3005,7 @@ object ClearSpeechCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_21_2",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Випускна скоромовка 1",
@@ -3018,7 +3018,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_21_3",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Випускна скоромовка 2",
@@ -3031,7 +3031,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_21_4",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Випускна скоромовка 3",
@@ -3044,7 +3044,7 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_21_5",
                 type = ExerciseType.READING,
                 title = "Випускне читання",
@@ -3056,7 +3056,7 @@ object ClearSpeechCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO, SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_21_6",
                 type = ExerciseType.TONGUE_TWISTER_BATTLE,
                 title = "Випускний батл",
@@ -3084,7 +3084,7 @@ object ClearSpeechCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_21_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Головний тест",
@@ -3097,7 +3097,7 @@ object ClearSpeechCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "ex_21_8",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Випускне слово",

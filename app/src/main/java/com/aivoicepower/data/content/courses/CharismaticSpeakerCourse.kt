@@ -4,7 +4,7 @@ import com.aivoicepower.domain.model.course.Course
 import com.aivoicepower.domain.model.course.Difficulty
 import com.aivoicepower.domain.model.course.Lesson
 import com.aivoicepower.domain.model.course.TheoryContent
-import com.aivoicepower.domain.model.exercise.Exercise
+import com.aivoicepower.domain.model.exercise.LessonExercise
 import com.aivoicepower.domain.model.exercise.ExerciseType
 import com.aivoicepower.domain.model.exercise.ExerciseContent
 import com.aivoicepower.domain.model.exercise.Emotion
@@ -110,7 +110,7 @@ object CharismaticSpeakerCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Три стовпи харизми (усвідомлення)",
@@ -122,7 +122,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Присутність: Повільне мовлення",
@@ -134,7 +134,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.TEMPO, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Сила: Низький голос і твердість",
@@ -146,7 +146,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.VOLUME, SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Теплота: Усмішка в голосі",
@@ -158,7 +158,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Комбінація трьох стовпів",
@@ -172,7 +172,7 @@ object CharismaticSpeakerCourse {
             ),
             
             // Вправи з записом
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Самооцінка: Мої сильні стовпи",
@@ -189,7 +189,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Базовий запис 'до курсу'",
@@ -261,7 +261,7 @@ object CharismaticSpeakerCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Заземлення (фізична практика)",
@@ -273,7 +273,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Пауза як присутність",
@@ -285,7 +285,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.TEMPO, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Зоровий якір (уявна аудиторія)",
@@ -297,7 +297,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Реакція на уявну аудиторію",
@@ -309,7 +309,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Мантра присутності",
@@ -323,7 +323,7 @@ object CharismaticSpeakerCourse {
             ),
             
             // Вправи з записом
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Розповідь з повною присутністю",
@@ -340,7 +340,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.TEMPO, SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Порівняння: без vs з присутністю",
@@ -443,7 +443,7 @@ object CharismaticSpeakerCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Висока енергія: Фізична активація",
@@ -455,7 +455,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.VOLUME, SkillType.CONFIDENCE, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Низька енергія: Тиша і вага",
@@ -467,7 +467,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.TEMPO, SkillType.CONFIDENCE, SkillType.VOLUME)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_3",
                 type = ExerciseType.READING,
                 title = "Контраст: Висока → Низька → Висока",
@@ -479,7 +479,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.INTONATION, SkillType.VOLUME, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Диригент енергії (планування)",
@@ -491,7 +491,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Енергія через жести (інтеграція)",
@@ -505,7 +505,7 @@ object CharismaticSpeakerCourse {
             ),
             
             // Вправи з записом
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Мотиваційна промова (висока енергія)",
@@ -522,7 +522,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.VOLUME, SkillType.CONFIDENCE, SkillType.INTONATION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Особиста історія (низька енергія)",
@@ -608,7 +608,7 @@ object CharismaticSpeakerCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Штробас — доступ до найнижчого регістру",
@@ -620,7 +620,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.VOLUME, SkillType.VOICE_QUALITY)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Після штробасу: Низький 'М-М-М'",
@@ -632,7 +632,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.VOLUME, SkillType.CONFIDENCE, SkillType.VOICE_QUALITY)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Спокійний темп лідера",
@@ -644,7 +644,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.TEMPO, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Пауза як влада",
@@ -656,7 +656,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.TEMPO, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Твердження vs Питання",
@@ -668,7 +668,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_6",
                 type = ExerciseType.ARTICULATION,
                 title = "Проекція голосу (кидання на відстань)",
@@ -682,7 +682,7 @@ object CharismaticSpeakerCourse {
             ),
             
             // Вправи з записом
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Лідерське звернення до команди",
@@ -699,7 +699,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.VOLUME, SkillType.TEMPO, SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_8",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Порівняння: Звичайний vs Лідерський голос",
@@ -791,7 +791,7 @@ object CharismaticSpeakerCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_1",
                 type = ExerciseType.ARTICULATION,
                 title = "5 частин історії (усвідомлення структури)",
@@ -803,7 +803,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Сенсорні деталі: До vs Після",
@@ -815,7 +815,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Діалог оживляє історію",
@@ -827,7 +827,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Пауза перед кульмінацією",
@@ -839,7 +839,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.TEMPO, SkillType.CONFIDENCE, SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Зміна енергії через історію",
@@ -853,7 +853,7 @@ object CharismaticSpeakerCourse {
             ),
             
             // Вправи з записом
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Моя історія трансформації (2-3 хв)",
@@ -871,7 +871,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 180,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.INTONATION, SkillType.CONFIDENCE, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Історія іншої людини (практика емпатії)",
@@ -975,7 +975,7 @@ object CharismaticSpeakerCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_1",
                 type = ExerciseType.ARTICULATION,
                 title = "5 типів гумору (усвідомлення)",
@@ -987,7 +987,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Самоіронія: Сміюся з себе",
@@ -999,7 +999,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.TEMPO, SkillType.CONFIDENCE, SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Контраст: Очікування vs Реальність",
@@ -1011,7 +1011,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.TEMPO, SkillType.INTONATION, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Що робити якщо жарт не зайшов",
@@ -1023,7 +1023,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Колбек: Згадати щось раніше",
@@ -1037,7 +1037,7 @@ object CharismaticSpeakerCourse {
             ),
             
             // Вправи з записом
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Міні-виступ з 3 жартами (1-2 хв)",
@@ -1055,7 +1055,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.TEMPO, SkillType.INTONATION, SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Серйозна тема + легкість гумору",
@@ -1178,7 +1178,7 @@ object CharismaticSpeakerCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Повторення: 6 елементів харизми",
@@ -1190,7 +1190,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 150,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Інтеграція: Штробас → Низький голос → Фраза",
@@ -1202,7 +1202,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.VOLUME, SkillType.CONFIDENCE, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Інтеграція: Енергія + Паузи + Твердість",
@@ -1214,7 +1214,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE, SkillType.TEMPO, SkillType.VOLUME)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Інтеграція: Присутність через всі канали",
@@ -1228,7 +1228,7 @@ object CharismaticSpeakerCourse {
             ),
             
             // Вправи з записом
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_5",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Міні-виступ з усіма елементами (3 хв)",
@@ -1245,7 +1245,7 @@ object CharismaticSpeakerCourse {
                 durationSeconds = 180,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE, SkillType.INTONATION, SkillType.TEMPO, SkillType.VOLUME)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Порівняння: Тиждень тому vs Зараз",

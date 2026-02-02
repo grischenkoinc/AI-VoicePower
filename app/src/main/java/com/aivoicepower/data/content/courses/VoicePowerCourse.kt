@@ -5,7 +5,7 @@ import com.aivoicepower.domain.model.course.Course
 import com.aivoicepower.domain.model.course.Difficulty
 import com.aivoicepower.domain.model.course.Lesson
 import com.aivoicepower.domain.model.course.TheoryContent
-import com.aivoicepower.domain.model.exercise.Exercise
+import com.aivoicepower.domain.model.exercise.LessonExercise
 import com.aivoicepower.domain.model.exercise.ExerciseType
 import com.aivoicepower.domain.model.exercise.ExerciseContent
 import com.aivoicepower.domain.model.user.SkillType
@@ -115,7 +115,7 @@ object VoicePowerCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Масаж обличчя",
@@ -127,7 +127,7 @@ object VoicePowerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.VOICE_QUALITY)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Розминка губ",
@@ -139,7 +139,7 @@ object VoicePowerCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Розминка язика",
@@ -151,7 +151,7 @@ object VoicePowerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Позіхання",
@@ -163,7 +163,7 @@ object VoicePowerCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.VOICE_QUALITY)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Розминка щелеп",
@@ -175,7 +175,7 @@ object VoicePowerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.VOICE_QUALITY)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Діагностичний запис 'до курсу'",
@@ -191,7 +191,7 @@ object VoicePowerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.VOICE_QUALITY, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_7",
                 type = ExerciseType.READING,
                 title = "Читання тексту 'до курсу'",
@@ -246,7 +246,7 @@ object VoicePowerCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Лежача позиція",
@@ -258,7 +258,7 @@ object VoicePowerCourse {
                 durationSeconds = 30,
                 targetMetrics = listOf(SkillType.BREATHING)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_2",
                 type = ExerciseType.BREATHING,
                 title = "Базове діафрагмальне дихання",
@@ -273,7 +273,7 @@ object VoicePowerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.BREATHING)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Книга на животі",
@@ -285,7 +285,7 @@ object VoicePowerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.BREATHING)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Сидяче дихання",
@@ -297,7 +297,7 @@ object VoicePowerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.BREATHING)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_5",
                 type = ExerciseType.BREATHING,
                 title = "Стоячи біля стіни",
@@ -312,7 +312,7 @@ object VoicePowerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.BREATHING)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Говоріння з діафрагмальним диханням",
@@ -328,7 +328,7 @@ object VoicePowerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.BREATHING, SkillType.VOICE_QUALITY)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_7",
                 type = ExerciseType.READING,
                 title = "Читання з контролем дихання",
@@ -381,7 +381,7 @@ object VoicePowerCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_1",
                 type = ExerciseType.BREATHING,
                 title = "Змія (контроль видиху)",
@@ -396,7 +396,7 @@ object VoicePowerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.BREATHING)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_2",
                 type = ExerciseType.BREATHING,
                 title = "Свічка (плавний видих)",
@@ -411,7 +411,7 @@ object VoicePowerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.BREATHING)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Опора на звуку 'А'",
@@ -423,7 +423,7 @@ object VoicePowerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.BREATHING, SkillType.VOICE_QUALITY)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Градація гучності",
@@ -435,7 +435,7 @@ object VoicePowerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.BREATHING, SkillType.VOLUME)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Рахунок з опорою",
@@ -447,7 +447,7 @@ object VoicePowerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.BREATHING, SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Розповідь з опорою",
@@ -463,7 +463,7 @@ object VoicePowerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.BREATHING, SkillType.VOICE_QUALITY)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_7",
                 type = ExerciseType.READING,
                 title = "Читання довгих фраз",
@@ -512,7 +512,7 @@ object VoicePowerCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_1",
                 type = ExerciseType.BREATHING,
                 title = "Триступеневий вдих",
@@ -527,7 +527,7 @@ object VoicePowerCourse {
                 durationSeconds = 80,
                 targetMetrics = listOf(SkillType.BREATHING)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_2",
                 type = ExerciseType.BREATHING,
                 title = "Повний вдих 6-3-9",
@@ -542,7 +542,7 @@ object VoicePowerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.BREATHING)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Руки на ребрах",
@@ -554,7 +554,7 @@ object VoicePowerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.BREATHING)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Дихання зі звуком 'Ш'",
@@ -566,7 +566,7 @@ object VoicePowerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.BREATHING)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Довгий рахунок",
@@ -578,7 +578,7 @@ object VoicePowerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.BREATHING, SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Довга розповідь без пауз",
@@ -594,7 +594,7 @@ object VoicePowerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.BREATHING, SkillType.VOICE_QUALITY)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_7",
                 type = ExerciseType.READING,
                 title = "Читання довгих речень",
@@ -643,7 +643,7 @@ object VoicePowerCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Швидкий тихий вдих",
@@ -655,7 +655,7 @@ object VoicePowerCourse {
                 durationSeconds = 30,
                 targetMetrics = listOf(SkillType.BREATHING)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Фраза — вдих — фраза",
@@ -667,7 +667,7 @@ object VoicePowerCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.BREATHING)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Читання з позначками",
@@ -679,7 +679,7 @@ object VoicePowerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.BREATHING, SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Довга фраза + пауза",
@@ -691,7 +691,7 @@ object VoicePowerCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.BREATHING, SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Імпровізація з паузами",
@@ -703,7 +703,7 @@ object VoicePowerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.BREATHING, SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_6",
                 type = ExerciseType.READING,
                 title = "Читання з планованими вдихами",
@@ -715,7 +715,7 @@ object VoicePowerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.BREATHING, SkillType.STRUCTURE, SkillType.VOICE_QUALITY)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Розповідь з контрольованим диханням",
@@ -770,7 +770,7 @@ object VoicePowerCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Масаж шиї",
@@ -782,7 +782,7 @@ object VoicePowerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.VOICE_QUALITY)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Масаж щелепи",
@@ -794,7 +794,7 @@ object VoicePowerCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.VOICE_QUALITY)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Позіхання (5 разів)",
@@ -806,7 +806,7 @@ object VoicePowerCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.VOICE_QUALITY)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_4",
                 type = ExerciseType.ARTICULATION,
                 title = "М'яке гудіння 'М-м-м'",
@@ -818,7 +818,7 @@ object VoicePowerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.VOICE_QUALITY)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_5",
                 type = ExerciseType.ARTICULATION,
                 title = "'Сонна' вимова",
@@ -830,7 +830,7 @@ object VoicePowerCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.VOICE_QUALITY)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_6",
                 type = ExerciseType.READING,
                 title = "Читання з розслабленим апаратом",
@@ -842,7 +842,7 @@ object VoicePowerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.VOICE_QUALITY, SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Розповідь з перевіркою затисків",
@@ -902,7 +902,7 @@ object VoicePowerCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Повна розминка",
@@ -914,7 +914,7 @@ object VoicePowerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.VOICE_QUALITY)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_2",
                 type = ExerciseType.BREATHING,
                 title = "Комплекс дихальних вправ",
@@ -929,7 +929,7 @@ object VoicePowerCourse {
                 durationSeconds = 180,
                 targetMetrics = listOf(SkillType.BREATHING)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Рахунок з глибоким диханням",
@@ -941,7 +941,7 @@ object VoicePowerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.BREATHING, SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_4",
                 type = ExerciseType.ARTICULATION,
                 title = "М'яке гудіння для резонансу",
@@ -953,7 +953,7 @@ object VoicePowerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.VOICE_QUALITY, SkillType.RESONANCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_5",
                 type = ExerciseType.READING,
                 title = "Контрольне читання тижня",
@@ -965,7 +965,7 @@ object VoicePowerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.BREATHING, SkillType.VOICE_QUALITY, SkillType.DICTION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Контрольна розповідь тижня",
@@ -981,7 +981,7 @@ object VoicePowerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.BREATHING, SkillType.VOICE_QUALITY, SkillType.CONFIDENCE, SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Запис 'після першого тижня'",

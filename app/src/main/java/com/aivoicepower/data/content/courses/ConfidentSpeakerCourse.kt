@@ -4,7 +4,7 @@ import com.aivoicepower.domain.model.course.Course
 import com.aivoicepower.domain.model.course.Difficulty
 import com.aivoicepower.domain.model.course.Lesson
 import com.aivoicepower.domain.model.course.TheoryContent
-import com.aivoicepower.domain.model.exercise.Exercise
+import com.aivoicepower.domain.model.exercise.LessonExercise
 import com.aivoicepower.domain.model.exercise.ExerciseType
 import com.aivoicepower.domain.model.exercise.ExerciseContent
 import com.aivoicepower.domain.model.user.SkillType
@@ -83,7 +83,7 @@ object ConfidentSpeakerCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Дихання 4-7-8 (заспокоєння)",
@@ -95,7 +95,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Поза сили (2 хвилини)",
@@ -107,7 +107,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Фізична розминка",
@@ -119,7 +119,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Візуалізація успіху",
@@ -131,7 +131,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Голосна самопідтримка",
@@ -145,7 +145,7 @@ object ConfidentSpeakerCourse {
             ),
 
             // Вправи з записом
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Розповідь про свій страх",
@@ -161,7 +161,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}1_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Перший мікро-виступ",
@@ -216,7 +216,7 @@ object ConfidentSpeakerCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Поза спікера",
@@ -228,7 +228,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Зоровий контакт з об'єктами",
@@ -240,7 +240,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Відкриті жести",
@@ -252,7 +252,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Рух по сцені",
@@ -264,7 +264,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Усмішка очима",
@@ -278,7 +278,7 @@ object ConfidentSpeakerCourse {
             ),
 
             // Вправи з записом
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Виступ з контролем мови тіла",
@@ -294,7 +294,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.CONFIDENCE, SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}2_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Історія з жестами",
@@ -351,7 +351,7 @@ object ConfidentSpeakerCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Правило трьох",
@@ -363,7 +363,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Вступ-тіло-висновок (скелет)",
@@ -375,7 +375,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Переходи між пунктами",
@@ -387,7 +387,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Техніка 'закільцювання'",
@@ -399,7 +399,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Заклик до дії",
@@ -413,7 +413,7 @@ object ConfidentSpeakerCourse {
             ),
 
             // Вправи з записом
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Структурований виступ 2 хвилини",
@@ -429,7 +429,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}3_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Імпровізований виступ зі структурою",
@@ -490,7 +490,7 @@ object ConfidentSpeakerCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_1",
                 type = ExerciseType.ARTICULATION,
                 title = "5 типів вступу (тренування)",
@@ -502,7 +502,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Питання до аудиторії",
@@ -514,7 +514,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Шокуючий факт + пауза",
@@ -526,7 +526,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Історія-вступ (30 секунд)",
@@ -538,7 +538,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Провокаційний вступ (обережно!)",
@@ -552,7 +552,7 @@ object ConfidentSpeakerCourse {
             ),
 
             // Вправи з записом
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Виступ: питання-вступ",
@@ -568,7 +568,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 75,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}4_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Виступ: історія-вступ",
@@ -628,7 +628,7 @@ object ConfidentSpeakerCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Три пункти з переходами",
@@ -640,7 +640,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_2",
                 type = ExerciseType.ARTICULATION,
                 title = "P.E.E. формула (один пункт)",
@@ -652,7 +652,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Статистика + історія + порада",
@@ -664,7 +664,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Логічний зв'язок між пунктами",
@@ -676,7 +676,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Тест на глибину пункту",
@@ -690,7 +690,7 @@ object ConfidentSpeakerCourse {
             ),
 
             // Вправи з записом
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Виступ: три пункти за P.E.E.",
@@ -706,7 +706,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 150,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}5_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Виступ: контраст стилів",
@@ -764,7 +764,7 @@ object ConfidentSpeakerCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Підсумок в одному реченні",
@@ -776,7 +776,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Конкретний заклик до дії",
@@ -788,7 +788,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 75,
                 targetMetrics = listOf(SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Закільцювання",
@@ -800,7 +800,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Потужна остання фраза",
@@ -812,7 +812,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 75,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Висновок за 30 секунд",
@@ -826,7 +826,7 @@ object ConfidentSpeakerCourse {
             ),
 
             // Вправи з записом
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Виступ: фокус на висновок",
@@ -842,7 +842,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}6_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Виступ: з закільцюванням",
@@ -904,7 +904,7 @@ object ConfidentSpeakerCourse {
         ),
         exercises = listOf(
             // Комплексна розминка
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Повна підготовка до виступу",
@@ -916,7 +916,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 420,
                 targetMetrics = listOf(SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Швидка структура виступу",
@@ -928,7 +928,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.STRUCTURE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Мова тіла + жести",
@@ -942,7 +942,7 @@ object ConfidentSpeakerCourse {
             ),
 
             // Вправи з записом (підсумкові)
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_4",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Повний виступ 3 хвилини",
@@ -958,7 +958,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 180,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE, SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_5",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Виступ: мій прогрес за тиждень",
@@ -974,7 +974,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 150,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_6",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Імпровізований виступ",
@@ -990,7 +990,7 @@ object ConfidentSpeakerCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.STRUCTURE, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "${EXERCISE_PREFIX}7_7",
                 type = ExerciseType.FREE_SPEECH,
                 title = "Запис 'після першого тижня'",

@@ -65,7 +65,14 @@
       "Bash(git reset:*)",
       "Bash(\"C:/Users/Lenovo/AppData/Local/Android/Sdk/platform-tools/adb.exe\" devices)",
       "Bash(adb push:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(dir:*)",
+      "Bash(.gradlew.bat installDebug:*)",
+      "Bash(cd:*)",
+      "Bash(adb:*)",
+      "Bash(adb -s 23021RAA2Y shell am start:*)",
+      "Bash(ren Exercise.kt LessonExercise.kt)",
+      "Bash(git mv:*)"
     ]
   }
 }

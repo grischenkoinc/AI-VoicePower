@@ -88,7 +88,7 @@ object IntonationMagicCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_1_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Діапазон голосу",
@@ -100,7 +100,7 @@ object IntonationMagicCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_1_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Сходинки голосу",
@@ -112,7 +112,7 @@ object IntonationMagicCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_1_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Питання vs Твердження",
@@ -124,7 +124,7 @@ object IntonationMagicCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_1_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Логічний наголос",
@@ -136,7 +136,7 @@ object IntonationMagicCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_1_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Слово 'Так' — 10 способів",
@@ -148,7 +148,7 @@ object IntonationMagicCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_1_6",
                 type = ExerciseType.EMOTION_READING,
                 title = "Нейтральне читання",
@@ -160,7 +160,7 @@ object IntonationMagicCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_1_7",
                 type = ExerciseType.EMOTION_READING,
                 title = "Питальна інтонація",
@@ -217,7 +217,7 @@ object IntonationMagicCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_2_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Посмішка в голосі",
@@ -229,7 +229,7 @@ object IntonationMagicCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_2_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Градації радості",
@@ -241,7 +241,7 @@ object IntonationMagicCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_2_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Радісне привітання",
@@ -253,7 +253,7 @@ object IntonationMagicCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_2_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Гарна новина",
@@ -265,7 +265,7 @@ object IntonationMagicCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_2_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Комплімент",
@@ -277,7 +277,7 @@ object IntonationMagicCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_2_6",
                 type = ExerciseType.EMOTION_READING,
                 title = "Радісна історія",
@@ -289,7 +289,7 @@ object IntonationMagicCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_2_7",
                 type = ExerciseType.EMOTION_READING,
                 title = "Святкове привітання",
@@ -346,7 +346,7 @@ object IntonationMagicCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_3_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Зітхання",
@@ -358,7 +358,7 @@ object IntonationMagicCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_3_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Градації суму",
@@ -370,7 +370,7 @@ object IntonationMagicCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_3_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Ностальгія",
@@ -382,7 +382,7 @@ object IntonationMagicCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_3_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Співчуття",
@@ -394,7 +394,7 @@ object IntonationMagicCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_3_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Вибачення",
@@ -406,7 +406,7 @@ object IntonationMagicCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_3_6",
                 type = ExerciseType.EMOTION_READING,
                 title = "Сумна історія",
@@ -418,7 +418,7 @@ object IntonationMagicCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_3_7",
                 type = ExerciseType.EMOTION_READING,
                 title = "Прощання",
@@ -480,7 +480,7 @@ object IntonationMagicCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_4_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Тверде 'Ні'",
@@ -492,7 +492,7 @@ object IntonationMagicCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_4_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Роздратування",
@@ -504,7 +504,7 @@ object IntonationMagicCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_4_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Холодний гнів",
@@ -516,7 +516,7 @@ object IntonationMagicCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_4_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Встановлення кордонів",
@@ -528,7 +528,7 @@ object IntonationMagicCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_4_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Контраст: прохання vs вимога",
@@ -540,7 +540,7 @@ object IntonationMagicCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_4_6",
                 type = ExerciseType.EMOTION_READING,
                 title = "Твердий монолог",
@@ -552,7 +552,7 @@ object IntonationMagicCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_4_7",
                 type = ExerciseType.EMOTION_READING,
                 title = "Справедливий гнів",
@@ -564,7 +564,7 @@ object IntonationMagicCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_4_8",
                 type = ExerciseType.ARTICULATION,
                 title = "Розслаблення горла",
@@ -625,7 +625,7 @@ object IntonationMagicCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_5_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Базове здивування",
@@ -637,7 +637,7 @@ object IntonationMagicCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_5_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Градації здивування",
@@ -649,7 +649,7 @@ object IntonationMagicCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_5_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Позитивне здивування",
@@ -661,7 +661,7 @@ object IntonationMagicCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_5_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Негативне здивування",
@@ -673,7 +673,7 @@ object IntonationMagicCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_5_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Захоплення",
@@ -685,7 +685,7 @@ object IntonationMagicCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_5_6",
                 type = ExerciseType.EMOTION_READING,
                 title = "Несподівана новина",
@@ -697,7 +697,7 @@ object IntonationMagicCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_5_7",
                 type = ExerciseType.EMOTION_READING,
                 title = "Цікавий факт",
@@ -760,7 +760,7 @@ object IntonationMagicCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_6_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Комфортна пауза",
@@ -772,7 +772,7 @@ object IntonationMagicCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_6_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Драматична пауза",
@@ -784,7 +784,7 @@ object IntonationMagicCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_6_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Логічний наголос — варіації",
@@ -796,7 +796,7 @@ object IntonationMagicCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_6_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Пауза + акцент",
@@ -808,7 +808,7 @@ object IntonationMagicCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_6_5",
                 type = ExerciseType.ARTICULATION,
                 title = "Ритмічні паузи",
@@ -820,7 +820,7 @@ object IntonationMagicCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_6_6",
                 type = ExerciseType.READING,
                 title = "Читання з паузами",
@@ -832,7 +832,7 @@ object IntonationMagicCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION, SkillType.TEMPO)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_6_7",
                 type = ExerciseType.READING,
                 title = "Акценти в промові",
@@ -895,7 +895,7 @@ object IntonationMagicCourse {
             )
         ),
         exercises = listOf(
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_7_1",
                 type = ExerciseType.ARTICULATION,
                 title = "Розминка діапазону",
@@ -907,7 +907,7 @@ object IntonationMagicCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_7_2",
                 type = ExerciseType.ARTICULATION,
                 title = "Швидка зміна емоцій",
@@ -919,7 +919,7 @@ object IntonationMagicCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_7_3",
                 type = ExerciseType.ARTICULATION,
                 title = "Одне слово — п'ять емоцій",
@@ -931,7 +931,7 @@ object IntonationMagicCourse {
                 durationSeconds = 90,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_7_4",
                 type = ExerciseType.ARTICULATION,
                 title = "Паузи та акценти — повторення",
@@ -943,7 +943,7 @@ object IntonationMagicCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_7_5",
                 type = ExerciseType.EMOTION_READING,
                 title = "Радісна новина",
@@ -955,7 +955,7 @@ object IntonationMagicCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_7_6",
                 type = ExerciseType.EMOTION_READING,
                 title = "Сумне прощання",
@@ -967,7 +967,7 @@ object IntonationMagicCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.INTONATION)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_7_7",
                 type = ExerciseType.EMOTION_READING,
                 title = "Тверда позиція",
@@ -979,7 +979,7 @@ object IntonationMagicCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
             ),
-            Exercise(
+            LessonExercise(
                 id = "intonation_ex_7_8",
                 type = ExerciseType.EMOTION_READING,
                 title = "Фінальний тест: емоційна історія",
