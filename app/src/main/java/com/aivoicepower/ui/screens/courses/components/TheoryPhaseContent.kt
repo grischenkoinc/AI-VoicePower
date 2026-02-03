@@ -170,10 +170,26 @@ fun TheoryPhaseContent(
                     }
 
                     // Navigation (без смайликів, текст по центру)
-                    BottomNavRow(
-                        onPrevious = onNavigateBack,
-                        onNext = onStartExercises
-                    )
+                    // Показуємо "Далі" тільки якщо є вправи
+                    if (lesson.exercises.isNotEmpty()) {
+                        BottomNavRow(
+                            onPrevious = onNavigateBack,
+                            onNext = onStartExercises
+                        )
+                    } else {
+                        // Якщо вправ немає - тільки кнопка "Назад"
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp, vertical = 24.dp)
+                        ) {
+                            SecondaryButton(
+                                text = "← Назад",
+                                onClick = onNavigateBack,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(24.dp))
                 }

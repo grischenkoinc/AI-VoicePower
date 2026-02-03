@@ -1,15 +1,22 @@
 package com.aivoicepower.ui.screens.courses.components
 
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aivoicepower.domain.model.course.Lesson
 import com.aivoicepower.ui.screens.courses.ExerciseState
+import com.aivoicepower.ui.screens.courses.ExerciseStatus
 import com.aivoicepower.ui.screens.courses.LessonEvent
 import com.aivoicepower.ui.theme.*
 import com.aivoicepower.ui.theme.components.*
@@ -27,6 +34,11 @@ fun ExercisePhaseContent(
     if (exerciseState == null) return
 
     val scrollState = rememberScrollState()
+
+    // Reset scroll to top when exercise changes
+    LaunchedEffect(currentExerciseIndex) {
+        scrollState.animateScrollTo(0)
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         GradientBackground(
@@ -56,9 +68,37 @@ fun ExercisePhaseContent(
                             .padding(horizontal = 24.dp),
                         verticalArrangement = Arrangement.spacedBy(20.dp)
                     ) {
-                        // Exercise Card з premium дизайном
-                        PracticeCard(
-                            header = {
+                        // Пульсуюча рамка навколо всієї картки при записі
+                        val isRecording = exerciseState.status == ExerciseStatus.Recording
+
+                        val infiniteTransition = rememberInfiniteTransition(label = "border")
+                        val borderAlpha by infiniteTransition.animateFloat(
+                            initialValue = 0.4f,
+                            targetValue = 1f,
+                            animationSpec = infiniteRepeatable(
+                                animation = tween(1200, easing = FastOutSlowInEasing),
+                                repeatMode = RepeatMode.Reverse
+                            ),
+                            label = "alpha"
+                        )
+
+                        // Wrapper з пульсуючою рамкою
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .then(
+                                    if (isRecording) {
+                                        Modifier.border(
+                                            width = 4.dp,
+                                            color = Color(0xFF3B82F6).copy(alpha = borderAlpha),
+                                            shape = RoundedCornerShape(32.dp)
+                                        )
+                                    } else Modifier
+                                )
+                        ) {
+                            // Exercise Card з premium дизайном
+                            PracticeCard(
+                                header = {
                                 SectionTag(
                                     emoji = getExerciseEmoji(exerciseState.exercise.type),
                                     text = "${currentExerciseIndex + 1}/$totalExercises",
@@ -97,6 +137,7 @@ fun ExercisePhaseContent(
                                 }
                             }
                         )
+                        }
 
                         // Navigation
                         BottomNavRow(

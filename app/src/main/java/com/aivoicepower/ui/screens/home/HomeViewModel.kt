@@ -322,28 +322,28 @@ class HomeViewModel @Inject constructor(
     private fun getQuickActions(): List<com.aivoicepower.domain.model.home.QuickAction> {
         return listOf(
             com.aivoicepower.domain.model.home.QuickAction(
-                id = "quick_warmup",
-                title = "Швидка розминка",
-                icon = "⚡",
-                route = Screen.WarmupQuick.route
-            ),
-            com.aivoicepower.domain.model.home.QuickAction(
-                id = "random_topic",
-                title = "Випадкова тема",
-                icon = "🎲",
-                route = Screen.RandomTopic.route
-            ),
-            com.aivoicepower.domain.model.home.QuickAction(
-                id = "ai_coach",
-                title = "AI Тренер",
-                icon = "🤖",
-                route = Screen.AiCoach.route
-            ),
-            com.aivoicepower.domain.model.home.QuickAction(
                 id = "tongue_twisters",
                 title = "Скоромовки",
                 icon = "👅",
                 route = Screen.TongueTwisters.route
+            ),
+            com.aivoicepower.domain.model.home.QuickAction(
+                id = "daily_challenge",
+                title = "Щоденний виклик",
+                icon = "🎯",
+                route = Screen.DailyChallenge.route
+            ),
+            com.aivoicepower.domain.model.home.QuickAction(
+                id = "achievements",
+                title = "Досягнення",
+                icon = "🏆",
+                route = Screen.Achievements.route
+            ),
+            com.aivoicepower.domain.model.home.QuickAction(
+                id = "recording_history",
+                title = "Історія записів",
+                icon = "📊",
+                route = Screen.RecordingHistory.route
             )
         )
     }

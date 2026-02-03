@@ -72,7 +72,9 @@
       "Bash(adb:*)",
       "Bash(adb -s 23021RAA2Y shell am start:*)",
       "Bash(ren Exercise.kt LessonExercise.kt)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(.gradlew.bat assembleDebug:*)",
+      "Bash(gradlew.bat installDebug:*)"
     ]
   }
 }

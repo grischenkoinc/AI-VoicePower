@@ -110,7 +110,7 @@ fun RecordingControls(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     SecondaryButton(
-                        text = if (isPlaying) "Стоп" else "Слухати",
+                        text = if (isPlaying) "⏸ Стоп" else "🔊 Слухати",
                         onClick = if (isPlaying) onStopPlayback else onPlayRecording,
                         modifier = Modifier.weight(1f)
                     )

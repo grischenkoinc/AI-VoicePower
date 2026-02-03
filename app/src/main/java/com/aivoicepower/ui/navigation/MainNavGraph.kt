@@ -68,6 +68,15 @@ fun MainNavGraph(
                 onNavigateToTongueTwisters = {
                     navController.navigate(Screen.TongueTwisters.route)
                 },
+                onNavigateToDailyChallenge = {
+                    navController.navigate(Screen.DailyChallenge.route)
+                },
+                onNavigateToAchievements = {
+                    navController.navigate(Screen.Achievements.route)
+                },
+                onNavigateToRecordingHistory = {
+                    navController.navigate(Screen.RecordingHistory.route)
+                },
                 onNavigateToRecord = {
                     // TODO: Navigate to record screen
                 },

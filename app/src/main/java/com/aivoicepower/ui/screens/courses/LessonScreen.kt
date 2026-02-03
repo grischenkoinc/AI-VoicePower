@@ -1,6 +1,7 @@
 package com.aivoicepower.ui.screens.courses
 
 import android.Manifest
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -38,6 +39,25 @@ fun LessonScreen(
     val scope = rememberCoroutineScope()
 
     var hasAudioPermission by remember { mutableStateOf(false) }
+    var backPressedTime by remember { mutableStateOf(0L) }
+
+    // Double-back to exit protection
+    BackHandler {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - backPressedTime < 2000) {
+            // Actually go back
+            onNavigateBack()
+        } else {
+            // Show toast
+            backPressedTime = currentTime
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = "Для виходу натисніть Назад ще раз",
+                    duration = androidx.compose.material3.SnackbarDuration.Short
+                )
+            }
+        }
+    }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -141,12 +161,16 @@ fun LessonScreen(
                 // Snackbar
                 SnackbarHost(
                     hostState = snackbarHostState,
-                    modifier = Modifier.align(Alignment.BottomCenter).padding(16.dp)
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(horizontal = 24.dp)
+                        .padding(bottom = 100.dp)
                 ) { data ->
                     Snackbar(
                         snackbarData = data,
-                        containerColor = Color(0xFFEF4444),
-                        contentColor = Color.White
+                        containerColor = Color(0xFF667EEA),
+                        contentColor = Color.White,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }

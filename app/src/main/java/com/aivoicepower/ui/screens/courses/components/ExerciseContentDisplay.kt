@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +25,37 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aivoicepower.domain.model.exercise.ExerciseContent
 
+/**
+ * Universal white card wrapper for all exercise content
+ */
+@Composable
+private fun ExerciseContentCard(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 8.dp,
+                shape = RoundedCornerShape(24.dp),
+                spotColor = Color.Black.copy(alpha = 0.1f)
+            )
+            .background(
+                color = Color.White,
+                shape = RoundedCornerShape(24.dp)
+            )
+            .border(
+                width = 2.dp,
+                color = Color(0xFFE5E7EB),
+                shape = RoundedCornerShape(24.dp)
+            )
+            .padding(28.dp)
+    ) {
+        content()
+    }
+}
+
 @Composable
 fun ExerciseContentDisplay(
     content: ExerciseContent,
@@ -38,25 +67,7 @@ fun ExerciseContentDisplay(
     ) {
         when (content) {
             is ExerciseContent.TongueTwister -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .shadow(
-                            elevation = 8.dp,
-                            shape = RoundedCornerShape(24.dp),
-                            spotColor = Color.Black.copy(alpha = 0.1f)
-                        )
-                        .background(
-                            color = Color.White,
-                            shape = RoundedCornerShape(24.dp)
-                        )
-                        .border(
-                            width = 2.dp,
-                            color = Color(0xFFE5E7EB),
-                            shape = RoundedCornerShape(24.dp)
-                        )
-                        .padding(28.dp)
-                ) {
+                ExerciseContentCard {
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -74,7 +85,7 @@ fun ExerciseContentDisplay(
                         )
                         if (content.targetSounds.isNotEmpty()) {
                             Text(
-                                text = "Цiльовi звуки: ${content.targetSounds.joinToString(", ")}",
+                                text = "Цільові звуки: ${content.targetSounds.joinToString(", ")}",
                                 style = MaterialTheme.typography.bodySmall,
                                 fontSize = 14.sp,
                                 color = Color(0xFF6B7280),
@@ -86,381 +97,543 @@ fun ExerciseContentDisplay(
             }
 
             is ExerciseContent.ReadingText -> {
-                if (content.emotion != null) {
-                    Text(
-                            text = "${content.emotion.getEmoji()} Емоцiя: ${content.emotion.getDisplayName()}",
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                    }
-                    Text(
-                        text = "Текст:",
-                        style = MaterialTheme.typography.titleSmall
-                    )
-                    Text(
-                        text = content.text,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-
-            is ExerciseContent.FreeSpeechTopic -> {
-                    Text(
-                        text = "Тема:",
-                        style = MaterialTheme.typography.titleSmall
-                    )
-                    Text(
-                        text = content.topic,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    if (content.hints.isNotEmpty()) {
-                        Text(
-                            text = "Пiдказки:",
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                        content.hints.forEach { hint ->
-                            Text(
-                                text = "- $hint",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    }
-                }
-
-            is ExerciseContent.Retelling -> {
-                    Text(
-                        text = "Прочитай i перекажи:",
-                        style = MaterialTheme.typography.titleSmall
-                    )
-                    Text(
-                        text = content.sourceText,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    if (content.keyPoints.isNotEmpty()) {
-                        Text(
-                            text = "Ключовi моменти:",
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                        content.keyPoints.forEach { point ->
-                            Text(
-                                text = "- $point",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    }
-                }
-
-            is ExerciseContent.Dialogue -> {
-                    Text(
-                        text = "Дiалог:",
-                        style = MaterialTheme.typography.titleSmall
-                    )
-                    content.lines.forEach { line ->
-                        Column(
-                            modifier = Modifier.padding(vertical = 4.dp)
-                        ) {
-                            Text(
-                                text = line.speaker,
-                                style = MaterialTheme.typography.titleSmall,
-                                color = if (line.isUserLine) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                }
-                            )
-                            Text(
-                                text = line.text,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    }
-                }
-
-            is ExerciseContent.Pitch -> {
-                    Text(
-                        text = "Сценарiй:",
-                        style = MaterialTheme.typography.titleSmall
-                    )
-                    Text(
-                        text = content.scenario,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    Text(
-                        text = "Цiльова аудиторiя: ${content.targetAudience}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    if (content.keyMessages.isNotEmpty()) {
-                        Text(
-                            text = "Ключовi меседжi:",
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                        content.keyMessages.forEach { message ->
-                            Text(
-                                text = "- $message",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    }
-                }
-
-            is ExerciseContent.ArticulationExercise -> {
-                    Text(
-                        text = "Виконай вправу за iнструкцiєю",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-
-            is ExerciseContent.MinimalPairs -> {
-                    Text(
-                        text = "Схожi слова:",
-                        style = MaterialTheme.typography.titleSmall
-                    )
-                    content.pairs.forEach { pair ->
-                        Text(
-                            text = "${pair.first} / ${pair.second}",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                    if (content.targetSounds.isNotEmpty()) {
-                        Text(
-                            text = "Цiльовi звуки: ${content.targetSounds.joinToString(", ")}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
-            is ExerciseContent.ContrastSounds -> {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.tertiaryContainer
-                        )
+                ExerciseContentCard {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
+                        if (content.emotion != null) {
                             Text(
-                                text = "Чергуй звуки:",
+                                text = "${content.emotion.getEmoji()} ${content.emotion.getDisplayName()}",
                                 style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onTertiaryContainer
-                            )
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            // Послідовність звуків великим шрифтом
-                            Text(
-                                text = content.sequence,
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = MaterialTheme.colorScheme.primary,
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
+                                color = Color(0xFF667EEA),
                                 textAlign = TextAlign.Center
                             )
+                        }
+                        Text(
+                            text = content.text,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Medium,
+                            lineHeight = 26.sp,
+                            textAlign = TextAlign.Center,
+                            color = Color(0xFF111827)
+                        )
+                    }
+                }
+            }
 
-                            Spacer(modifier = Modifier.height(12.dp))
+            is ExerciseContent.MinimalPairs -> {
+                ExerciseContentCard {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Схожі слова",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF667EEA)
+                        )
 
-                            // Кількість повторень
+                        content.pairs.forEach { pair ->
                             Text(
-                                text = "Повтори ${content.repetitions} разів",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                                text = "${pair.first}  /  ${pair.second}",
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                color = Color(0xFF111827)
                             )
+                        }
 
-                            Spacer(modifier = Modifier.height(8.dp))
+                        if (content.targetSounds.isNotEmpty()) {
+                            Text(
+                                text = "Цільові звуки: ${content.targetSounds.joinToString(", ")}",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontSize = 14.sp,
+                                color = Color(0xFF6B7280),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            }
 
-                            // Цільові звуки
-                            if (content.targetSounds.isNotEmpty()) {
+            is ExerciseContent.ContrastSounds -> {
+                ExerciseContentCard {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Чергуй звуки",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF667EEA)
+                        )
+
+                        Text(
+                            text = content.sequence,
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            textAlign = TextAlign.Center,
+                            color = Color(0xFF111827),
+                            letterSpacing = 2.sp
+                        )
+
+                        Text(
+                            text = "Повтори ${content.repetitions} разів",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF6B7280)
+                        )
+
+                        if (content.targetSounds.isNotEmpty()) {
+                            Text(
+                                text = "Фокус: ${content.targetSounds.joinToString(" / ")}",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontSize = 14.sp,
+                                color = Color(0xFF6B7280),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            }
+
+            is ExerciseContent.TongueTwisterBattle -> {
+                ExerciseContentCard {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Text(
+                            text = "⚡ Батл: ${content.twisters.size} скоромовки поспіль",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color(0xFFEF4444),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        content.twisters.forEachIndexed { index, twister ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.Top,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
                                 Text(
-                                    text = "Фокус: ${content.targetSounds.joinToString(" / ")}",
+                                    text = "${index + 1}.",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF667EEA)
+                                )
+
+                                Text(
+                                    text = twister.text,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontSize = 17.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    lineHeight = 24.sp,
+                                    color = Color(0xFF111827),
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
+
+                        Text(
+                            text = "⚠️ Читай без пауз між скоромовками",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF6B7280),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
+
+            is ExerciseContent.SlowMotion -> {
+                ExerciseContentCard {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "🐢 Повільна вимова",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF667EEA)
+                        )
+
+                        Text(
+                            text = content.text,
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            lineHeight = 30.sp,
+                            textAlign = TextAlign.Center,
+                            color = Color(0xFF111827)
+                        )
+
+                        Text(
+                            text = "⏱ Мінімум ${content.minDurationSeconds} секунд",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFFEF4444)
+                        )
+                    }
+                }
+            }
+
+            is ExerciseContent.BreathingExercise -> {
+                ExerciseContentCard {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "🫁 Дихальна вправа",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color(0xFF667EEA)
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "${content.inhaleSeconds}",
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    fontSize = 36.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color(0xFF10B981)
+                                )
+                                Text(
+                                    text = "Вдих",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    fontSize = 13.sp,
+                                    color = Color(0xFF6B7280)
+                                )
+                            }
+
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "${content.holdSeconds}",
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    fontSize = 36.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color(0xFFFBBF24)
+                                )
+                                Text(
+                                    text = "Затримка",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontSize = 13.sp,
+                                    color = Color(0xFF6B7280)
+                                )
+                            }
+
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "${content.exhaleSeconds}",
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    fontSize = 36.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color(0xFF667EEA)
+                                )
+                                Text(
+                                    text = "Видих",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontSize = 13.sp,
+                                    color = Color(0xFF6B7280)
+                                )
+                            }
+                        }
+
+                        Text(
+                            text = "🔁 Повтори ${content.cycles} циклів",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF111827)
+                        )
+
+                        Text(
+                            text = content.instruction,
+                            style = MaterialTheme.typography.bodySmall,
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Center,
+                            color = Color(0xFF6B7280),
+                            lineHeight = 20.sp
+                        )
+                    }
+                }
+            }
+
+            is ExerciseContent.FreeSpeechTopic -> {
+                ExerciseContentCard {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "💬 Тема для імпровізації",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF667EEA)
+                        )
+
+                        Text(
+                            text = content.topic,
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            lineHeight = 30.sp,
+                            textAlign = TextAlign.Center,
+                            color = Color(0xFF111827)
+                        )
+
+                        if (content.hints.isNotEmpty()) {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "💡 Підказки:",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF6B7280)
+                                )
+                                content.hints.forEach { hint ->
+                                    Text(
+                                        text = "• $hint",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontSize = 15.sp,
+                                        color = Color(0xFF374151)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            is ExerciseContent.Retelling -> {
+                ExerciseContentCard {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Text(
+                            text = "📖 Прочитай і перекажи",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF667EEA),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Text(
+                            text = content.sourceText,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Medium,
+                            lineHeight = 26.sp,
+                            textAlign = TextAlign.Center,
+                            color = Color(0xFF111827)
+                        )
+
+                        if (content.keyPoints.isNotEmpty()) {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "🔑 Ключові моменти:",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF6B7280)
+                                )
+                                content.keyPoints.forEach { point ->
+                                    Text(
+                                        text = "• $point",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontSize = 15.sp,
+                                        color = Color(0xFF374151)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            is ExerciseContent.Dialogue -> {
+                ExerciseContentCard {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Text(
+                            text = "🗣 Діалог",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF667EEA),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        content.lines.forEach { line ->
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        color = if (line.isUserLine) {
+                                            Color(0xFFF3F4F6)
+                                        } else {
+                                            Color(0xFFE0E7FF)
+                                        },
+                                        shape = RoundedCornerShape(12.dp)
+                                    )
+                                    .padding(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = line.speaker,
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (line.isUserLine) {
+                                        Color(0xFF667EEA)
+                                    } else {
+                                        Color(0xFF6B7280)
+                                    }
+                                )
+                                Text(
+                                    text = line.text,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontSize = 15.sp,
+                                    color = Color(0xFF111827)
                                 )
                             }
                         }
                     }
                 }
+            }
 
-            is ExerciseContent.TongueTwisterBattle -> {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
-                        )
+            is ExerciseContent.Pitch -> {
+                ExerciseContentCard {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp)
-                        ) {
-                            Text(
-                                text = "Прочитай ${content.twisters.size} скоромовки поспіль:",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.error,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            content.twisters.forEachIndexed { index, twister ->
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.Top
-                                ) {
-                                    Text(
-                                        text = "${index + 1}.",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.primary,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.width(28.dp)
-                                    )
-
-                                    Text(
-                                        text = twister.text,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                }
-
-                                if (index < content.twisters.size - 1) {
-                                    Spacer(modifier = Modifier.height(12.dp))
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            Text(
-                                text = "Читай без пауз між скоромовками",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-
-            is ExerciseContent.SlowMotion -> {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        Text(
+                            text = "💼 Пітч",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF667EEA),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
                         )
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp)
-                        ) {
-                            Text(
-                                text = "Повільна вимова",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
 
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            Text(
-                                text = content.text,
-                                style = MaterialTheme.typography.headlineSmall,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Text(
-                                text = "Мінімум ${content.minDurationSeconds} секунд",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                }
-
-            is ExerciseContent.BreathingExercise -> {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                        Text(
+                            text = content.scenario,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Medium,
+                            lineHeight = 26.sp,
+                            textAlign = TextAlign.Center,
+                            color = Color(0xFF111827)
                         )
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "Дихальна вправа",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
 
-                            Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "🎯 Цільова аудиторія: ${content.targetAudience}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontSize = 14.sp,
+                            color = Color(0xFF6B7280),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
 
-                            Row(
+                        if (content.keyMessages.isNotEmpty()) {
+                            Column(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceEvenly
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "📌 Ключові меседжі:",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF6B7280)
+                                )
+                                content.keyMessages.forEach { message ->
                                     Text(
-                                        text = "${content.inhaleSeconds}",
-                                        style = MaterialTheme.typography.headlineMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                    Text(
-                                        text = "Вдих",
-                                        style = MaterialTheme.typography.bodySmall
-                                    )
-                                }
-
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(
-                                        text = "${content.holdSeconds}",
-                                        style = MaterialTheme.typography.headlineMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.secondary
-                                    )
-                                    Text(
-                                        text = "Затримка",
-                                        style = MaterialTheme.typography.bodySmall
-                                    )
-                                }
-
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(
-                                        text = "${content.exhaleSeconds}",
-                                        style = MaterialTheme.typography.headlineMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.tertiary
-                                    )
-                                    Text(
-                                        text = "Видих",
-                                        style = MaterialTheme.typography.bodySmall
+                                        text = "• $message",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontSize = 15.sp,
+                                        color = Color(0xFF374151)
                                     )
                                 }
                             }
-
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            Text(
-                                text = "Повтори ${content.cycles} циклів",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Text(
-                                text = content.instruction,
-                                style = MaterialTheme.typography.bodySmall,
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
                         }
                     }
                 }
+            }
+
+            is ExerciseContent.ArticulationExercise -> {
+                ExerciseContentCard {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "🎭 Артикуляційна гімнастика",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF667EEA)
+                        )
+
+                        Text(
+                            text = "Виконай вправу за інструкцією",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Medium,
+                            textAlign = TextAlign.Center,
+                            color = Color(0xFF111827)
+                        )
+                    }
+                }
+            }
         }
     }
 }

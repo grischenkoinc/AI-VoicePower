@@ -231,29 +231,58 @@ class LessonViewModel @Inject constructor(
         val currentExerciseState = getCurrentExerciseState() ?: return
         val lesson = _state.value.lesson ?: return
 
+        // Validate recording before proceeding
+        if (currentExerciseState.recordingPath != null) {
+            // Check minimum recording duration (2 seconds)
+            if (currentExerciseState.recordingDurationMs < 2000) {
+                _state.update {
+                    it.copy(toastMessage = "Запис занадто короткий. Говоріть принаймні 2 секунди.")
+                }
+                return
+            }
+
+            // Check if file exists and has content
+            val recordingFile = java.io.File(currentExerciseState.recordingPath)
+            if (!recordingFile.exists() || recordingFile.length() < 1000) {
+                _state.update {
+                    it.copy(toastMessage = "Запис порожній або пошкоджений. Спробуйте ще раз.")
+                }
+                return
+            }
+        }
+
+        // Mark exercise as completed IMMEDIATELY for instant feedback
+        updateCurrentExerciseState {
+            it.copy(status = ExerciseStatus.Completed)
+        }
+
+        // Check if all exercises completed and move to next
+        val updatedStates = _state.value.exerciseStates.toMutableList()
+        val currentIndex = _state.value.currentExerciseIndex
+        updatedStates[currentIndex] = updatedStates[currentIndex].copy(status = ExerciseStatus.Completed)
+
+        val allCompleted = updatedStates.all {
+            it.status == ExerciseStatus.Completed
+        }
+
+        if (allCompleted) {
+            // Move to completion phase immediately
+            _state.update {
+                it.copy(
+                    currentPhase = LessonPhase.Completed,
+                    exerciseStates = updatedStates
+                )
+            }
+        } else {
+            // Move to next exercise immediately
+            _state.update { it.copy(exerciseStates = updatedStates) }
+            moveToNextExercise()
+        }
+
+        // Run analysis and DB operations in background (non-blocking)
         viewModelScope.launch {
             try {
                 var score = 0
-
-                // Validate recording before analysis
-                if (currentExerciseState.recordingPath != null) {
-                    // Check minimum recording duration (2 seconds)
-                    if (currentExerciseState.recordingDurationMs < 2000) {
-                        _state.update {
-                            it.copy(toastMessage = "Запис занадто короткий. Говоріть принаймні 2 секунди.")
-                        }
-                        return@launch
-                    }
-
-                    // Check if file exists and has content
-                    val recordingFile = java.io.File(currentExerciseState.recordingPath)
-                    if (!recordingFile.exists() || recordingFile.length() < 1000) {
-                        _state.update {
-                            it.copy(toastMessage = "Запис порожній або пошкоджений. Спробуйте ще раз.")
-                        }
-                        return@launch
-                    }
-                }
 
                 // Analyze recording with Gemini if path exists
                 if (currentExerciseState.recordingPath != null) {
@@ -284,47 +313,23 @@ class LessonViewModel @Inject constructor(
                     recordingDao.insert(recordingEntity)
                 }
 
-                // Mark exercise as completed
-                updateCurrentExerciseState {
-                    it.copy(status = ExerciseStatus.Completed)
-                }
-
-                // Check if all exercises completed
-                val updatedStates = _state.value.exerciseStates.toMutableList()
-                val currentIndex = _state.value.currentExerciseIndex
-                updatedStates[currentIndex] = updatedStates[currentIndex].copy(status = ExerciseStatus.Completed)
-
-                val allCompleted = updatedStates.all {
-                    it.status == ExerciseStatus.Completed
-                }
-
+                // Update lesson progress in background
                 if (allCompleted) {
-                    // Mark lesson as completed
                     val progressEntity = CourseProgressEntity(
                         id = "${courseId}_${lessonId}",
                         courseId = courseId,
                         lessonId = lessonId,
                         isCompleted = true,
                         completedAt = System.currentTimeMillis(),
-                        bestScore = score, // Real score from Gemini analysis
+                        bestScore = score,
                         attemptsCount = 1,
                         lastAttemptAt = System.currentTimeMillis()
                     )
                     courseProgressDao.insertOrUpdate(progressEntity)
-
-                    _state.update {
-                        it.copy(
-                            currentPhase = LessonPhase.Completed,
-                            exerciseStates = updatedStates
-                        )
-                    }
-                } else {
-                    // Move to next exercise
-                    _state.update { it.copy(exerciseStates = updatedStates) }
-                    moveToNextExercise()
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(error = "Помилка збереження: ${e.message}") }
+                Log.e("LessonVM", "Background analysis error: ${e.message}", e)
+                // Don't show error to user since they already moved on
             }
         }
     }

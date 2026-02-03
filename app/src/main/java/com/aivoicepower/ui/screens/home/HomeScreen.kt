@@ -49,6 +49,9 @@ fun HomeScreen(
     onNavigateToAICoach: () -> Unit,
     onNavigateToWarmup: () -> Unit,
     onNavigateToTongueTwisters: () -> Unit,
+    onNavigateToDailyChallenge: () -> Unit,
+    onNavigateToAchievements: () -> Unit,
+    onNavigateToRecordingHistory: () -> Unit,
     onNavigateToRecord: () -> Unit,
     onNavigateToAnalytics: () -> Unit,
     onNavigateToSettings: () -> Unit,
@@ -134,10 +137,10 @@ fun HomeScreen(
                     actions = state.quickActions,
                     onActionClick = { action ->
                         when (action.id) {
-                            "warmup" -> onNavigateToWarmup()
-                            "improvisation" -> onNavigateToImprovisation()
-                            "ai_coach" -> onNavigateToAICoach()
                             "tongue_twisters" -> onNavigateToTongueTwisters()
+                            "daily_challenge" -> onNavigateToDailyChallenge()
+                            "achievements" -> onNavigateToAchievements()
+                            "recording_history" -> onNavigateToRecordingHistory()
                             else -> {}
                         }
                     }
@@ -1079,12 +1082,12 @@ private fun QuickActionCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Map routes to gradient colors
-    val gradientColors = when (action.route) {
-        "warmup" -> listOf(Color(0xFF6366F1), Color(0xFF8B5CF6))
-        "random_topic" -> listOf(Color(0xFFF59E0B), Color(0xFFF97316))
-        "ai_coach" -> listOf(Color(0xFFEC4899), Color(0xFFF43F5E))
-        "tongue_twisters" -> listOf(Color(0xFF10B981), Color(0xFF14B8A6))
+    // Map action IDs to gradient colors
+    val gradientColors = when (action.id) {
+        "tongue_twisters" -> listOf(Color(0xFF10B981), Color(0xFF14B8A6)) // Зелений
+        "daily_challenge" -> listOf(Color(0xFFF59E0B), Color(0xFFF97316)) // Помаранчевий
+        "achievements" -> listOf(Color(0xFFFBBF24), Color(0xFFF59E0B)) // Золотий
+        "recording_history" -> listOf(Color(0xFF6366F1), Color(0xFF8B5CF6)) // Фіолетовий
         else -> listOf(Color(0xFF6366F1), Color(0xFF8B5CF6))
     }
 

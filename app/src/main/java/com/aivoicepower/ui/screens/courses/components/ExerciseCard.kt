@@ -24,33 +24,8 @@ fun ExerciseCard(
     exerciseState: ExerciseState,
     modifier: Modifier = Modifier
 ) {
-    val isRecording = exerciseState.status == ExerciseStatus.Recording
-
-    // Пульсуюча рамка карточки при записі
-    val infiniteTransition = rememberInfiniteTransition(label = "border")
-    val borderAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.4f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "alpha"
-    )
-
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .then(
-                if (isRecording) {
-                    Modifier.border(
-                        width = 4.dp,
-                        color = Color(0xFF667EEA).copy(alpha = borderAlpha),
-                        shape = RoundedCornerShape(32.dp)
-                    )
-                } else Modifier
-            )
-            .padding(if (isRecording) 4.dp else 0.dp),
+        modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Instruction Box
