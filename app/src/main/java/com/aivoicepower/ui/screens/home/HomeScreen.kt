@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -49,8 +50,8 @@ fun HomeScreen(
     onNavigateToAICoach: () -> Unit,
     onNavigateToWarmup: () -> Unit,
     onNavigateToTongueTwisters: () -> Unit,
-    onNavigateToDailyChallenge: () -> Unit,
-    onNavigateToAchievements: () -> Unit,
+    onNavigateToWeakestSkill: () -> Unit,
+    onNavigateToQuickWarmup: () -> Unit,
     onNavigateToRecordingHistory: () -> Unit,
     onNavigateToRecord: () -> Unit,
     onNavigateToAnalytics: () -> Unit,
@@ -138,8 +139,8 @@ fun HomeScreen(
                     onActionClick = { action ->
                         when (action.id) {
                             "tongue_twisters" -> onNavigateToTongueTwisters()
-                            "daily_challenge" -> onNavigateToDailyChallenge()
-                            "achievements" -> onNavigateToAchievements()
+                            "weakest_skill" -> onNavigateToWeakestSkill()
+                            "quick_warmup" -> onNavigateToQuickWarmup()
                             "recording_history" -> onNavigateToRecordingHistory()
                             else -> {}
                         }
@@ -1084,16 +1085,17 @@ private fun QuickActionCard(
 ) {
     // Map action IDs to gradient colors
     val gradientColors = when (action.id) {
-        "tongue_twisters" -> listOf(Color(0xFF10B981), Color(0xFF14B8A6)) // Зелений
-        "daily_challenge" -> listOf(Color(0xFFF59E0B), Color(0xFFF97316)) // Помаранчевий
-        "achievements" -> listOf(Color(0xFFFBBF24), Color(0xFFF59E0B)) // Золотий
-        "recording_history" -> listOf(Color(0xFF6366F1), Color(0xFF8B5CF6)) // Фіолетовий
+        "tongue_twisters" -> listOf(Color(0xFFEC4899), Color(0xFFF472B6)) // Рожевий градієнт
+        "weakest_skill" -> listOf(Color(0xFF8B5CF6), Color(0xFFA855F7)) // Фіолетовий градієнт
+        "quick_warmup" -> listOf(Color(0xFF3B82F6), Color(0xFF2563EB)) // Синій градієнт
+        "recording_history" -> listOf(Color(0xFF10B981), Color(0xFF14B8A6)) // Зелено-блакитний
         else -> listOf(Color(0xFF6366F1), Color(0xFF8B5CF6))
     }
 
     Column(
         modifier = modifier
             .fillMaxWidth()
+            .height(145.dp) // Збільшена висота для повного відображення назв
             .shadow(
                 elevation = 8.dp,
                 shape = RoundedCornerShape(20.dp),
@@ -1114,7 +1116,11 @@ private fun QuickActionCard(
                 ),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = action.icon, fontSize = 28.sp)
+            Text(
+                text = action.icon,
+                fontSize = 28.sp,
+                textAlign = TextAlign.Center
+            )
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -1123,7 +1129,8 @@ private fun QuickActionCard(
                 style = AppTypography.bodyMedium,
                 color = TextColors.onLightPrimary,
                 fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                maxLines = 2
             )
         }
     }

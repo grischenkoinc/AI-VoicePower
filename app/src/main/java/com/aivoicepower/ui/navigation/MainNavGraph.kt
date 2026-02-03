@@ -68,11 +68,11 @@ fun MainNavGraph(
                 onNavigateToTongueTwisters = {
                     navController.navigate(Screen.TongueTwisters.route)
                 },
-                onNavigateToDailyChallenge = {
-                    navController.navigate(Screen.DailyChallenge.route)
+                onNavigateToWeakestSkill = {
+                    navController.navigate(Screen.WeakestSkill.route)
                 },
-                onNavigateToAchievements = {
-                    navController.navigate(Screen.Achievements.route)
+                onNavigateToQuickWarmup = {
+                    navController.navigate(Screen.WarmupQuick.route)
                 },
                 onNavigateToRecordingHistory = {
                     navController.navigate(Screen.RecordingHistory.route)
@@ -201,6 +201,13 @@ fun MainNavGraph(
         // ===== TONGUE TWISTERS =====
         composable(route = Screen.TongueTwisters.route) {
             com.aivoicepower.ui.screens.tonguetwister.TongueTwistersScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // ===== WEAKEST SKILL =====
+        composable(route = Screen.WeakestSkill.route) {
+            com.aivoicepower.ui.screens.weakestskill.WeakestSkillScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

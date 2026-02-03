@@ -35,6 +35,9 @@ sealed class Screen(val route: String) {
     // Tongue Twisters
     object TongueTwisters : Screen("tongue-twisters")
 
+    // Weakest Skill
+    object WeakestSkill : Screen("weakest-skill")
+
     // Improvisation screens (Phase 5)
     object Improvisation : Screen("improvisation")
     object RandomTopic : Screen("improvisation/random-topic")

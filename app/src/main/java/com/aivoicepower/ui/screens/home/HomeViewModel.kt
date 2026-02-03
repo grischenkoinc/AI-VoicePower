@@ -328,16 +328,16 @@ class HomeViewModel @Inject constructor(
                 route = Screen.TongueTwisters.route
             ),
             com.aivoicepower.domain.model.home.QuickAction(
-                id = "daily_challenge",
-                title = "Щоденний виклик",
+                id = "weakest_skill",
+                title = "Найслабша навичка",
                 icon = "🎯",
-                route = Screen.DailyChallenge.route
+                route = Screen.WeakestSkill.route
             ),
             com.aivoicepower.domain.model.home.QuickAction(
-                id = "achievements",
-                title = "Досягнення",
-                icon = "🏆",
-                route = Screen.Achievements.route
+                id = "quick_warmup",
+                title = "Швидка розминка",
+                icon = "⚡",
+                route = Screen.WarmupQuick.route
             ),
             com.aivoicepower.domain.model.home.QuickAction(
                 id = "recording_history",
