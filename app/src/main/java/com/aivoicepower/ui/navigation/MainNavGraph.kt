@@ -65,6 +65,9 @@ fun MainNavGraph(
                 onNavigateToWarmup = {
                     navController.navigate(Screen.Warmup.route)
                 },
+                onNavigateToTongueTwisters = {
+                    navController.navigate(Screen.TongueTwisters.route)
+                },
                 onNavigateToRecord = {
                     // TODO: Navigate to record screen
                 },
@@ -182,6 +185,13 @@ fun MainNavGraph(
 
         composable(route = Screen.WarmupQuick.route) {
             QuickWarmupScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // ===== TONGUE TWISTERS =====
+        composable(route = Screen.TongueTwisters.route) {
+            com.aivoicepower.ui.screens.tonguetwister.TongueTwistersScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

@@ -1,5 +1,7 @@
 package com.aivoicepower.ui.screens.home
 
+import android.app.Activity
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -10,6 +12,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,6 +27,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,6 +39,7 @@ import com.aivoicepower.ui.theme.*
 import com.aivoicepower.ui.theme.components.*
 import com.aivoicepower.ui.theme.modifiers.*
 import java.util.Calendar
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
@@ -40,6 +48,7 @@ fun HomeScreen(
     onNavigateToImprovisation: () -> Unit,
     onNavigateToAICoach: () -> Unit,
     onNavigateToWarmup: () -> Unit,
+    onNavigateToTongueTwisters: () -> Unit,
     onNavigateToRecord: () -> Unit,
     onNavigateToAnalytics: () -> Unit,
     onNavigateToSettings: () -> Unit,
@@ -47,6 +56,28 @@ fun HomeScreen(
 ) {
     val scrollState = rememberScrollState()
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    var backPressedTime by remember { mutableStateOf(0L) }
+
+    // Double-back to exit app
+    BackHandler {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - backPressedTime < 2000) {
+            // Exit app
+            (context as? Activity)?.finish()
+        } else {
+            // Show toast
+            backPressedTime = currentTime
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = "Для виходу натисніть Назад ще раз",
+                    duration = SnackbarDuration.Short
+                )
+            }
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         GradientBackground(content = {})
@@ -102,17 +133,33 @@ fun HomeScreen(
                 QuickActionsSection(
                     actions = state.quickActions,
                     onActionClick = { action ->
-                        when (action.route) {
+                        when (action.id) {
                             "warmup" -> onNavigateToWarmup()
-                            "random_topic" -> onNavigateToImprovisation()
+                            "improvisation" -> onNavigateToImprovisation()
                             "ai_coach" -> onNavigateToAICoach()
-                            "tongue_twisters" -> onNavigateToWarmup()
+                            "tongue_twisters" -> onNavigateToTongueTwisters()
                             else -> {}
                         }
                     }
                 )
 
             Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // Snackbar
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 140.dp)
+        ) { data ->
+            Snackbar(
+                snackbarData = data,
+                containerColor = Color(0xFF667EEA),
+                contentColor = Color.White,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }

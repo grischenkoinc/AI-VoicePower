@@ -343,7 +343,7 @@ class HomeViewModel @Inject constructor(
                 id = "tongue_twisters",
                 title = "Скоромовки",
                 icon = "👅",
-                route = Screen.Courses.route  // Поки що веде на курси
+                route = Screen.TongueTwisters.route
             )
         )
     }

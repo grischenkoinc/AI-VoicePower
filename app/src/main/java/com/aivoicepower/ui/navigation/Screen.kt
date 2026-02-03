@@ -32,6 +32,9 @@ sealed class Screen(val route: String) {
     object WarmupVoice : Screen("warmup/voice")
     object WarmupQuick : Screen("warmup/quick")
 
+    // Tongue Twisters
+    object TongueTwisters : Screen("tongue-twisters")
+
     // Improvisation screens (Phase 5)
     object Improvisation : Screen("improvisation")
     object RandomTopic : Screen("improvisation/random-topic")
