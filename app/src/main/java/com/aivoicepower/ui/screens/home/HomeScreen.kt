@@ -1085,9 +1085,9 @@ private fun QuickActionCard(
 ) {
     // Map action IDs to gradient colors
     val gradientColors = when (action.id) {
-        "tongue_twisters" -> listOf(Color(0xFFEC4899), Color(0xFFF472B6)) // Рожевий градієнт
+        "tongue_twisters" -> listOf(Color(0xFFC0C0C0), Color(0xFFE8E8E8)) // Сріблястий градієнт
         "weakest_skill" -> listOf(Color(0xFF8B5CF6), Color(0xFFA855F7)) // Фіолетовий градієнт
-        "quick_warmup" -> listOf(Color(0xFF3B82F6), Color(0xFF2563EB)) // Синій градієнт
+        "quick_warmup" -> listOf(Color(0xFF06B6D4), Color(0xFF0891B2)) // Бірюзово-синій градієнт
         "recording_history" -> listOf(Color(0xFF10B981), Color(0xFF14B8A6)) // Зелено-блакитний
         else -> listOf(Color(0xFF6366F1), Color(0xFF8B5CF6))
     }

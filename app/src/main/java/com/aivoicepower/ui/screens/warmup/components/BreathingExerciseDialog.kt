@@ -78,7 +78,11 @@ fun BreathingExerciseDialog(
         GradientBackground(content = {})
 
         // Контент вправи
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(enabled = false) { }
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()

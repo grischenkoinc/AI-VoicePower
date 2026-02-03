@@ -62,7 +62,11 @@ fun ArticulationExerciseDialog(
         GradientBackground(content = {})
 
         // Контент вправи
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(enabled = false) { }
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -399,7 +403,8 @@ fun ArticulationExerciseDialog(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f)),
+                    .background(Color.Black.copy(alpha = 0.5f))
+                    .clickable { /* Блокує кліки під час completion overlay */ },
                 contentAlignment = Alignment.Center
             ) {
                 Column(

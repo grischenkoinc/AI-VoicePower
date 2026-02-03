@@ -106,11 +106,6 @@ fun WeakestSkillScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .shadow(
-                            elevation = 12.dp,
-                            shape = RoundedCornerShape(20.dp),
-                            spotColor = Color.Black.copy(alpha = 0.1f)
-                        )
                         .background(
                             Color.White.copy(alpha = 0.15f),
                             RoundedCornerShape(20.dp)
@@ -133,7 +128,7 @@ fun WeakestSkillScreen(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "• Автоматичне визначення слабкої навички\n• Персоналізовані вправи\n• Прогрес покращення\n• Рекомендації експертів",
+                            text = "• Автоматичне визначення слабкої навички\n• Персоналізовані вправи\n• Прогрес покращення\n• Рекомендації АІ тренера",
                             style = AppTypography.bodyMedium,
                             color = TextColors.onDarkSecondary,
                             fontSize = 14.sp,
@@ -156,9 +151,12 @@ private fun WeakestSkillHeader(
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.Top
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+            modifier = Modifier.weight(1f)
+        ) {
             Text(
                 text = "В розробці",
                 style = AppTypography.labelMedium,
@@ -176,6 +174,8 @@ private fun WeakestSkillHeader(
             )
         }
 
+        Spacer(modifier = Modifier.width(12.dp))
+
         Row(
             modifier = Modifier
                 .shadow(
@@ -185,13 +185,13 @@ private fun WeakestSkillHeader(
                 )
                 .background(Color.White, RoundedCornerShape(16.dp))
                 .clickable { onNavigateBack() }
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = 10.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "←",
-                fontSize = 24.sp,
+                fontSize = 22.sp,
                 color = Color(0xFF667EEA),
                 fontWeight = FontWeight.Bold
             )
