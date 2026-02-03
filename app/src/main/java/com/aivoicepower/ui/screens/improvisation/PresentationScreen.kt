@@ -1,5 +1,6 @@
 package com.aivoicepower.ui.screens.improvisation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,6 +24,7 @@ import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
 import com.aivoicepower.ui.theme.components.GradientBackground
 import com.aivoicepower.ui.theme.components.PrimaryButton
+import kotlinx.coroutines.launch
 
 @Composable
 fun PresentationScreen(
@@ -31,6 +33,25 @@ fun PresentationScreen(
     onNavigateToResults: (recordingId: String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    var backPressedTime by remember { mutableStateOf(0L) }
+
+    // Double-back to exit protection (NOT on welcome screen)
+    BackHandler(enabled = state.isStarted) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - backPressedTime < 2000) {
+            onNavigateBack()
+        } else {
+            backPressedTime = currentTime
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = "Для виходу натисніть Назад ще раз",
+                    duration = SnackbarDuration.Short
+                )
+            }
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         GradientBackground(content = {})
@@ -51,7 +72,7 @@ fun PresentationScreen(
                     WelcomeCard()
 
                     PrimaryButton(
-                        text = "🎯 Почати співбесіду",
+                        text = "🎯 Почати презентацію",
                         onClick = { viewModel.onEvent(PresentationEvent.StartSimulation) },
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -106,6 +127,22 @@ fun PresentationScreen(
                     }
                 }
             }
+        }
+
+        // Snackbar
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 100.dp)
+        ) { data ->
+            Snackbar(
+                snackbarData = data,
+                containerColor = Color(0xFF667EEA),
+                contentColor = Color.White,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
@@ -191,7 +228,7 @@ private fun WelcomeCard(modifier: Modifier = Modifier) {
         )
 
         Text(
-            text = "Симуляція включає 5 типових питань HR. Після кожного питання у тебе буде час підготуватися та записати відповідь.",
+            text = "Симуляція включає 4 етапи ефективної презентації: Hook, ключові меседжі, відповіді на питання та Call to Action. Після кожного етапу запиши свою відповідь.",
             style = AppTypography.bodyMedium,
             color = TextColors.onLightSecondary,
             fontSize = 15.sp,
@@ -216,7 +253,7 @@ private fun WelcomeCard(modifier: Modifier = Modifier) {
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "• Використовуй STAR метод (Situation, Task, Action, Result)\n• Будь конкретним та чесним\n• Покажи свої сильні сторони",
+                    text = "• Почни з сильного Hook для уваги аудиторії\n• Використовуй 3 ключові меседжі з прикладами\n• Закінчуй чітким Call to Action",
                     style = AppTypography.bodySmall,
                     color = TextColors.onLightSecondary,
                     fontSize = 13.sp,

@@ -43,10 +43,19 @@ fun ArticulationExerciseDialog(
     totalExercises: Int = 0,
     completedExercises: Int = 0
 ) {
-    var showInstructions by remember { mutableStateOf(true) }
+    var showInstructions by remember { mutableStateOf(false) }
+    var showExitWarning by remember { mutableStateOf(false) }
 
     // Handle back button press
-    BackHandler(onBack = onDismiss)
+    BackHandler(onBack = {
+        if (totalExercises > 0) {
+            // Quick Warmup - show warning
+            showExitWarning = true
+        } else {
+            // Regular exercise - exit directly
+            onDismiss()
+        }
+    })
 
     // Fullscreen Box замість Dialog
     Box(modifier = Modifier.fillMaxSize()) {
@@ -60,8 +69,12 @@ fun ArticulationExerciseDialog(
                     .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 40.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Header
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                // Header with X button
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
                         text = exercise.title,
                         style = AppTypography.displayLarge,
@@ -69,6 +82,25 @@ fun ArticulationExerciseDialog(
                         fontSize = 24.sp,
                         fontWeight = FontWeight.ExtraBold,
                         letterSpacing = (-0.6).sp
+                    )
+
+                    // Exit button
+                    Text(
+                        text = "✕",
+                        fontSize = 28.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .clickable {
+                                if (totalExercises > 0) {
+                                    // Quick Warmup - show warning
+                                    showExitWarning = true
+                                } else {
+                                    // Regular exercise - exit directly
+                                    onDismiss()
+                                }
+                            }
+                            .padding(8.dp)
                     )
                 }
 
@@ -425,6 +457,55 @@ fun ArticulationExerciseDialog(
                     )
                 }
             }
+        }
+
+        // Exit Warning Dialog (Quick Warmup only)
+        if (showExitWarning) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { showExitWarning = false },
+                title = {
+                    Text(
+                        text = "Вийти з розминки?",
+                        style = AppTypography.titleLarge,
+                        color = TextColors.onLightPrimary,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Text(
+                        text = "Прогрес Швидкої розминки буде втрачено.",
+                        style = AppTypography.bodyMedium,
+                        color = TextColors.onLightSecondary,
+                        fontSize = 15.sp
+                    )
+                },
+                confirmButton = {
+                    androidx.compose.material3.TextButton(
+                        onClick = {
+                            showExitWarning = false
+                            onDismiss()
+                        }
+                    ) {
+                        Text(
+                            text = "Вийти",
+                            color = Color(0xFFEF4444),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                },
+                dismissButton = {
+                    androidx.compose.material3.TextButton(
+                        onClick = { showExitWarning = false }
+                    ) {
+                        Text(
+                            text = "Скасувати",
+                            color = Color(0xFF667EEA),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            )
         }
     }
 }

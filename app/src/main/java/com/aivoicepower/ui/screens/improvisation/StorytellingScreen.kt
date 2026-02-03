@@ -1,5 +1,6 @@
 package com.aivoicepower.ui.screens.improvisation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -29,6 +30,7 @@ import com.aivoicepower.ui.theme.TextColors
 import com.aivoicepower.ui.theme.components.GradientBackground
 import com.aivoicepower.ui.theme.components.PrimaryButton
 import com.aivoicepower.ui.theme.components.SecondaryButton
+import kotlinx.coroutines.launch
 
 @Composable
 fun StorytellingScreen(
@@ -37,6 +39,25 @@ fun StorytellingScreen(
     onNavigateToResults: (recordingId: String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    var backPressedTime by remember { mutableStateOf(0L) }
+
+    // Double-back to exit protection (only when NOT on format selection)
+    BackHandler(enabled = state.selectedFormat != null) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - backPressedTime < 2000) {
+            onNavigateBack()
+        } else {
+            backPressedTime = currentTime
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = "Для виходу натисніть Назад ще раз",
+                    duration = SnackbarDuration.Short
+                )
+            }
+        }
+    }
 
     // Auto-start preparation timer when format is selected
     LaunchedEffect(state.selectedFormat, state.isPreparationPhase) {
@@ -258,6 +279,22 @@ fun StorytellingScreen(
                     )
                 }
             }
+        }
+
+        // Snackbar
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 100.dp)
+        ) { data ->
+            Snackbar(
+                snackbarData = data,
+                containerColor = Color(0xFF667EEA),
+                contentColor = Color.White,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }

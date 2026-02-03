@@ -1,5 +1,6 @@
 package com.aivoicepower.ui.screens.improvisation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,6 +24,7 @@ import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
 import com.aivoicepower.ui.theme.components.GradientBackground
 import com.aivoicepower.ui.theme.components.PrimaryButton
+import kotlinx.coroutines.launch
 
 @Composable
 fun DebateScreen(
@@ -30,6 +32,25 @@ fun DebateScreen(
     onNavigateBack: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    var backPressedTime by remember { mutableStateOf(0L) }
+
+    // Double-back to exit protection (NOT on topic/position selection)
+    BackHandler(enabled = state.phase != DebatePhase.TopicSelection && state.phase != DebatePhase.PositionSelection) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - backPressedTime < 2000) {
+            onNavigateBack()
+        } else {
+            backPressedTime = currentTime
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = "Для виходу натисніть Назад ще раз",
+                    duration = SnackbarDuration.Short
+                )
+            }
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         GradientBackground(content = {})
@@ -168,6 +189,22 @@ fun DebateScreen(
                     }
                 }
             }
+        }
+
+        // Snackbar
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 100.dp)
+        ) { data ->
+            Snackbar(
+                snackbarData = data,
+                containerColor = Color(0xFF667EEA),
+                contentColor = Color.White,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }

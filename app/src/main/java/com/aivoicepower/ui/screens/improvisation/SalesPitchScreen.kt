@@ -1,10 +1,13 @@
 package com.aivoicepower.ui.screens.improvisation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -24,6 +27,7 @@ import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
 import com.aivoicepower.ui.theme.components.GradientBackground
 import com.aivoicepower.ui.theme.components.PrimaryButton
+import kotlinx.coroutines.launch
 
 @Composable
 fun SalesPitchScreen(
@@ -31,6 +35,25 @@ fun SalesPitchScreen(
     onNavigateBack: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    var backPressedTime by remember { mutableStateOf(0L) }
+
+    // Double-back to exit protection (NOT on product selection or customer profile)
+    BackHandler(enabled = state.phase != SalesPhase.ProductSelection && state.phase != SalesPhase.CustomerProfile) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - backPressedTime < 2000) {
+            onNavigateBack()
+        } else {
+            backPressedTime = currentTime
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = "Для виходу натисніть Назад ще раз",
+                    duration = SnackbarDuration.Short
+                )
+            }
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         GradientBackground(content = {})
@@ -185,6 +208,22 @@ fun SalesPitchScreen(
                 }
             }
         }
+
+        // Snackbar
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 100.dp)
+        ) { data ->
+            Snackbar(
+                snackbarData = data,
+                containerColor = Color(0xFF667EEA),
+                contentColor = Color.White,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }
 
@@ -275,6 +314,7 @@ private fun CustomerProfileContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {

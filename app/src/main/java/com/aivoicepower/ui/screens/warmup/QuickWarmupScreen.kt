@@ -1,5 +1,6 @@
 package com.aivoicepower.ui.screens.warmup
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -24,6 +25,7 @@ import com.aivoicepower.ui.screens.warmup.components.*
 import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
 import com.aivoicepower.ui.theme.components.GradientBackground
+import kotlinx.coroutines.launch
 
 @Composable
 fun QuickWarmupScreen(
@@ -31,6 +33,25 @@ fun QuickWarmupScreen(
     onNavigateBack: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    var backPressedTime by remember { mutableStateOf(0L) }
+
+    // Double-back to exit protection
+    BackHandler {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - backPressedTime < 2000) {
+            onNavigateBack()
+        } else {
+            backPressedTime = currentTime
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = "Для виходу натисніть Назад ще раз",
+                    duration = SnackbarDuration.Short
+                )
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         // Auto-start first exercise
@@ -46,45 +67,23 @@ fun QuickWarmupScreen(
                 .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 130.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Header with back button
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(
-                        text = "5 хвилин",
-                        style = AppTypography.labelMedium,
-                        color = TextColors.onDarkSecondary,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = "Швидка розминка",
-                        style = AppTypography.displayLarge,
-                        color = TextColors.onDarkPrimary,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        letterSpacing = (-0.8).sp
-                    )
-                }
-
-                // Back button
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(
-                            Brush.linearGradient(
-                                colors = listOf(Color(0xFF6366F1), Color(0xFF8B5CF6))
-                            ),
-                            CircleShape
-                        )
-                        .clickable { onNavigateBack() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "←", fontSize = 20.sp, color = Color.White)
-                }
+            // Header
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text = "5 хвилин",
+                    style = AppTypography.labelMedium,
+                    color = TextColors.onDarkSecondary,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "Швидка розминка",
+                    style = AppTypography.displayLarge,
+                    color = TextColors.onDarkPrimary,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = (-0.8).sp
+                )
             }
 
             // Overall progress bar
@@ -225,7 +224,7 @@ fun QuickWarmupScreen(
                                 timerSeconds = state.timerSeconds,
                                 isTimerRunning = state.isTimerRunning,
                                 showCompletionOverlay = state.showCompletionOverlay,
-                                onDismiss = { /* Не дозволяємо закривати */ },
+                                onDismiss = onNavigateBack,
                                 onStartTimer = {
                                     viewModel.onEvent(QuickWarmupEvent.StartTimer)
                                 },
@@ -255,7 +254,7 @@ fun QuickWarmupScreen(
                                 phaseProgress = state.breathingPhaseProgress,
                                 isRunning = state.breathingIsRunning,
                                 showInstructions = false,
-                                onDismiss = { /* Не дозволяємо закривати */ },
+                                onDismiss = onNavigateBack,
                                 onStart = {
                                     viewModel.onEvent(QuickWarmupEvent.StartBreathing)
                                 },
@@ -284,7 +283,7 @@ fun QuickWarmupScreen(
                                 isTimerRunning = state.isTimerRunning,
                                 isAudioPlaying = false,
                                 showCompletionOverlay = state.showCompletionOverlay,
-                                onDismiss = { /* Не дозволяємо закривати */ },
+                                onDismiss = onNavigateBack,
                                 onStartTimer = {
                                     viewModel.onEvent(QuickWarmupEvent.StartTimer)
                                 },
@@ -315,6 +314,13 @@ fun QuickWarmupScreen(
 
         // Final Completion overlay (після всіх вправ)
         if (state.isCompleted) {
+            // Auto-dismiss after 2 seconds
+            LaunchedEffect(Unit) {
+                kotlinx.coroutines.delay(2000)
+                viewModel.onEvent(QuickWarmupEvent.DismissCompletionDialog)
+                onNavigateBack()
+            }
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -331,11 +337,7 @@ fun QuickWarmupScreen(
                             spotColor = Color.Black.copy(alpha = 0.3f)
                         )
                         .background(Color.White, RoundedCornerShape(32.dp))
-                        .padding(40.dp)
-                        .clickable {
-                            viewModel.onEvent(QuickWarmupEvent.DismissCompletionDialog)
-                            onNavigateBack()
-                        },
+                        .padding(40.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
@@ -380,6 +382,22 @@ fun QuickWarmupScreen(
                     )
                 }
             }
+        }
+
+        // Snackbar
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 100.dp)
+        ) { data ->
+            Snackbar(
+                snackbarData = data,
+                containerColor = Color(0xFF667EEA),
+                contentColor = Color.White,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
