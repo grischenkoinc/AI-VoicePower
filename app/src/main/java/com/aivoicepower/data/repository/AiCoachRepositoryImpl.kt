@@ -7,6 +7,7 @@ import com.aivoicepower.data.chat.MessageRole
 import com.aivoicepower.data.local.database.dao.MessageDao
 import com.aivoicepower.data.local.database.entity.MessageEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
+import com.aivoicepower.data.remote.AiPrompts
 import com.aivoicepower.data.remote.GeminiApiClient
 import com.aivoicepower.domain.repository.AiCoachRepository
 import dagger.Binds
@@ -109,21 +110,13 @@ class AiCoachRepositoryImpl @Inject constructor(
                 actions
             } else {
                 Log.w("AiCoach", "Failed to generate quick actions, using defaults")
-                getDefaultQuickActions()
+                AiPrompts.DEFAULT_QUICK_ACTIONS
             }
         } catch (e: Exception) {
             Log.e("AiCoach", "Error generating quick actions", e)
-            getDefaultQuickActions()
+            AiPrompts.DEFAULT_QUICK_ACTIONS
         }
     }
-
-    private fun getDefaultQuickActions(): List<String> = listOf(
-        "Дай поради для покращення мовлення",
-        "Як підготуватися до виступу?",
-        "Які вправи мені підходять?",
-        "Як позбутися нервозності?",
-        "Підготуй мене до співбесіди"
-    )
 
     override suspend fun canSendMessage(): Boolean {
         val prefs = userPreferencesDataStore.userPreferencesFlow.first()

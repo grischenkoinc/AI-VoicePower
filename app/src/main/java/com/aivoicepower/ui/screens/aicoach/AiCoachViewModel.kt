@@ -13,6 +13,7 @@ import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.data.chat.MessageRole
 import com.aivoicepower.data.content.SimulationScenariosProvider
+import com.aivoicepower.data.remote.AiPrompts
 import com.aivoicepower.domain.repository.AiCoachRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -70,7 +71,7 @@ class AiCoachViewModel @Inject constructor(
             } catch (e: Exception) {
                 _state.update {
                     it.copy(
-                        quickActions = getDefaultQuickActions(),
+                        quickActions = AiPrompts.DEFAULT_QUICK_ACTIONS,
                         isLoading = false
                     )
                 }
@@ -591,13 +592,4 @@ ${scenario.description}
         return sdf.format(Date())
     }
 
-    private fun getDefaultQuickActions(): List<String> {
-        return listOf(
-            "Дай поради для покращення мовлення",
-            "Як підготуватися до виступу?",
-            "Які вправи мені підходять?",
-            "Як позбутися нервозності?",
-            "Підготуй мене до співбесіди"
-        )
-    }
 }
