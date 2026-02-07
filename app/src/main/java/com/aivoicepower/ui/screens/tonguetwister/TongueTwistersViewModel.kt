@@ -1,9 +1,17 @@
 package com.aivoicepower.ui.screens.tonguetwister
 
+import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.content.TongueTwistersProvider
+import com.aivoicepower.data.local.database.dao.RecordingDao
+import com.aivoicepower.data.local.database.entity.RecordingEntity
+import com.aivoicepower.domain.model.content.TongueTwister
+import com.aivoicepower.domain.repository.VoiceAnalysisRepository
+import com.aivoicepower.utils.audio.AudioRecorderUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,15 +19,22 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class TongueTwistersViewModel @Inject constructor() : ViewModel() {
+class TongueTwistersViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val voiceAnalysisRepository: VoiceAnalysisRepository,
+    private val recordingDao: RecordingDao
+) : ViewModel() {
 
     private val _state = MutableStateFlow(TongueTwistersState())
     val state: StateFlow<TongueTwistersState> = _state.asStateFlow()
 
-    private var recordingJob: Job? = null
+    private val audioRecorder = AudioRecorderUtil(context)
+    private var recordingTimerJob: Job? = null
+    private var recordingPath: String? = null
 
     init {
         loadTongueTwisters()
@@ -93,7 +108,7 @@ class TongueTwistersViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-    private fun startPractice(twister: com.aivoicepower.domain.model.content.TongueTwister) {
+    private fun startPractice(twister: TongueTwister) {
         _state.update {
             it.copy(
                 isPracticing = true,
@@ -105,7 +120,10 @@ class TongueTwistersViewModel @Inject constructor() : ViewModel() {
     }
 
     private fun stopPractice() {
-        recordingJob?.cancel()
+        recordingTimerJob?.cancel()
+        if (_state.value.isRecording) {
+            try { audioRecorder.stopRecording() } catch (_: Exception) {}
+        }
         _state.update {
             it.copy(
                 isPracticing = false,
@@ -117,23 +135,78 @@ class TongueTwistersViewModel @Inject constructor() : ViewModel() {
     }
 
     private fun startRecording() {
-        _state.update { it.copy(isRecording = true, recordingDurationMs = 0) }
+        viewModelScope.launch {
+            try {
+                val outputFile = context.filesDir.resolve("recordings/tongue_twister_${UUID.randomUUID()}.m4a")
+                outputFile.parentFile?.mkdirs()
 
-        recordingJob = viewModelScope.launch {
-            while (_state.value.isRecording) {
-                delay(100)
-                _state.update { it.copy(recordingDurationMs = it.recordingDurationMs + 100) }
+                audioRecorder.startRecording(outputFile.absolutePath)
+                recordingPath = outputFile.absolutePath
+
+                _state.update { it.copy(isRecording = true, recordingDurationMs = 0) }
+
+                recordingTimerJob = launch {
+                    while (_state.value.isRecording) {
+                        delay(100)
+                        _state.update { it.copy(recordingDurationMs = it.recordingDurationMs + 100) }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("TongueTwistersVM", "Recording start error", e)
+                _state.update { it.copy(isRecording = false) }
             }
         }
     }
 
     private fun stopRecording() {
-        recordingJob?.cancel()
-        _state.update { it.copy(isRecording = false) }
+        viewModelScope.launch {
+            try {
+                recordingTimerJob?.cancel()
+                audioRecorder.stopRecording()
+
+                val twister = _state.value.practicingTwister
+
+                _state.update { it.copy(isRecording = false) }
+
+                saveRecording(twister)
+            } catch (e: Exception) {
+                Log.e("TongueTwistersVM", "Recording stop error", e)
+                _state.update { it.copy(isRecording = false) }
+            }
+        }
+    }
+
+    private suspend fun saveRecording(twister: TongueTwister?) {
+        try {
+            val path = recordingPath ?: return
+
+            voiceAnalysisRepository.analyzeRecording(
+                audioFilePath = path,
+                expectedText = twister?.text,
+                exerciseType = "tongue_twister",
+                context = "Скоромовка: ${twister?.text ?: ""}, цільові звуки: ${twister?.targetSounds?.joinToString() ?: ""}"
+            )
+
+            val recordingEntity = RecordingEntity(
+                id = UUID.randomUUID().toString(),
+                filePath = path,
+                durationMs = _state.value.recordingDurationMs,
+                type = "tongue_twister",
+                contextId = "tongue_twister_${twister?.id ?: ""}",
+                transcription = null,
+                isAnalyzed = true,
+                exerciseId = twister?.id
+            )
+
+            recordingDao.insert(recordingEntity)
+        } catch (e: Exception) {
+            Log.e("TongueTwistersVM", "Save recording error", e)
+        }
     }
 
     override fun onCleared() {
         super.onCleared()
-        recordingJob?.cancel()
+        audioRecorder.release()
+        recordingTimerJob?.cancel()
     }
 }
