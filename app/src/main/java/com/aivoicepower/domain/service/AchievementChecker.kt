@@ -2,6 +2,7 @@ package com.aivoicepower.domain.service
 
 import android.util.Log
 import com.aivoicepower.data.local.database.dao.AchievementDao
+import com.aivoicepower.data.local.database.dao.CourseProgressDao
 import com.aivoicepower.data.local.database.dao.DiagnosticResultDao
 import com.aivoicepower.data.local.database.dao.RecordingDao
 import com.aivoicepower.data.local.database.dao.SkillSnapshotDao
@@ -22,7 +23,8 @@ class AchievementChecker @Inject constructor(
     private val userProgressDao: UserProgressDao,
     private val recordingDao: RecordingDao,
     private val diagnosticResultDao: DiagnosticResultDao,
-    private val skillSnapshotDao: SkillSnapshotDao
+    private val skillSnapshotDao: SkillSnapshotDao,
+    private val courseProgressDao: CourseProgressDao
 ) {
     companion object {
         private const val TAG = "AchievementChecker"
@@ -99,6 +101,15 @@ class AchievementChecker @Inject constructor(
                 "polyglot" -> checkPolyglot()
                 "productive_day" -> checkProductiveDay()
                 "summit" -> checkAnySkillAbove(90)
+
+                // Course completion
+                "course_1_done" -> checkCourseCompletion("course_1")
+                "course_2_done" -> checkCourseCompletion("course_2")
+                "course_3_done" -> checkCourseCompletion("course_3")
+                "course_4_done" -> checkCourseCompletion("course_4")
+                "course_5_done" -> checkCourseCompletion("course_5")
+                "course_6_done" -> checkCourseCompletion("course_6")
+                "course_7_done" -> checkCourseCompletion("course_7")
 
                 else -> false
             }
@@ -214,6 +225,11 @@ class AchievementChecker @Inject constructor(
             "${cal.get(Calendar.YEAR)}-${cal.get(Calendar.MONTH)}-${cal.get(Calendar.DAY_OF_MONTH)}"
         }
         return countsByDate.any { it.value.size >= 5 }
+    }
+
+    private suspend fun checkCourseCompletion(courseId: String): Boolean {
+        val completedCourseIds = courseProgressDao.getFullyCompletedCourseIds().first()
+        return courseId in completedCourseIds
     }
 
     // Helper to get current progress for a specific achievement (for progress bars)

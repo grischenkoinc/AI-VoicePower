@@ -8,6 +8,7 @@ import com.aivoicepower.data.local.database.dao.RecordingDao
 import com.aivoicepower.data.local.database.dao.SkillSnapshotDao
 import com.aivoicepower.data.local.database.dao.UserProgressDao
 import com.aivoicepower.domain.model.user.SkillType
+import com.aivoicepower.domain.service.SkillUpdateService
 import com.aivoicepower.utils.SkillLevelUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +25,8 @@ class SkillDetailViewModel @Inject constructor(
     private val userProgressDao: UserProgressDao,
     private val diagnosticResultDao: DiagnosticResultDao,
     private val skillSnapshotDao: SkillSnapshotDao,
-    private val recordingDao: RecordingDao
+    private val recordingDao: RecordingDao,
+    private val skillUpdateService: SkillUpdateService
 ) : ViewModel() {
 
     private val skillTypeString: String = savedStateHandle["skillType"] ?: "DICTION"
@@ -32,6 +34,29 @@ class SkillDetailViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(SkillDetailState(skillType = skillType))
     val state: StateFlow<SkillDetailState> = _state.asStateFlow()
+
+    // Exercise type display names (Ukrainian)
+    private val exerciseDisplayNames = mapOf(
+        "tongue_twister" to "Скоромовки",
+        "reading" to "Читання вголос",
+        "slow_motion" to "Повільне читання",
+        "minimal_pairs" to "Мінімальні пари",
+        "emotion_reading" to "Читання з емоціями",
+        "free_speech" to "Вільне мовлення",
+        "storytelling" to "Сторітелінг",
+        "debate" to "Дебати",
+        "sales" to "Продажі",
+        "job_interview" to "Співбесіда",
+        "presentation" to "Презентація",
+        "negotiation" to "Переговори",
+        "retelling" to "Переказ",
+        "dialogue" to "Діалог",
+        "no_hesitation" to "Без зупинок",
+        "metaphor_master" to "Майстер метафор",
+        "emotion_switch" to "Зміна емоцій",
+        "speed_round" to "Швидкий раунд",
+        "character_voice" to "Голос персонажа"
+    )
 
     init {
         loadSkillDetails()
@@ -91,9 +116,12 @@ class SkillDetailViewModel @Inject constructor(
                 val allRecordings = recordingDao.getAllRecordings().first()
                 val totalPracticeMinutes = (allRecordings.sumOf { it.durationMs } / 60000).toInt()
 
-                // Curated exercises and recommendations per skill
-                val exercises = getExercisesForSkill(skillType)
-                val recommendations = getRecommendationsForSkill(skillType)
+                // Real exercises and recommendations based on actual data
+                val exercises = calculateExercisesForSkill(allRecordings.map { it.type }.distinct().toSet())
+                val recommendations = calculateRecommendationsForSkill(
+                    currentLevel,
+                    allRecordings.map { it.type }.distinct().toSet()
+                )
 
                 _state.update {
                     it.copy(
@@ -116,6 +144,118 @@ class SkillDetailViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun calculateExercisesForSkill(practicedTypes: Set<String>): List<ExerciseImpact> {
+        val skillKey = mapSkillTypeToKey(skillType) ?: return emptyList()
+        val impacts = mutableListOf<ExerciseImpact>()
+
+        for ((exerciseType, skillWeights) in skillUpdateService.exerciseSkillMap) {
+            if (exerciseType == "diagnostic") continue
+            val weight = skillWeights[skillKey] ?: continue
+            if (weight == 0f) continue
+            // Only show exercises user has actually practiced
+            if (exerciseType !in practicedTypes) continue
+
+            val impactScore = (weight * 100).toInt()
+            val displayName = exerciseDisplayNames[exerciseType] ?: exerciseType
+
+            impacts.add(ExerciseImpact(
+                exerciseName = displayName,
+                exerciseType = exerciseType,
+                impactScore = impactScore
+            ))
+        }
+
+        return impacts.sortedByDescending { it.impactScore }.take(5)
+    }
+
+    private fun calculateRecommendationsForSkill(
+        currentLevel: Int,
+        practicedTypes: Set<String>
+    ): List<SkillRecommendation> {
+        val skillKey = mapSkillTypeToKey(skillType) ?: return emptyList()
+        val recommendations = mutableListOf<SkillRecommendation>()
+
+        // If no recordings at all
+        if (practicedTypes.isEmpty()) {
+            recommendations.add(SkillRecommendation("Почніть з будь-якої вправи, щоб побачити персональні рекомендації"))
+            recommendations.add(SkillRecommendation("Пройдіть діагностику для визначення початкового рівня"))
+            return recommendations
+        }
+
+        // 1. Find unpracticed exercise types that have high weight for this skill
+        val unpracticed = skillUpdateService.exerciseSkillMap.entries
+            .filter { (type, weights) ->
+                type != "diagnostic" &&
+                type !in practicedTypes &&
+                (weights[skillKey] ?: 0f) > 0f
+            }
+            .sortedByDescending { (_, weights) -> weights[skillKey] ?: 0f }
+
+        for ((type, weights) in unpracticed.take(2)) {
+            val weight = weights[skillKey] ?: continue
+            val displayName = exerciseDisplayNames[type] ?: type
+            val isPrimary = weight >= SkillUpdateService.PRIMARY
+
+            recommendations.add(SkillRecommendation(
+                tip = if (isPrimary) {
+                    "Спробуйте \"$displayName\" — це одна з найефективніших вправ для цієї навички"
+                } else {
+                    "Додайте \"$displayName\" до практики для різнобічного розвитку"
+                },
+                exerciseName = displayName
+            ))
+        }
+
+        // 2. Level-based advice
+        when {
+            currentLevel < 30 -> recommendations.add(SkillRecommendation(
+                tip = "Практикуйте щодня по 5-10 хвилин — регулярність важливіша за тривалість"
+            ))
+            currentLevel < 50 -> recommendations.add(SkillRecommendation(
+                tip = "Гарний початок! Збільшуйте тривалість практики та додавайте нові типи вправ"
+            ))
+            currentLevel < 70 -> recommendations.add(SkillRecommendation(
+                tip = "Ви на вірному шляху! Зосередьтесь на складніших вправах для подальшого росту"
+            ))
+            currentLevel < 90 -> recommendations.add(SkillRecommendation(
+                tip = "Відмінний рівень! Для майстерності практикуйте в різних контекстах і стилях"
+            ))
+            else -> recommendations.add(SkillRecommendation(
+                tip = "Чудовий результат! Підтримуйте рівень регулярною практикою"
+            ))
+        }
+
+        // 3. Recommend continuing the most impactful practiced exercise
+        val highImpactPracticed = skillUpdateService.exerciseSkillMap.entries
+            .filter { (type, weights) ->
+                type != "diagnostic" &&
+                type in practicedTypes &&
+                (weights[skillKey] ?: 0f) >= SkillUpdateService.PRIMARY
+            }
+            .maxByOrNull { (_, weights) -> weights[skillKey] ?: 0f }
+
+        if (highImpactPracticed != null) {
+            val displayName = exerciseDisplayNames[highImpactPracticed.key] ?: highImpactPracticed.key
+            recommendations.add(SkillRecommendation(
+                tip = "Продовжуйте практикувати \"$displayName\" — ви вже маєте досвід і це ефективно працює",
+                exerciseName = displayName
+            ))
+        }
+
+        return recommendations.take(4)
+    }
+
+    private fun mapSkillTypeToKey(skillType: SkillType): SkillUpdateService.Skill? = when (skillType) {
+        SkillType.DICTION -> SkillUpdateService.Skill.DICTION
+        SkillType.TEMPO -> SkillUpdateService.Skill.TEMPO
+        SkillType.INTONATION -> SkillUpdateService.Skill.INTONATION
+        SkillType.VOLUME -> SkillUpdateService.Skill.VOLUME
+        SkillType.CONFIDENCE -> SkillUpdateService.Skill.CONFIDENCE
+        SkillType.FILLER_WORDS -> SkillUpdateService.Skill.FILLER_WORDS
+        SkillType.STRUCTURE -> SkillUpdateService.Skill.STRUCTURE
+        else -> null
     }
 
     private fun getSkillFromProgress(
@@ -142,87 +282,5 @@ class SkillDetailViewModel @Inject constructor(
         SkillType.CONFIDENCE -> snapshot.confidence.toInt()
         SkillType.FILLER_WORDS -> snapshot.fillerWords.toInt()
         else -> 0
-    }
-
-    private fun getExercisesForSkill(skillType: SkillType): List<ExerciseImpact> {
-        return when (skillType) {
-            SkillType.DICTION -> listOf(
-                ExerciseImpact("Скоромовки", "tongue_twister", 85),
-                ExerciseImpact("Артикуляційна розминка", "articulation", 72),
-                ExerciseImpact("Читання вголос", "reading", 68)
-            )
-            SkillType.TEMPO -> listOf(
-                ExerciseImpact("Повільне читання", "slow_motion", 82),
-                ExerciseImpact("Дебати", "debate", 78),
-                ExerciseImpact("Швидкий раунд", "speed_round", 75)
-            )
-            SkillType.INTONATION -> listOf(
-                ExerciseImpact("Читання з емоціями", "emotion_reading", 88),
-                ExerciseImpact("Зміна емоцій", "emotion_switch", 80),
-                ExerciseImpact("Голосова розминка", "voice", 69)
-            )
-            SkillType.VOLUME -> listOf(
-                ExerciseImpact("Дихальні вправи", "breathing", 80),
-                ExerciseImpact("Презентація", "presentation", 76),
-                ExerciseImpact("Голосова розминка", "voice", 71)
-            )
-            SkillType.STRUCTURE -> listOf(
-                ExerciseImpact("Вільне мовлення", "free_speech", 85),
-                ExerciseImpact("Переказ", "retelling", 79),
-                ExerciseImpact("Сторітелінг", "storytelling", 75)
-            )
-            SkillType.CONFIDENCE -> listOf(
-                ExerciseImpact("Співбесіда", "job_interview", 90),
-                ExerciseImpact("Презентація", "presentation", 82),
-                ExerciseImpact("Дебати", "debate", 75)
-            )
-            SkillType.FILLER_WORDS -> listOf(
-                ExerciseImpact("Без зупинок", "no_hesitation", 85),
-                ExerciseImpact("Вільне мовлення", "free_speech", 77),
-                ExerciseImpact("Переговори", "negotiation", 70)
-            )
-            else -> emptyList()
-        }
-    }
-
-    private fun getRecommendationsForSkill(skillType: SkillType): List<SkillRecommendation> {
-        return when (skillType) {
-            SkillType.DICTION -> listOf(
-                SkillRecommendation("Промовляйте складні слова повільно", "Скоромовки"),
-                SkillRecommendation("Практикуйте скоромовки щодня", "Артикуляція"),
-                SkillRecommendation("Записуйте себе і слухайте")
-            )
-            SkillType.TEMPO -> listOf(
-                SkillRecommendation("Тримайте середній темп 120-150 слів/хв"),
-                SkillRecommendation("Робіть паузи для наголосу", "Повільне читання"),
-                SkillRecommendation("Варіюйте швидкість для драматизму")
-            )
-            SkillType.INTONATION -> listOf(
-                SkillRecommendation("Підвищуйте голос на питаннях"),
-                SkillRecommendation("Знижуйте на твердженнях"),
-                SkillRecommendation("Використовуйте емоційні наголоси", "Читання з емоціями")
-            )
-            SkillType.VOLUME -> listOf(
-                SkillRecommendation("Дихайте діафрагмою", "Дихання"),
-                SkillRecommendation("Проектуйте голос вперед"),
-                SkillRecommendation("Контролюйте силу без крику")
-            )
-            SkillType.STRUCTURE -> listOf(
-                SkillRecommendation("Плануйте виступ заздалегідь"),
-                SkillRecommendation("Використовуйте чіткі переходи", "Вільне мовлення"),
-                SkillRecommendation("Дотримуйтесь логічної послідовності")
-            )
-            SkillType.CONFIDENCE -> listOf(
-                SkillRecommendation("Підтримуйте зоровий контакт"),
-                SkillRecommendation("Стійте впевнено"),
-                SkillRecommendation("Говоріть з переконанням", "Презентація")
-            )
-            SkillType.FILLER_WORDS -> listOf(
-                SkillRecommendation("Робіть паузи замість \"ммм\"", "Без зупинок"),
-                SkillRecommendation("Усвідомлюйте свої паразити"),
-                SkillRecommendation("Практикуйте чисте мовлення")
-            )
-            else -> emptyList()
-        }
     }
 }

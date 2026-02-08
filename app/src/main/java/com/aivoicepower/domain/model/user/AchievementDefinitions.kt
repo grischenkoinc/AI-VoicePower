@@ -49,7 +49,20 @@ object AchievementDefinitions {
         AchievementDef("summit", AchievementCategory.SPECIAL, "На вершині", "Будь-яка навичка досягла 90+", "\uD83D\uDC51")
     )
 
-    val all: List<AchievementDef> = streak + practiceTime + recordings + special
+    val courseCompletion = listOf(
+        AchievementDef("course_1_done", AchievementCategory.COURSE_COMPLETION, "Чітке мовлення", "Завершіть курс \"Чітке мовлення за 21 день\"", "\uD83D\uDDE3\uFE0F"),
+        AchievementDef("course_2_done", AchievementCategory.COURSE_COMPLETION, "Магія інтонації", "Завершіть курс \"Магія інтонації\"", "\uD83C\uDFB5"),
+        AchievementDef("course_3_done", AchievementCategory.COURSE_COMPLETION, "Сила голосу", "Завершіть курс \"Сила голосу\"", "\uD83D\uDCAA"),
+        AchievementDef("course_4_done", AchievementCategory.COURSE_COMPLETION, "Впевнений оратор", "Завершіть курс \"Впевнений оратор\"", "\uD83C\uDFA4"),
+        AchievementDef("course_5_done", AchievementCategory.COURSE_COMPLETION, "Чисте мовлення", "Завершіть курс \"Чисте мовлення\"", "✨"),
+        AchievementDef("course_6_done", AchievementCategory.COURSE_COMPLETION, "Бізнес-комунікація", "Завершіть курс \"Бізнес-комунікація\"", "\uD83D\uDCBC"),
+        AchievementDef("course_7_done", AchievementCategory.COURSE_COMPLETION, "Харизматичний оратор", "Завершіть курс \"Харизматичний оратор\"", "\uD83C\uDF1F")
+    )
+
+    val all: List<AchievementDef> = streak + practiceTime + recordings + special + courseCompletion
 
     fun getById(id: String): AchievementDef? = all.find { it.id == id }
+
+    fun getForCourse(courseId: String): AchievementDef? =
+        courseCompletion.find { it.id == "${courseId}_done" }
 }

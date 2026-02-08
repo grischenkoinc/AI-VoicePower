@@ -20,6 +20,7 @@ data class Achievement(
 }
 
 enum class AchievementCategory(val displayName: String) {
+    COURSE_COMPLETION("Курси"),
     STREAK("Серії"),
     PRACTICE_TIME("Час практики"),
     RECORDINGS("Записи"),

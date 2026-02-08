@@ -344,18 +344,18 @@ class GeminiApiClient @Inject constructor(
             val parsed = gson.fromJson(jsonText, VoiceAnalysisJsonResponse::class.java)
 
             VoiceAnalysisResult(
-                diction = parsed.diction ?: 50,
-                tempo = parsed.tempo ?: 50,
-                intonation = parsed.intonation ?: 50,
-                volume = parsed.volume ?: 50,
-                confidence = parsed.confidence ?: 50,
-                fillerWords = parsed.fillerWords ?: 50,
-                structure = parsed.structure ?: 50,
-                persuasiveness = parsed.persuasiveness ?: 50,
-                overallScore = parsed.overallScore ?: 50,
-                strengths = parsed.strengths ?: listOf("Гарний початок!"),
-                improvements = parsed.improvements ?: listOf("Продовжуй практикуватись"),
-                tip = parsed.tip ?: "Практикуй регулярно"
+                diction = parsed.diction ?: 0,
+                tempo = parsed.tempo ?: 0,
+                intonation = parsed.intonation ?: 0,
+                volume = parsed.volume ?: 0,
+                confidence = parsed.confidence ?: 0,
+                fillerWords = parsed.fillerWords ?: 0,
+                structure = parsed.structure ?: 0,
+                persuasiveness = parsed.persuasiveness ?: 0,
+                overallScore = parsed.overallScore ?: 0,
+                strengths = parsed.strengths ?: emptyList(),
+                improvements = parsed.improvements ?: listOf("Не вдалося проаналізувати запис"),
+                tip = parsed.tip ?: "Спробуйте записати ще раз"
             )
         } catch (e: Exception) {
             // Fallback if parsing fails

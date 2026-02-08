@@ -18,6 +18,9 @@ sealed class LessonEvent {
     object PreviousExerciseClicked : LessonEvent()
     object SkipExerciseClicked : LessonEvent()
 
+    // Analysis
+    object ContinueAfterAnalysisClicked : LessonEvent()
+
     // Completion
     object FinishLessonClicked : LessonEvent()
     object NextLessonClicked : LessonEvent()

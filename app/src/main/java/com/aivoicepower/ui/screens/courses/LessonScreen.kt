@@ -144,6 +144,9 @@ fun LessonScreen(
                         CompletedPhaseContent(
                             lesson = state.lesson!!,
                             nextLesson = state.nextLesson,
+                            isLastLessonInCourse = state.isLastLessonInCourse,
+                            courseName = state.courseName,
+                            courseBadge = state.courseCompletionBadge,
                             onFinish = {
                                 viewModel.onEvent(LessonEvent.FinishLessonClicked)
                                 onNavigateBack()

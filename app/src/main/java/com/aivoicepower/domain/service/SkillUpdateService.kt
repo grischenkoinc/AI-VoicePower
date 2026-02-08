@@ -30,8 +30,8 @@ class SkillUpdateService @Inject constructor(
         private const val ALPHA_TONGUE_TWISTER = 0.06f
 
         // Skill weights: Primary = 1.0, Secondary = 0.5
-        private const val PRIMARY = 1.0f
-        private const val SECONDARY = 0.5f
+        const val PRIMARY = 1.0f
+        const val SECONDARY = 0.5f
 
         // Daily caps
         private const val DAILY_CAP_EXERCISE = 5f
@@ -50,10 +50,10 @@ class SkillUpdateService @Inject constructor(
     }
 
     // Skill indices for mapping
-    private enum class Skill { DICTION, TEMPO, INTONATION, VOLUME, CONFIDENCE, FILLER_WORDS, STRUCTURE }
+    enum class Skill { DICTION, TEMPO, INTONATION, VOLUME, CONFIDENCE, FILLER_WORDS, STRUCTURE }
 
     // Exercise → skill weight mapping
-    private val exerciseSkillMap: Map<String, Map<Skill, Float>> = mapOf(
+    val exerciseSkillMap: Map<String, Map<Skill, Float>> = mapOf(
         "reading" to mapOf(
             Skill.DICTION to PRIMARY, Skill.TEMPO to PRIMARY,
             Skill.INTONATION to SECONDARY, Skill.VOLUME to SECONDARY,

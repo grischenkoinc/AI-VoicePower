@@ -95,17 +95,17 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
                 return@withContext Result.success(
                     VoiceAnalysis(
                         transcription = "",
-                        overallScore = 50f,
+                        overallScore = 0f,
                         metrics = VoiceMetrics(
-                            clarity = 50f,
-                            pace = 120f,
-                            volume = 50f,
-                            pronunciation = 50f,
-                            pauseQuality = 50f,
+                            clarity = 0f,
+                            pace = 0f,
+                            volume = 0f,
+                            pronunciation = 0f,
+                            pauseQuality = 0f,
                             fillerWordsCount = 0
                         ),
                         feedback = responseText,
-                        recommendations = listOf("Спробуйте ще раз"),
+                        recommendations = listOf("Не вдалося проаналізувати запис"),
                         strengths = emptyList()
                     )
                 )
@@ -114,17 +114,17 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
             // Конвертуємо у VoiceAnalysis
             val analysis = VoiceAnalysis(
                 transcription = "", // Gemini не повертає транскрипцію у цьому форматі
-                overallScore = geminiResponse.overallScore ?: 50f,
+                overallScore = geminiResponse.overallScore ?: 0f,
                 metrics = VoiceMetrics(
-                    clarity = geminiResponse.clarity ?: 50f,
-                    pace = geminiResponse.pace ?: 120f,
-                    volume = geminiResponse.volume ?: 50f,
-                    pronunciation = geminiResponse.pronunciation ?: 50f,
-                    pauseQuality = geminiResponse.pauseQuality ?: 50f,
+                    clarity = geminiResponse.clarity ?: 0f,
+                    pace = geminiResponse.pace ?: 0f,
+                    volume = geminiResponse.volume ?: 0f,
+                    pronunciation = geminiResponse.pronunciation ?: 0f,
+                    pauseQuality = geminiResponse.pauseQuality ?: 0f,
                     fillerWordsCount = geminiResponse.fillerWordsCount ?: 0
                 ),
                 feedback = geminiResponse.feedback ?: "Аналіз не доступний",
-                recommendations = geminiResponse.recommendations ?: listOf("Спробуйте ще раз"),
+                recommendations = geminiResponse.recommendations ?: listOf("Не вдалося проаналізувати запис"),
                 strengths = geminiResponse.strengths ?: emptyList()
             )
 
@@ -182,12 +182,17 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
         }
 
         // Update skill levels from AI analysis
+        // Skip skill update for empty/failed recordings (overallScore <= 0)
         result.getOrNull()?.let { analysisResult ->
-            try {
-                skillUpdateService.updateFromAnalysis(analysisResult, exerciseType)
-                Log.d("DiagFlow", "Skill levels updated for exerciseType=$exerciseType")
-            } catch (e: Exception) {
-                Log.e("DiagFlow", "Failed to update skill levels: ${e.message}")
+            if (analysisResult.overallScore > 0) {
+                try {
+                    skillUpdateService.updateFromAnalysis(analysisResult, exerciseType)
+                    Log.d("DiagFlow", "Skill levels updated for exerciseType=$exerciseType")
+                } catch (e: Exception) {
+                    Log.e("DiagFlow", "Failed to update skill levels: ${e.message}")
+                }
+            } else {
+                Log.d("DiagFlow", "Skipping skill update: overallScore=${analysisResult.overallScore} (empty/failed recording)")
             }
         }
 

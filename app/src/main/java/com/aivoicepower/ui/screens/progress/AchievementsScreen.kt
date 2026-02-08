@@ -135,6 +135,7 @@ private fun AchievementsContent(
 
         // Categories
         val categoryOrder = listOf(
+            AchievementCategory.COURSE_COMPLETION,
             AchievementCategory.SPECIAL,
             AchievementCategory.STREAK,
             AchievementCategory.RECORDINGS,
@@ -145,6 +146,7 @@ private fun AchievementsContent(
             val achievements = grouped[category] ?: return@forEach
 
             val categoryIcon = when (category) {
+                AchievementCategory.COURSE_COMPLETION -> "\uD83C\uDF93"
                 AchievementCategory.STREAK -> "\uD83D\uDD25"
                 AchievementCategory.PRACTICE_TIME -> "⏱\uFE0F"
                 AchievementCategory.RECORDINGS -> "\uD83C\uDF99\uFE0F"

@@ -23,18 +23,18 @@ data class VoiceAnalysisResult(
          * Default fallback result when analysis fails
          */
         fun default() = VoiceAnalysisResult(
-            diction = 50,
-            tempo = 50,
-            intonation = 50,
-            volume = 50,
-            confidence = 50,
-            fillerWords = 50,
-            structure = 50,
-            persuasiveness = 50,
-            overallScore = 50,
-            strengths = listOf("Гарний початок!"),
-            improvements = listOf("Продовжуй практикуватись"),
-            tip = "Спробуй записати ще раз"
+            diction = 0,
+            tempo = 0,
+            intonation = 0,
+            volume = 0,
+            confidence = 0,
+            fillerWords = 0,
+            structure = 0,
+            persuasiveness = 0,
+            overallScore = 0,
+            strengths = emptyList(),
+            improvements = listOf("Не вдалося проаналізувати запис"),
+            tip = "Спробуйте записати ще раз, переконайтесь що мікрофон працює"
         )
     }
 }

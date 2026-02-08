@@ -129,6 +129,10 @@ fun RecordingControls(
                 )
             }
 
+            ExerciseStatus.Analyzing, ExerciseStatus.ShowingResults -> {
+                // Handled by parent ExercisePhaseContent
+            }
+
             ExerciseStatus.Completed -> {
                 Text(
                     text = "✓ Вправа виконана",

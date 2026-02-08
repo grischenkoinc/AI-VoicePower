@@ -15,6 +15,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aivoicepower.domain.model.course.Lesson
+import com.aivoicepower.ui.components.AnalysisResultsContent
+import com.aivoicepower.ui.components.AnalyzingContent
 import com.aivoicepower.ui.screens.courses.ExerciseState
 import com.aivoicepower.ui.screens.courses.ExerciseStatus
 import com.aivoicepower.ui.screens.courses.LessonEvent
@@ -116,24 +118,40 @@ fun ExercisePhaseContent(
                                 )
                             },
                             content = {
-                                // Exercise Card (окремий компонент)
-                                ExerciseCard(exerciseState = exerciseState)
+                                when (exerciseState.status) {
+                                    ExerciseStatus.Analyzing -> {
+                                        AnalyzingContent()
+                                    }
+                                    ExerciseStatus.ShowingResults -> {
+                                        exerciseState.analysisResult?.let { result ->
+                                            AnalysisResultsContent(
+                                                result = result,
+                                                onDismiss = { onEvent(LessonEvent.ContinueAfterAnalysisClicked) },
+                                                dismissButtonText = "Далі"
+                                            )
+                                        }
+                                    }
+                                    else -> {
+                                        // Exercise Card (окремий компонент)
+                                        ExerciseCard(exerciseState = exerciseState)
 
-                                Spacer(modifier = Modifier.height(8.dp))
+                                        Spacer(modifier = Modifier.height(8.dp))
 
-                                // Recording Controls (не показувати для ARTICULATION та BREATHING)
-                                if (exerciseState.exercise.type != com.aivoicepower.domain.model.exercise.ExerciseType.ARTICULATION &&
-                                    exerciseState.exercise.type != com.aivoicepower.domain.model.exercise.ExerciseType.BREATHING) {
-                                    RecordingControls(
-                                        exerciseState = exerciseState,
-                                        isPlaying = isPlaying,
-                                        onStartRecording = { onEvent(LessonEvent.StartRecordingClicked) },
-                                        onStopRecording = { onEvent(LessonEvent.StopRecordingClicked) },
-                                        onPlayRecording = { onEvent(LessonEvent.PlayRecordingClicked) },
-                                        onStopPlayback = { onEvent(LessonEvent.StopPlaybackClicked) },
-                                        onReRecord = { onEvent(LessonEvent.ReRecordClicked) },
-                                        onComplete = { onEvent(LessonEvent.CompleteExerciseClicked) }
-                                    )
+                                        // Recording Controls (не показувати для ARTICULATION та BREATHING)
+                                        if (exerciseState.exercise.type != com.aivoicepower.domain.model.exercise.ExerciseType.ARTICULATION &&
+                                            exerciseState.exercise.type != com.aivoicepower.domain.model.exercise.ExerciseType.BREATHING) {
+                                            RecordingControls(
+                                                exerciseState = exerciseState,
+                                                isPlaying = isPlaying,
+                                                onStartRecording = { onEvent(LessonEvent.StartRecordingClicked) },
+                                                onStopRecording = { onEvent(LessonEvent.StopRecordingClicked) },
+                                                onPlayRecording = { onEvent(LessonEvent.PlayRecordingClicked) },
+                                                onStopPlayback = { onEvent(LessonEvent.StopPlaybackClicked) },
+                                                onReRecord = { onEvent(LessonEvent.ReRecordClicked) },
+                                                onComplete = { onEvent(LessonEvent.CompleteExerciseClicked) }
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         )

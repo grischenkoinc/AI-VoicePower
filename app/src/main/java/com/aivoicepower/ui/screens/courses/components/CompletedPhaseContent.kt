@@ -22,6 +22,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aivoicepower.domain.model.course.Lesson
+import com.aivoicepower.domain.model.user.Achievement
+import com.aivoicepower.ui.screens.progress.components.AchievementBadge
 import com.aivoicepower.ui.theme.*
 import com.aivoicepower.ui.theme.components.*
 
@@ -29,6 +31,9 @@ import com.aivoicepower.ui.theme.components.*
 fun CompletedPhaseContent(
     lesson: Lesson,
     nextLesson: Lesson? = null,
+    isLastLessonInCourse: Boolean = false,
+    courseName: String = "",
+    courseBadge: Achievement? = null,
     onFinish: () -> Unit,
     onNextLesson: (() -> Unit)? = null,
     modifier: Modifier = Modifier
@@ -53,92 +58,187 @@ fun CompletedPhaseContent(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Celebration Icon
-                Box(
-                    modifier = Modifier
-                        .size(120.dp)
-                        .scale(scale)
-                        .shadow(
-                            elevation = 24.dp,
-                            shape = CircleShape,
-                            spotColor = Color(0xFF22C55E).copy(alpha = 0.5f)
-                        )
-                        .background(
-                            Brush.linearGradient(
-                                colors = listOf(Color(0xFF22C55E), Color(0xFF16A34A))
+                if (isLastLessonInCourse) {
+                    // Course Completion - Gold trophy
+                    Box(
+                        modifier = Modifier
+                            .size(140.dp)
+                            .scale(scale)
+                            .shadow(
+                                elevation = 32.dp,
+                                shape = CircleShape,
+                                spotColor = Color(0xFFFFD700).copy(alpha = 0.6f)
+                            )
+                            .background(
+                                Brush.linearGradient(
+                                    colors = listOf(Color(0xFFFFD700), Color(0xFFF59E0B))
+                                ),
+                                CircleShape
                             ),
-                            CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "\uD83C\uDFC6",
+                            fontSize = 72.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(28.dp))
+
                     Text(
-                        text = "✓",
-                        fontSize = 72.sp,
+                        text = "Курс завершено!",
+                        style = AppTypography.displayLarge,
                         color = Color.White,
+                        fontSize = 38.sp,
                         fontWeight = FontWeight.Black,
-                        letterSpacing = 0.sp
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                // Title
-                Text(
-                    text = "Урок пройдено!",
-                    style = AppTypography.displayLarge,
-                    color = Color.White,
-                    fontSize = 40.sp,
-                    fontWeight = FontWeight.Black,
-                    textAlign = TextAlign.Center,
-                    letterSpacing = (-1.5).sp
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = "День ${lesson.dayNumber}: ${lesson.title}",
-                    style = AppTypography.bodyLarge,
-                    color = Color.White.copy(alpha = 0.9f),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(40.dp))
-
-                // Stats Card
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .shadow(
-                            elevation = 24.dp,
-                            shape = RoundedCornerShape(32.dp),
-                            spotColor = Color.Black.copy(alpha = 0.2f)
-                        )
-                        .background(
-                            Color.White.copy(alpha = 0.95f),
-                            RoundedCornerShape(32.dp)
-                        )
-                        .padding(32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Text(
-                        text = "Чудова робота!",
-                        style = AppTypography.titleLarge,
-                        color = TextColors.onLightPrimary,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.ExtraBold
+                        textAlign = TextAlign.Center,
+                        letterSpacing = (-1.5).sp
                     )
 
+                    Spacer(modifier = Modifier.height(8.dp))
+
                     Text(
-                        text = "Ти виконав ${lesson.exercises.size} вправи. Прогрес збережено.",
-                        style = AppTypography.bodyMedium,
-                        color = TextColors.onLightSecondary,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
+                        text = courseName,
+                        style = AppTypography.bodyLarge,
+                        color = Color(0xFFFFD700),
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center
                     )
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    // Stats Card with badge
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(
+                                elevation = 24.dp,
+                                shape = RoundedCornerShape(32.dp),
+                                spotColor = Color.Black.copy(alpha = 0.2f)
+                            )
+                            .background(
+                                Color.White.copy(alpha = 0.95f),
+                                RoundedCornerShape(32.dp)
+                            )
+                            .padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Text(
+                            text = "Неймовірний результат!",
+                            style = AppTypography.titleLarge,
+                            color = TextColors.onLightPrimary,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+
+                        Text(
+                            text = "Ти пройшов увесь курс \"$courseName\"! Твої навички значно покращились.",
+                            style = AppTypography.bodyMedium,
+                            color = TextColors.onLightSecondary,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            textAlign = TextAlign.Center
+                        )
+
+                        // Course badge
+                        if (courseBadge != null) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            AchievementBadge(
+                                achievement = courseBadge,
+                                isLarge = true,
+                                modifier = Modifier.fillMaxWidth(0.6f)
+                            )
+                        }
+                    }
+                } else {
+                    // Regular Lesson Completion - Green checkmark
+                    Box(
+                        modifier = Modifier
+                            .size(120.dp)
+                            .scale(scale)
+                            .shadow(
+                                elevation = 24.dp,
+                                shape = CircleShape,
+                                spotColor = Color(0xFF22C55E).copy(alpha = 0.5f)
+                            )
+                            .background(
+                                Brush.linearGradient(
+                                    colors = listOf(Color(0xFF22C55E), Color(0xFF16A34A))
+                                ),
+                                CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "✓",
+                            fontSize = 72.sp,
+                            color = Color.White,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 0.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    Text(
+                        text = "Урок пройдено!",
+                        style = AppTypography.displayLarge,
+                        color = Color.White,
+                        fontSize = 40.sp,
+                        fontWeight = FontWeight.Black,
+                        textAlign = TextAlign.Center,
+                        letterSpacing = (-1.5).sp
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "День ${lesson.dayNumber}: ${lesson.title}",
+                        style = AppTypography.bodyLarge,
+                        color = Color.White.copy(alpha = 0.9f),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(40.dp))
+
+                    // Stats Card
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(
+                                elevation = 24.dp,
+                                shape = RoundedCornerShape(32.dp),
+                                spotColor = Color.Black.copy(alpha = 0.2f)
+                            )
+                            .background(
+                                Color.White.copy(alpha = 0.95f),
+                                RoundedCornerShape(32.dp)
+                            )
+                            .padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Text(
+                            text = "Чудова робота!",
+                            style = AppTypography.titleLarge,
+                            color = TextColors.onLightPrimary,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+
+                        Text(
+                            text = "Ти виконав ${lesson.exercises.size} вправи. Прогрес збережено.",
+                            style = AppTypography.bodyMedium,
+                            color = TextColors.onLightSecondary,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(40.dp))
@@ -148,7 +248,7 @@ fun CompletedPhaseContent(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    if (nextLesson != null && onNextLesson != null) {
+                    if (!isLastLessonInCourse && nextLesson != null && onNextLesson != null) {
                         NextLessonButton(
                             lessonTitle = nextLesson.title,
                             onClick = onNextLesson,
