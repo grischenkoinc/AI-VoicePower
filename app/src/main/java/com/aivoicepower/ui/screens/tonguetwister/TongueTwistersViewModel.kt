@@ -60,6 +60,7 @@ class TongueTwistersViewModel @Inject constructor(
             TongueTwistersEvent.StopPractice -> stopPractice()
             TongueTwistersEvent.StartRecording -> startRecording()
             TongueTwistersEvent.StopRecording -> stopRecording()
+            TongueTwistersEvent.DismissAnalysis -> dismissAnalysis()
         }
     }
 
@@ -129,7 +130,20 @@ class TongueTwistersViewModel @Inject constructor(
                 isPracticing = false,
                 practicingTwister = null,
                 isRecording = false,
-                recordingDurationMs = 0
+                recordingDurationMs = 0,
+                isAnalyzing = false,
+                analysisResult = null
+            )
+        }
+    }
+
+    private fun dismissAnalysis() {
+        _state.update {
+            it.copy(
+                isPracticing = false,
+                practicingTwister = null,
+                analysisResult = null,
+                isAnalyzing = false
             )
         }
     }
@@ -166,21 +180,24 @@ class TongueTwistersViewModel @Inject constructor(
 
                 val twister = _state.value.practicingTwister
 
-                _state.update { it.copy(isRecording = false) }
+                _state.update { it.copy(isRecording = false, isAnalyzing = true) }
 
                 saveRecording(twister)
             } catch (e: Exception) {
                 Log.e("TongueTwistersVM", "Recording stop error", e)
-                _state.update { it.copy(isRecording = false) }
+                _state.update { it.copy(isRecording = false, isAnalyzing = false) }
             }
         }
     }
 
     private suspend fun saveRecording(twister: TongueTwister?) {
         try {
-            val path = recordingPath ?: return
+            val path = recordingPath ?: run {
+                _state.update { it.copy(isAnalyzing = false) }
+                return
+            }
 
-            voiceAnalysisRepository.analyzeRecording(
+            val result = voiceAnalysisRepository.analyzeRecording(
                 audioFilePath = path,
                 expectedText = twister?.text,
                 exerciseType = "tongue_twister",
@@ -194,13 +211,21 @@ class TongueTwistersViewModel @Inject constructor(
                 type = "tongue_twister",
                 contextId = "tongue_twister_${twister?.id ?: ""}",
                 transcription = null,
-                isAnalyzed = true,
+                isAnalyzed = result.isSuccess,
                 exerciseId = twister?.id
             )
 
             recordingDao.insert(recordingEntity)
+
+            _state.update {
+                it.copy(
+                    isAnalyzing = false,
+                    analysisResult = result.getOrNull()
+                )
+            }
         } catch (e: Exception) {
             Log.e("TongueTwistersVM", "Save recording error", e)
+            _state.update { it.copy(isAnalyzing = false) }
         }
     }
 

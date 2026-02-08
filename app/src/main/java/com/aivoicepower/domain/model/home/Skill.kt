@@ -6,5 +6,6 @@ data class Skill(
     val emoji: String,
     val percentage: Int,
     val growth: String,
-    val gradientColors: List<String>
+    val gradientColors: List<String>,
+    val statusLabel: String = ""
 )

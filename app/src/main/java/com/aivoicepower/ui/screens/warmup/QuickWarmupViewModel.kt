@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.local.database.dao.WarmupCompletionDao
 import com.aivoicepower.data.local.database.entity.WarmupCompletionEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
+import com.aivoicepower.domain.service.SkillUpdateService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -20,7 +21,8 @@ import javax.inject.Inject
 @HiltViewModel
 class QuickWarmupViewModel @Inject constructor(
     private val warmupCompletionDao: WarmupCompletionDao,
-    private val userPreferencesDataStore: UserPreferencesDataStore
+    private val userPreferencesDataStore: UserPreferencesDataStore,
+    private val skillUpdateService: SkillUpdateService
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(QuickWarmupState())
@@ -303,6 +305,7 @@ class QuickWarmupViewModel @Inject constructor(
             )
 
             warmupCompletionDao.insertCompletion(entity)
+            skillUpdateService.updateFromQuickWarmup()
 
             // Оновлюємо DataStore
             val estimatedMinutes = (_state.value.totalElapsedSeconds / 60).coerceAtLeast(1)

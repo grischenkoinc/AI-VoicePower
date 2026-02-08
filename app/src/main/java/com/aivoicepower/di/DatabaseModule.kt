@@ -3,11 +3,13 @@ package com.aivoicepower.di
 import android.content.Context
 import androidx.room.Room
 import com.aivoicepower.data.local.database.AppDatabase
+import com.aivoicepower.data.local.database.dao.AchievementDao
 import com.aivoicepower.data.local.database.dao.CourseProgressDao
 import com.aivoicepower.data.local.database.dao.DailyChallengeDao
 import com.aivoicepower.data.local.database.dao.DiagnosticResultDao
 import com.aivoicepower.data.local.database.dao.MessageDao
 import com.aivoicepower.data.local.database.dao.RecordingDao
+import com.aivoicepower.data.local.database.dao.SkillSnapshotDao
 import com.aivoicepower.data.local.database.dao.UserProgressDao
 import com.aivoicepower.data.local.database.dao.WarmupCompletionDao
 import dagger.Module
@@ -75,5 +77,17 @@ object DatabaseModule {
     @Singleton
     fun provideDiagnosticResultDao(database: AppDatabase): DiagnosticResultDao {
         return database.diagnosticResultDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideSkillSnapshotDao(database: AppDatabase): SkillSnapshotDao {
+        return database.skillSnapshotDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAchievementDao(database: AppDatabase): AchievementDao {
+        return database.achievementDao()
     }
 }

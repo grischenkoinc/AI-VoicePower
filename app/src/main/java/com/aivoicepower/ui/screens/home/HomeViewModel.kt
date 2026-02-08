@@ -7,6 +7,7 @@ import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.domain.model.home.*
 import com.aivoicepower.domain.repository.CourseRepository
 import com.aivoicepower.ui.navigation.Screen
+import com.aivoicepower.utils.SkillLevelUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -30,6 +31,7 @@ class HomeViewModel @Inject constructor(
 
     init {
         loadHomeData()
+        observeSkills()
         observeCourseProgress()
         observeDailyPlan()
     }
@@ -73,9 +75,6 @@ class HomeViewModel @Inject constructor(
                 // Get quick actions
                 val quickActions = getQuickActions()
 
-                // Load skills
-                val skills = loadSkills(progress)
-
                 // Load daily tip
                 val dailyTip = getDailyTip()
 
@@ -89,7 +88,6 @@ class HomeViewModel @Inject constructor(
                         todayPlan = todayPlan,
                         weekProgress = weekProgress,
                         quickActions = quickActions,
-                        skills = skills,
                         dailyTip = dailyTip,
                         isLoading = false,
                         error = null
@@ -348,35 +346,21 @@ class HomeViewModel @Inject constructor(
         )
     }
 
-    private suspend fun loadSkills(progress: com.aivoicepower.data.local.database.entity.UserProgressEntity?): List<com.aivoicepower.domain.model.home.Skill> {
-        // Визначаємо звідки брати дані
-        var dictionLevel = progress?.dictionLevel ?: 1
-        var tempoLevel = progress?.tempoLevel ?: 1
-        var intonationLevel = progress?.intonationLevel ?: 1
-
-        // Якщо прогресу немає або всі значення дефолтні - беремо з діагностики
-        if (progress == null || (dictionLevel == 1 && tempoLevel == 1 && intonationLevel == 1)) {
-            android.util.Log.d("HomeViewModel", "No progress data, trying to load from diagnostic")
-
-            // Завантажуємо останню діагностику
-            val diagnosticResult = try {
-                diagnosticResultDao.getLatestDiagnostic().first()
-            } catch (e: Exception) {
-                android.util.Log.e("HomeViewModel", "Error loading diagnostic", e)
-                null
+    private fun observeSkills() {
+        viewModelScope.launch {
+            userProgressDao.getProgressFlow().collect { progress ->
+                val skills = buildSkillsList(progress)
+                _state.update { it.copy(skills = skills) }
             }
-
-            if (diagnosticResult != null) {
-                dictionLevel = diagnosticResult.diction
-                tempoLevel = diagnosticResult.tempo
-                intonationLevel = diagnosticResult.intonation
-                android.util.Log.d("HomeViewModel", "Loaded skills from diagnostic: diction=$dictionLevel, tempo=$tempoLevel, intonation=$intonationLevel")
-            } else {
-                android.util.Log.d("HomeViewModel", "No diagnostic found, using default values")
-            }
-        } else {
-            android.util.Log.d("HomeViewModel", "loadSkills from progress: diction=$dictionLevel, tempo=$tempoLevel, intonation=$intonationLevel")
         }
+    }
+
+    private fun buildSkillsList(
+        progress: com.aivoicepower.data.local.database.entity.UserProgressEntity?
+    ): List<com.aivoicepower.domain.model.home.Skill> {
+        val dictionLevel = progress?.dictionLevel?.toInt() ?: 1
+        val tempoLevel = progress?.tempoLevel?.toInt() ?: 1
+        val intonationLevel = progress?.intonationLevel?.toInt() ?: 1
 
         return listOf(
             com.aivoicepower.domain.model.home.Skill(
@@ -384,24 +368,27 @@ class HomeViewModel @Inject constructor(
                 name = "Дикція",
                 emoji = "📢",
                 percentage = dictionLevel,
-                growth = calculateGrowth(dictionLevel, progress?.lastDictionLevel),
-                gradientColors = listOf("#6366F1", "#8B5CF6")
+                growth = calculateGrowth(dictionLevel, progress?.lastDictionLevel?.toInt()),
+                gradientColors = listOf("#6366F1", "#8B5CF6"),
+                statusLabel = SkillLevelUtils.getSkillLabel(dictionLevel)
             ),
             com.aivoicepower.domain.model.home.Skill(
                 id = "tempo",
                 name = "Темп",
                 emoji = "⚡",
                 percentage = tempoLevel,
-                growth = calculateGrowth(tempoLevel, progress?.lastTempoLevel),
-                gradientColors = listOf("#EC4899", "#F43F5E")
+                growth = calculateGrowth(tempoLevel, progress?.lastTempoLevel?.toInt()),
+                gradientColors = listOf("#EC4899", "#F43F5E"),
+                statusLabel = SkillLevelUtils.getSkillLabel(tempoLevel)
             ),
             com.aivoicepower.domain.model.home.Skill(
                 id = "intonation",
                 name = "Емоції",
                 emoji = "🎭",
                 percentage = intonationLevel,
-                growth = calculateGrowth(intonationLevel, progress?.lastIntonationLevel),
-                gradientColors = listOf("#F59E0B", "#F97316")
+                growth = calculateGrowth(intonationLevel, progress?.lastIntonationLevel?.toInt()),
+                gradientColors = listOf("#F59E0B", "#F97316"),
+                statusLabel = SkillLevelUtils.getSkillLabel(intonationLevel)
             )
         )
     }

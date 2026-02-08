@@ -103,8 +103,7 @@ private fun SkillDetailContent(
 
         // Stats Card
         DetailedStatsCard(
-            totalPracticeMinutes = state.totalPracticeMinutes,
-            recordingCount = state.impactfulExercises.sumOf { it.completionCount }
+            totalPracticeMinutes = state.totalPracticeMinutes
         )
     }
 }
@@ -398,12 +397,6 @@ private fun ExerciseImpactItem(exercise: ExerciseImpact) {
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold
             )
-            Text(
-                text = "Виконано ${exercise.completionCount} разів",
-                style = AppTypography.bodySmall,
-                color = TextColors.onLightSecondary,
-                fontSize = 12.sp
-            )
         }
 
         Box(
@@ -492,8 +485,7 @@ private fun RecommendationItem(recommendation: SkillRecommendation) {
 
 @Composable
 private fun DetailedStatsCard(
-    totalPracticeMinutes: Int,
-    recordingCount: Int
+    totalPracticeMinutes: Int
 ) {
     Column(
         modifier = Modifier
@@ -517,17 +509,11 @@ private fun DetailedStatsCard(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.Center
         ) {
             StatItem(
                 label = "Час практики",
-                value = "${totalPracticeMinutes}хв",
-                modifier = Modifier.weight(1f)
-            )
-            StatItem(
-                label = "Всього записів",
-                value = "$recordingCount",
-                modifier = Modifier.weight(1f)
+                value = "${totalPracticeMinutes}хв"
             )
         }
     }

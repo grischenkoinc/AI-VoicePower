@@ -13,20 +13,43 @@ data class UserProgressEntity(
     val totalMinutes: Int = 0,
     val totalExercises: Int = 0,
     val totalRecordings: Int = 0,
-    val dictionLevel: Int = 1,
-    val tempoLevel: Int = 1,
-    val intonationLevel: Int = 1,
-    val volumeLevel: Int = 1,
-    val structureLevel: Int = 1,
-    val confidenceLevel: Int = 1,
-    val fillerWordsLevel: Int = 1,
-    // Поля для відстеження історії прогресу
-    val lastDictionLevel: Int? = null,
-    val lastTempoLevel: Int? = null,
-    val lastIntonationLevel: Int? = null,
-    val lastVolumeLevel: Int? = null,
-    val lastStructureLevel: Int? = null,
-    val lastConfidenceLevel: Int? = null,
-    val lastFillerWordsLevel: Int? = null,
+
+    // Skill levels (0-100, Float for fractional tracking)
+    val dictionLevel: Float = 1f,
+    val tempoLevel: Float = 1f,
+    val intonationLevel: Float = 1f,
+    val volumeLevel: Float = 1f,
+    val structureLevel: Float = 1f,
+    val confidenceLevel: Float = 1f,
+    val fillerWordsLevel: Float = 1f,
+
+    // Previous levels for progression arrows (↑/↓)
+    val lastDictionLevel: Float? = null,
+    val lastTempoLevel: Float? = null,
+    val lastIntonationLevel: Float? = null,
+    val lastVolumeLevel: Float? = null,
+    val lastStructureLevel: Float? = null,
+    val lastConfidenceLevel: Float? = null,
+    val lastFillerWordsLevel: Float? = null,
+
+    // Peak levels for decay floor (skill can't drop below 50% of peak)
+    val peakDictionLevel: Float = 1f,
+    val peakTempoLevel: Float = 1f,
+    val peakIntonationLevel: Float = 1f,
+    val peakVolumeLevel: Float = 1f,
+    val peakStructureLevel: Float = 1f,
+    val peakConfidenceLevel: Float = 1f,
+    val peakFillerWordsLevel: Float = 1f,
+
+    // Daily change tracking for ±5 cap enforcement
+    val dailyChangeDiction: Float = 0f,
+    val dailyChangeTempo: Float = 0f,
+    val dailyChangeIntonation: Float = 0f,
+    val dailyChangeVolume: Float = 0f,
+    val dailyChangeStructure: Float = 0f,
+    val dailyChangeConfidence: Float = 0f,
+    val dailyChangeFillerWords: Float = 0f,
+    val lastDailyResetDate: String? = null,
+
     val updatedAt: Long = System.currentTimeMillis()
 )

@@ -161,25 +161,6 @@ fun CompareScreen(
                         )
                     }
 
-                    // Journey Timeline
-                    item {
-                        Text(
-                            text = "Ваша подорож",
-                            style = AppTypography.titleLarge,
-                            color = TextColors.onDarkPrimary,
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            letterSpacing = (-0.5).sp
-                        )
-                    }
-
-                    item {
-                        JourneyTimeline(
-                            initialLevel = state.initialDiagnostic?.calculateOverallLevel() ?: 0,
-                            currentLevel = state.currentLevel
-                        )
-                    }
-
                     item {
                         BackButton(onClick = onNavigateBack)
                     }
@@ -618,107 +599,6 @@ private fun EnhancedComparisonCard(
                     color = progressColor,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.ExtraBold
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun JourneyTimeline(
-    initialLevel: Int,
-    currentLevel: Int
-) {
-    val milestones = listOf(
-        Triple(0, "Початок", initialLevel <= 0),
-        Triple(20, "Новачок", currentLevel >= 20),
-        Triple(40, "Практик", currentLevel >= 40),
-        Triple(60, "Досвідчений", currentLevel >= 60),
-        Triple(80, "Експерт", currentLevel >= 80),
-        Triple(100, "Майстер", currentLevel >= 100)
-    )
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(
-                elevation = 20.dp,
-                shape = RoundedCornerShape(20.dp),
-                spotColor = Color.Black.copy(alpha = 0.15f)
-            )
-            .background(Color.White, RoundedCornerShape(20.dp))
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        milestones.forEachIndexed { index, (level, title, achieved) ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(
-                            if (achieved) Color(0xFF10B981) else Color(0xFFE5E7EB),
-                            CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (achieved) {
-                        Text(
-                            text = "✓",
-                            color = Color.White,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Black
-                        )
-                    } else {
-                        Box(
-                            modifier = Modifier
-                                .size(12.dp)
-                                .background(Color.White, CircleShape)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = title,
-                        style = AppTypography.bodyLarge,
-                        color = if (achieved) TextColors.onLightPrimary else TextColors.onLightMuted,
-                        fontSize = 16.sp,
-                        fontWeight = if (achieved) FontWeight.Bold else FontWeight.Medium
-                    )
-                    Text(
-                        text = "Рівень $level",
-                        style = AppTypography.labelSmall,
-                        color = TextColors.onLightSecondary,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-
-                if (achieved && currentLevel >= level) {
-                    Text(
-                        text = if (currentLevel > level) "Досягнуто ✨" else "Зараз тут 📍",
-                        style = AppTypography.labelSmall,
-                        color = Color(0xFF10B981),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            if (index < milestones.size - 1) {
-                Box(
-                    modifier = Modifier
-                        .padding(start = 19.dp)
-                        .width(2.dp)
-                        .height(24.dp)
-                        .background(
-                            if (achieved) Color(0xFF10B981) else Color(0xFFE5E7EB)
-                        )
                 )
             }
         }

@@ -1,5 +1,6 @@
 package com.aivoicepower.ui.screens.tonguetwister
 
+import com.aivoicepower.domain.model.VoiceAnalysisResult
 import com.aivoicepower.domain.model.content.TongueTwister
 
 data class TongueTwistersState(
@@ -12,7 +13,9 @@ data class TongueTwistersState(
     val isPracticing: Boolean = false,
     val practicingTwister: TongueTwister? = null,
     val isRecording: Boolean = false,
-    val recordingDurationMs: Long = 0
+    val recordingDurationMs: Long = 0,
+    val isAnalyzing: Boolean = false,
+    val analysisResult: VoiceAnalysisResult? = null
 )
 
 sealed class TongueTwistersEvent {
@@ -24,4 +27,5 @@ sealed class TongueTwistersEvent {
     object StopPractice : TongueTwistersEvent()
     object StartRecording : TongueTwistersEvent()
     object StopRecording : TongueTwistersEvent()
+    object DismissAnalysis : TongueTwistersEvent()
 }

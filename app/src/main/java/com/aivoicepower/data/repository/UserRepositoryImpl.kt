@@ -1,12 +1,14 @@
 package com.aivoicepower.data.repository
 
 import android.util.Log
+import com.aivoicepower.data.local.database.dao.UserProgressDao
 import com.aivoicepower.domain.model.user.DiagnosticResult
 import com.aivoicepower.domain.model.user.SkillType
 import com.aivoicepower.domain.model.user.UserGoal
 import com.aivoicepower.domain.model.user.UserProfile
 import com.aivoicepower.domain.model.user.UserProgress
 import com.aivoicepower.domain.repository.UserRepository
+import com.aivoicepower.domain.service.SkillUpdateService
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -28,19 +30,27 @@ import javax.inject.Singleton
  */
 @Singleton
 class UserRepositoryImpl @Inject constructor(
-    private val recordingDao: com.aivoicepower.data.local.database.dao.RecordingDao
+    private val recordingDao: com.aivoicepower.data.local.database.dao.RecordingDao,
+    private val userProgressDao: UserProgressDao,
+    private val skillUpdateService: SkillUpdateService
 ) : UserRepository {
 
     private val _userProfile = MutableStateFlow(getMockUserProfile())
-    private val _userProgress = MutableStateFlow<UserProgress?>(getMockUserProgress())
+    private val _userProgress = MutableStateFlow<UserProgress?>(null)
 
     init {
-        // Load real progress data on initialization
         Log.d("UserRepository", "UserRepositoryImpl initialized")
         CoroutineScope(Dispatchers.IO).launch {
-            Log.d("UserRepository", "Starting to calculate real user progress")
+            skillUpdateService.applyDecayIfNeeded()
+            // Initial load
             _userProgress.value = calculateRealUserProgress()
-            Log.d("UserRepository", "Finished calculating real user progress")
+            Log.d("UserRepository", "Initial progress loaded")
+        }
+        // Reactive: update whenever skills change in DB
+        CoroutineScope(Dispatchers.IO).launch {
+            userProgressDao.getProgressFlow().collect {
+                _userProgress.value = calculateRealUserProgress()
+            }
         }
     }
 
@@ -83,8 +93,29 @@ class UserRepositoryImpl @Inject constructor(
         // Get last activity date
         val lastActivityDate = allRecordings.maxOfOrNull { it.createdAt } ?: System.currentTimeMillis()
 
-        // For skill levels, use the mock data for now (will be updated by diagnostic results)
-        val mockProgress = getMockUserProgress()
+        // Get real skill levels from DB
+        val dbProgress = userProgressDao.getProgress()
+        val skillLevels = if (dbProgress != null) {
+            mapOf(
+                SkillType.DICTION to dbProgress.dictionLevel.toInt(),
+                SkillType.TEMPO to dbProgress.tempoLevel.toInt(),
+                SkillType.INTONATION to dbProgress.intonationLevel.toInt(),
+                SkillType.VOLUME to dbProgress.volumeLevel.toInt(),
+                SkillType.STRUCTURE to dbProgress.structureLevel.toInt(),
+                SkillType.CONFIDENCE to dbProgress.confidenceLevel.toInt(),
+                SkillType.FILLER_WORDS to dbProgress.fillerWordsLevel.toInt()
+            )
+        } else {
+            mapOf(
+                SkillType.DICTION to 1,
+                SkillType.TEMPO to 1,
+                SkillType.INTONATION to 1,
+                SkillType.VOLUME to 1,
+                SkillType.STRUCTURE to 1,
+                SkillType.CONFIDENCE to 1,
+                SkillType.FILLER_WORDS to 1
+            )
+        }
 
         return UserProgress(
             userId = "default_user",
@@ -94,7 +125,7 @@ class UserRepositoryImpl @Inject constructor(
             totalExercises = totalExercises,
             totalRecordings = totalRecordings,
             lastActivityDate = lastActivityDate,
-            skillLevels = mockProgress.skillLevels,
+            skillLevels = skillLevels,
             achievements = emptyList()
         )
     }
@@ -163,28 +194,7 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     override fun getInitialDiagnostic(): Flow<DiagnosticResult?> {
-        // Stub implementation - return mock initial diagnostic
-        return flowOf(
-            DiagnosticResult(
-                id = "initial_diagnostic_1",
-                userId = "default_user",
-                timestamp = System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000), // 30 days ago
-                diction = 42,
-                tempo = 48,
-                intonation = 38,
-                volume = 52,
-                structure = 35,
-                confidence = 40,
-                fillerWords = 45,
-                recordingIds = emptyList(),
-                recommendations = listOf(
-                    "Попрацюйте над структурою мовлення",
-                    "Розвивайте інтонаційну виразність",
-                    "Покращуйте впевненість у голосі"
-                ),
-                isInitial = true
-            )
-        )
+        return flowOf(null)
     }
 
     override suspend fun getWeeklyActivity(): List<com.aivoicepower.ui.screens.progress.DailyProgress> {
@@ -242,27 +252,6 @@ class UserRepositoryImpl @Inject constructor(
         )
     }
 
-    private fun getMockUserProgress(): UserProgress {
-        return UserProgress(
-            userId = "default_user",
-            currentStreak = 3,
-            longestStreak = 7,
-            totalMinutes = 120,
-            totalExercises = 25,
-            totalRecordings = 15,
-            lastActivityDate = System.currentTimeMillis(),
-            skillLevels = mapOf(
-                SkillType.DICTION to 45,
-                SkillType.TEMPO to 50,
-                SkillType.INTONATION to 40,
-                SkillType.VOLUME to 55,
-                SkillType.STRUCTURE to 35,
-                SkillType.CONFIDENCE to 42,
-                SkillType.FILLER_WORDS to 48
-            ),
-            achievements = emptyList()
-        )
-    }
 }
 
 /**

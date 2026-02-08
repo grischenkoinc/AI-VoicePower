@@ -3,6 +3,7 @@ package com.aivoicepower.ui.screens.progress
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aivoicepower.domain.model.user.Achievement
+import com.aivoicepower.domain.model.user.AchievementCategory
 import com.aivoicepower.domain.repository.AchievementRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,10 +40,16 @@ class AchievementsViewModel @Inject constructor(
                 achievementRepository.getAllAchievements().collect { achievements ->
                     val unlocked = achievements.count { it.isUnlocked }
 
+                    // Sort: unlocked first, then by category order
+                    val sorted = achievements.sortedWith(
+                        compareBy<Achievement> { it.category.ordinal }
+                            .thenByDescending { it.isUnlocked }
+                    )
+
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            achievements = achievements,
+                            achievements = sorted,
                             unlockedCount = unlocked,
                             totalCount = achievements.size
                         )

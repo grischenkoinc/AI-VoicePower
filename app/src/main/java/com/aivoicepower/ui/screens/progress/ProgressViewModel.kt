@@ -3,6 +3,7 @@ package com.aivoicepower.ui.screens.progress
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aivoicepower.data.local.database.dao.UserProgressDao
 import com.aivoicepower.domain.model.user.SkillType
 import com.aivoicepower.domain.repository.AchievementRepository
 import com.aivoicepower.domain.repository.UserRepository
@@ -19,7 +20,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ProgressViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    private val achievementRepository: AchievementRepository
+    private val achievementRepository: AchievementRepository,
+    private val userProgressDao: UserProgressDao
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ProgressState())
@@ -28,6 +30,7 @@ class ProgressViewModel @Inject constructor(
     init {
         Log.d("ProgressViewModel", "ProgressViewModel initialized")
         loadProgress()
+        observeSkills()
     }
 
     fun onEvent(event: ProgressEvent) {
@@ -50,25 +53,19 @@ class ProgressViewModel @Inject constructor(
                 val progress = userRepository.getUserProgress().first()
                 Log.d("ProgressViewModel", "Got user progress: $progress")
 
-                if (progress == null) {
-                    // If no progress, try to get initial diagnostic data
-                    loadInitialDiagnosticData()
-                    return@launch
-                }
-
-                val overallLevel = progress.calculateOverallLevel()
-
-                _state.update {
-                    it.copy(
-                        overallLevel = overallLevel,
-                        currentStreak = progress.currentStreak,
-                        longestStreak = progress.longestStreak,
-                        totalExercises = progress.totalExercises,
-                        totalMinutes = progress.totalMinutes,
-                        totalRecordings = progress.totalRecordings,
-                        skillLevels = progress.skillLevels,
-                        isLoading = false
-                    )
+                if (progress != null) {
+                    _state.update {
+                        it.copy(
+                            currentStreak = progress.currentStreak,
+                            longestStreak = progress.longestStreak,
+                            totalExercises = progress.totalExercises,
+                            totalMinutes = progress.totalMinutes,
+                            totalRecordings = progress.totalRecordings,
+                            isLoading = false
+                        )
+                    }
+                } else {
+                    _state.update { it.copy(isLoading = false) }
                 }
 
                 // Load weekly progress
@@ -89,24 +86,26 @@ class ProgressViewModel @Inject constructor(
         }
     }
 
-    private suspend fun loadInitialDiagnosticData() {
-        // Get initial diagnostic and use it to populate skills
-        userRepository.getInitialDiagnostic().collect { diagnostic ->
-            if (diagnostic != null) {
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        skillLevels = diagnostic.toSkillLevelsMap(),
-                        overallLevel = diagnostic.calculateOverallLevel()
+    private fun observeSkills() {
+        viewModelScope.launch {
+            userProgressDao.getProgressFlow().collect { progress ->
+                if (progress != null) {
+                    val skillLevels = mapOf(
+                        SkillType.DICTION to progress.dictionLevel.toInt(),
+                        SkillType.TEMPO to progress.tempoLevel.toInt(),
+                        SkillType.INTONATION to progress.intonationLevel.toInt(),
+                        SkillType.VOLUME to progress.volumeLevel.toInt(),
+                        SkillType.STRUCTURE to progress.structureLevel.toInt(),
+                        SkillType.CONFIDENCE to progress.confidenceLevel.toInt(),
+                        SkillType.FILLER_WORDS to progress.fillerWordsLevel.toInt()
                     )
-                }
-            } else {
-                // Fallback to zeros if no diagnostic exists
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        skillLevels = SkillType.entries.associateWith { 0 }
-                    )
+                    val overallLevel = skillLevels.values.average().toInt()
+                    _state.update {
+                        it.copy(
+                            skillLevels = skillLevels,
+                            overallLevel = overallLevel
+                        )
+                    }
                 }
             }
         }

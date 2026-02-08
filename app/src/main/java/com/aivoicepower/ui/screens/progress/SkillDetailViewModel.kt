@@ -3,8 +3,12 @@ package com.aivoicepower.ui.screens.progress
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aivoicepower.data.local.database.dao.DiagnosticResultDao
+import com.aivoicepower.data.local.database.dao.RecordingDao
+import com.aivoicepower.data.local.database.dao.SkillSnapshotDao
+import com.aivoicepower.data.local.database.dao.UserProgressDao
 import com.aivoicepower.domain.model.user.SkillType
-import com.aivoicepower.domain.repository.UserRepository
+import com.aivoicepower.utils.SkillLevelUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +21,10 @@ import javax.inject.Inject
 @HiltViewModel
 class SkillDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val userRepository: UserRepository
+    private val userProgressDao: UserProgressDao,
+    private val diagnosticResultDao: DiagnosticResultDao,
+    private val skillSnapshotDao: SkillSnapshotDao,
+    private val recordingDao: RecordingDao
 ) : ViewModel() {
 
     private val skillTypeString: String = savedStateHandle["skillType"] ?: "DICTION"
@@ -28,6 +35,23 @@ class SkillDetailViewModel @Inject constructor(
 
     init {
         loadSkillDetails()
+        observeCurrentLevel()
+    }
+
+    private fun observeCurrentLevel() {
+        viewModelScope.launch {
+            userProgressDao.getProgressFlow().collect { progress ->
+                if (progress != null) {
+                    val level = getSkillFromProgress(progress)
+                    _state.update {
+                        it.copy(
+                            currentLevel = level,
+                            statusLabel = SkillLevelUtils.getSkillLabel(level)
+                        )
+                    }
+                }
+            }
+        }
     }
 
     private fun loadSkillDetails() {
@@ -35,37 +59,52 @@ class SkillDetailViewModel @Inject constructor(
             _state.update { it.copy(isLoading = true) }
 
             try {
-                // Get current skill level
-                val progress = userRepository.getUserProgress().first()
-                val currentLevel = progress?.skillLevels?.get(skillType) ?: 0
+                // Current level from DB
+                val progress = userProgressDao.getProgress()
+                val currentLevel = if (progress != null) getSkillFromProgress(progress) else 0
 
-                // Get initial level from diagnostic
-                val diagnostic = userRepository.getInitialDiagnostic().first()
-                val initialLevel = when (skillType) {
-                    SkillType.DICTION -> diagnostic?.diction ?: 0
-                    SkillType.TEMPO -> diagnostic?.tempo ?: 0
-                    SkillType.INTONATION -> diagnostic?.intonation ?: 0
-                    SkillType.VOLUME -> diagnostic?.volume ?: 0
-                    SkillType.STRUCTURE -> diagnostic?.structure ?: 0
-                    SkillType.CONFIDENCE -> diagnostic?.confidence ?: 0
-                    SkillType.FILLER_WORDS -> diagnostic?.fillerWords ?: 0
-                    else -> 0
+                // Initial level from first diagnostic
+                val diagnostic = diagnosticResultDao.getInitialDiagnostic().first()
+                val initialLevel = if (diagnostic != null) {
+                    when (skillType) {
+                        SkillType.DICTION -> diagnostic.diction
+                        SkillType.TEMPO -> diagnostic.tempo
+                        SkillType.INTONATION -> diagnostic.intonation
+                        SkillType.VOLUME -> diagnostic.volume
+                        SkillType.STRUCTURE -> diagnostic.structure
+                        SkillType.CONFIDENCE -> diagnostic.confidence
+                        SkillType.FILLER_WORDS -> diagnostic.fillerWords
+                        else -> 0
+                    }
+                } else 0
+
+                // Real history from snapshots
+                val snapshots = skillSnapshotDao.getRecent(30).first()
+                val historyPoints = snapshots.map { snapshot ->
+                    SkillHistoryPoint(
+                        date = snapshot.date,
+                        level = getSkillFromSnapshot(snapshot)
+                    )
                 }
 
-                // Generate mock data
-                val historyPoints = generateMockHistory(initialLevel, currentLevel)
-                val exercises = generateMockExercises(skillType)
-                val recommendations = generateRecommendations(skillType)
+                // Real practice minutes from recordings
+                val allRecordings = recordingDao.getAllRecordings().first()
+                val totalPracticeMinutes = (allRecordings.sumOf { it.durationMs } / 60000).toInt()
+
+                // Curated exercises and recommendations per skill
+                val exercises = getExercisesForSkill(skillType)
+                val recommendations = getRecommendationsForSkill(skillType)
 
                 _state.update {
                     it.copy(
                         isLoading = false,
                         currentLevel = currentLevel,
                         initialLevel = initialLevel,
+                        statusLabel = SkillLevelUtils.getSkillLabel(currentLevel),
                         historyPoints = historyPoints,
                         impactfulExercises = exercises,
                         recommendations = recommendations,
-                        totalPracticeMinutes = (Math.random() * 60 + 30).toInt()
+                        totalPracticeMinutes = totalPracticeMinutes
                     )
                 }
             } catch (e: Exception) {
@@ -79,73 +118,83 @@ class SkillDetailViewModel @Inject constructor(
         }
     }
 
-    private fun generateMockHistory(initialLevel: Int, currentLevel: Int): List<SkillHistoryPoint> {
-        val points = mutableListOf<SkillHistoryPoint>()
-        val steps = 8
-        val increment = (currentLevel - initialLevel).toFloat() / steps
-
-        for (i in 0 until steps) {
-            val daysAgo = (steps - i - 1) * 4
-            val date = java.time.LocalDate.now().minusDays(daysAgo.toLong())
-            val level = (initialLevel + increment * i).toInt()
-            points.add(SkillHistoryPoint(date.toString(), level))
-        }
-        points.add(SkillHistoryPoint(java.time.LocalDate.now().toString(), currentLevel))
-
-        return points
+    private fun getSkillFromProgress(
+        progress: com.aivoicepower.data.local.database.entity.UserProgressEntity
+    ): Int = when (skillType) {
+        SkillType.DICTION -> progress.dictionLevel.toInt()
+        SkillType.TEMPO -> progress.tempoLevel.toInt()
+        SkillType.INTONATION -> progress.intonationLevel.toInt()
+        SkillType.VOLUME -> progress.volumeLevel.toInt()
+        SkillType.STRUCTURE -> progress.structureLevel.toInt()
+        SkillType.CONFIDENCE -> progress.confidenceLevel.toInt()
+        SkillType.FILLER_WORDS -> progress.fillerWordsLevel.toInt()
+        else -> 0
     }
 
-    private fun generateMockExercises(skillType: SkillType): List<ExerciseImpact> {
+    private fun getSkillFromSnapshot(
+        snapshot: com.aivoicepower.data.local.database.entity.SkillSnapshotEntity
+    ): Int = when (skillType) {
+        SkillType.DICTION -> snapshot.diction.toInt()
+        SkillType.TEMPO -> snapshot.tempo.toInt()
+        SkillType.INTONATION -> snapshot.intonation.toInt()
+        SkillType.VOLUME -> snapshot.volume.toInt()
+        SkillType.STRUCTURE -> snapshot.structure.toInt()
+        SkillType.CONFIDENCE -> snapshot.confidence.toInt()
+        SkillType.FILLER_WORDS -> snapshot.fillerWords.toInt()
+        else -> 0
+    }
+
+    private fun getExercisesForSkill(skillType: SkillType): List<ExerciseImpact> {
         return when (skillType) {
             SkillType.DICTION -> listOf(
-                ExerciseImpact("Скоромовки", 12, 85),
-                ExerciseImpact("Артикуляційна гімнастика", 8, 72),
-                ExerciseImpact("Читання вголос", 15, 68)
+                ExerciseImpact("Скоромовки", "tongue_twister", 85),
+                ExerciseImpact("Артикуляційна розминка", "articulation", 72),
+                ExerciseImpact("Читання вголос", "reading", 68)
             )
             SkillType.TEMPO -> listOf(
-                ExerciseImpact("Вправи на паузи", 10, 78),
-                ExerciseImpact("Читання з метрономом", 7, 82),
-                ExerciseImpact("Дебати", 5, 65)
+                ExerciseImpact("Повільне читання", "slow_motion", 82),
+                ExerciseImpact("Дебати", "debate", 78),
+                ExerciseImpact("Швидкий раунд", "speed_round", 75)
             )
             SkillType.INTONATION -> listOf(
-                ExerciseImpact("Читання з емоціями", 11, 88),
-                ExerciseImpact("Імітація інтонацій", 9, 74),
-                ExerciseImpact("Вправи на наголоси", 6, 69)
+                ExerciseImpact("Читання з емоціями", "emotion_reading", 88),
+                ExerciseImpact("Зміна емоцій", "emotion_switch", 80),
+                ExerciseImpact("Голосова розминка", "voice", 69)
             )
             SkillType.VOLUME -> listOf(
-                ExerciseImpact("Вправи на гучність", 8, 80),
-                ExerciseImpact("Практика проекції", 10, 76),
-                ExerciseImpact("Дихальні вправи", 14, 71)
+                ExerciseImpact("Дихальні вправи", "breathing", 80),
+                ExerciseImpact("Презентація", "presentation", 76),
+                ExerciseImpact("Голосова розминка", "voice", 71)
             )
             SkillType.STRUCTURE -> listOf(
-                ExerciseImpact("Структурована імпровізація", 7, 85),
-                ExerciseImpact("Підготовлені промови", 9, 79),
-                ExerciseImpact("Аналіз структури", 5, 68)
+                ExerciseImpact("Вільне мовлення", "free_speech", 85),
+                ExerciseImpact("Переказ", "retelling", 79),
+                ExerciseImpact("Сторітелінг", "storytelling", 75)
             )
             SkillType.CONFIDENCE -> listOf(
-                ExerciseImpact("Публічні виступи", 6, 90),
-                ExerciseImpact("Відеозаписи себе", 12, 75),
-                ExerciseImpact("Позитивні афірмації", 20, 62)
+                ExerciseImpact("Співбесіда", "job_interview", 90),
+                ExerciseImpact("Презентація", "presentation", 82),
+                ExerciseImpact("Дебати", "debate", 75)
             )
             SkillType.FILLER_WORDS -> listOf(
-                ExerciseImpact("Відстеження паразитів", 15, 82),
-                ExerciseImpact("Вправи на паузи", 10, 77),
-                ExerciseImpact("Усвідомлене мовлення", 18, 70)
+                ExerciseImpact("Без зупинок", "no_hesitation", 85),
+                ExerciseImpact("Вільне мовлення", "free_speech", 77),
+                ExerciseImpact("Переговори", "negotiation", 70)
             )
             else -> emptyList()
         }
     }
 
-    private fun generateRecommendations(skillType: SkillType): List<SkillRecommendation> {
+    private fun getRecommendationsForSkill(skillType: SkillType): List<SkillRecommendation> {
         return when (skillType) {
             SkillType.DICTION -> listOf(
                 SkillRecommendation("Промовляйте складні слова повільно", "Скоромовки"),
                 SkillRecommendation("Практикуйте скоромовки щодня", "Артикуляція"),
-                SkillRecommendation("Записуйте себе і слухайте", "Самоаналіз")
+                SkillRecommendation("Записуйте себе і слухайте")
             )
             SkillType.TEMPO -> listOf(
                 SkillRecommendation("Тримайте середній темп 120-150 слів/хв"),
-                SkillRecommendation("Робіть паузи для наголосу", "Вправи на паузи"),
+                SkillRecommendation("Робіть паузи для наголосу", "Повільне читання"),
                 SkillRecommendation("Варіюйте швидкість для драматизму")
             )
             SkillType.INTONATION -> listOf(
@@ -155,22 +204,22 @@ class SkillDetailViewModel @Inject constructor(
             )
             SkillType.VOLUME -> listOf(
                 SkillRecommendation("Дихайте діафрагмою", "Дихання"),
-                SkillRecommendation("Проектуйте голос вперед", "Проекція голосу"),
+                SkillRecommendation("Проектуйте голос вперед"),
                 SkillRecommendation("Контролюйте силу без крику")
             )
             SkillType.STRUCTURE -> listOf(
                 SkillRecommendation("Плануйте виступ заздалегідь"),
-                SkillRecommendation("Використовуйте чіткі переходи", "Структура мовлення"),
+                SkillRecommendation("Використовуйте чіткі переходи", "Вільне мовлення"),
                 SkillRecommendation("Дотримуйтесь логічної послідовності")
             )
             SkillType.CONFIDENCE -> listOf(
                 SkillRecommendation("Підтримуйте зоровий контакт"),
-                SkillRecommendation("Стійте впевнено", "Мова тіла"),
-                SkillRecommendation("Говоріть з переконанням", "Впевненість")
+                SkillRecommendation("Стійте впевнено"),
+                SkillRecommendation("Говоріть з переконанням", "Презентація")
             )
             SkillType.FILLER_WORDS -> listOf(
-                SkillRecommendation("Робіть паузи замість \"ммм\"", "Паузи"),
-                SkillRecommendation("Усвідомлюйте свої паразити", "Самоконтроль"),
+                SkillRecommendation("Робіть паузи замість \"ммм\"", "Без зупинок"),
+                SkillRecommendation("Усвідомлюйте свої паразити"),
                 SkillRecommendation("Практикуйте чисте мовлення")
             )
             else -> emptyList()

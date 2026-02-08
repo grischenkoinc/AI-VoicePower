@@ -7,6 +7,7 @@ import com.aivoicepower.domain.model.VoiceAnalysis
 import com.aivoicepower.domain.model.VoiceAnalysisResult
 import com.aivoicepower.domain.model.VoiceMetrics
 import com.aivoicepower.domain.repository.VoiceAnalysisRepository
+import com.aivoicepower.domain.service.SkillUpdateService
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
 import com.google.gson.Gson
@@ -32,7 +33,8 @@ private data class GeminiAnalysisResponse(
 
 class VoiceAnalysisRepositoryImpl @Inject constructor(
     private val geminiModel: GenerativeModel,
-    private val geminiApiClient: GeminiApiClient
+    private val geminiApiClient: GeminiApiClient,
+    private val skillUpdateService: SkillUpdateService
 ) : VoiceAnalysisRepository {
 
     private val gson = Gson()
@@ -177,6 +179,16 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
         Log.d("DiagFlow", "<<< geminiApiClient returned: isSuccess=${result.isSuccess}")
         if (result.isFailure) {
             Log.e("DiagFlow", "geminiApiClient FAILED: ${result.exceptionOrNull()?.message}")
+        }
+
+        // Update skill levels from AI analysis
+        result.getOrNull()?.let { analysisResult ->
+            try {
+                skillUpdateService.updateFromAnalysis(analysisResult, exerciseType)
+                Log.d("DiagFlow", "Skill levels updated for exerciseType=$exerciseType")
+            } catch (e: Exception) {
+                Log.e("DiagFlow", "Failed to update skill levels: ${e.message}")
+            }
         }
 
         result

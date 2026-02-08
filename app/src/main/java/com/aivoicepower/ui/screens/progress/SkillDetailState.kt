@@ -7,6 +7,7 @@ data class SkillDetailState(
     val skillType: SkillType = SkillType.DICTION,
     val currentLevel: Int = 0,
     val initialLevel: Int = 0,
+    val statusLabel: String = "",
     val historyPoints: List<SkillHistoryPoint> = emptyList(),
     val impactfulExercises: List<ExerciseImpact> = emptyList(),
     val recommendations: List<SkillRecommendation> = emptyList(),
@@ -21,7 +22,7 @@ data class SkillHistoryPoint(
 
 data class ExerciseImpact(
     val exerciseName: String,
-    val completionCount: Int,
+    val exerciseType: String,
     val impactScore: Int // 0-100
 )
 

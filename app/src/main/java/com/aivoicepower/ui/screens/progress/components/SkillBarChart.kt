@@ -25,6 +25,7 @@ import com.aivoicepower.domain.model.user.SkillType
 import com.aivoicepower.domain.model.user.toDisplayString
 import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
+import com.aivoicepower.utils.SkillLevelUtils
 
 @Composable
 fun SkillBarChart(
@@ -72,13 +73,24 @@ private fun SkillBar(
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
-            Text(
-                text = "$level",
-                style = AppTypography.bodyMedium,
-                color = barColors.first,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.ExtraBold
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = "$level",
+                    style = AppTypography.bodyMedium,
+                    color = barColors.first,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+                Text(
+                    text = SkillLevelUtils.getSkillLabel(level),
+                    style = AppTypography.bodyMedium,
+                    color = SkillLevelUtils.getSkillLabelColor(level),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))

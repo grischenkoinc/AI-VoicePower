@@ -97,6 +97,9 @@ private fun ProgressContent(
             totalRecordings = state.totalRecordings
         )
 
+        // Journey Section
+        JourneySection(overallLevel = state.overallLevel)
+
         // Skill Levels
         Text(
             text = "Навички",

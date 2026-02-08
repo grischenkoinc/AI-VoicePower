@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.local.database.dao.WarmupCompletionDao
 import com.aivoicepower.data.local.database.entity.WarmupCompletionEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
+import com.aivoicepower.domain.service.SkillUpdateService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -20,7 +21,8 @@ import javax.inject.Inject
 @HiltViewModel
 class BreathingViewModel @Inject constructor(
     private val warmupCompletionDao: WarmupCompletionDao,
-    private val userPreferencesDataStore: UserPreferencesDataStore
+    private val userPreferencesDataStore: UserPreferencesDataStore,
+    private val skillUpdateService: SkillUpdateService
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BreathingState())
@@ -203,6 +205,9 @@ class BreathingViewModel @Inject constructor(
         }
 
         saveProgress()
+        viewModelScope.launch {
+            skillUpdateService.updateFromWarmup("breathing")
+        }
     }
 
     private fun saveProgress() {

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.local.database.dao.WarmupCompletionDao
 import com.aivoicepower.data.local.database.entity.WarmupCompletionEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
+import com.aivoicepower.domain.service.SkillUpdateService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -20,7 +21,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ArticulationViewModel @Inject constructor(
     private val warmupCompletionDao: WarmupCompletionDao,
-    private val userPreferencesDataStore: UserPreferencesDataStore
+    private val userPreferencesDataStore: UserPreferencesDataStore,
+    private val skillUpdateService: SkillUpdateService
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ArticulationState())
@@ -143,6 +145,7 @@ class ArticulationViewModel @Inject constructor(
             }
 
             saveProgress()
+            skillUpdateService.updateFromWarmup("articulation")
 
             // Через 4 секунди закриваємо діалог
             delay(4000)

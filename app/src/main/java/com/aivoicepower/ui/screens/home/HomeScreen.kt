@@ -816,6 +816,16 @@ private fun SkillCard(
             fontSize = 13.sp,
             fontWeight = FontWeight.Bold
         )
+
+        if (skill.statusLabel.isNotEmpty()) {
+            Text(
+                text = skill.statusLabel,
+                style = AppTypography.labelSmall,
+                color = com.aivoicepower.utils.SkillLevelUtils.getSkillLabelColor(skill.percentage),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
+        }
     }
 }
 

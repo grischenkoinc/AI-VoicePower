@@ -1,6 +1,8 @@
 package com.aivoicepower.ui.screens.main
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -12,6 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -19,6 +23,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.aivoicepower.ui.navigation.MainNavGraph
 import com.aivoicepower.ui.navigation.Screen
+import com.aivoicepower.ui.screens.progress.CelebrationOverlay
+import com.aivoicepower.ui.screens.progress.CelebrationViewModel
 
 /**
  * Main screen with Bottom Navigation and FAB for AI Coach
@@ -32,6 +38,9 @@ fun MainScreen(
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+
+    val celebrationViewModel: CelebrationViewModel = hiltViewModel()
+    val currentCelebration by celebrationViewModel.currentCelebration.collectAsStateWithLifecycle()
 
     // Define bottom navigation items
     val bottomNavItems = listOf(
@@ -115,13 +124,23 @@ fun MainScreen(
             }
         }
     ) {
-        MainNavGraph(
-            navController = navController,
-            rootNavController = rootNavController,
-            onNavigateToAiCoach = onNavigateToAiCoach,
-            onNavigateToPremium = onNavigateToPremium,
-            modifier = Modifier
-        )
+        Box(modifier = Modifier.fillMaxSize()) {
+            MainNavGraph(
+                navController = navController,
+                rootNavController = rootNavController,
+                onNavigateToAiCoach = onNavigateToAiCoach,
+                onNavigateToPremium = onNavigateToPremium,
+                modifier = Modifier
+            )
+
+            // Celebration overlay
+            currentCelebration?.let { achievement ->
+                CelebrationOverlay(
+                    achievement = achievement,
+                    onDismiss = { celebrationViewModel.dismiss() }
+                )
+            }
+        }
     }
 }
 

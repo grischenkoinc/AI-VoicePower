@@ -1,20 +1,21 @@
 package com.aivoicepower.ui.screens.progress.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aivoicepower.domain.model.user.Achievement
@@ -27,80 +28,122 @@ fun AchievementBadge(
     isLarge: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+    val isUnlocked = achievement.isUnlocked
+
     Column(
         modifier = modifier
             .fillMaxWidth()
             .shadow(
-                elevation = if (isLarge) 20.dp else 12.dp,
-                shape = RoundedCornerShape(16.dp),
-                spotColor = Color.Black.copy(alpha = if (achievement.isUnlocked) 0.18f else 0.08f),
-                ambientColor = Color.Black.copy(alpha = 0.08f)
+                elevation = if (isUnlocked) 16.dp else 6.dp,
+                shape = RoundedCornerShape(20.dp),
+                spotColor = if (isUnlocked) Color(0xFF6366F1).copy(alpha = 0.25f)
+                else Color.Black.copy(alpha = 0.06f)
             )
             .background(
-                color = if (achievement.isUnlocked) Color.White else Color(0xFFF3F4F6),
-                shape = RoundedCornerShape(16.dp)
+                color = if (isUnlocked) Color.White else Color(0xFFF9FAFB),
+                shape = RoundedCornerShape(20.dp)
             )
-            .padding(if (isLarge) 16.dp else 12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .then(if (!isUnlocked) Modifier.alpha(0.7f) else Modifier)
+            .padding(if (isLarge) 20.dp else 14.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Icon placeholder - using type title as fallback
-        Text(
-            text = getAchievementIcon(achievement),
-            fontSize = if (isLarge) 48.sp else 36.sp
-        )
+        // Icon with glow
+        Box(
+            modifier = Modifier
+                .size(if (isLarge) 64.dp else 48.dp)
+                .then(
+                    if (isUnlocked) Modifier.shadow(
+                        elevation = 8.dp,
+                        shape = CircleShape,
+                        spotColor = Color(0xFFFFD700).copy(alpha = 0.3f)
+                    ) else Modifier
+                )
+                .background(
+                    if (isUnlocked) Brush.radialGradient(
+                        colors = listOf(Color(0xFFFEF3C7), Color(0xFFFDE68A))
+                    ) else Brush.radialGradient(
+                        colors = listOf(Color(0xFFF3F4F6), Color(0xFFE5E7EB))
+                    ),
+                    CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = achievement.icon,
+                fontSize = if (isLarge) 32.sp else 24.sp
+            )
+        }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
+        // Title
         Text(
             text = achievement.title,
-            style = if (isLarge) AppTypography.titleMedium else AppTypography.titleSmall,
-            color = if (achievement.isUnlocked) TextColors.onLightPrimary else TextColors.onLightMuted,
-            fontSize = if (isLarge) 16.sp else 14.sp,
-            fontWeight = if (isLarge) FontWeight.Bold else FontWeight.SemiBold,
-            maxLines = 2
+            style = if (isLarge) AppTypography.titleMedium else AppTypography.bodyMedium,
+            color = if (isUnlocked) TextColors.onLightPrimary else TextColors.onLightMuted,
+            fontSize = if (isLarge) 15.sp else 13.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
         )
 
-        if (!achievement.isUnlocked && achievement.progress != null && achievement.target != null) {
-            Spacer(modifier = Modifier.height(8.dp))
+        // Description for large
+        if (isLarge) {
+            Text(
+                text = achievement.description,
+                style = AppTypography.bodySmall,
+                color = TextColors.onLightSecondary,
+                fontSize = 12.sp,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                lineHeight = 16.sp
+            )
+        }
 
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        // Progress bar for locked achievements with progress
+        if (!isUnlocked && achievement.progress != null && achievement.target != null && achievement.target > 0) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
                 Text(
                     text = "${achievement.progress}/${achievement.target}",
-                    style = AppTypography.bodySmall,
+                    style = AppTypography.labelSmall,
                     color = TextColors.onLightMuted,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
 
                 LinearProgressIndicator(
-                    progress = { achievement.progress.toFloat() / achievement.target },
+                    progress = { (achievement.progress.toFloat() / achievement.target).coerceIn(0f, 1f) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 4.dp)
-                        .height(4.dp),
+                        .height(5.dp),
                     color = Color(0xFF6366F1),
                     trackColor = Color(0xFFE5E7EB)
                 )
             }
         }
-    }
-}
 
-private fun getAchievementIcon(achievement: Achievement): String {
-    return when {
-        achievement.type.name.contains("STREAK") -> "🔥"
-        achievement.type.name.contains("COURSE") -> "📚"
-        achievement.type.name.contains("DICTION") -> "🗣️"
-        achievement.type.name.contains("TEMPO") -> "⏱️"
-        achievement.type.name.contains("EMOTION") -> "⭐"
-        achievement.type.name.contains("FILLER") -> "✅"
-        achievement.type.name.contains("IMPROV") -> "🎤"
-        achievement.type.name.contains("DEBAT") -> "💬"
-        achievement.type.name.contains("SALES") -> "💰"
-        achievement.type.name.contains("STORY") -> "📚"
-        achievement.type.name.contains("EARLY") -> "☀️"
-        achievement.type.name.contains("NIGHT") -> "🌙"
-        achievement.type.name.contains("BREAK") -> "🚀"
-        else -> "🏆"
+        // Unlocked badge
+        if (isUnlocked && isLarge) {
+            Box(
+                modifier = Modifier
+                    .background(
+                        Color(0xFF10B981).copy(alpha = 0.1f),
+                        RoundedCornerShape(8.dp)
+                    )
+                    .padding(horizontal = 10.dp, vertical = 3.dp)
+            ) {
+                Text(
+                    text = "Відкрито ✓",
+                    style = AppTypography.labelSmall,
+                    color = Color(0xFF10B981),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
     }
 }
