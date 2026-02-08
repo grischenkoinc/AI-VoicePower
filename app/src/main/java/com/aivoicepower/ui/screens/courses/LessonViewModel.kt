@@ -303,17 +303,19 @@ class LessonViewModel @Inject constructor(
                         )
                     }
 
-                    // Save recording to database
-                    val recordingEntity = RecordingEntity(
-                        id = UUID.randomUUID().toString(),
-                        filePath = currentExerciseState.recordingPath,
-                        durationMs = currentExerciseState.recordingDurationMs,
-                        type = mapExerciseTypeForSkills(exerciseType),
-                        contextId = "${courseId}_${lessonId}",
-                        exerciseId = currentExerciseState.exercise.id,
-                        isAnalyzed = result != null
-                    )
-                    recordingDao.insert(recordingEntity)
+                    // Save recording to database — only meaningful recordings (score > 0)
+                    if (result != null && result.overallScore > 0) {
+                        val recordingEntity = RecordingEntity(
+                            id = UUID.randomUUID().toString(),
+                            filePath = currentExerciseState.recordingPath,
+                            durationMs = currentExerciseState.recordingDurationMs,
+                            type = mapExerciseTypeForSkills(exerciseType),
+                            contextId = "${courseId}_${lessonId}",
+                            exerciseId = currentExerciseState.exercise.id,
+                            isAnalyzed = true
+                        )
+                        recordingDao.insert(recordingEntity)
+                    }
                 } catch (e: Exception) {
                     Log.e("LessonVM", "Analysis error: ${e.message}", e)
                     // On error, skip analysis and proceed

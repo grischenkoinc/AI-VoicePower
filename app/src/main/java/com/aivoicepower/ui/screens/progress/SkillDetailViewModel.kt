@@ -112,15 +112,17 @@ class SkillDetailViewModel @Inject constructor(
                     )
                 }
 
-                // Real practice minutes from recordings
+                // Real practice minutes from valid recordings only (analyzed + min 2s)
                 val allRecordings = recordingDao.getAllRecordings().first()
-                val totalPracticeMinutes = (allRecordings.sumOf { it.durationMs } / 60000).toInt()
+                val validRecordings = allRecordings.filter { it.durationMs >= 2000 && it.isAnalyzed }
+                val totalPracticeMinutes = (validRecordings.sumOf { it.durationMs } / 60000).toInt()
 
                 // Real exercises and recommendations based on actual data
-                val exercises = calculateExercisesForSkill(allRecordings.map { it.type }.distinct().toSet())
+                val practicedTypes = validRecordings.map { it.type }.distinct().toSet()
+                val exercises = calculateExercisesForSkill(practicedTypes)
                 val recommendations = calculateRecommendationsForSkill(
                     currentLevel,
-                    allRecordings.map { it.type }.distinct().toSet()
+                    practicedTypes
                 )
 
                 _state.update {

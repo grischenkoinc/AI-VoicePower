@@ -231,7 +231,7 @@ fun CompletedPhaseContent(
                         )
 
                         Text(
-                            text = "Ти виконав ${lesson.exercises.size} вправи. Прогрес збережено.",
+                            text = "Прогрес збережено.",
                             style = AppTypography.bodyMedium,
                             color = TextColors.onLightSecondary,
                             fontSize = 16.sp,

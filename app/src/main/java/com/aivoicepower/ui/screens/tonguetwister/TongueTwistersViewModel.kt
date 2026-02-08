@@ -204,23 +204,27 @@ class TongueTwistersViewModel @Inject constructor(
                 context = "Скоромовка: ${twister?.text ?: ""}, цільові звуки: ${twister?.targetSounds?.joinToString() ?: ""}"
             )
 
-            val recordingEntity = RecordingEntity(
-                id = UUID.randomUUID().toString(),
-                filePath = path,
-                durationMs = _state.value.recordingDurationMs,
-                type = "tongue_twister",
-                contextId = "tongue_twister_${twister?.id ?: ""}",
-                transcription = null,
-                isAnalyzed = result.isSuccess,
-                exerciseId = twister?.id
-            )
+            val analysisResult = result.getOrNull()
 
-            recordingDao.insert(recordingEntity)
+            // Save recording to database — only meaningful recordings (score > 0)
+            if (analysisResult != null && analysisResult.overallScore > 0) {
+                val recordingEntity = RecordingEntity(
+                    id = UUID.randomUUID().toString(),
+                    filePath = path,
+                    durationMs = _state.value.recordingDurationMs,
+                    type = "tongue_twister",
+                    contextId = "tongue_twister_${twister?.id ?: ""}",
+                    transcription = null,
+                    isAnalyzed = true,
+                    exerciseId = twister?.id
+                )
+                recordingDao.insert(recordingEntity)
+            }
 
             _state.update {
                 it.copy(
                     isAnalyzing = false,
-                    analysisResult = result.getOrNull()
+                    analysisResult = analysisResult
                 )
             }
         } catch (e: Exception) {

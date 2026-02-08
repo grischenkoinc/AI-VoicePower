@@ -124,14 +124,23 @@ class AchievementChecker @Inject constructor(
         return progress.currentStreak >= required || progress.longestStreak >= required
     }
 
+    /**
+     * Returns only valid recordings: analyzed + minimum 2 seconds duration.
+     * Excludes empty/silent recordings and failed analyses.
+     */
+    private suspend fun getValidRecordings(): List<com.aivoicepower.data.local.database.entity.RecordingEntity> {
+        return recordingDao.getAllRecordings().first()
+            .filter { it.durationMs >= 2000 && it.isAnalyzed }
+    }
+
     private suspend fun checkPracticeMinutes(required: Int): Boolean {
-        val recordings = recordingDao.getAllRecordings().first()
+        val recordings = getValidRecordings()
         val totalMinutes = (recordings.sumOf { it.durationMs } / 60000).toInt()
         return totalMinutes >= required
     }
 
     private suspend fun checkRecordingCount(required: Int): Boolean {
-        val recordings = recordingDao.getAllRecordings().first()
+        val recordings = getValidRecordings()
         return recordings.size >= required
     }
 
@@ -185,7 +194,7 @@ class AchievementChecker @Inject constructor(
     }
 
     private suspend fun checkEarlyBird(): Boolean {
-        val recordings = recordingDao.getAllRecordings().first()
+        val recordings = getValidRecordings()
         return recordings.any { recording ->
             val cal = Calendar.getInstance().apply { timeInMillis = recording.createdAt }
             val hour = cal.get(Calendar.HOUR_OF_DAY)
@@ -196,7 +205,7 @@ class AchievementChecker @Inject constructor(
     }
 
     private suspend fun checkNightOwl(): Boolean {
-        val recordings = recordingDao.getAllRecordings().first()
+        val recordings = getValidRecordings()
         return recordings.any { recording ->
             val cal = Calendar.getInstance().apply { timeInMillis = recording.createdAt }
             val hour = cal.get(Calendar.HOUR_OF_DAY)
@@ -207,19 +216,19 @@ class AchievementChecker @Inject constructor(
     }
 
     private suspend fun checkMarathon(): Boolean {
-        val recordings = recordingDao.getAllRecordings().first()
+        val recordings = getValidRecordings()
         return recordings.any { it.durationMs >= 5 * 60 * 1000 } // 5 minutes
     }
 
     private suspend fun checkPolyglot(): Boolean {
-        val recordings = recordingDao.getAllRecordings().first()
+        val recordings = getValidRecordings()
         val uniqueTypes = recordings.map { it.type }.distinct().size
         val uniqueContexts = recordings.map { it.contextId }.distinct().size
         return (uniqueTypes + uniqueContexts) >= 8 || uniqueContexts >= 8
     }
 
     private suspend fun checkProductiveDay(): Boolean {
-        val recordings = recordingDao.getAllRecordings().first()
+        val recordings = getValidRecordings()
         val countsByDate = recordings.groupBy { recording ->
             val cal = Calendar.getInstance().apply { timeInMillis = recording.createdAt }
             "${cal.get(Calendar.YEAR)}-${cal.get(Calendar.MONTH)}-${cal.get(Calendar.DAY_OF_MONTH)}"
@@ -241,11 +250,11 @@ class AchievementChecker @Inject constructor(
                     maxOf(progress?.currentStreak ?: 0, progress?.longestStreak ?: 0)
                 }
                 achievementId.startsWith("time_") -> {
-                    val recordings = recordingDao.getAllRecordings().first()
+                    val recordings = getValidRecordings()
                     (recordings.sumOf { it.durationMs } / 60000).toInt()
                 }
                 achievementId.startsWith("rec_") -> {
-                    val recordings = recordingDao.getAllRecordings().first()
+                    val recordings = getValidRecordings()
                     recordings.size
                 }
                 else -> null
