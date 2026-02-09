@@ -43,4 +43,7 @@ interface RecordingDao {
 
     @Query("SELECT * FROM recordings WHERE createdAt >= :startTimestamp ORDER BY createdAt ASC")
     suspend fun getRecordingsSince(startTimestamp: Long): List<RecordingEntity>
+
+    @Query("SELECT * FROM recordings ORDER BY createdAt DESC")
+    suspend fun getAllRecordingsOnce(): List<RecordingEntity>
 }

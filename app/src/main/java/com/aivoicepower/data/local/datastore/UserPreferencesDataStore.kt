@@ -47,6 +47,10 @@ class UserPreferencesDataStore @Inject constructor(
         val LAST_TIP_UPDATE_TIME = longPreferencesKey("last_tip_update_time")
         val CURRENT_TIP_ID = stringPreferencesKey("current_tip_id")
         val LAST_DAILY_PLAN_DATE = stringPreferencesKey("last_daily_plan_date")
+        val FIREBASE_UID = stringPreferencesKey("firebase_uid")
+        val USER_EMAIL = stringPreferencesKey("user_email")
+        val USER_PHOTO_URL = stringPreferencesKey("user_photo_url")
+        val HAS_COMPLETED_AUTH = booleanPreferencesKey("has_completed_auth")
     }
 
     val userPreferencesFlow: Flow<UserPreferences> = context.dataStore.data
@@ -59,7 +63,7 @@ class UserPreferencesDataStore @Inject constructor(
         }
         .map { preferences ->
             UserPreferences(
-                isPremium = true, // TEMP: Premium unlocked for testing
+                isPremium = preferences[PreferencesKeys.IS_PREMIUM] ?: false,
                 currentStreak = preferences[PreferencesKeys.CURRENT_STREAK] ?: 0,
                 todayMinutes = preferences[PreferencesKeys.TODAY_MINUTES] ?: 0,
                 hasCompletedOnboarding = preferences[PreferencesKeys.HAS_COMPLETED_ONBOARDING] ?: false,
@@ -84,7 +88,7 @@ class UserPreferencesDataStore @Inject constructor(
             }
         }
         .map { preferences ->
-            true // TEMP: Premium unlocked for testing
+            preferences[PreferencesKeys.IS_PREMIUM] ?: false
         }
 
     // Direct Flow for hasCompletedOnboarding (used by v2 ViewModels)
@@ -107,6 +111,7 @@ class UserPreferencesDataStore @Inject constructor(
     }
 
     // Alias for BillingRepository compatibility
+    @Suppress("UNUSED_PARAMETER")
     suspend fun setPremiumStatus(isPremium: Boolean, expiresAt: Long?) {
         updatePremiumStatus(isPremium)
     }
@@ -194,6 +199,71 @@ class UserPreferencesDataStore @Inject constructor(
     suspend fun resetFreeImprovisations() {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.FREE_IMPROVISATIONS_TODAY] = 0
+        }
+    }
+
+    // ===== Auth-related preferences =====
+
+    val hasCompletedAuth: Flow<Boolean> = context.dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.HAS_COMPLETED_AUTH] ?: false
+        }
+
+    val userEmail: Flow<String?> = context.dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences()) else throw exception
+        }
+        .map { it[PreferencesKeys.USER_EMAIL] }
+
+    val userPhotoUrl: Flow<String?> = context.dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences()) else throw exception
+        }
+        .map { it[PreferencesKeys.USER_PHOTO_URL] }
+
+    val firebaseUid: Flow<String?> = context.dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences()) else throw exception
+        }
+        .map { it[PreferencesKeys.FIREBASE_UID] }
+
+    suspend fun setAuthCompleted(completed: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.HAS_COMPLETED_AUTH] = completed
+        }
+    }
+
+    suspend fun setFirebaseUid(uid: String) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.FIREBASE_UID] = uid
+        }
+    }
+
+    suspend fun setUserEmail(email: String) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.USER_EMAIL] = email
+        }
+    }
+
+    suspend fun setUserPhotoUrl(url: String) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.USER_PHOTO_URL] = url
+        }
+    }
+
+    suspend fun clearAuthData() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(PreferencesKeys.FIREBASE_UID)
+            preferences.remove(PreferencesKeys.USER_EMAIL)
+            preferences.remove(PreferencesKeys.USER_PHOTO_URL)
+            preferences[PreferencesKeys.HAS_COMPLETED_AUTH] = false
         }
     }
 }

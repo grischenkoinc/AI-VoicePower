@@ -2,6 +2,8 @@ package com.aivoicepower.ui.screens.home.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -40,7 +42,7 @@ fun QuickActionsGrid(
                 )
 
                 QuickActionButton(
-                    icon = Icons.Default.MenuBook,
+                    icon = Icons.AutoMirrored.Filled.MenuBook,
                     label = "Курси",
                     onClick = onCoursesClick,
                     modifier = Modifier.weight(1f)
@@ -59,7 +61,7 @@ fun QuickActionsGrid(
                 )
 
                 QuickActionButton(
-                    icon = Icons.Default.TrendingUp,
+                    icon = Icons.AutoMirrored.Filled.TrendingUp,
                     label = "Прогрес",
                     onClick = onProgressClick,
                     modifier = Modifier.weight(1f)

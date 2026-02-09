@@ -2,6 +2,7 @@ package com.aivoicepower.ui.screens.home.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -44,7 +45,7 @@ fun PlanActivityItem(
                 Icon(
                     imageVector = when (activity.type) {
                         ActivityType.WARMUP -> Icons.Default.FitnessCenter
-                        ActivityType.LESSON -> Icons.Default.MenuBook
+                        ActivityType.LESSON -> Icons.AutoMirrored.Filled.MenuBook
                         ActivityType.IMPROVISATION -> Icons.Default.Mic
                         ActivityType.AI_COACH -> Icons.Default.Assistant
                         ActivityType.DIAGNOSTIC -> Icons.Default.Assessment

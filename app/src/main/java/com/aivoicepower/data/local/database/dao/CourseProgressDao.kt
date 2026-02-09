@@ -42,4 +42,10 @@ interface CourseProgressDao {
         HAVING COUNT(*) = SUM(CASE WHEN isCompleted = 1 THEN 1 ELSE 0 END)
     """)
     fun getFullyCompletedCourseIds(): Flow<List<String>>
+
+    @Query("SELECT DISTINCT courseId FROM course_progress WHERE isCompleted = 1")
+    suspend fun getStartedCourseIdsOnce(): List<String>
+
+    @Query("SELECT * FROM course_progress WHERE courseId = :courseId ORDER BY lessonId")
+    suspend fun getCourseProgressOnce(courseId: String): List<CourseProgressEntity>
 }

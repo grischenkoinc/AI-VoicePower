@@ -56,6 +56,7 @@ fun HomeScreen(
     onNavigateToRecord: () -> Unit,
     onNavigateToAnalytics: () -> Unit,
     onNavigateToSettings: () -> Unit,
+    onOpenDrawer: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val scrollState = rememberScrollState()
@@ -98,7 +99,8 @@ fun HomeScreen(
                 HomeHeader(
                     userName = state.userName,
                     greeting = state.greeting,
-                    onSettings = onNavigateToSettings
+                    onSettings = onNavigateToSettings,
+                    onMenu = onOpenDrawer
                 )
 
                 // Streak Card
@@ -173,6 +175,7 @@ private fun HomeHeader(
     userName: String?,
     greeting: String,
     onSettings: () -> Unit,
+    onMenu: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -180,22 +183,41 @@ private fun HomeHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(
-                text = greeting,
-                style = AppTypography.labelMedium,
-                color = TextColors.onDarkSecondary,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = userName ?: "Користувач",
-                style = AppTypography.displayLarge,
-                color = TextColors.onDarkPrimary,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = (-0.8).sp
-            )
+        // Menu button + text
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(
+                        Color.White.copy(alpha = 0.15f),
+                        CircleShape
+                    )
+                    .clickable { onMenu() },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "☰", fontSize = 18.sp, color = Color.White)
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text = greeting,
+                    style = AppTypography.labelMedium,
+                    color = TextColors.onDarkSecondary,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = userName ?: "Користувач",
+                    style = AppTypography.displayLarge,
+                    color = TextColors.onDarkPrimary,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = (-0.8).sp
+                )
+            }
         }
 
         // Settings button з gradient

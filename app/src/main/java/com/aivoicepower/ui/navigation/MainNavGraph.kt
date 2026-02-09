@@ -42,6 +42,7 @@ fun MainNavGraph(
     rootNavController: NavHostController,
     onNavigateToAiCoach: () -> Unit,
     onNavigateToPremium: () -> Unit,
+    onOpenDrawer: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -85,7 +86,8 @@ fun MainNavGraph(
                 },
                 onNavigateToSettings = {
                     navController.navigate(Screen.Settings.route)
-                }
+                },
+                onOpenDrawer = onOpenDrawer
             )
         }
 
@@ -107,8 +109,8 @@ fun MainNavGraph(
             CourseDetailScreen(
                 courseId = courseId,
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToLesson = { courseId, lessonId ->
-                    navController.navigate(Screen.Lesson.createRoute(courseId, lessonId))
+                onNavigateToLesson = { cId, lId ->
+                    navController.navigate(Screen.Lesson.createRoute(cId, lId))
                 },
                 onNavigateToPremium = onNavigateToPremium
             )
@@ -246,7 +248,7 @@ fun MainNavGraph(
         composable(route = Screen.RandomTopic.route) {
             RandomTopicScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToResults = { recordingId ->
+                onNavigateToResults = { _ ->
                     navController.popBackStack()
                 }
             )
@@ -255,7 +257,7 @@ fun MainNavGraph(
         composable(route = Screen.Storytelling.route) {
             StorytellingScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToResults = { recordingId ->
+                onNavigateToResults = { _ ->
                     navController.popBackStack()
                 }
             )
@@ -264,7 +266,7 @@ fun MainNavGraph(
         composable(route = Screen.DailyChallenge.route) {
             DailyChallengeScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToResults = { recordingId ->
+                onNavigateToResults = { _ ->
                     navController.popBackStack()
                 }
             )
@@ -286,7 +288,7 @@ fun MainNavGraph(
         composable(route = Screen.JobInterview.route) {
             JobInterviewScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToResults = { recordingId ->
+                onNavigateToResults = { _ ->
                     navController.popBackStack()
                 }
             )
@@ -295,7 +297,7 @@ fun MainNavGraph(
         composable(route = Screen.Presentation.route) {
             PresentationScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToResults = { recordingId ->
+                onNavigateToResults = { _ ->
                     navController.popBackStack()
                 }
             )
@@ -304,7 +306,7 @@ fun MainNavGraph(
         composable(route = Screen.Negotiation.route) {
             NegotiationScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToResults = { recordingId ->
+                onNavigateToResults = { _ ->
                     navController.popBackStack()
                 }
             )
@@ -343,7 +345,7 @@ fun MainNavGraph(
         composable(route = Screen.RecordingHistory.route) {
             RecordingHistoryScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToResults = { recordingId ->
+                onNavigateToResults = { _ ->
                     // TODO: Navigate to recording results screen
                 }
             )
@@ -353,7 +355,7 @@ fun MainNavGraph(
             route = Screen.SkillDetail.route,
             arguments = listOf(navArgument("skillType") { type = NavType.StringType })
         ) { backStackEntry ->
-            val skillType = backStackEntry.arguments?.getString("skillType") ?: return@composable
+            backStackEntry.arguments?.getString("skillType") ?: return@composable
             SkillDetailScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
@@ -363,7 +365,10 @@ fun MainNavGraph(
         composable(route = Screen.Settings.route) {
             SettingsScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToPremium = { navController.navigate(Screen.Premium.route) }
+                onNavigateToPremium = { navController.navigate(Screen.Premium.route) },
+                onNavigateToAuth = {
+                    rootNavController.navigate(Screen.Auth.createRoute("settings"))
+                }
             )
         }
 

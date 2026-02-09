@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.automirrored.outlined.TrendingUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -23,11 +25,13 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.aivoicepower.ui.navigation.MainNavGraph
 import com.aivoicepower.ui.navigation.Screen
+import com.aivoicepower.ui.screens.main.components.AppDrawerContent
 import com.aivoicepower.ui.screens.progress.CelebrationOverlay
 import com.aivoicepower.ui.screens.progress.CelebrationViewModel
+import kotlinx.coroutines.launch
 
 /**
- * Main screen with Bottom Navigation and FAB for AI Coach
+ * Main screen with Bottom Navigation, Drawer Menu, and FAB for AI Coach
  */
 @Composable
 fun MainScreen(
@@ -42,6 +46,12 @@ fun MainScreen(
     val celebrationViewModel: CelebrationViewModel = hiltViewModel()
     val currentCelebration by celebrationViewModel.currentCelebration.collectAsStateWithLifecycle()
 
+    val mainViewModel: MainViewModel = hiltViewModel()
+    val mainState by mainViewModel.state.collectAsStateWithLifecycle()
+
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
     // Define bottom navigation items
     val bottomNavItems = listOf(
         BottomNavItem.Home,
@@ -54,91 +64,126 @@ fun MainScreen(
     // Check if current screen should show bottom bar
     val shouldShowBottomBar = currentDestination?.route in bottomNavItems.map { it.route }
 
-    Scaffold(
-        containerColor = Color.Transparent,
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        bottomBar = {
-            if (shouldShowBottomBar) {
-                NavigationBar(
-                    containerColor = Color.White,
-                    contentColor = Color(0xFF1F2937),
-                    tonalElevation = 0.dp, // ВАЖЛИВО: без elevation
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    bottomNavItems.forEach { item ->
-                        val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        gesturesEnabled = shouldShowBottomBar,
+        drawerContent = {
+            AppDrawerContent(
+                currentRoute = currentDestination?.route,
+                userName = mainState.userName,
+                userEmail = mainState.userEmail,
+                isAuthenticated = mainState.isAuthenticated,
+                isPremium = mainState.isPremium,
+                onNavigate = { route ->
+                    scope.launch { drawerState.close() }
+                    navController.navigate(route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                onNavigateToAiCoach = {
+                    scope.launch { drawerState.close() }
+                    onNavigateToAiCoach()
+                },
+                onNavigateToPremium = {
+                    scope.launch { drawerState.close() }
+                    onNavigateToPremium()
+                },
+                onNavigateToSettings = {
+                    scope.launch { drawerState.close() }
+                    navController.navigate(Screen.Settings.route)
+                }
+            )
+        }
+    ) {
+        Scaffold(
+            containerColor = Color.Transparent,
+            contentWindowInsets = WindowInsets(0, 0, 0, 0),
+            bottomBar = {
+                if (shouldShowBottomBar) {
+                    NavigationBar(
+                        containerColor = Color.White,
+                        contentColor = Color(0xFF1F2937),
+                        tonalElevation = 0.dp,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        bottomNavItems.forEach { item ->
+                            val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
 
-                        NavigationBarItem(
-                            icon = {
-                                Icon(
-                                    imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                    contentDescription = item.label,
-                                    tint = if (selected) item.selectedColor else Color(0xFF9CA3AF)
-                                )
-                            },
-                            label = {
-                                Text(
-                                    text = item.label,
-                                    color = if (selected) Color(0xFF1F2937) else Color(0xFF9CA3AF)
-                                )
-                            },
-                            selected = selected,
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = item.selectedColor,
-                                unselectedIconColor = Color(0xFF9CA3AF),
-                                selectedTextColor = Color(0xFF1F2937),
-                                unselectedTextColor = Color(0xFF9CA3AF),
-                                indicatorColor = Color.Transparent // БЕЗ індикатора
-                            ),
-                            onClick = {
-                                if (!selected) {
-                                    navController.navigate(item.route) {
-                                        // Pop up to the start destination of the graph to
-                                        // avoid building up a large stack of destinations
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
+                            NavigationBarItem(
+                                icon = {
+                                    Icon(
+                                        imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
+                                        contentDescription = item.label,
+                                        tint = if (selected) item.selectedColor else Color(0xFF9CA3AF)
+                                    )
+                                },
+                                label = {
+                                    Text(
+                                        text = item.label,
+                                        color = if (selected) Color(0xFF1F2937) else Color(0xFF9CA3AF)
+                                    )
+                                },
+                                selected = selected,
+                                colors = NavigationBarItemDefaults.colors(
+                                    selectedIconColor = item.selectedColor,
+                                    unselectedIconColor = Color(0xFF9CA3AF),
+                                    selectedTextColor = Color(0xFF1F2937),
+                                    unselectedTextColor = Color(0xFF9CA3AF),
+                                    indicatorColor = Color.Transparent
+                                ),
+                                onClick = {
+                                    if (!selected) {
+                                        navController.navigate(item.route) {
+                                            popUpTo(navController.graph.findStartDestination().id) {
+                                                saveState = true
+                                            }
+                                            launchSingleTop = true
+                                            restoreState = true
                                         }
-                                        // Avoid multiple copies of the same destination
-                                        launchSingleTop = true
-                                        // Restore state when reselecting a previously selected item
-                                        restoreState = true
                                     }
                                 }
-                            }
+                            )
+                        }
+                    }
+                }
+            },
+            floatingActionButton = {
+                if (shouldShowBottomBar) {
+                    FloatingActionButton(
+                        onClick = onNavigateToAiCoach,
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AutoAwesome,
+                            contentDescription = "AI Тренер"
                         )
                     }
                 }
             }
-        },
-        floatingActionButton = {
-            if (shouldShowBottomBar) {
-                FloatingActionButton(
-                    onClick = onNavigateToAiCoach,
-                    containerColor = MaterialTheme.colorScheme.primary
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.AutoAwesome,
-                        contentDescription = "AI Тренер"
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                MainNavGraph(
+                    navController = navController,
+                    rootNavController = rootNavController,
+                    onNavigateToAiCoach = onNavigateToAiCoach,
+                    onNavigateToPremium = onNavigateToPremium,
+                    onOpenDrawer = {
+                        scope.launch { drawerState.open() }
+                    },
+                    modifier = Modifier
+                )
+
+                // Celebration overlay
+                currentCelebration?.let { achievement ->
+                    CelebrationOverlay(
+                        achievement = achievement,
+                        onDismiss = { celebrationViewModel.dismiss() }
                     )
                 }
-            }
-        }
-    ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            MainNavGraph(
-                navController = navController,
-                rootNavController = rootNavController,
-                onNavigateToAiCoach = onNavigateToAiCoach,
-                onNavigateToPremium = onNavigateToPremium,
-                modifier = Modifier
-            )
-
-            // Celebration overlay
-            currentCelebration?.let { achievement ->
-                CelebrationOverlay(
-                    achievement = achievement,
-                    onDismiss = { celebrationViewModel.dismiss() }
-                )
             }
         }
     }
@@ -189,8 +234,8 @@ sealed class BottomNavItem(
     object Progress : BottomNavItem(
         route = Screen.Progress.route,
         label = "Прогрес",
-        selectedIcon = Icons.Filled.TrendingUp,
-        unselectedIcon = Icons.Outlined.TrendingUp,
+        selectedIcon = Icons.AutoMirrored.Filled.TrendingUp,
+        unselectedIcon = Icons.AutoMirrored.Outlined.TrendingUp,
         selectedColor = Color(0xFF10B981)
     )
 }

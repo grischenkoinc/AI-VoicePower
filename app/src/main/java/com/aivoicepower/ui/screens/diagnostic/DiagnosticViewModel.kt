@@ -21,6 +21,7 @@ class DiagnosticViewModel @Inject constructor(
 
     fun analyzeDiagnostic(
         recordingPaths: List<String>,
+        expectedTexts: List<String?> = emptyList(),
         onSuccess: (DiagnosticResult) -> Unit,
         onError: (String) -> Unit
     ) {
@@ -44,7 +45,7 @@ class DiagnosticViewModel @Inject constructor(
                         Log.d("DiagnosticVM", "Analyzing task ${index + 1}: ${tasks[index]}")
                         geminiApiClient.analyzeVoiceRecording(
                             audioFilePath = path,
-                            expectedText = null,
+                            expectedText = expectedTexts.getOrNull(index),
                             exerciseType = exerciseTypes[index],
                             additionalContext = "Діагностичне завдання: ${tasks[index]}"
                         )

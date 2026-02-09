@@ -11,13 +11,20 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.compose.rememberNavController
+import com.aivoicepower.data.firebase.auth.GoogleSignInHelper
 import com.aivoicepower.ui.navigation.NavGraph
 import com.aivoicepower.ui.theme.AIVoicePowerTheme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var googleSignInHelper: GoogleSignInHelper
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -36,9 +43,7 @@ class MainActivity : ComponentActivity() {
         // Налаштування для малювання під системними барами
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        // Remove any translucent flags that add dark scrim
-        window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-        window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
+        // Ensure system bar backgrounds are drawn (no deprecated translucent flags)
         window.addFlags(android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
 
         // Явно встановити прозорі кольори
@@ -51,6 +56,13 @@ class MainActivity : ComponentActivity() {
             isAppearanceLightNavigationBars = false
         }
 
+        // Hide navigation bar, show on swipe up
+        val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+        windowInsetsController.apply {
+            hide(WindowInsetsCompat.Type.navigationBars())
+            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+
         setContent {
             AIVoicePowerTheme {
                 Surface(
@@ -58,7 +70,10 @@ class MainActivity : ComponentActivity() {
                     color = Color.Transparent
                 ) {
                     val navController = rememberNavController()
-                    NavGraph(navController = navController)
+                    NavGraph(
+                        navController = navController,
+                        googleSignInHelper = googleSignInHelper
+                    )
                 }
             }
         }

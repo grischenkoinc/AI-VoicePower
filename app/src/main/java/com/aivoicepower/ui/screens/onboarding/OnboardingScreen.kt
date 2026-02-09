@@ -16,10 +16,15 @@ import kotlinx.coroutines.launch
 @Composable
 fun OnboardingScreen(
     viewModel: OnboardingViewModel = hiltViewModel(),
+    startPage: Int = 0,
+    onNavigateToAuth: () -> Unit = {},
     onNavigateToDiagnostic: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val pagerState = rememberPagerState(pageCount = { 4 })
+    val pagerState = rememberPagerState(
+        initialPage = startPage,
+        pageCount = { 4 }
+    )
     val scope = rememberCoroutineScope()
 
     // Синхронізація pagerState з state.currentPage
@@ -45,14 +50,14 @@ fun OnboardingScreen(
 
     HorizontalPager(
         state = pagerState,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        userScrollEnabled = startPage == 0 // Disable swipe back to welcome if we started from page 1
     ) { page ->
         when (page) {
             0 -> OnboardingPage1(
                 onNextClick = {
-                    scope.launch {
-                        viewModel.onEvent(OnboardingEvent.NextClicked)
-                    }
+                    // Navigate to Auth screen instead of next page
+                    onNavigateToAuth()
                 }
             )
 

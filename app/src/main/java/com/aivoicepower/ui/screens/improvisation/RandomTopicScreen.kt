@@ -28,6 +28,7 @@ import com.aivoicepower.ui.theme.components.PrimaryButton
 import com.aivoicepower.ui.theme.components.SecondaryButton
 import kotlinx.coroutines.launch
 
+@Suppress("UNUSED_PARAMETER")
 @Composable
 fun RandomTopicScreen(
     viewModel: RandomTopicViewModel = hiltViewModel(),
@@ -165,7 +166,7 @@ fun RandomTopicScreen(
 
                 else -> {
                     // Recording completed
-                    state.currentTopic?.let { topic ->
+                    state.currentTopic?.let { _ ->
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -201,7 +202,7 @@ fun RandomTopicScreen(
                             onClick = {
                                 viewModel.onEvent(RandomTopicEvent.CompleteTask)
                                 // Navigate to placeholder results (TODO: implement actual results screen)
-                                state.recordingId?.let { recordingId ->
+                                state.recordingId?.let { _ ->
                                     // For now, just go back since Results screen not yet ready for improvisation
                                     onNavigateBack()
                                 }

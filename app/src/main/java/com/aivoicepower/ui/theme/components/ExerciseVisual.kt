@@ -4,7 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -161,7 +161,7 @@ private fun VisualArrow(
 fun VisualDivider(
     modifier: Modifier = Modifier
 ) {
-    Divider(
+    HorizontalDivider(
         modifier = modifier.fillMaxWidth(),
         thickness = 1.dp,
         color = Color(0xFFE5E7EB)

@@ -48,6 +48,7 @@ fun SkillBarChart(
     }
 }
 
+@Suppress("UNUSED_PARAMETER")
 @Composable
 private fun SkillBar(
     skillType: SkillType,
@@ -144,8 +145,6 @@ private fun SkillBar(
  * Плавний перехід між кольорами
  */
 private fun getGradientColorsForLevel(level: Int): Pair<Color, Color> {
-    val normalizedLevel = level.coerceIn(1, 99) / 99f
-
     return when {
         level < 50 -> {
             // Червоний → Жовтий (1-49)

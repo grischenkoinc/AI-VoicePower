@@ -34,7 +34,7 @@ fun TodayPlanCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Divider()
+            HorizontalDivider()
 
             plan.activities.forEach { activity ->
                 PlanActivityItem(

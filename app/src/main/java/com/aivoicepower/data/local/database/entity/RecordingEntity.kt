@@ -52,5 +52,14 @@ data class RecordingEntity(
      * Дозволяє знайти, яка саме вправа була виконана
      * Використовується для аналітики: "які вправи покращили навичку?"
      */
-    val exerciseId: String? = null
+    val exerciseId: String? = null,
+
+    /** Firebase Storage URL (після синхронізації) */
+    val cloudUrl: String? = null,
+
+    /** Чи синхронізований з хмарою */
+    val isSynced: Boolean = false,
+
+    /** Час останньої синхронізації */
+    val lastSyncedAt: Long? = null
 )

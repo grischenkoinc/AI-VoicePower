@@ -54,6 +54,11 @@ sealed class Screen(val route: String) {
     // AI Coach (Phase 6)
     object AiCoach : Screen("ai-coach")
 
+    // Auth
+    object Auth : Screen("auth?source={source}") {
+        fun createRoute(source: String = "onboarding") = "auth?source=$source"
+    }
+
     // Premium & Settings
     object Premium : Screen("premium")
     object Settings : Screen("settings")

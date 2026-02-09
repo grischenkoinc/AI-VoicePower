@@ -41,4 +41,7 @@
     <!-- Permissions -->
     <string name="permission_audio_required">Потрібен дозвіл на запис аудіо</string>
     <string name="grant_permission">Надати дозвіл</string>
+
+    <!-- Firebase Auth (replace with your Web Client ID from Firebase Console) -->
+    <string name="default_web_client_id">551770943805-vft4k262pbp1pp9pfhs392a17a17iiod.apps.googleusercontent.com</string>
 </resources>

@@ -4,15 +4,19 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import com.aivoicepower.data.firebase.auth.GoogleSignInHelper
 import com.aivoicepower.ui.screens.aicoach.AiCoachScreen
+import com.aivoicepower.ui.screens.auth.AuthScreen
 import com.aivoicepower.ui.screens.diagnostic.DiagnosticAnalysisScreen
 import com.aivoicepower.ui.screens.diagnostic.DiagnosticResult
 import com.aivoicepower.ui.screens.diagnostic.DiagnosticResultScreen
@@ -27,6 +31,7 @@ import com.aivoicepower.ui.screens.onboarding.SplashScreen
  */
 object DiagnosticDataHolder {
     var recordingPaths: List<String> = emptyList()
+    var expectedTexts: List<String?> = emptyList()
     var result: DiagnosticResult? = null
 }
 
@@ -36,6 +41,7 @@ object DiagnosticDataHolder {
 @Composable
 fun NavGraph(
     navController: NavHostController,
+    googleSignInHelper: GoogleSignInHelper,
     startDestination: String = Screen.Splash.route
 ) {
     NavHost(
@@ -59,22 +65,66 @@ fun NavGraph(
             )
         }
 
-        composable(route = Screen.Onboarding.route) {
+        composable(
+            route = "onboarding?startPage={startPage}",
+            arguments = listOf(navArgument("startPage") {
+                type = NavType.IntType
+                defaultValue = 0
+            })
+        ) { backStackEntry ->
+            val startPage = backStackEntry.arguments?.getInt("startPage") ?: 0
             OnboardingScreen(
+                startPage = startPage,
+                onNavigateToAuth = {
+                    navController.navigate(Screen.Auth.createRoute("onboarding"))
+                },
                 onNavigateToDiagnostic = {
                     navController.navigate(Screen.Diagnostic.route) {
-                        popUpTo(Screen.Onboarding.route) { inclusive = true }
+                        popUpTo("onboarding?startPage={startPage}") { inclusive = true }
                     }
                 }
             )
         }
 
+        // ===== AUTH SCREEN =====
+
+        composable(
+            route = "auth?source={source}",
+            arguments = listOf(navArgument("source") {
+                type = NavType.StringType
+                defaultValue = "onboarding"
+            })
+        ) { backStackEntry ->
+            val source = backStackEntry.arguments?.getString("source") ?: "onboarding"
+            val isFromSettings = source == "settings"
+
+            AuthScreen(
+                onAuthSuccess = {
+                    if (isFromSettings) {
+                        navController.popBackStack()
+                    } else {
+                        navController.navigate("onboarding?startPage=1") {
+                            popUpTo("auth?source={source}") { inclusive = true }
+                        }
+                    }
+                },
+                onSkip = {
+                    navController.navigate("onboarding?startPage=1") {
+                        popUpTo("auth?source={source}") { inclusive = true }
+                    }
+                },
+                googleSignInHelper = googleSignInHelper,
+                showSkipButton = !isFromSettings
+            )
+        }
+
+        // ===== DIAGNOSTIC FLOW =====
+
         composable(route = Screen.Diagnostic.route) {
             DiagnosticScreen(
-                onComplete = { recordingPaths ->
-                    // Store recording paths temporarily
+                onComplete = { recordingPaths, expectedTexts ->
                     DiagnosticDataHolder.recordingPaths = recordingPaths
-                    // Navigate to analysis screen
+                    DiagnosticDataHolder.expectedTexts = expectedTexts
                     navController.navigate(Screen.DiagnosticAnalysis.route) {
                         popUpTo(Screen.Diagnostic.route) { inclusive = true }
                     }
@@ -85,8 +135,8 @@ fun NavGraph(
         composable(route = Screen.DiagnosticAnalysis.route) {
             DiagnosticAnalysisScreen(
                 recordingPaths = DiagnosticDataHolder.recordingPaths,
+                expectedTexts = DiagnosticDataHolder.expectedTexts,
                 onAnalysisComplete = { result ->
-                    // Store result for DiagnosticResultScreen
                     DiagnosticDataHolder.result = result
                     navController.navigate(Screen.DiagnosticResult.route) {
                         popUpTo(Screen.DiagnosticAnalysis.route) { inclusive = true }
@@ -156,7 +206,7 @@ private fun PremiumPlaceholderScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            Icons.Filled.ArrowBack,
+                            Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Назад"
                         )
                     }

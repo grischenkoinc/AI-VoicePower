@@ -25,6 +25,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun DiagnosticAnalysisScreen(
     recordingPaths: List<String>,
+    expectedTexts: List<String?> = emptyList(),
     onAnalysisComplete: (DiagnosticResult) -> Unit,
     viewModel: DiagnosticViewModel = hiltViewModel(),
     modifier: Modifier = Modifier
@@ -42,10 +43,11 @@ fun DiagnosticAnalysisScreen(
         // Start real AI analysis
         viewModel.analyzeDiagnostic(
             recordingPaths = recordingPaths,
+            expectedTexts = expectedTexts,
             onSuccess = { result ->
                 onAnalysisComplete(result)
             },
-            onError = { error ->
+            onError = { _ ->
                 // Handle error - можна показати повідомлення
                 onAnalysisComplete(DiagnosticResult.mock()) // Fallback to mock
             }

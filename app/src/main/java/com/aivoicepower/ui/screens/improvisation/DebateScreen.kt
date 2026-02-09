@@ -729,7 +729,7 @@ private fun DebateCompleteContent(
                         text = "Ти: ${round.userArgument}",
                         style = MaterialTheme.typography.bodyMedium
                     )
-                    Divider()
+                    HorizontalDivider()
                     Text(
                         text = "AI: ${round.aiResponse}",
                         style = MaterialTheme.typography.bodyMedium

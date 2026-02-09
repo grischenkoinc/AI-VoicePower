@@ -8,6 +8,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ListAlt
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -85,8 +87,8 @@ fun OnboardingPage4(
                 MetricItem(icon = Icons.Default.GraphicEq, text = "Чіткість дикції")
                 MetricItem(icon = Icons.Default.Speed, text = "Темп мовлення")
                 MetricItem(icon = Icons.Default.MusicNote, text = "Інтонація та виразність")
-                MetricItem(icon = Icons.Default.VolumeUp, text = "Гучність голосу")
-                MetricItem(icon = Icons.Default.ListAlt, text = "Структура думок")
+                MetricItem(icon = Icons.AutoMirrored.Filled.VolumeUp, text = "Гучність голосу")
+                MetricItem(icon = Icons.AutoMirrored.Filled.ListAlt, text = "Структура думок")
                 MetricItem(icon = Icons.Default.CheckCircle, text = "Впевненість")
                 MetricItem(icon = Icons.Default.Block, text = "Слова-паразити")
             }

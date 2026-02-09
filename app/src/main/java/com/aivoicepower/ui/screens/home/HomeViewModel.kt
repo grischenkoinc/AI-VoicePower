@@ -250,6 +250,7 @@ class HomeViewModel @Inject constructor(
         )
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun getRecommendedFocus(
         progress: com.aivoicepower.data.local.database.entity.UserProgressEntity?,
         preferences: com.aivoicepower.data.local.datastore.UserPreferences
@@ -276,7 +277,6 @@ class HomeViewModel @Inject constructor(
 
     private suspend fun loadWeekProgress(): WeekProgress {
         val calendar = Calendar.getInstance()
-        val today = calendar.time
 
         // Get start of week (Monday)
         calendar.firstDayOfWeek = Calendar.MONDAY

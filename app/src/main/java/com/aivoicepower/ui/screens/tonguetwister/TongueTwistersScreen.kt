@@ -378,7 +378,7 @@ private fun TongueTwisterCard(
             exit = shrinkVertically() + fadeOut()
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Divider(
+                HorizontalDivider(
                     color = Color(0xFFE5E7EB),
                     thickness = 1.dp
                 )

@@ -105,7 +105,7 @@ fun SectionDivider(
             modifier = modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Divider(
+            HorizontalDivider(
                 modifier = Modifier.weight(1f),
                 thickness = 1.dp,
                 color = BorderColors.default
@@ -116,14 +116,14 @@ fun SectionDivider(
                 color = TextColors.tertiary,
                 modifier = Modifier.padding(horizontal = Spacing.sm)
             )
-            Divider(
+            HorizontalDivider(
                 modifier = Modifier.weight(1f),
                 thickness = 1.dp,
                 color = BorderColors.default
             )
         }
     } else {
-        Divider(
+        HorizontalDivider(
             modifier = modifier.fillMaxWidth(),
             thickness = 1.dp,
             color = BorderColors.default

@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -20,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.aivoicepower.domain.model.VoiceMetrics
 import com.aivoicepower.ui.theme.*
 
+@Suppress("UNUSED_PARAMETER")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResultsScreen(
@@ -55,7 +57,7 @@ fun ResultsScreen(
                 title = { Text("Результати аналізу") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -212,7 +214,7 @@ private fun MetricsCard(metrics: VoiceMetrics) {
             )
 
             Spacer(modifier = Modifier.height(8.dp))
-            Divider()
+            HorizontalDivider()
             Spacer(modifier = Modifier.height(8.dp))
 
             Row(
@@ -264,7 +266,7 @@ private fun MetricRow(
         if (isPercentage) {
             Spacer(modifier = Modifier.height(8.dp))
             LinearProgressIndicator(
-                progress = value / 100f,
+                progress = { value / 100f },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(8.dp)

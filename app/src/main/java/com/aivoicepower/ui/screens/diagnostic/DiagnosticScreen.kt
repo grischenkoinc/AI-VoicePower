@@ -54,7 +54,7 @@ data class DiagnosticTask(
 
 @Composable
 fun DiagnosticScreen(
-    onComplete: (List<String>) -> Unit, // Передаємо список шляхів до записів
+    onComplete: (recordingPaths: List<String>, expectedTexts: List<String?>) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DiagnosticViewModel = hiltViewModel()
 ) {
@@ -78,7 +78,7 @@ fun DiagnosticScreen(
         if (isGranted) {
             // Start recording
             scope.launch {
-                val filePath = audioRecorder.startRecording()
+                audioRecorder.startRecording()
                 isRecording = true
                 recordingTime = 0
             }
@@ -147,10 +147,10 @@ fun DiagnosticScreen(
             }
             if (recordingTime >= maxRecordingTime) {
                 // Auto stop after 45 seconds
-                val filePath = audioRecorder.stopRecording()
+                val stoppedFilePath = audioRecorder.stopRecording()
                 isRecording = false
-                if (filePath != null) {
-                    currentRecordings[currentTask] = filePath
+                if (stoppedFilePath != null) {
+                    currentRecordings[currentTask] = stoppedFilePath
                     showRecordingDialog = true
                 }
                 recordingTime = 0
@@ -211,7 +211,7 @@ fun DiagnosticScreen(
                             permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
                         } else {
                             scope.launch {
-                                val filePath = audioRecorder.startRecording()
+                                audioRecorder.startRecording()
                                 isRecording = true
                                 recordingTime = 0
                             }
@@ -266,7 +266,7 @@ fun DiagnosticScreen(
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                             permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
                         } else {
-                            val filePath = audioRecorder.startRecording()
+                            audioRecorder.startRecording()
                             isRecording = true
                             recordingTime = 0
                         }
@@ -279,8 +279,15 @@ fun DiagnosticScreen(
                     if (currentTask < tasks.size - 1) {
                         currentTask++
                     } else {
-                        // All tasks completed - pass recording paths
-                        onComplete(currentRecordings.values.toList())
+                        // All tasks completed - pass recording paths and expected texts
+                        val expectedTexts = tasks.map { task ->
+                            when (val p = task.prompt) {
+                                is String -> if (task.isFreeSpeech) null else p
+                                is androidx.compose.ui.text.AnnotatedString -> p.text
+                                else -> null
+                            }
+                        }
+                        onComplete(currentRecordings.values.toList(), expectedTexts)
                     }
                 }
             )
@@ -289,6 +296,7 @@ fun DiagnosticScreen(
 }
 
 @Composable
+@Suppress("UNUSED_PARAMETER")
 private fun RecordingDialog(
     taskNumber: Int,
     audioPath: String,
