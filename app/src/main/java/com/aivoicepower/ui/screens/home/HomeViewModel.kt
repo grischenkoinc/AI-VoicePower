@@ -82,7 +82,7 @@ class HomeViewModel @Inject constructor(
 
                 _state.update {
                     it.copy(
-                        userName = null, // TODO: Add name field to UserPreferences if needed
+                        userName = preferences.userName,
                         currentStreak = preferences.currentStreak,
                         greeting = greeting,
                         todayPlan = todayPlan,

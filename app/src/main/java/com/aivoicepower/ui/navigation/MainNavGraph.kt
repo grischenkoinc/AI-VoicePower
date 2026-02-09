@@ -29,6 +29,7 @@ import com.aivoicepower.ui.screens.progress.SkillDetailScreen
 import com.aivoicepower.ui.screens.results.ResultsScreen
 import com.aivoicepower.ui.screens.premium.PaywallScreen
 import com.aivoicepower.ui.screens.settings.SettingsScreen
+import com.aivoicepower.ui.screens.about.AboutScreen
 import com.aivoicepower.ui.screens.warmup.*
 
 /**
@@ -368,7 +369,15 @@ fun MainNavGraph(
                 onNavigateToPremium = { navController.navigate(Screen.Premium.route) },
                 onNavigateToAuth = {
                     rootNavController.navigate(Screen.Auth.createRoute("settings"))
-                }
+                },
+                onNavigateToAbout = { navController.navigate(Screen.About.route) }
+            )
+        }
+
+        // ===== ABOUT =====
+        composable(route = Screen.About.route) {
+            AboutScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 

@@ -1,7 +1,6 @@
 package com.aivoicepower.ui.screens.settings.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -23,36 +22,26 @@ fun SettingsSection(
     Column(
         modifier = modifier.fillMaxWidth()
     ) {
-        // Section title - slightly larger with refined letter spacing
         Text(
             text = title.uppercase(),
-            fontSize = 13.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.White.copy(alpha = 0.55f),
-            letterSpacing = 1.2.sp,
+            color = Color.White.copy(alpha = 0.6f),
+            letterSpacing = 1.5.sp,
             modifier = Modifier.padding(start = 6.dp, bottom = 10.dp)
         )
 
-        // Section card - glass morphism with border
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .shadow(
                     elevation = 8.dp,
                     shape = RoundedCornerShape(20.dp),
-                    spotColor = Color(0xFF764BA2).copy(alpha = 0.15f),
-                    ambientColor = Color.Black.copy(alpha = 0.1f)
+                    spotColor = Color.Black.copy(alpha = 0.08f),
+                    ambientColor = Color.Black.copy(alpha = 0.04f)
                 )
                 .clip(RoundedCornerShape(20.dp))
-                .background(
-                    Color.White.copy(alpha = 0.12f),
-                    RoundedCornerShape(20.dp)
-                )
-                .border(
-                    1.dp,
-                    Color.White.copy(alpha = 0.15f),
-                    RoundedCornerShape(20.dp)
-                )
+                .background(Color.White, RoundedCornerShape(20.dp))
         ) {
             Spacer(modifier = Modifier.height(4.dp))
             content()

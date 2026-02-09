@@ -1,6 +1,7 @@
 package com.aivoicepower.ui.screens.premium.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -17,61 +18,65 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.aivoicepower.ui.theme.modifiers.glassBackground
 
-/**
- * Premium benefit row item with glass morphism style.
- *
- * Each benefit shows a gradient icon container (with emoji),
- * title + description, and a green checkmark.
- */
 @Composable
 fun PremiumBenefitItem(
     emoji: String,
     title: String,
     description: String,
-    iconBackgroundColors: List<Color>
+    iconBackgroundColors: List<Color>,
+    useWhiteBackground: Boolean = false,
+    borderColor: Color? = null
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .shadow(
-                elevation = 4.dp,
+                elevation = 6.dp,
                 shape = RoundedCornerShape(16.dp),
-                spotColor = Color.Black.copy(alpha = 0.15f)
+                spotColor = Color.Black.copy(alpha = 0.06f)
             )
-            .glassBackground(
-                shape = RoundedCornerShape(16.dp),
-                backgroundColor = Color.White.copy(alpha = 0.12f),
-                borderColor = Color.White.copy(alpha = 0.2f)
-            )
-            .padding(12.dp),
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White, RoundedCornerShape(16.dp))
+            .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        // Gradient icon container
+        // Icon container
         Box(
             modifier = Modifier
-                .size(42.dp)
+                .size(44.dp)
                 .shadow(
                     elevation = 4.dp,
-                    shape = RoundedCornerShape(12.dp),
-                    spotColor = iconBackgroundColors.first().copy(alpha = 0.3f)
+                    shape = RoundedCornerShape(13.dp),
+                    spotColor = if (useWhiteBackground || borderColor != null)
+                        Color.Black.copy(alpha = 0.06f)
+                    else iconBackgroundColors.first().copy(alpha = 0.3f)
                 )
-                .clip(RoundedCornerShape(12.dp))
-                .background(
-                    Brush.linearGradient(colors = iconBackgroundColors),
-                    RoundedCornerShape(12.dp)
+                .clip(RoundedCornerShape(13.dp))
+                .then(
+                    if (borderColor != null) {
+                        Modifier
+                            .background(Color.White, RoundedCornerShape(13.dp))
+                            .border(
+                                width = 2.dp,
+                                color = borderColor,
+                                shape = RoundedCornerShape(13.dp)
+                            )
+                    } else if (useWhiteBackground) {
+                        Modifier.background(Color.White, RoundedCornerShape(13.dp))
+                    } else {
+                        Modifier.background(
+                            Brush.linearGradient(colors = iconBackgroundColors),
+                            RoundedCornerShape(13.dp)
+                        )
+                    }
                 ),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = emoji,
-                fontSize = 20.sp
-            )
+            Text(text = emoji, fontSize = 22.sp)
         }
 
-        // Title and description
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(2.dp)
@@ -80,22 +85,21 @@ fun PremiumBenefitItem(
                 text = title,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color.White
+                color = Color(0xFF1A1A2E)
             )
             Text(
                 text = description,
                 fontSize = 12.sp,
-                color = Color.White.copy(alpha = 0.6f),
+                color = Color(0xFF9CA3AF),
                 lineHeight = 16.sp
             )
         }
 
-        // Green checkmark
         Box(
             modifier = Modifier
-                .size(24.dp)
+                .size(26.dp)
                 .background(
-                    Color(0xFF10B981).copy(alpha = 0.2f),
+                    Color(0xFF10B981).copy(alpha = 0.12f),
                     RoundedCornerShape(8.dp)
                 ),
             contentAlignment = Alignment.Center

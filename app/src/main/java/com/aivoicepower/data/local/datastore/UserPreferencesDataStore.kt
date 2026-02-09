@@ -63,7 +63,7 @@ class UserPreferencesDataStore @Inject constructor(
         }
         .map { preferences ->
             UserPreferences(
-                isPremium = preferences[PreferencesKeys.IS_PREMIUM] ?: false,
+                isPremium = preferences[PreferencesKeys.IS_PREMIUM] ?: true, // Hardcoded for testing
                 currentStreak = preferences[PreferencesKeys.CURRENT_STREAK] ?: 0,
                 todayMinutes = preferences[PreferencesKeys.TODAY_MINUTES] ?: 0,
                 hasCompletedOnboarding = preferences[PreferencesKeys.HAS_COMPLETED_ONBOARDING] ?: false,
@@ -88,7 +88,7 @@ class UserPreferencesDataStore @Inject constructor(
             }
         }
         .map { preferences ->
-            preferences[PreferencesKeys.IS_PREMIUM] ?: false
+            preferences[PreferencesKeys.IS_PREMIUM] ?: true // Hardcoded for testing
         }
 
     // Direct Flow for hasCompletedOnboarding (used by v2 ViewModels)

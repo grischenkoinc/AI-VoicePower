@@ -24,6 +24,7 @@ import com.aivoicepower.ui.screens.diagnostic.DiagnosticScreen
 import com.aivoicepower.ui.screens.main.MainScreen
 import com.aivoicepower.ui.screens.onboarding.OnboardingScreen
 import com.aivoicepower.ui.screens.onboarding.SplashScreen
+import com.aivoicepower.ui.screens.username.UserNameScreen
 
 /**
  * Temporary data holder for diagnostic flow
@@ -103,18 +104,30 @@ fun NavGraph(
                     if (isFromSettings) {
                         navController.popBackStack()
                     } else {
-                        navController.navigate("onboarding?startPage=1") {
+                        navController.navigate(Screen.UserName.route) {
                             popUpTo("auth?source={source}") { inclusive = true }
                         }
                     }
                 },
                 onSkip = {
-                    navController.navigate("onboarding?startPage=1") {
+                    navController.navigate(Screen.UserName.route) {
                         popUpTo("auth?source={source}") { inclusive = true }
                     }
                 },
                 googleSignInHelper = googleSignInHelper,
                 showSkipButton = !isFromSettings
+            )
+        }
+
+        // ===== USER NAME SCREEN =====
+
+        composable(route = Screen.UserName.route) {
+            UserNameScreen(
+                onContinue = {
+                    navController.navigate("onboarding?startPage=1") {
+                        popUpTo(Screen.UserName.route) { inclusive = true }
+                    }
+                }
             )
         }
 

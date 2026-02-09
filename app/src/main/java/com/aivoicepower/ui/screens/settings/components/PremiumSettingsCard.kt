@@ -1,7 +1,6 @@
 package com.aivoicepower.ui.screens.settings.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -48,11 +47,6 @@ fun PremiumSettingsCard(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(20.dp))
                 .background(primaryGradient, RoundedCornerShape(20.dp))
-                .border(
-                    1.dp,
-                    Color.White.copy(alpha = 0.25f),
-                    RoundedCornerShape(20.dp)
-                )
                 .clickable(onClick = onClick)
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -68,12 +62,7 @@ fun PremiumSettingsCard(
                     )
                     .clip(RoundedCornerShape(14.dp))
                     .background(
-                        Color.White.copy(alpha = 0.22f),
-                        RoundedCornerShape(14.dp)
-                    )
-                    .border(
-                        1.dp,
-                        Color.White.copy(alpha = 0.2f),
+                        Color.White.copy(alpha = 0.18f),
                         RoundedCornerShape(14.dp)
                     ),
                 contentAlignment = Alignment.Center
@@ -158,11 +147,6 @@ fun PremiumSettingsCard(
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
                         .background(
-                            Color.White.copy(alpha = 0.2f),
-                            RoundedCornerShape(10.dp)
-                        )
-                        .border(
-                            1.dp,
                             Color.White.copy(alpha = 0.25f),
                             RoundedCornerShape(10.dp)
                         )

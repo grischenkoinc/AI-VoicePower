@@ -58,10 +58,12 @@ sealed class Screen(val route: String) {
     object Auth : Screen("auth?source={source}") {
         fun createRoute(source: String = "onboarding") = "auth?source=$source"
     }
+    object UserName : Screen("username")
 
     // Premium & Settings
     object Premium : Screen("premium")
     object Settings : Screen("settings")
+    object About : Screen("about")
 
     // Progress sub-screens
     object Achievements : Screen("progress/achievements")

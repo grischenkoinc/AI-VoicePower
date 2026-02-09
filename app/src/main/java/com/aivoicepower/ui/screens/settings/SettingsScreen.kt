@@ -1,7 +1,6 @@
 package com.aivoicepower.ui.screens.settings
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -19,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -34,6 +34,7 @@ fun SettingsScreen(
     onNavigateBack: () -> Unit = {},
     onNavigateToPremium: () -> Unit = {},
     onNavigateToAuth: () -> Unit = {},
+    onNavigateToAbout: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -72,6 +73,14 @@ fun SettingsScreen(
         )
     }
 
+    if (state.showDailyGoalPicker) {
+        DailyGoalPicker(
+            currentGoalMinutes = state.dailyGoalMinutes,
+            onGoalSelected = { viewModel.onEvent(SettingsEvent.SetDailyGoal(it)) },
+            onDismiss = { viewModel.onEvent(SettingsEvent.DismissDialog) }
+        )
+    }
+
     GradientBackground(content = {
         Column(
             modifier = Modifier
@@ -83,32 +92,28 @@ fun SettingsScreen(
         ) {
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Styled top bar with glass back button
+            // Styled top bar with back button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Glass morphism back button
                 Box(
                     modifier = Modifier
                         .size(40.dp)
+                        .shadow(
+                            elevation = 4.dp,
+                            shape = CircleShape,
+                            spotColor = Color.Black.copy(alpha = 0.08f)
+                        )
                         .clip(CircleShape)
-                        .background(
-                            Color.White.copy(alpha = 0.12f),
-                            CircleShape
-                        )
-                        .border(
-                            1.dp,
-                            Color.White.copy(alpha = 0.15f),
-                            CircleShape
-                        )
+                        .background(Color.White, CircleShape)
                         .clickable(onClick = onNavigateBack),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Назад",
-                        tint = Color.White,
+                        tint = Color(0xFF1A1A2E),
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -179,15 +184,8 @@ fun SettingsScreen(
                     title = "Щоденна мета",
                     trailingType = SettingsTrailingType.VALUE,
                     valueText = "${state.dailyGoalMinutes} хв",
-                    onClick = { viewModel.onEvent(SettingsEvent.ShowDailyGoalPicker) }
-                )
-                SettingsItemRow(
-                    icon = Icons.Default.Language,
-                    title = "Мова",
-                    trailingType = SettingsTrailingType.VALUE,
-                    valueText = "Українська",
                     showDivider = false,
-                    onClick = { /* TODO */ }
+                    onClick = { viewModel.onEvent(SettingsEvent.ShowDailyGoalPicker) }
                 )
             }
 
@@ -215,45 +213,13 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 5. Account Section (only if authenticated)
-            if (state.isAuthenticated) {
-                SettingsSection(title = "Акаунт") {
-                    SettingsItemRow(
-                        icon = Icons.Default.Sync,
-                        title = "Синхронізація",
-                        subtitle = if (state.isSyncEnabled) "Увімкнено" else "Вимкнено",
-                        trailingType = SettingsTrailingType.SWITCH,
-                        isChecked = state.isSyncEnabled,
-                        onCheckedChange = { viewModel.onEvent(SettingsEvent.ToggleSync) },
-                        onClick = { viewModel.onEvent(SettingsEvent.ToggleSync) }
-                    )
-                    SettingsItemRow(
-                        icon = Icons.AutoMirrored.Filled.Logout,
-                        title = "Вийти з акаунту",
-                        trailingType = SettingsTrailingType.NONE,
-                        onClick = { viewModel.onEvent(SettingsEvent.LogoutClicked) }
-                    )
-                    SettingsItemRow(
-                        icon = Icons.Default.DeleteForever,
-                        title = "Видалити акаунт",
-                        iconTint = Color(0xFFEF4444),
-                        titleColor = Color(0xFFEF4444),
-                        trailingType = SettingsTrailingType.NONE,
-                        showDivider = false,
-                        onClick = { viewModel.onEvent(SettingsEvent.DeleteAccountClicked) }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            // 6. Info Section
+            // 5. Info Section
             SettingsSection(title = "Інформація") {
                 SettingsItemRow(
                     icon = Icons.Default.Info,
                     title = "Про застосунок",
                     subtitle = "Версія 1.0.0",
-                    onClick = { /* TODO */ }
+                    onClick = onNavigateToAbout
                 )
                 SettingsItemRow(
                     icon = Icons.Default.PrivacyTip,
@@ -275,20 +241,38 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 7. Danger Zone
-            SettingsSection(title = "Дані") {
-                SettingsItemRow(
-                    icon = Icons.Default.Delete,
-                    title = "Очистити дані",
-                    subtitle = "Видалити записи та прогрес",
-                    iconTint = Color(0xFFEF4444),
-                    trailingType = SettingsTrailingType.NONE,
-                    showDivider = false,
-                    onClick = { viewModel.onEvent(SettingsEvent.ClearDataClicked) }
-                )
+            // 6. Account Section (only if authenticated)
+            if (state.isAuthenticated) {
+                SettingsSection(title = "Акаунт") {
+                    SettingsItemRow(
+                        icon = Icons.AutoMirrored.Filled.Logout,
+                        title = "Вийти з акаунту",
+                        trailingType = SettingsTrailingType.NONE,
+                        onClick = { viewModel.onEvent(SettingsEvent.LogoutClicked) }
+                    )
+                    SettingsItemRow(
+                        icon = Icons.Default.Delete,
+                        title = "Очистити дані",
+                        subtitle = "Видалити записи та прогрес",
+                        iconTint = Color(0xFFEF4444),
+                        trailingType = SettingsTrailingType.NONE,
+                        onClick = { viewModel.onEvent(SettingsEvent.ClearDataClicked) }
+                    )
+                    SettingsItemRow(
+                        icon = Icons.Default.DeleteForever,
+                        title = "Видалити акаунт",
+                        iconTint = Color(0xFFEF4444),
+                        titleColor = Color(0xFFEF4444),
+                        trailingType = SettingsTrailingType.NONE,
+                        showDivider = false,
+                        onClick = { viewModel.onEvent(SettingsEvent.DeleteAccountClicked) }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // App version footer
             Box(

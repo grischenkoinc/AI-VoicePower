@@ -1,7 +1,6 @@
 package com.aivoicepower.ui.screens.settings.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -41,37 +40,24 @@ fun UserProfileCard(
             .shadow(
                 elevation = 8.dp,
                 shape = RoundedCornerShape(20.dp),
-                spotColor = Color(0xFF764BA2).copy(alpha = 0.15f)
+                spotColor = Color.Black.copy(alpha = 0.08f)
             )
             .clip(RoundedCornerShape(20.dp))
-            .background(
-                Color.White.copy(alpha = 0.12f),
-                RoundedCornerShape(20.dp)
-            )
-            .border(
-                1.dp,
-                Color.White.copy(alpha = 0.15f),
-                RoundedCornerShape(20.dp)
-            )
+            .background(Color.White, RoundedCornerShape(20.dp))
             .clickable { if (isAuthenticated) onEditProfileClick() else onLoginClick() }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Avatar - 52dp gradient circle
+        // Avatar - gradient circle
         Box(
             modifier = Modifier
                 .size(52.dp)
                 .shadow(
                     elevation = 6.dp,
                     shape = CircleShape,
-                    spotColor = Color(0xFF667EEA).copy(alpha = 0.4f)
+                    spotColor = Color(0xFF667EEA).copy(alpha = 0.3f)
                 )
-                .background(primaryGradient, CircleShape)
-                .border(
-                    1.5.dp,
-                    Color.White.copy(alpha = 0.3f),
-                    CircleShape
-                ),
+                .background(primaryGradient, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             if (isAuthenticated && userName != null) {
@@ -93,23 +79,21 @@ fun UserProfileCard(
 
         Spacer(modifier = Modifier.width(14.dp))
 
-        // Info
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = if (isAuthenticated) (userName ?: "Користувач") else "Гість",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color.White
+                color = Color(0xFF1A1A2E)
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = if (isAuthenticated) (userEmail ?: "") else "Увійдіть для синхронізації",
                 fontSize = 14.sp,
-                color = Color.White.copy(alpha = 0.6f)
+                color = Color(0xFF9CA3AF)
             )
         }
 
-        // When not authenticated - gradient CTA button; when authenticated - chevron
         if (!isAuthenticated) {
             Box(
                 modifier = Modifier
@@ -130,7 +114,7 @@ fun UserProfileCard(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
-                tint = Color.White.copy(alpha = 0.4f),
+                tint = Color(0xFFD1D5DB),
                 modifier = Modifier.size(24.dp)
             )
         }

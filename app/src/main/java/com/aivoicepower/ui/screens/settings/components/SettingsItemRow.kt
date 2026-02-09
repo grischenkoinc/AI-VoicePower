@@ -36,7 +36,7 @@ fun SettingsItemRow(
     isChecked: Boolean = false,
     valueText: String? = null,
     iconTint: Color = Color(0xFF8B5CF6),
-    titleColor: Color = Color.White,
+    titleColor: Color = Color(0xFF1A1A2E),
     showDivider: Boolean = true,
     onClick: () -> Unit = {},
     onCheckedChange: ((Boolean) -> Unit)? = null
@@ -46,17 +46,17 @@ fun SettingsItemRow(
             modifier = modifier
                 .fillMaxWidth()
                 .clickable(onClick = onClick)
-                .padding(horizontal = 16.dp, vertical = 16.dp),
+                .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icon with gradient circle background
+            // Icon with soft colored background
             Box(
                 modifier = Modifier
-                    .size(36.dp)
-                    .clip(RoundedCornerShape(10.dp))
+                    .size(38.dp)
+                    .clip(RoundedCornerShape(11.dp))
                     .background(
-                        iconTint.copy(alpha = 0.15f),
-                        RoundedCornerShape(10.dp)
+                        iconTint.copy(alpha = 0.1f),
+                        RoundedCornerShape(11.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {
@@ -70,7 +70,6 @@ fun SettingsItemRow(
 
             Spacer(modifier = Modifier.width(14.dp))
 
-            // Title & subtitle
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
@@ -83,18 +82,17 @@ fun SettingsItemRow(
                     Text(
                         text = subtitle,
                         fontSize = 13.sp,
-                        color = Color.White.copy(alpha = 0.5f)
+                        color = Color(0xFF9CA3AF)
                     )
                 }
             }
 
-            // Trailing
             when (trailingType) {
                 SettingsTrailingType.CHEVRON -> {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = null,
-                        tint = Color.White.copy(alpha = 0.35f),
+                        tint = Color(0xFFD1D5DB),
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -105,10 +103,10 @@ fun SettingsItemRow(
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = Color.White,
                             checkedTrackColor = Color(0xFF8B5CF6),
-                            checkedBorderColor = Color(0xFFA78BFA).copy(alpha = 0.5f),
-                            uncheckedThumbColor = Color.White.copy(alpha = 0.8f),
-                            uncheckedTrackColor = Color.White.copy(alpha = 0.12f),
-                            uncheckedBorderColor = Color.White.copy(alpha = 0.25f)
+                            checkedBorderColor = Color(0xFF8B5CF6),
+                            uncheckedThumbColor = Color.White,
+                            uncheckedTrackColor = Color(0xFFE5E7EB),
+                            uncheckedBorderColor = Color(0xFFE5E7EB)
                         )
                     )
                 }
@@ -118,13 +116,13 @@ fun SettingsItemRow(
                             text = valueText,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
-                            color = Color(0xFFA78BFA)
+                            color = Color(0xFF8B5CF6)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                             contentDescription = null,
-                            tint = Color.White.copy(alpha = 0.25f),
+                            tint = Color(0xFFD1D5DB),
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -135,8 +133,8 @@ fun SettingsItemRow(
 
         if (showDivider) {
             HorizontalDivider(
-                color = Color.White.copy(alpha = 0.07f),
-                modifier = Modifier.padding(start = 66.dp, end = 16.dp)
+                color = Color(0xFFF3F4F6),
+                modifier = Modifier.padding(start = 68.dp, end = 16.dp)
             )
         }
     }

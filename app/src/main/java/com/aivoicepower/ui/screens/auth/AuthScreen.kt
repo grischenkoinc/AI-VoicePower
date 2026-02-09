@@ -153,20 +153,6 @@ fun AuthScreen(
                     }
                 }
 
-                // Register: Name field
-                AnimatedVisibility(visible = !state.isLogin) {
-                    Column {
-                        AuthTextField(
-                            value = state.displayName,
-                            onValueChange = { viewModel.onEvent(AuthEvent.DisplayNameChanged(it)) },
-                            label = "Ваше ім'я",
-                            leadingIcon = Icons.Default.Person,
-                            error = state.nameError
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-                }
-
                 // Email field
                 AuthTextField(
                     value = state.email,
