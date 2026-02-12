@@ -1,6 +1,7 @@
 package com.aivoicepower.ui.screens.courses
 
 import android.Manifest
+import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -14,29 +15,39 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.aivoicepower.data.ads.RewardedAdManager
+import com.aivoicepower.ui.components.AnalysisLimitBottomSheet
+import com.aivoicepower.ui.components.AnalysisLimitInfo
 import com.aivoicepower.ui.screens.courses.components.CompletedPhaseContent
 import com.aivoicepower.ui.screens.courses.components.ExercisePhaseContent
 import com.aivoicepower.ui.screens.courses.components.TheoryPhaseContent
 import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.components.GradientBackground
+import com.aivoicepower.utils.constants.FreeTierLimits
 import kotlinx.coroutines.launch
 
+@Suppress("UNUSED_PARAMETER")
 @Composable
 fun LessonScreen(
     courseId: String,
     lessonId: String,
     viewModel: LessonViewModel = hiltViewModel(),
+    rewardedAdManager: RewardedAdManager,
     onNavigateBack: () -> Unit,
-    onNavigateToNextLesson: ((courseId: String, lessonId: String) -> Unit)? = null
+    onNavigateToNextLesson: ((courseId: String, lessonId: String) -> Unit)? = null,
+    onNavigateToPremium: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val activity = context as? Activity
 
     var hasAudioPermission by remember { mutableStateOf(false) }
     var backPressedTime by remember { mutableStateOf(0L) }
@@ -83,6 +94,44 @@ fun LessonScreen(
                 viewModel.clearToastMessage()
             }
         }
+    }
+
+    // Analysis Limit Bottom Sheet
+    if (state.showAnalysisLimitSheet) {
+        AnalysisLimitBottomSheet(
+            limitInfo = AnalysisLimitInfo(
+                usedAnalyses = FreeTierLimits.FREE_ANALYSES_PER_DAY,
+                maxFreeAnalyses = FreeTierLimits.FREE_ANALYSES_PER_DAY,
+                remainingAdAnalyses = state.remainingAdAnalyses,
+                isAdLoaded = state.isAdLoaded
+            ),
+            onWatchAd = {
+                viewModel.onEvent(LessonEvent.WatchAdForAnalysis)
+                if (activity != null) {
+                    rewardedAdManager.showAd(
+                        activity = activity,
+                        onRewarded = {
+                            viewModel.proceedWithAnalysisAfterAd()
+                        },
+                        onFailed = { error ->
+                            scope.launch {
+                                snackbarHostState.showSnackbar(error)
+                            }
+                        }
+                    )
+                }
+            },
+            onPremium = {
+                viewModel.onEvent(LessonEvent.DismissAnalysisLimitSheet)
+                onNavigateToPremium()
+            },
+            onContinueWithout = {
+                viewModel.onEvent(LessonEvent.ContinueWithoutAnalysis)
+            },
+            onDismiss = {
+                viewModel.onEvent(LessonEvent.DismissAnalysisLimitSheet)
+            }
+        )
     }
 
     when {
@@ -136,7 +185,9 @@ fun LessonScreen(
                             exerciseState = state.exerciseStates.getOrNull(state.currentExerciseIndex),
                             totalExercises = state.exerciseStates.size,
                             isPlaying = state.isPlaying,
-                            onEvent = viewModel::onEvent
+                            onEvent = viewModel::onEvent,
+                            remainingAnalyses = if (!state.isPremium) state.remainingAnalyses else null,
+                            onContinueAfterNoAnalysis = { viewModel.continueAfterNoAnalysis() }
                         )
                     }
 

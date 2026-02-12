@@ -10,6 +10,7 @@ data class CourseDetailState(
     val totalLessons: Int = 0,
     val progressPercent: Int = 0,
     val isPremium: Boolean = false,
+    val isUserPremium: Boolean = false,
     val isLoading: Boolean = true,
     val error: String? = null
 )

@@ -11,5 +11,11 @@ data class RandomTopicState(
     val recordingPath: String? = null,
     val recordingId: String? = null,
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    // Analysis limits
+    val showAnalysisLimitSheet: Boolean = false,
+    val isPremium: Boolean = true,
+    val remainingImprovAnalyses: Int = Int.MAX_VALUE,
+    val remainingAdImprovAnalyses: Int = 0,
+    val isAdLoaded: Boolean = false
 )

@@ -26,7 +26,13 @@ data class UserPreferences(
     val freeImprovisationsToday: Int = 0,
     val lastTipUpdateTime: Long = 0, // Час останнього оновлення пораді
     val currentTipId: String? = null, // ID поточної пораді
-    val lastDailyPlanDate: String? = null // Дата останнього оновлення денного плану (yyyy-MM-dd)
+    val lastDailyPlanDate: String? = null, // Дата останнього оновлення денного плану (yyyy-MM-dd)
+    // AI Analysis limits
+    val freeAnalysesToday: Int = 0,
+    val freeAdAnalysesToday: Int = 0,
+    val freeImprovAnalysesToday: Int = 0,
+    val freeAdImprovToday: Int = 0,
+    val lastLimitResetDate: String? = null
 )
 
 @Singleton
@@ -51,6 +57,12 @@ class UserPreferencesDataStore @Inject constructor(
         val USER_EMAIL = stringPreferencesKey("user_email")
         val USER_PHOTO_URL = stringPreferencesKey("user_photo_url")
         val HAS_COMPLETED_AUTH = booleanPreferencesKey("has_completed_auth")
+        // AI Analysis limits
+        val FREE_ANALYSES_TODAY = intPreferencesKey("free_analyses_today")
+        val FREE_AD_ANALYSES_TODAY = intPreferencesKey("free_ad_analyses_today")
+        val FREE_IMPROV_ANALYSES_TODAY = intPreferencesKey("free_improv_analyses_today")
+        val FREE_AD_IMPROV_TODAY = intPreferencesKey("free_ad_improv_today")
+        val LAST_LIMIT_RESET_DATE = stringPreferencesKey("last_limit_reset_date")
     }
 
     val userPreferencesFlow: Flow<UserPreferences> = context.dataStore.data
@@ -63,7 +75,7 @@ class UserPreferencesDataStore @Inject constructor(
         }
         .map { preferences ->
             UserPreferences(
-                isPremium = preferences[PreferencesKeys.IS_PREMIUM] ?: true, // Hardcoded for testing
+                isPremium = preferences[PreferencesKeys.IS_PREMIUM] ?: false,
                 currentStreak = preferences[PreferencesKeys.CURRENT_STREAK] ?: 0,
                 todayMinutes = preferences[PreferencesKeys.TODAY_MINUTES] ?: 0,
                 hasCompletedOnboarding = preferences[PreferencesKeys.HAS_COMPLETED_ONBOARDING] ?: false,
@@ -74,7 +86,12 @@ class UserPreferencesDataStore @Inject constructor(
                 freeImprovisationsToday = preferences[PreferencesKeys.FREE_IMPROVISATIONS_TODAY] ?: 0,
                 lastTipUpdateTime = preferences[PreferencesKeys.LAST_TIP_UPDATE_TIME] ?: 0,
                 currentTipId = preferences[PreferencesKeys.CURRENT_TIP_ID],
-                lastDailyPlanDate = preferences[PreferencesKeys.LAST_DAILY_PLAN_DATE]
+                lastDailyPlanDate = preferences[PreferencesKeys.LAST_DAILY_PLAN_DATE],
+                freeAnalysesToday = preferences[PreferencesKeys.FREE_ANALYSES_TODAY] ?: 0,
+                freeAdAnalysesToday = preferences[PreferencesKeys.FREE_AD_ANALYSES_TODAY] ?: 0,
+                freeImprovAnalysesToday = preferences[PreferencesKeys.FREE_IMPROV_ANALYSES_TODAY] ?: 0,
+                freeAdImprovToday = preferences[PreferencesKeys.FREE_AD_IMPROV_TODAY] ?: 0,
+                lastLimitResetDate = preferences[PreferencesKeys.LAST_LIMIT_RESET_DATE]
             )
         }
 
@@ -88,7 +105,7 @@ class UserPreferencesDataStore @Inject constructor(
             }
         }
         .map { preferences ->
-            preferences[PreferencesKeys.IS_PREMIUM] ?: true // Hardcoded for testing
+            preferences[PreferencesKeys.IS_PREMIUM] ?: false
         }
 
     // Direct Flow for hasCompletedOnboarding (used by v2 ViewModels)
@@ -199,6 +216,67 @@ class UserPreferencesDataStore @Inject constructor(
     suspend fun resetFreeImprovisations() {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.FREE_IMPROVISATIONS_TODAY] = 0
+        }
+    }
+
+    // ===== AI Analysis limits =====
+
+    suspend fun incrementFreeAnalyses() {
+        context.dataStore.edit { preferences ->
+            val current = preferences[PreferencesKeys.FREE_ANALYSES_TODAY] ?: 0
+            preferences[PreferencesKeys.FREE_ANALYSES_TODAY] = current + 1
+        }
+    }
+
+    suspend fun incrementFreeAdAnalyses() {
+        context.dataStore.edit { preferences ->
+            val current = preferences[PreferencesKeys.FREE_AD_ANALYSES_TODAY] ?: 0
+            preferences[PreferencesKeys.FREE_AD_ANALYSES_TODAY] = current + 1
+        }
+    }
+
+    suspend fun incrementFreeImprovAnalyses() {
+        context.dataStore.edit { preferences ->
+            val current = preferences[PreferencesKeys.FREE_IMPROV_ANALYSES_TODAY] ?: 0
+            preferences[PreferencesKeys.FREE_IMPROV_ANALYSES_TODAY] = current + 1
+        }
+    }
+
+    suspend fun incrementFreeAdImprov() {
+        context.dataStore.edit { preferences ->
+            val current = preferences[PreferencesKeys.FREE_AD_IMPROV_TODAY] ?: 0
+            preferences[PreferencesKeys.FREE_AD_IMPROV_TODAY] = current + 1
+        }
+    }
+
+    suspend fun resetDailyAnalysisLimits() {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.FREE_ANALYSES_TODAY] = 0
+            preferences[PreferencesKeys.FREE_AD_ANALYSES_TODAY] = 0
+            preferences[PreferencesKeys.FREE_IMPROV_ANALYSES_TODAY] = 0
+            preferences[PreferencesKeys.FREE_AD_IMPROV_TODAY] = 0
+            preferences[PreferencesKeys.FREE_IMPROVISATIONS_TODAY] = 0
+            preferences[PreferencesKeys.LAST_LIMIT_RESET_DATE] = java.text.SimpleDateFormat(
+                "yyyy-MM-dd", java.util.Locale.getDefault()
+            ).format(java.util.Date())
+        }
+    }
+
+    suspend fun checkAndResetDailyLimits() {
+        val today = java.text.SimpleDateFormat(
+            "yyyy-MM-dd", java.util.Locale.getDefault()
+        ).format(java.util.Date())
+
+        context.dataStore.edit { preferences ->
+            val lastReset = preferences[PreferencesKeys.LAST_LIMIT_RESET_DATE]
+            if (lastReset != today) {
+                preferences[PreferencesKeys.FREE_ANALYSES_TODAY] = 0
+                preferences[PreferencesKeys.FREE_AD_ANALYSES_TODAY] = 0
+                preferences[PreferencesKeys.FREE_IMPROV_ANALYSES_TODAY] = 0
+                preferences[PreferencesKeys.FREE_AD_IMPROV_TODAY] = 0
+                preferences[PreferencesKeys.FREE_IMPROVISATIONS_TODAY] = 0
+                preferences[PreferencesKeys.LAST_LIMIT_RESET_DATE] = today
+            }
         }
     }
 

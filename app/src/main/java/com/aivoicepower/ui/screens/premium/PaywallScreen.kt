@@ -494,6 +494,10 @@ private fun getPaywallMessage(source: PaywallSource): String {
             "Ви використали 10 повідомлень сьогодні. Преміум знімає всі обмеження!"
         PaywallSource.DIAGNOSTIC_LIMIT ->
             "Повторна діагностика доступна тільки у Преміум версії"
+        PaywallSource.ANALYSIS_LIMIT ->
+            "Ви використали всі безкоштовні аналізи на сьогодні. Преміум дає необмежений AI аналіз!"
+        PaywallSource.IMPROV_ANALYSIS_LIMIT ->
+            "Безкоштовний аналіз імпровізації вичерпано. Преміум знімає всі обмеження!"
         PaywallSource.SETTINGS ->
             "Отримайте повний доступ до всіх функцій"
         PaywallSource.ACHIEVEMENT ->

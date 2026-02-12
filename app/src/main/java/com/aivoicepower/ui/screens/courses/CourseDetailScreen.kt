@@ -1,20 +1,25 @@
 package com.aivoicepower.ui.screens.courses
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -147,17 +152,62 @@ fun CourseDetailScreen(
 
                     // Lessons grouped by week
                     val lessonsByWeek = state.lessonsWithProgress.groupBy { it.weekNumber }
-
                     lessonsByWeek.forEach { (weekNumber, lessons) ->
+                        val weekHasLockedLessons = lessons.any { it.isLocked }
+                        val isFirstLockedWeek = weekHasLockedLessons &&
+                            lessonsByWeek.entries.firstOrNull { (_, wLessons) -> wLessons.any { it.isLocked } }?.key == weekNumber
+
+                        // Pro divider banner before the first locked week
+                        if (isFirstLockedWeek && !state.isUserPremium) {
+                            item {
+                                ProWeekDivider(
+                                    lockedLessonsCount = state.lessonsWithProgress.count { it.isLocked },
+                                    onPremiumClick = onNavigateToPremium
+                                )
+                            }
+                        }
+
                         item {
-                            Text(
-                                text = "Тиждень $weekNumber",
-                                style = AppTypography.titleLarge,
-                                color = Color.White,
-                                fontSize = 22.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
-                            )
+                            Row(
+                                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                Text(
+                                    text = "Тиждень $weekNumber",
+                                    style = AppTypography.titleLarge,
+                                    color = if (weekHasLockedLessons && !state.isUserPremium)
+                                        Color.White.copy(alpha = 0.6f)
+                                    else Color.White,
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.ExtraBold
+                                )
+
+                                if (weekHasLockedLessons && !state.isUserPremium) {
+                                    Box(
+                                        modifier = Modifier
+                                            .background(
+                                                Brush.linearGradient(
+                                                    colors = listOf(
+                                                        Color(0xFF9333EA),
+                                                        Color(0xFF7C3AED),
+                                                        Color(0xFF6D28D9)
+                                                    )
+                                                ),
+                                                RoundedCornerShape(6.dp)
+                                            )
+                                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                                    ) {
+                                        Text(
+                                            text = "PRO",
+                                            color = Color.White,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.ExtraBold,
+                                            letterSpacing = 1.sp
+                                        )
+                                    }
+                                }
+                            }
                         }
 
                         items(lessons) { lessonWithProgress ->
@@ -167,84 +217,144 @@ fun CourseDetailScreen(
                                     if (!lessonWithProgress.isLocked) {
                                         viewModel.onEvent(CourseDetailEvent.LessonClicked(lessonWithProgress.lesson.id))
                                         onNavigateToLesson(courseId, lessonWithProgress.lesson.id)
+                                    } else {
+                                        onNavigateToPremium()
                                     }
                                 }
                             )
                         }
-
-                        // Premium upgrade prompt
-                        if (lessons.any { it.isLocked } && !state.isPremium) {
-                            item {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .shadow(
-                                            elevation = 16.dp,
-                                            shape = RoundedCornerShape(24.dp),
-                                            spotColor = Color(0xFFFBBF24).copy(alpha = 0.3f)
-                                        )
-                                        .background(
-                                            Brush.linearGradient(
-                                                colors = listOf(
-                                                    Color(0xFFFFFBEB),
-                                                    Color(0xFFFEF3C7)
-                                                )
-                                            ),
-                                            RoundedCornerShape(24.dp)
-                                        )
-                                        .padding(20.dp),
-                                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                                ) {
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(56.dp)
-                                                .background(
-                                                    Brush.linearGradient(
-                                                        colors = listOf(
-                                                            Color(0xFFFBBF24),
-                                                            Color(0xFFF59E0B)
-                                                        )
-                                                    ),
-                                                    RoundedCornerShape(16.dp)
-                                                ),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text(text = "🔒", fontSize = 28.sp)
-                                        }
-
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Text(
-                                                text = "Розблокуй всі уроки",
-                                                style = AppTypography.titleMedium,
-                                                color = Color(0xFFD97706),
-                                                fontSize = 18.sp,
-                                                fontWeight = FontWeight.ExtraBold
-                                            )
-                                            Text(
-                                                text = "Отримай доступ до ${lessons.size} уроків Premium",
-                                                style = AppTypography.bodyMedium,
-                                                color = Color(0xFF92400E),
-                                                fontSize = 14.sp
-                                            )
-                                        }
-                                    }
-
-                                    PrimaryButton(
-                                        text = "Оновити до Premium",
-                                        onClick = {
-                                            viewModel.onEvent(CourseDetailEvent.UpgradeToPremiumClicked)
-                                            onNavigateToPremium()
-                                        }
-                                    )
-                                }
-                            }
-                        }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProWeekDivider(
+    lockedLessonsCount: Int,
+    onPremiumClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 12.dp, bottom = 4.dp)
+    ) {
+        // Gradient divider line
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(2.dp)
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color(0xFF9333EA),
+                            Color(0xFF7C3AED),
+                            Color(0xFF9333EA),
+                            Color.Transparent
+                        )
+                    )
+                )
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Pro card
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = 20.dp,
+                    shape = RoundedCornerShape(20.dp),
+                    spotColor = Color(0xFF7C3AED).copy(alpha = 0.4f)
+                )
+                .background(Color.White, RoundedCornerShape(20.dp))
+                .border(
+                    width = 1.5.dp,
+                    brush = Brush.linearGradient(
+                        colors = listOf(Color(0xFF9333EA), Color(0xFF667EEA))
+                    ),
+                    shape = RoundedCornerShape(20.dp)
+                )
+                .clickable { onPremiumClick() }
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Mic icon
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .shadow(
+                        elevation = 10.dp,
+                        shape = CircleShape,
+                        spotColor = Color(0xFF667EEA).copy(alpha = 0.4f)
+                    )
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(
+                                Color(0xFF667EEA),
+                                Color(0xFF764BA2),
+                                Color(0xFF9333EA)
+                            )
+                        ),
+                        CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Mic,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "Розблокуй повний курс",
+                color = Color(0xFF1F2937),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.ExtraBold,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "Ще $lockedLessonsCount уроків з детальним AI аналізом",
+                color = Color(0xFF6B7280),
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // CTA button
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(
+                        elevation = 8.dp,
+                        shape = RoundedCornerShape(14.dp),
+                        spotColor = Color(0xFF667EEA).copy(alpha = 0.4f)
+                    )
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(Color(0xFF667EEA), Color(0xFF764BA2))
+                        ),
+                        RoundedCornerShape(14.dp)
+                    )
+                    .padding(vertical = 14.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Отримати PRO",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }

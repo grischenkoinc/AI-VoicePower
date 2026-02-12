@@ -1,19 +1,12 @@
 package com.aivoicepower.ui.navigation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.data.firebase.auth.GoogleSignInHelper
 import com.aivoicepower.ui.screens.aicoach.AiCoachScreen
 import com.aivoicepower.ui.screens.auth.AuthScreen
@@ -24,6 +17,7 @@ import com.aivoicepower.ui.screens.diagnostic.DiagnosticScreen
 import com.aivoicepower.ui.screens.main.MainScreen
 import com.aivoicepower.ui.screens.onboarding.OnboardingScreen
 import com.aivoicepower.ui.screens.onboarding.SplashScreen
+import com.aivoicepower.ui.screens.premium.PaywallScreen
 import com.aivoicepower.ui.screens.username.UserNameScreen
 
 /**
@@ -43,6 +37,7 @@ object DiagnosticDataHolder {
 fun NavGraph(
     navController: NavHostController,
     googleSignInHelper: GoogleSignInHelper,
+    rewardedAdManager: RewardedAdManager? = null,
     startDestination: String = Screen.Splash.route
 ) {
     NavHost(
@@ -178,6 +173,7 @@ fun NavGraph(
                 onNavigateToPremium = {
                     navController.navigate(Screen.Premium.route)
                 },
+                rewardedAdManager = rewardedAdManager,
                 rootNavController = navController
             )
         }
@@ -196,44 +192,11 @@ fun NavGraph(
         // ===== PREMIUM =====
 
         composable(route = Screen.Premium.route) {
-            PremiumPlaceholderScreen(
-                onNavigateBack = { navController.popBackStack() }
+            PaywallScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onPurchaseSuccess = { navController.popBackStack() }
             )
         }
 
-    }
-}
-
-/**
- * Placeholder for Premium screen
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun PremiumPlaceholderScreen(
-    onNavigateBack: () -> Unit
-) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Premium") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Назад"
-                        )
-                    }
-                }
-            )
-        }
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("Premium Screen - TODO")
-        }
     }
 }

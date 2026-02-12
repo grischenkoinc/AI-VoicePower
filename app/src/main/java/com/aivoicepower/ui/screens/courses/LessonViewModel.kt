@@ -5,10 +5,12 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.data.local.database.dao.CourseProgressDao
 import com.aivoicepower.data.local.database.dao.RecordingDao
 import com.aivoicepower.data.local.database.entity.CourseProgressEntity
 import com.aivoicepower.data.local.database.entity.RecordingEntity
+import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.domain.model.exercise.ExerciseContent
 import com.aivoicepower.domain.model.exercise.ExerciseType
 import com.aivoicepower.domain.model.user.Achievement
@@ -18,6 +20,7 @@ import com.aivoicepower.domain.repository.AchievementRepository
 import com.aivoicepower.domain.repository.CourseRepository
 import com.aivoicepower.domain.repository.VoiceAnalysisRepository
 import com.aivoicepower.domain.service.SkillUpdateService
+import com.aivoicepower.utils.PremiumChecker
 import com.aivoicepower.utils.audio.AudioPlayerUtil
 import com.aivoicepower.utils.audio.AudioRecorderUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,7 +43,9 @@ class LessonViewModel @Inject constructor(
     private val recordingDao: RecordingDao,
     private val voiceAnalysisRepository: VoiceAnalysisRepository,
     private val skillUpdateService: SkillUpdateService,
-    private val achievementRepository: AchievementRepository
+    private val achievementRepository: AchievementRepository,
+    private val userPreferencesDataStore: UserPreferencesDataStore,
+    private val rewardedAdManager: RewardedAdManager
 ) : ViewModel() {
 
     private val courseId: String = savedStateHandle["courseId"] ?: ""
@@ -54,6 +59,7 @@ class LessonViewModel @Inject constructor(
 
     init {
         loadLesson()
+        observeAnalysisLimits()
     }
 
     override fun onCleared() {
@@ -73,9 +79,13 @@ class LessonViewModel @Inject constructor(
             LessonEvent.ReRecordClicked -> reRecord()
             LessonEvent.CompleteExerciseClicked -> completeCurrentExercise()
             LessonEvent.ContinueAfterAnalysisClicked -> continueAfterAnalysis()
+            LessonEvent.RetryExerciseClicked -> retryExercise()
             LessonEvent.NextExerciseClicked -> moveToNextExercise()
             LessonEvent.PreviousExerciseClicked -> moveToPreviousExercise()
             LessonEvent.SkipExerciseClicked -> skipCurrentExercise()
+            LessonEvent.DismissAnalysisLimitSheet -> dismissAnalysisLimitSheet()
+            LessonEvent.WatchAdForAnalysis -> watchAdForAnalysis()
+            LessonEvent.ContinueWithoutAnalysis -> continueWithoutAnalysis()
             LessonEvent.FinishLessonClicked -> {
                 // Navigation handled in Screen
             }
@@ -94,6 +104,83 @@ class LessonViewModel @Inject constructor(
         if (lesson?.theory != null) {
             _state.update { it.copy(currentPhase = LessonPhase.Theory) }
         }
+    }
+
+    private fun observeAnalysisLimits() {
+        viewModelScope.launch {
+            userPreferencesDataStore.checkAndResetDailyLimits()
+        }
+
+        viewModelScope.launch {
+            userPreferencesDataStore.userPreferencesFlow.collect { prefs ->
+                val remaining = PremiumChecker.getRemainingAnalyses(
+                    prefs.isPremium, prefs.freeAnalysesToday, prefs.freeAdAnalysesToday
+                )
+                val remainingAd = PremiumChecker.getRemainingAdAnalyses(prefs.freeAdAnalysesToday)
+                _state.update {
+                    it.copy(
+                        isPremium = prefs.isPremium,
+                        remainingAnalyses = remaining,
+                        remainingAdAnalyses = remainingAd
+                    )
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            rewardedAdManager.isAdLoaded.collect { loaded ->
+                _state.update { it.copy(isAdLoaded = loaded) }
+            }
+        }
+    }
+
+    private fun dismissAnalysisLimitSheet() {
+        _state.update { it.copy(showAnalysisLimitSheet = false) }
+    }
+
+    private fun watchAdForAnalysis() {
+        _state.update { it.copy(showAnalysisLimitSheet = false) }
+        // Ad showing will be triggered from the Screen via Activity reference
+        // After ad reward, the Screen will call proceedWithAnalysisAfterAd()
+    }
+
+    fun proceedWithAnalysisAfterAd() {
+        viewModelScope.launch {
+            userPreferencesDataStore.incrementFreeAdAnalyses()
+            performAnalysis()
+        }
+    }
+
+    private fun continueWithoutAnalysis() {
+        _state.update { it.copy(showAnalysisLimitSheet = false) }
+
+        val currentExerciseState = getCurrentExerciseState() ?: return
+
+        // Save recording without analysis
+        viewModelScope.launch {
+            if (currentExerciseState.recordingPath != null) {
+                val exerciseType = currentExerciseState.exercise.type
+                val recordingEntity = RecordingEntity(
+                    id = UUID.randomUUID().toString(),
+                    filePath = currentExerciseState.recordingPath,
+                    durationMs = currentExerciseState.recordingDurationMs,
+                    type = mapExerciseTypeForSkills(exerciseType),
+                    contextId = "${courseId}_${lessonId}",
+                    exerciseId = currentExerciseState.exercise.id,
+                    isAnalyzed = false
+                )
+                recordingDao.insert(recordingEntity)
+            }
+        }
+
+        updateCurrentExerciseState {
+            it.copy(status = ExerciseStatus.CompletedWithoutAnalysis)
+        }
+    }
+
+    fun continueAfterNoAnalysis() {
+        updateCurrentExerciseState { it.copy(status = ExerciseStatus.Completed) }
+        proceedAfterExercise()
     }
 
     private fun loadLesson() {
@@ -242,9 +329,20 @@ class LessonViewModel @Inject constructor(
         }
     }
 
+    private fun retryExercise() {
+        updateCurrentExerciseState {
+            it.copy(
+                status = ExerciseStatus.NotStarted,
+                recordingPath = null,
+                recordingDurationMs = 0,
+                analysisResult = null
+            )
+        }
+    }
+
     private fun completeCurrentExercise() {
         val currentExerciseState = getCurrentExerciseState() ?: return
-        val lesson = _state.value.lesson ?: return
+        if (_state.value.lesson == null) return
 
         // Validate recording before proceeding
         if (currentExerciseState.recordingPath != null) {
@@ -272,56 +370,21 @@ class LessonViewModel @Inject constructor(
                 currentExerciseState.recordingPath != null
 
         if (hasRecording) {
-            // Show analysis UI - blocking flow
-            updateCurrentExerciseState { it.copy(status = ExerciseStatus.Analyzing) }
-
+            // Check analysis limits for free users
             viewModelScope.launch {
-                try {
-                    // Extract expected text from ExerciseContent
-                    val expectedText = extractExpectedText(currentExerciseState.exercise.content)
+                val prefs = userPreferencesDataStore.userPreferencesFlow.first()
+                val canAnalyze = PremiumChecker.canAnalyzeExercise(
+                    prefs.isPremium, prefs.freeAnalysesToday, prefs.freeAdAnalysesToday
+                )
 
-                    val analysisResult = voiceAnalysisRepository.analyzeRecording(
-                        audioFilePath = currentExerciseState.recordingPath!!,
-                        expectedText = expectedText,
-                        exerciseType = currentExerciseState.exercise.type.name,
-                        context = "Урок: ${lesson.title}, вправа: ${currentExerciseState.exercise.title}"
-                    )
-
-                    val result = analysisResult.getOrNull()
-
-                    // Update skills from analysis
-                    if (result != null) {
-                        val mappedType = mapExerciseTypeForSkills(exerciseType)
-                        skillUpdateService.updateFromAnalysis(result, mappedType)
-                    }
-
-                    // Show results to user
-                    updateCurrentExerciseState {
-                        it.copy(
-                            status = ExerciseStatus.ShowingResults,
-                            analysisResult = result
-                        )
-                    }
-
-                    // Save recording to database — only meaningful recordings (score > 0)
-                    if (result != null && result.overallScore > 0) {
-                        val recordingEntity = RecordingEntity(
-                            id = UUID.randomUUID().toString(),
-                            filePath = currentExerciseState.recordingPath,
-                            durationMs = currentExerciseState.recordingDurationMs,
-                            type = mapExerciseTypeForSkills(exerciseType),
-                            contextId = "${courseId}_${lessonId}",
-                            exerciseId = currentExerciseState.exercise.id,
-                            isAnalyzed = true
-                        )
-                        recordingDao.insert(recordingEntity)
-                    }
-                } catch (e: Exception) {
-                    Log.e("LessonVM", "Analysis error: ${e.message}", e)
-                    // On error, skip analysis and proceed
-                    updateCurrentExerciseState { it.copy(status = ExerciseStatus.Completed) }
-                    proceedAfterExercise()
+                if (!canAnalyze) {
+                    // Show limit bottom sheet
+                    _state.update { it.copy(showAnalysisLimitSheet = true) }
+                    return@launch
                 }
+
+                // Proceed with analysis
+                performAnalysis()
             }
         } else {
             // No recording exercise (ARTICULATION/BREATHING) - complete immediately
@@ -330,8 +393,81 @@ class LessonViewModel @Inject constructor(
         }
     }
 
+    private fun performAnalysis() {
+        val currentExerciseState = getCurrentExerciseState() ?: return
+        val lesson = _state.value.lesson ?: return
+
+        // Show analysis UI - blocking flow
+        updateCurrentExerciseState { it.copy(status = ExerciseStatus.Analyzing) }
+
+        viewModelScope.launch {
+            try {
+                // Extract expected text from ExerciseContent
+                val expectedText = extractExpectedText(currentExerciseState.exercise.content)
+                val exerciseType = currentExerciseState.exercise.type
+
+                val analysisResult = voiceAnalysisRepository.analyzeRecording(
+                    audioFilePath = currentExerciseState.recordingPath!!,
+                    expectedText = expectedText,
+                    exerciseType = currentExerciseState.exercise.type.name,
+                    context = "Урок: ${lesson.title}, вправа: ${currentExerciseState.exercise.title}"
+                )
+
+                val result = analysisResult.getOrNull()
+
+                // Increment analysis counter for free users — only for meaningful results (score > 0)
+                if (result != null && result.overallScore > 0) {
+                    val prefs = userPreferencesDataStore.userPreferencesFlow.first()
+                    if (!prefs.isPremium) {
+                        userPreferencesDataStore.incrementFreeAnalyses()
+                    }
+                }
+
+                // Update skills from analysis
+                if (result != null) {
+                    val mappedType = mapExerciseTypeForSkills(exerciseType)
+                    skillUpdateService.updateFromAnalysis(result, mappedType)
+                }
+
+                // Show results to user
+                updateCurrentExerciseState {
+                    it.copy(
+                        status = ExerciseStatus.ShowingResults,
+                        analysisResult = result
+                    )
+                }
+
+                // Save recording to database — only meaningful recordings (score > 0)
+                if (result != null && result.overallScore > 0) {
+                    val recordingEntity = RecordingEntity(
+                        id = UUID.randomUUID().toString(),
+                        filePath = currentExerciseState.recordingPath,
+                        durationMs = currentExerciseState.recordingDurationMs,
+                        type = mapExerciseTypeForSkills(exerciseType),
+                        contextId = "${courseId}_${lessonId}",
+                        exerciseId = currentExerciseState.exercise.id,
+                        isAnalyzed = true
+                    )
+                    recordingDao.insert(recordingEntity)
+                }
+            } catch (e: Exception) {
+                Log.e("LessonVM", "Analysis error: ${e.message}", e)
+                // On error, skip analysis and proceed
+                updateCurrentExerciseState { it.copy(status = ExerciseStatus.Completed) }
+                proceedAfterExercise()
+            }
+        }
+    }
+
     private fun continueAfterAnalysis() {
-        updateCurrentExerciseState { it.copy(status = ExerciseStatus.Completed) }
+        val currentExerciseState = getCurrentExerciseState()
+        val score = currentExerciseState?.analysisResult?.overallScore ?: 0
+        val newStatus = if (score == 0) {
+            ExerciseStatus.CompletedWithoutAnalysis
+        } else {
+            ExerciseStatus.Completed
+        }
+        updateCurrentExerciseState { it.copy(status = newStatus) }
         proceedAfterExercise()
     }
 
@@ -340,7 +476,9 @@ class LessonViewModel @Inject constructor(
         val currentIndex = _state.value.currentExerciseIndex
         updatedStates[currentIndex] = updatedStates[currentIndex].copy(status = ExerciseStatus.Completed)
 
-        val allCompleted = updatedStates.all { it.status == ExerciseStatus.Completed }
+        val allCompleted = updatedStates.all {
+            it.status == ExerciseStatus.Completed || it.status == ExerciseStatus.CompletedWithoutAnalysis
+        }
 
         if (allCompleted) {
             _state.update {
@@ -349,12 +487,10 @@ class LessonViewModel @Inject constructor(
                     exerciseStates = updatedStates
                 )
             }
-            // Save progress and handle course completion
+            // Save progress and check course completion
             viewModelScope.launch {
                 saveLessonProgress()
-                if (_state.value.isLastLessonInCourse) {
-                    handleCourseCompletion()
-                }
+                handleCourseCompletion()
             }
         } else {
             _state.update { it.copy(exerciseStates = updatedStates) }
@@ -386,6 +522,21 @@ class LessonViewModel @Inject constructor(
 
     private suspend fun handleCourseCompletion() {
         try {
+            // Check if ALL lessons in the course are completed before awarding badge
+            val course = courseRepository.getCourseById(courseId)
+            if (course != null) {
+                val allProgress = courseProgressDao.getCourseProgressOnce(courseId)
+                val completedLessonIds = allProgress.filter { it.isCompleted }.map { it.lessonId }.toSet()
+                // Only real lessons (with exercises) count for completion
+                val realLessons = course.lessons.filter { it.exercises.isNotEmpty() }
+                val allRealLessonsCompleted = realLessons.all { it.id in completedLessonIds }
+
+                if (!allRealLessonsCompleted) {
+                    Log.d("LessonVM", "Not all lessons completed: ${completedLessonIds.size}/${realLessons.size}")
+                    return
+                }
+            }
+
             achievementRepository.checkAndUnlock()
 
             val badgeDef = AchievementDefinitions.getForCourse(courseId)
@@ -477,9 +628,7 @@ class LessonViewModel @Inject constructor(
             // Last exercise skipped - complete lesson
             viewModelScope.launch {
                 saveLessonProgress()
-                if (_state.value.isLastLessonInCourse) {
-                    handleCourseCompletion()
-                }
+                handleCourseCompletion()
                 _state.update { it.copy(currentPhase = LessonPhase.Completed) }
             }
         }

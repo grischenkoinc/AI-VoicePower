@@ -43,9 +43,39 @@ object BusinessCommunicationCourse {
             getLesson4(),
             getLesson5(),
             getLesson6(),
-            getLesson7()
+            getLesson7(),
+            // Тиждень 2
+            createPlaceholder(8),
+            createPlaceholder(9),
+            createPlaceholder(10),
+            createPlaceholder(11),
+            createPlaceholder(12),
+            createPlaceholder(13),
+            createPlaceholder(14),
+            // Тиждень 3
+            createPlaceholder(15),
+            createPlaceholder(16),
+            createPlaceholder(17),
+            createPlaceholder(18),
+            createPlaceholder(19),
+            createPlaceholder(20),
+            createPlaceholder(21)
         )
     }
+
+    private fun createPlaceholder(day: Int): Lesson = Lesson(
+        id = "${LESSON_PREFIX}$day",
+        courseId = COURSE_ID,
+        dayNumber = day,
+        title = "Урок $day",
+        description = "Скоро буде доступно",
+        theory = TheoryContent(
+            text = "Цей урок ще в розробці. Ми працюємо над тим, щоб зробити його якомога кориснішим для тебе. Дякуємо за терпіння!",
+            tips = emptyList()
+        ),
+        exercises = emptyList(),
+        estimatedMinutes = 10
+    )
 
     // ===== УРОК 1: Основи ділового мовлення =====
 

@@ -5,7 +5,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.local.database.dao.CourseProgressDao
+import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.domain.repository.CourseRepository
+import com.aivoicepower.utils.constants.FreeTierLimits
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -18,7 +20,8 @@ import javax.inject.Inject
 class CourseDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val courseRepository: CourseRepository,
-    private val courseProgressDao: CourseProgressDao
+    private val courseProgressDao: CourseProgressDao,
+    private val userPreferencesDataStore: UserPreferencesDataStore
 ) : ViewModel() {
 
     private val courseId: String = savedStateHandle["courseId"] ?: ""
@@ -48,8 +51,11 @@ class CourseDetailViewModel @Inject constructor(
                     return@launch
                 }
 
-                // Load progress from database
-                courseProgressDao.getCourseProgress(courseId).collect { progressList ->
+                // Combine user premium status with course progress
+                combine(
+                    userPreferencesDataStore.isPremium,
+                    courseProgressDao.getCourseProgress(courseId)
+                ) { isUserPremium, progressList ->
                     val progressMap = progressList.associateBy { it.lessonId }
 
                     // Convert lessons to LessonWithProgress
@@ -58,7 +64,7 @@ class CourseDetailViewModel @Inject constructor(
                         LessonWithProgress(
                             lesson = lesson,
                             isCompleted = progress?.isCompleted ?: false,
-                            isLocked = false, // TEMP: All lessons unlocked for testing
+                            isLocked = !isUserPremium && index >= FreeTierLimits.FREE_LESSONS_PER_COURSE,
                             weekNumber = (index / 7) + 1
                         )
                     }
@@ -74,9 +80,10 @@ class CourseDetailViewModel @Inject constructor(
                             (completedCount * 100) / course.totalLessons
                         } else 0,
                         isPremium = course.isPremium,
+                        isUserPremium = isUserPremium,
                         isLoading = false
                     )
-                }
+                }.collect()
             } catch (e: Exception) {
                 Log.e("CourseDetail", "Error loading course", e)
                 _state.value = _state.value.copy(

@@ -26,22 +26,32 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.app.Activity
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.domain.model.VoiceAnalysisResult
 import com.aivoicepower.domain.model.content.TongueTwister
+import com.aivoicepower.ui.components.AnalysisLimitBottomSheet
+import com.aivoicepower.ui.components.AnalysisLimitInfo
 import com.aivoicepower.ui.components.AnalysisResultsContent
 import com.aivoicepower.ui.components.AnalyzingContent
 import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
 import com.aivoicepower.ui.theme.components.GradientBackground
+import com.aivoicepower.utils.constants.FreeTierLimits
 
 @Composable
 fun TongueTwistersScreen(
     viewModel: TongueTwistersViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit
+    rewardedAdManager: RewardedAdManager? = null,
+    onNavigateBack: () -> Unit,
+    onNavigateToPremium: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val activity = context as? Activity
 
     Box(modifier = Modifier.fillMaxSize()) {
         GradientBackground(content = {})
@@ -110,6 +120,40 @@ fun TongueTwistersScreen(
                 onStartRecording = { viewModel.onEvent(TongueTwistersEvent.StartRecording) },
                 onStopRecording = { viewModel.onEvent(TongueTwistersEvent.StopRecording) },
                 onDismissAnalysis = { viewModel.onEvent(TongueTwistersEvent.DismissAnalysis) }
+            )
+        }
+
+        // Analysis Limit Bottom Sheet
+        if (state.showAnalysisLimitSheet) {
+            AnalysisLimitBottomSheet(
+                limitInfo = AnalysisLimitInfo(
+                    usedAnalyses = FreeTierLimits.FREE_ANALYSES_PER_DAY + state.remainingAdAnalyses - state.remainingAnalyses,
+                    maxFreeAnalyses = FreeTierLimits.FREE_ANALYSES_PER_DAY + state.remainingAdAnalyses,
+                    remainingAdAnalyses = state.remainingAdAnalyses,
+                    isAdLoaded = state.isAdLoaded
+                ),
+                onWatchAd = {
+                    viewModel.onEvent(TongueTwistersEvent.WatchAdForAnalysis)
+                    if (activity != null && rewardedAdManager != null) {
+                        rewardedAdManager.showAd(
+                            activity = activity,
+                            onRewarded = {
+                                viewModel.proceedWithAnalysisAfterAd()
+                            },
+                            onFailed = { }
+                        )
+                    }
+                },
+                onPremium = {
+                    viewModel.onEvent(TongueTwistersEvent.DismissAnalysisLimitSheet)
+                    onNavigateToPremium()
+                },
+                onContinueWithout = {
+                    viewModel.onEvent(TongueTwistersEvent.ContinueWithoutAnalysis)
+                },
+                onDismiss = {
+                    viewModel.onEvent(TongueTwistersEvent.DismissAnalysisLimitSheet)
+                }
             )
         }
     }

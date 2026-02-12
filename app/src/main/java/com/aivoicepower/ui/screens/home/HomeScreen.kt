@@ -114,6 +114,16 @@ fun HomeScreen(
                     MotivationCard(tip = tip)
                 }
 
+                // Daily Limits Card (for free users)
+                if (!state.isPremium) {
+                    com.aivoicepower.ui.screens.home.components.DailyLimitsCard(
+                        remainingAnalyses = state.remainingAnalyses,
+                        maxAnalyses = state.maxFreeAnalyses,
+                        remainingImprovAnalyses = state.remainingImprovAnalyses,
+                        maxImprovAnalyses = state.maxFreeImprovAnalyses
+                    )
+                }
+
                 // Daily Goal
                 state.todayPlan?.let { plan ->
                     DailyGoalCard(plan = plan)

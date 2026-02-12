@@ -15,8 +15,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aivoicepower.domain.model.course.Lesson
+import com.aivoicepower.data.ads.BannerAdView
 import com.aivoicepower.ui.components.AnalysisResultsContent
 import com.aivoicepower.ui.components.AnalyzingContent
+import com.aivoicepower.ui.components.NoAnalysisResultCard
 import com.aivoicepower.ui.screens.courses.ExerciseState
 import com.aivoicepower.ui.screens.courses.ExerciseStatus
 import com.aivoicepower.ui.screens.courses.LessonEvent
@@ -31,7 +33,9 @@ fun ExercisePhaseContent(
     totalExercises: Int,
     isPlaying: Boolean,
     onEvent: (LessonEvent) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    remainingAnalyses: Int? = null,
+    onContinueAfterNoAnalysis: (() -> Unit)? = null
 ) {
     if (exerciseState == null) return
 
@@ -118,6 +122,26 @@ fun ExercisePhaseContent(
                                 )
                             },
                             content = {
+                                // Remaining analyses indicator for free users
+                                if (remainingAnalyses != null && exerciseState.status != ExerciseStatus.Analyzing &&
+                                    exerciseState.status != ExerciseStatus.ShowingResults &&
+                                    exerciseState.status != ExerciseStatus.CompletedWithoutAnalysis &&
+                                    exerciseState.exercise.type != com.aivoicepower.domain.model.exercise.ExerciseType.ARTICULATION &&
+                                    exerciseState.exercise.type != com.aivoicepower.domain.model.exercise.ExerciseType.BREATHING
+                                ) {
+                                    val color = when {
+                                        remainingAnalyses > 3 -> Color(0xFF22C55E) // green
+                                        remainingAnalyses > 1 -> Color(0xFFF59E0B) // orange
+                                        else -> Color(0xFFEF4444) // red
+                                    }
+                                    Text(
+                                        text = "\uD83D\uDD2C Аналізів залишилось: $remainingAnalyses",
+                                        color = color,
+                                        fontSize = 13.sp,
+                                        modifier = Modifier.padding(bottom = 8.dp)
+                                    )
+                                }
+
                                 when (exerciseState.status) {
                                     ExerciseStatus.Analyzing -> {
                                         AnalyzingContent()
@@ -127,9 +151,26 @@ fun ExercisePhaseContent(
                                             AnalysisResultsContent(
                                                 result = result,
                                                 onDismiss = { onEvent(LessonEvent.ContinueAfterAnalysisClicked) },
-                                                dismissButtonText = "Далі"
+                                                dismissButtonText = "Далі",
+                                                onRetry = { onEvent(LessonEvent.RetryExerciseClicked) }
                                             )
                                         }
+                                        // Banner ad for free users after analysis
+                                        if (remainingAnalyses != null) {
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            BannerAdView()
+                                        }
+                                    }
+                                    ExerciseStatus.CompletedWithoutAnalysis -> {
+                                        NoAnalysisResultCard(
+                                            recordingDurationMs = exerciseState.recordingDurationMs
+                                        )
+                                        Spacer(modifier = Modifier.height(16.dp))
+                                        PrimaryButton(
+                                            text = "Далі",
+                                            onClick = { onContinueAfterNoAnalysis?.invoke() },
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
                                     }
                                     else -> {
                                         // Exercise Card (окремий компонент)

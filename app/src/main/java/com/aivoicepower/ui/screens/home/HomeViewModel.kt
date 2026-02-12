@@ -7,7 +7,9 @@ import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.domain.model.home.*
 import com.aivoicepower.domain.repository.CourseRepository
 import com.aivoicepower.ui.navigation.Screen
+import com.aivoicepower.utils.PremiumChecker
 import com.aivoicepower.utils.SkillLevelUtils
+import com.aivoicepower.utils.constants.FreeTierLimits
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -34,6 +36,7 @@ class HomeViewModel @Inject constructor(
         observeSkills()
         observeCourseProgress()
         observeDailyPlan()
+        observeAnalysisLimits()
     }
 
     fun onEvent(event: HomeEvent) {
@@ -650,6 +653,37 @@ class HomeViewModel @Inject constructor(
                         val updatedCourse = getCurrentCourse(preferences)
                         _state.update { it.copy(currentCourse = updatedCourse) }
                     }
+                }
+            }
+        }
+    }
+
+    private fun observeAnalysisLimits() {
+        viewModelScope.launch {
+            userPreferencesDataStore.checkAndResetDailyLimits()
+        }
+
+        viewModelScope.launch {
+            userPreferencesDataStore.userPreferencesFlow.collect { prefs ->
+                val remainingAnalyses = PremiumChecker.getRemainingAnalyses(
+                    prefs.isPremium, prefs.freeAnalysesToday, prefs.freeAdAnalysesToday
+                )
+                val remainingImprov = PremiumChecker.getRemainingImprovAnalyses(
+                    prefs.isPremium, prefs.freeImprovAnalysesToday, prefs.freeAdImprovToday
+                )
+                val remainingMessages = PremiumChecker.getRemainingAiMessages(
+                    prefs.isPremium, 0 // AI Coach messages tracked separately
+                )
+                _state.update {
+                    it.copy(
+                        isPremium = prefs.isPremium,
+                        remainingAnalyses = remainingAnalyses,
+                        remainingImprovAnalyses = remainingImprov,
+                        remainingAiMessages = remainingMessages,
+                        maxFreeAnalyses = FreeTierLimits.FREE_ANALYSES_PER_DAY + prefs.freeAdAnalysesToday,
+                        maxFreeImprovAnalyses = FreeTierLimits.FREE_IMPROV_ANALYSES_PER_DAY + prefs.freeAdImprovToday,
+                        maxFreeAiMessages = FreeTierLimits.FREE_MESSAGES_PER_DAY
+                    )
                 }
             }
         }

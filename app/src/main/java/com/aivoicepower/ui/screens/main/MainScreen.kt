@@ -23,6 +23,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.ui.navigation.MainNavGraph
 import com.aivoicepower.ui.navigation.Screen
 import com.aivoicepower.ui.screens.main.components.AppDrawerContent
@@ -37,6 +38,7 @@ import kotlinx.coroutines.launch
 fun MainScreen(
     onNavigateToAiCoach: () -> Unit = {},
     onNavigateToPremium: () -> Unit = {},
+    rewardedAdManager: RewardedAdManager? = null,
     rootNavController: NavHostController = rememberNavController()
 ) {
     val navController = rememberNavController()
@@ -171,6 +173,7 @@ fun MainScreen(
                     rootNavController = rootNavController,
                     onNavigateToAiCoach = onNavigateToAiCoach,
                     onNavigateToPremium = onNavigateToPremium,
+                    rewardedAdManager = rewardedAdManager,
                     onOpenDrawer = {
                         scope.launch { drawerState.open() }
                     },

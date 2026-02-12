@@ -100,11 +100,6 @@ private fun WarmupContent(
         // Header
         WarmupHeader(onNavigateBack = onNavigateBack)
 
-        // Stats Card
-        if (state.stats != null) {
-            WarmupStatsCard(stats = state.stats)
-        }
-
         // Quick Warmup Section
         Text(
             text = "Швидка розминка",
@@ -116,6 +111,9 @@ private fun WarmupContent(
         )
 
         QuickWarmupCard(onClick = onQuickWarmupClick)
+
+        // Tip Card
+        TipCard()
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -135,11 +133,6 @@ private fun WarmupContent(
                 onClick = { onCategoryClick(category.id) }
             )
         }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Tip Card
-        TipCard()
 
         Spacer(modifier = Modifier.height(24.dp))
     }

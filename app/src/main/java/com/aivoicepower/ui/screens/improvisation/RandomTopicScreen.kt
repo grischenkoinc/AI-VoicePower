@@ -1,5 +1,6 @@
 package com.aivoicepower.ui.screens.improvisation
 
+import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,30 +16,78 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.aivoicepower.data.ads.RewardedAdManager
+import com.aivoicepower.ui.components.AnalysisLimitBottomSheet
+import com.aivoicepower.ui.components.AnalysisLimitInfo
 import com.aivoicepower.ui.screens.improvisation.components.*
 import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
 import com.aivoicepower.ui.theme.components.GradientBackground
 import com.aivoicepower.ui.theme.components.PrimaryButton
 import com.aivoicepower.ui.theme.components.SecondaryButton
+import com.aivoicepower.utils.constants.FreeTierLimits
 import kotlinx.coroutines.launch
 
 @Suppress("UNUSED_PARAMETER")
 @Composable
 fun RandomTopicScreen(
     viewModel: RandomTopicViewModel = hiltViewModel(),
+    rewardedAdManager: RewardedAdManager? = null,
     onNavigateBack: () -> Unit,
-    onNavigateToResults: (recordingId: String) -> Unit
+    onNavigateToResults: (recordingId: String) -> Unit,
+    onNavigateToPremium: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val activity = context as? Activity
     var backPressedTime by remember { mutableStateOf(0L) }
+
+    // Analysis Limit Bottom Sheet
+    if (state.showAnalysisLimitSheet) {
+        AnalysisLimitBottomSheet(
+            limitInfo = AnalysisLimitInfo(
+                usedAnalyses = FreeTierLimits.FREE_IMPROV_ANALYSES_PER_DAY,
+                maxFreeAnalyses = FreeTierLimits.FREE_IMPROV_ANALYSES_PER_DAY,
+                remainingAdAnalyses = state.remainingAdImprovAnalyses,
+                isAdLoaded = state.isAdLoaded,
+                isImprovisation = true
+            ),
+            onWatchAd = {
+                viewModel.onEvent(RandomTopicEvent.WatchAdForAnalysis)
+                if (activity != null && rewardedAdManager != null) {
+                    rewardedAdManager.showAd(
+                        activity = activity,
+                        onRewarded = {
+                            viewModel.proceedWithAnalysisAfterAd()
+                        },
+                        onFailed = { error ->
+                            scope.launch {
+                                snackbarHostState.showSnackbar(error)
+                            }
+                        }
+                    )
+                }
+            },
+            onPremium = {
+                viewModel.onEvent(RandomTopicEvent.DismissAnalysisLimitSheet)
+                onNavigateToPremium()
+            },
+            onContinueWithout = {
+                viewModel.onEvent(RandomTopicEvent.ContinueWithoutAnalysis)
+            },
+            onDismiss = {
+                viewModel.onEvent(RandomTopicEvent.DismissAnalysisLimitSheet)
+            }
+        )
+    }
 
     // Double-back to exit protection
     BackHandler {

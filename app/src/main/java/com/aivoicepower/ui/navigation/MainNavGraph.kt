@@ -20,6 +20,7 @@ import com.aivoicepower.ui.screens.improvisation.*
 import com.aivoicepower.ui.screens.improvisation.JobInterviewScreen
 import com.aivoicepower.ui.screens.improvisation.PresentationScreen
 import com.aivoicepower.ui.screens.improvisation.NegotiationScreen
+import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.ui.screens.courses.LessonScreen
 import com.aivoicepower.ui.screens.progress.AchievementsScreen
 import com.aivoicepower.ui.screens.progress.CompareScreen
@@ -43,6 +44,7 @@ fun MainNavGraph(
     rootNavController: NavHostController,
     onNavigateToAiCoach: () -> Unit,
     onNavigateToPremium: () -> Unit,
+    rewardedAdManager: RewardedAdManager? = null,
     onOpenDrawer: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -129,12 +131,14 @@ fun MainNavGraph(
             LessonScreen(
                 courseId = courseId,
                 lessonId = lessonId,
+                rewardedAdManager = rewardedAdManager ?: return@composable,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToNextLesson = { nextCourseId, nextLessonId ->
                     navController.navigate(Screen.Lesson.createRoute(nextCourseId, nextLessonId)) {
                         popUpTo(Screen.Lesson.createRoute(courseId, lessonId)) { inclusive = true }
                     }
-                }
+                },
+                onNavigateToPremium = onNavigateToPremium
             )
         }
 
@@ -204,7 +208,9 @@ fun MainNavGraph(
         // ===== TONGUE TWISTERS =====
         composable(route = Screen.TongueTwisters.route) {
             com.aivoicepower.ui.screens.tonguetwister.TongueTwistersScreen(
-                onNavigateBack = { navController.popBackStack() }
+                rewardedAdManager = rewardedAdManager,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToPremium = onNavigateToPremium
             )
         }
 
@@ -218,6 +224,7 @@ fun MainNavGraph(
         // ===== IMPROVISATION =====
         composable(route = Screen.Improvisation.route) {
             ImprovisationScreen(
+                rewardedAdManager = rewardedAdManager,
                 onNavigateToRandomTopic = {
                     navController.navigate(Screen.RandomTopic.route)
                 },
@@ -248,10 +255,12 @@ fun MainNavGraph(
 
         composable(route = Screen.RandomTopic.route) {
             RandomTopicScreen(
+                rewardedAdManager = rewardedAdManager,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToResults = { _ ->
                     navController.popBackStack()
-                }
+                },
+                onNavigateToPremium = onNavigateToPremium
             )
         }
 

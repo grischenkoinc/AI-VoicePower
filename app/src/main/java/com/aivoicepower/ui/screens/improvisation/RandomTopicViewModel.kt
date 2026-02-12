@@ -3,9 +3,11 @@ package com.aivoicepower.ui.screens.improvisation
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.data.content.ImprovisationTopicsProvider
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.domain.repository.VoiceAnalysisRepository
+import com.aivoicepower.utils.PremiumChecker
 import com.aivoicepower.utils.audio.AudioRecorderUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -20,7 +22,8 @@ import javax.inject.Inject
 class RandomTopicViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val userPreferencesDataStore: UserPreferencesDataStore,
-    private val voiceAnalysisRepository: VoiceAnalysisRepository
+    private val voiceAnalysisRepository: VoiceAnalysisRepository,
+    private val rewardedAdManager: RewardedAdManager
 ) : ViewModel() {
 
     private val audioRecorderUtil = AudioRecorderUtil(context)
@@ -30,6 +33,7 @@ class RandomTopicViewModel @Inject constructor(
 
     init {
         generateNewTopic()
+        observeAnalysisLimits()
     }
 
     fun onEvent(event: RandomTopicEvent) {
@@ -48,6 +52,46 @@ class RandomTopicViewModel @Inject constructor(
             }
             RandomTopicEvent.CompleteTask -> {
                 completeTask()
+            }
+            RandomTopicEvent.DismissAnalysisLimitSheet -> {
+                _state.update { it.copy(showAnalysisLimitSheet = false) }
+            }
+            RandomTopicEvent.WatchAdForAnalysis -> {
+                _state.update { it.copy(showAnalysisLimitSheet = false) }
+            }
+            RandomTopicEvent.ContinueWithoutAnalysis -> {
+                _state.update { it.copy(showAnalysisLimitSheet = false) }
+                completeTaskWithoutAnalysis()
+            }
+        }
+    }
+
+    private fun observeAnalysisLimits() {
+        viewModelScope.launch {
+            userPreferencesDataStore.checkAndResetDailyLimits()
+        }
+
+        viewModelScope.launch {
+            userPreferencesDataStore.userPreferencesFlow.collect { prefs ->
+                val remaining = PremiumChecker.getRemainingImprovAnalyses(
+                    prefs.isPremium, prefs.freeImprovAnalysesToday, prefs.freeAdImprovToday
+                )
+                val remainingAd = if (prefs.freeAdImprovToday < com.aivoicepower.utils.constants.FreeTierLimits.FREE_AD_IMPROV_ANALYSES_PER_DAY) {
+                    com.aivoicepower.utils.constants.FreeTierLimits.FREE_AD_IMPROV_ANALYSES_PER_DAY - prefs.freeAdImprovToday
+                } else 0
+                _state.update {
+                    it.copy(
+                        isPremium = prefs.isPremium,
+                        remainingImprovAnalyses = remaining,
+                        remainingAdImprovAnalyses = remainingAd
+                    )
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            rewardedAdManager.isAdLoaded.collect { loaded ->
+                _state.update { it.copy(isAdLoaded = loaded) }
             }
         }
     }
@@ -128,6 +172,22 @@ class RandomTopicViewModel @Inject constructor(
 
     private fun completeTask() {
         viewModelScope.launch {
+            val prefs = userPreferencesDataStore.userPreferencesFlow.first()
+            val canAnalyze = PremiumChecker.canAnalyzeImprovisation(
+                prefs.isPremium, prefs.freeImprovAnalysesToday, prefs.freeAdImprovToday
+            )
+
+            if (!canAnalyze) {
+                _state.update { it.copy(showAnalysisLimitSheet = true) }
+                return@launch
+            }
+
+            performAnalysis()
+        }
+    }
+
+    private fun performAnalysis() {
+        viewModelScope.launch {
             try {
                 val recordingPath = _state.value.recordingPath
                 val topic = _state.value.currentTopic
@@ -144,7 +204,11 @@ class RandomTopicViewModel @Inject constructor(
                     analysisResult.getOrNull()
                 }
 
-                // Increment free improvisation counter
+                // Increment counters
+                val prefs = userPreferencesDataStore.userPreferencesFlow.first()
+                if (!prefs.isPremium) {
+                    userPreferencesDataStore.incrementFreeImprovAnalyses()
+                }
                 userPreferencesDataStore.incrementFreeImprovisations()
 
             } catch (e: Exception) {
@@ -152,6 +216,20 @@ class RandomTopicViewModel @Inject constructor(
                     it.copy(error = "Помилка збереження: ${e.message}")
                 }
             }
+        }
+    }
+
+    fun proceedWithAnalysisAfterAd() {
+        viewModelScope.launch {
+            userPreferencesDataStore.incrementFreeAdImprov()
+            performAnalysis()
+        }
+    }
+
+    private fun completeTaskWithoutAnalysis() {
+        viewModelScope.launch {
+            // Just increment improvisation counter, no analysis
+            userPreferencesDataStore.incrementFreeImprovisations()
         }
     }
 

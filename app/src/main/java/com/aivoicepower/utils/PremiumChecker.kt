@@ -90,6 +90,98 @@ object PremiumChecker {
         }
     }
 
+    // ===== AI Analysis Limits =====
+
+    /**
+     * Check if user can analyze an exercise recording
+     */
+    fun canAnalyzeExercise(
+        isPremium: Boolean,
+        analysesToday: Int,
+        adAnalysesToday: Int
+    ): Boolean {
+        if (isPremium) return true
+        val totalUsed = analysesToday
+        val totalAvailable = FreeTierLimits.FREE_ANALYSES_PER_DAY + adAnalysesToday
+        return totalUsed < totalAvailable
+    }
+
+    /**
+     * Check if user has free (non-ad) analyses remaining
+     */
+    fun hasFreeAnalysesRemaining(
+        isPremium: Boolean,
+        analysesToday: Int
+    ): Boolean {
+        return isPremium || analysesToday < FreeTierLimits.FREE_ANALYSES_PER_DAY
+    }
+
+    /**
+     * Check if user can watch ad for extra analysis
+     */
+    fun canWatchAdForAnalysis(
+        adAnalysesToday: Int
+    ): Boolean {
+        return adAnalysesToday < FreeTierLimits.FREE_AD_ANALYSES_PER_DAY
+    }
+
+    /**
+     * Check if user can analyze an improvisation recording
+     */
+    fun canAnalyzeImprovisation(
+        isPremium: Boolean,
+        improvAnalysesToday: Int,
+        adImprovToday: Int
+    ): Boolean {
+        if (isPremium) return true
+        val totalAvailable = FreeTierLimits.FREE_IMPROV_ANALYSES_PER_DAY + adImprovToday
+        return improvAnalysesToday < totalAvailable
+    }
+
+    /**
+     * Check if user can watch ad for extra improvisation analysis
+     */
+    fun canWatchAdForImprovisation(
+        adImprovToday: Int
+    ): Boolean {
+        return adImprovToday < FreeTierLimits.FREE_AD_IMPROV_ANALYSES_PER_DAY
+    }
+
+    /**
+     * Get remaining exercise analyses for today
+     */
+    fun getRemainingAnalyses(
+        isPremium: Boolean,
+        analysesToday: Int,
+        adAnalysesToday: Int
+    ): Int {
+        if (isPremium) return Int.MAX_VALUE
+        val totalAvailable = FreeTierLimits.FREE_ANALYSES_PER_DAY + adAnalysesToday
+        return (totalAvailable - analysesToday).coerceAtLeast(0)
+    }
+
+    /**
+     * Get remaining ad-based analyses available
+     */
+    fun getRemainingAdAnalyses(
+        adAnalysesToday: Int
+    ): Int {
+        return (FreeTierLimits.FREE_AD_ANALYSES_PER_DAY - adAnalysesToday).coerceAtLeast(0)
+    }
+
+    /**
+     * Get remaining improvisation analyses for today
+     */
+    fun getRemainingImprovAnalyses(
+        isPremium: Boolean,
+        improvAnalysesToday: Int,
+        adImprovToday: Int
+    ): Int {
+        if (isPremium) return Int.MAX_VALUE
+        val totalAvailable = FreeTierLimits.FREE_IMPROV_ANALYSES_PER_DAY + adImprovToday
+        return (totalAvailable - improvAnalysesToday).coerceAtLeast(0)
+    }
+
     /**
      * Get paywall source for analytics
      */
@@ -99,6 +191,8 @@ object PremiumChecker {
             "improv_limit" -> PaywallSource.IMPROV_LIMIT
             "ai_limit" -> PaywallSource.AI_COACH_LIMIT
             "diagnostic_limit" -> PaywallSource.DIAGNOSTIC_LIMIT
+            "analysis_limit" -> PaywallSource.ANALYSIS_LIMIT
+            "improv_analysis_limit" -> PaywallSource.IMPROV_ANALYSIS_LIMIT
             "settings" -> PaywallSource.SETTINGS
             "achievement" -> PaywallSource.ACHIEVEMENT
             else -> PaywallSource.UNKNOWN
@@ -118,6 +212,10 @@ object PremiumChecker {
                 "Безкоштовний ліміт: ${FreeTierLimits.FREE_MESSAGES_PER_DAY} повідомлень на день"
             PaywallSource.DIAGNOSTIC_LIMIT ->
                 "Безкоштовна діагностика: ${FreeTierLimits.FREE_DIAGNOSTICS} раз"
+            PaywallSource.ANALYSIS_LIMIT ->
+                "Безкоштовний ліміт: ${FreeTierLimits.FREE_ANALYSES_PER_DAY} аналізів на день"
+            PaywallSource.IMPROV_ANALYSIS_LIMIT ->
+                "Безкоштовний ліміт: ${FreeTierLimits.FREE_IMPROV_ANALYSES_PER_DAY} аналіз імпровізації на день"
             else -> ""
         }
     }

@@ -14,6 +14,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.compose.rememberNavController
+import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.data.firebase.auth.GoogleSignInHelper
 import com.aivoicepower.ui.navigation.NavGraph
 import com.aivoicepower.ui.theme.AIVoicePowerTheme
@@ -25,6 +26,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var googleSignInHelper: GoogleSignInHelper
+
+    @Inject
+    lateinit var rewardedAdManager: RewardedAdManager
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -72,7 +76,8 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     NavGraph(
                         navController = navController,
-                        googleSignInHelper = googleSignInHelper
+                        googleSignInHelper = googleSignInHelper,
+                        rewardedAdManager = rewardedAdManager
                     )
                 }
             }

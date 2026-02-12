@@ -4,11 +4,14 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.data.content.TongueTwistersProvider
 import com.aivoicepower.data.local.database.dao.RecordingDao
 import com.aivoicepower.data.local.database.entity.RecordingEntity
+import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.domain.model.content.TongueTwister
 import com.aivoicepower.domain.repository.VoiceAnalysisRepository
+import com.aivoicepower.utils.PremiumChecker
 import com.aivoicepower.utils.audio.AudioRecorderUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -17,6 +20,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.*
@@ -26,7 +30,9 @@ import javax.inject.Inject
 class TongueTwistersViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val voiceAnalysisRepository: VoiceAnalysisRepository,
-    private val recordingDao: RecordingDao
+    private val recordingDao: RecordingDao,
+    private val userPreferencesDataStore: UserPreferencesDataStore,
+    private val rewardedAdManager: RewardedAdManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(TongueTwistersState())
@@ -38,6 +44,7 @@ class TongueTwistersViewModel @Inject constructor(
 
     init {
         loadTongueTwisters()
+        observeAnalysisLimits()
     }
 
     private fun loadTongueTwisters() {
@@ -47,6 +54,34 @@ class TongueTwistersViewModel @Inject constructor(
                 allTongueTwisters = allTwisters,
                 filteredTongueTwisters = allTwisters
             )
+        }
+    }
+
+    private fun observeAnalysisLimits() {
+        viewModelScope.launch {
+            userPreferencesDataStore.checkAndResetDailyLimits()
+        }
+
+        viewModelScope.launch {
+            userPreferencesDataStore.userPreferencesFlow.collect { prefs ->
+                val remaining = PremiumChecker.getRemainingAnalyses(
+                    prefs.isPremium, prefs.freeAnalysesToday, prefs.freeAdAnalysesToday
+                )
+                val remainingAd = PremiumChecker.getRemainingAdAnalyses(prefs.freeAdAnalysesToday)
+                _state.update {
+                    it.copy(
+                        isPremium = prefs.isPremium,
+                        remainingAnalyses = remaining,
+                        remainingAdAnalyses = remainingAd
+                    )
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            rewardedAdManager.isAdLoaded.collect { loaded ->
+                _state.update { it.copy(isAdLoaded = loaded) }
+            }
         }
     }
 
@@ -61,6 +96,23 @@ class TongueTwistersViewModel @Inject constructor(
             TongueTwistersEvent.StartRecording -> startRecording()
             TongueTwistersEvent.StopRecording -> stopRecording()
             TongueTwistersEvent.DismissAnalysis -> dismissAnalysis()
+            TongueTwistersEvent.DismissAnalysisLimitSheet -> {
+                _state.update { it.copy(showAnalysisLimitSheet = false) }
+            }
+            TongueTwistersEvent.WatchAdForAnalysis -> {
+                _state.update { it.copy(showAnalysisLimitSheet = false) }
+            }
+            TongueTwistersEvent.ContinueWithoutAnalysis -> {
+                _state.update {
+                    it.copy(
+                        showAnalysisLimitSheet = false,
+                        isPracticing = false,
+                        practicingTwister = null,
+                        analysisResult = null,
+                        isAnalyzing = false
+                    )
+                }
+            }
         }
     }
 
@@ -178,11 +230,21 @@ class TongueTwistersViewModel @Inject constructor(
                 recordingTimerJob?.cancel()
                 audioRecorder.stopRecording()
 
-                val twister = _state.value.practicingTwister
+                _state.update { it.copy(isRecording = false) }
 
-                _state.update { it.copy(isRecording = false, isAnalyzing = true) }
+                // Check analysis limits for free users
+                val prefs = userPreferencesDataStore.userPreferencesFlow.first()
+                val canAnalyze = PremiumChecker.canAnalyzeExercise(
+                    prefs.isPremium, prefs.freeAnalysesToday, prefs.freeAdAnalysesToday
+                )
 
-                saveRecording(twister)
+                if (!canAnalyze) {
+                    _state.update { it.copy(showAnalysisLimitSheet = true) }
+                    return@launch
+                }
+
+                _state.update { it.copy(isAnalyzing = true) }
+                saveRecording(_state.value.practicingTwister)
             } catch (e: Exception) {
                 Log.e("TongueTwistersVM", "Recording stop error", e)
                 _state.update { it.copy(isRecording = false, isAnalyzing = false) }
@@ -205,6 +267,14 @@ class TongueTwistersViewModel @Inject constructor(
             )
 
             val analysisResult = result.getOrNull()
+
+            // Increment analysis counter for free users — only for meaningful results
+            if (analysisResult != null && analysisResult.overallScore > 0) {
+                val prefs = userPreferencesDataStore.userPreferencesFlow.first()
+                if (!prefs.isPremium) {
+                    userPreferencesDataStore.incrementFreeAnalyses()
+                }
+            }
 
             // Save recording to database — only meaningful recordings (score > 0)
             if (analysisResult != null && analysisResult.overallScore > 0) {
@@ -230,6 +300,14 @@ class TongueTwistersViewModel @Inject constructor(
         } catch (e: Exception) {
             Log.e("TongueTwistersVM", "Save recording error", e)
             _state.update { it.copy(isAnalyzing = false) }
+        }
+    }
+
+    fun proceedWithAnalysisAfterAd() {
+        viewModelScope.launch {
+            userPreferencesDataStore.incrementFreeAdAnalyses()
+            _state.update { it.copy(isAnalyzing = true) }
+            saveRecording(_state.value.practicingTwister)
         }
     }
 

@@ -23,9 +23,15 @@
         android:theme="@style/Theme.AIVoicePower"
         tools:targetApi="31">
 
+        <!-- AdMob App ID (замінити на реальний перед релізом) -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-8252075318098641~1739651442" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.AIVoicePower">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

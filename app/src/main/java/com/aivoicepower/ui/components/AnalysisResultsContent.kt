@@ -115,7 +115,8 @@ fun AnalyzingContent() {
 fun AnalysisResultsContent(
     result: VoiceAnalysisResult,
     onDismiss: () -> Unit,
-    dismissButtonText: String = "Готово"
+    dismissButtonText: String = "Готово",
+    onRetry: (() -> Unit)? = null
 ) {
     // Overall score with color
     val scoreColor = when (result.overallScore) {
@@ -269,18 +270,53 @@ fun AnalysisResultsContent(
             }
         }
 
-        // Done button
+        // Retry button (when score = 0 and retry is available)
+        if (onRetry != null && result.overallScore == 0) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(
+                        elevation = 12.dp,
+                        shape = RoundedCornerShape(14.dp),
+                        spotColor = Color(0xFF10B981).copy(alpha = 0.3f)
+                    )
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(Color(0xFF10B981), Color(0xFF059669))
+                        ),
+                        RoundedCornerShape(14.dp)
+                    )
+                    .clickable { onRetry() }
+                    .padding(vertical = 16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Перезаписати",
+                    style = AppTypography.bodyLarge,
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        // Done/Next button
+        val isSecondary = onRetry != null && result.overallScore == 0
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .shadow(
                     elevation = 12.dp,
                     shape = RoundedCornerShape(14.dp),
-                    spotColor = Color(0xFF667EEA).copy(alpha = 0.3f)
+                    spotColor = if (isSecondary) Color(0xFF6B7280).copy(alpha = 0.3f)
+                        else Color(0xFF667EEA).copy(alpha = 0.3f)
                 )
                 .background(
                     Brush.linearGradient(
-                        colors = listOf(Color(0xFF667EEA), Color(0xFF764BA2))
+                        colors = if (isSecondary) listOf(Color(0xFF9CA3AF), Color(0xFF6B7280))
+                            else listOf(Color(0xFF667EEA), Color(0xFF764BA2))
                     ),
                     RoundedCornerShape(14.dp)
                 )

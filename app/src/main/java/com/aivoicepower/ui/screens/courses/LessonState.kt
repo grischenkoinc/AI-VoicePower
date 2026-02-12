@@ -17,7 +17,13 @@ data class LessonState(
     val isPlaying: Boolean = false,
     val isLastLessonInCourse: Boolean = false,
     val courseName: String = "",
-    val courseCompletionBadge: Achievement? = null
+    val courseCompletionBadge: Achievement? = null,
+    // Analysis limits
+    val showAnalysisLimitSheet: Boolean = false,
+    val isPremium: Boolean = true,
+    val remainingAnalyses: Int = Int.MAX_VALUE,
+    val remainingAdAnalyses: Int = 0,
+    val isAdLoaded: Boolean = false
 )
 
 sealed class LessonPhase {
@@ -40,5 +46,6 @@ sealed class ExerciseStatus {
     object Recorded : ExerciseStatus()
     object Analyzing : ExerciseStatus()
     object ShowingResults : ExerciseStatus()
+    object CompletedWithoutAnalysis : ExerciseStatus()
     object Completed : ExerciseStatus()
 }

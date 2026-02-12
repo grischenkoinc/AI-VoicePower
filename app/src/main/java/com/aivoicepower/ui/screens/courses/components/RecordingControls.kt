@@ -129,7 +129,7 @@ fun RecordingControls(
                 )
             }
 
-            ExerciseStatus.Analyzing, ExerciseStatus.ShowingResults -> {
+            ExerciseStatus.Analyzing, ExerciseStatus.ShowingResults, ExerciseStatus.CompletedWithoutAnalysis -> {
                 // Handled by parent ExercisePhaseContent
             }
 

@@ -15,7 +15,13 @@ data class TongueTwistersState(
     val isRecording: Boolean = false,
     val recordingDurationMs: Long = 0,
     val isAnalyzing: Boolean = false,
-    val analysisResult: VoiceAnalysisResult? = null
+    val analysisResult: VoiceAnalysisResult? = null,
+    // Analysis limits
+    val showAnalysisLimitSheet: Boolean = false,
+    val isPremium: Boolean = true,
+    val remainingAnalyses: Int = Int.MAX_VALUE,
+    val remainingAdAnalyses: Int = 0,
+    val isAdLoaded: Boolean = false
 )
 
 sealed class TongueTwistersEvent {
@@ -28,4 +34,8 @@ sealed class TongueTwistersEvent {
     object StartRecording : TongueTwistersEvent()
     object StopRecording : TongueTwistersEvent()
     object DismissAnalysis : TongueTwistersEvent()
+    // Analysis limits
+    object DismissAnalysisLimitSheet : TongueTwistersEvent()
+    object WatchAdForAnalysis : TongueTwistersEvent()
+    object ContinueWithoutAnalysis : TongueTwistersEvent()
 }

@@ -20,6 +20,12 @@ sealed class LessonEvent {
 
     // Analysis
     object ContinueAfterAnalysisClicked : LessonEvent()
+    object RetryExerciseClicked : LessonEvent()
+
+    // Analysis limits
+    object DismissAnalysisLimitSheet : LessonEvent()
+    object WatchAdForAnalysis : LessonEvent()
+    object ContinueWithoutAnalysis : LessonEvent()
 
     // Completion
     object FinishLessonClicked : LessonEvent()

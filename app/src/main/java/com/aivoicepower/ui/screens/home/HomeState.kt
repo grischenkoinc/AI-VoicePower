@@ -13,5 +13,13 @@ data class HomeState(
     val skills: List<Skill> = emptyList(),
     val dailyTip: DailyTip? = null,
     val isLoading: Boolean = true,
-    val error: String? = null
+    val error: String? = null,
+    // Analysis limits for free users
+    val isPremium: Boolean = true,
+    val remainingAnalyses: Int = Int.MAX_VALUE,
+    val remainingImprovAnalyses: Int = Int.MAX_VALUE,
+    val remainingAiMessages: Int = Int.MAX_VALUE,
+    val maxFreeAnalyses: Int = 5,
+    val maxFreeImprovAnalyses: Int = 1,
+    val maxFreeAiMessages: Int = 10
 )
