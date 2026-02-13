@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.local.database.dao.CourseProgressDao
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.domain.repository.CourseRepository
-import com.aivoicepower.utils.constants.FreeTierLimits
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -58,13 +57,20 @@ class CourseDetailViewModel @Inject constructor(
                 ) { isUserPremium, progressList ->
                     val progressMap = progressList.associateBy { it.lessonId }
 
-                    // Convert lessons to LessonWithProgress
+                    // Build set of completed lesson indices
+                    val completedIndices = course.lessons.mapIndexedNotNull { idx, lesson ->
+                        if (progressMap[lesson.id]?.isCompleted == true) idx else null
+                    }.toSet()
+
+                    // Convert lessons to LessonWithProgress with progressive unlock
                     val lessonsWithProgress = course.lessons.mapIndexed { index, lesson ->
                         val progress = progressMap[lesson.id]
+                        val lockReason = getLessonLockReason(index, isUserPremium, completedIndices)
                         LessonWithProgress(
                             lesson = lesson,
                             isCompleted = progress?.isCompleted ?: false,
-                            isLocked = !isUserPremium && index >= FreeTierLimits.FREE_LESSONS_PER_COURSE,
+                            isLocked = lockReason != LockReason.None,
+                            lockReason = lockReason,
                             weekNumber = (index / 7) + 1
                         )
                     }

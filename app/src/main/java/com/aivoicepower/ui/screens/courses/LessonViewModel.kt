@@ -249,9 +249,24 @@ class LessonViewModel @Inject constructor(
 
     private suspend fun findNextLesson(currentDayNumber: Int): com.aivoicepower.domain.model.course.Lesson? {
         return try {
-            // Get all lessons from course and find the next one
-            val course = courseRepository.getCourseById(courseId)
-            course?.lessons?.firstOrNull { it.dayNumber == currentDayNumber + 1 }
+            val course = courseRepository.getCourseById(courseId) ?: return null
+            val nextLesson = course.lessons.firstOrNull { it.dayNumber == currentDayNumber + 1 }
+                ?: return null
+
+            // Check if next lesson will be unlocked after current lesson completes
+            val currentProgress = courseProgressDao.getCourseProgressOnce(courseId)
+            val completedIndices = course.lessons.mapIndexedNotNull { idx, lesson ->
+                val isCompleted = currentProgress.any { it.lessonId == lesson.id && it.isCompleted }
+                // Count current lesson as "will be completed"
+                val isCurrent = lesson.dayNumber == currentDayNumber
+                if (isCompleted || isCurrent) idx else null
+            }.toSet()
+
+            val nextIndex = course.lessons.indexOfFirst { it.id == nextLesson.id }
+            val isPremium = userPreferencesDataStore.isPremium.first()
+            val lockReason = getLessonLockReason(nextIndex, isPremium, completedIndices)
+
+            if (lockReason == LockReason.None) nextLesson else null
         } catch (e: Exception) {
             null
         }

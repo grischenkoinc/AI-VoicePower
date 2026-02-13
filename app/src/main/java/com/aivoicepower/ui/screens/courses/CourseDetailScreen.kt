@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +38,8 @@ fun CourseDetailScreen(
     onNavigateToPremium: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     Box(modifier = Modifier.fillMaxSize()) {
         GradientBackground(content = {})
@@ -153,15 +156,19 @@ fun CourseDetailScreen(
                     // Lessons grouped by week
                     val lessonsByWeek = state.lessonsWithProgress.groupBy { it.weekNumber }
                     lessonsByWeek.forEach { (weekNumber, lessons) ->
-                        val weekHasLockedLessons = lessons.any { it.isLocked }
-                        val isFirstLockedWeek = weekHasLockedLessons &&
-                            lessonsByWeek.entries.firstOrNull { (_, wLessons) -> wLessons.any { it.isLocked } }?.key == weekNumber
+                        val weekHasPremiumLocked = lessons.any { it.lockReason == LockReason.PremiumRequired }
+                        val isFirstPremiumLockedWeek = weekHasPremiumLocked &&
+                            lessonsByWeek.entries.firstOrNull { (_, wLessons) ->
+                                wLessons.any { it.lockReason == LockReason.PremiumRequired }
+                            }?.key == weekNumber
 
-                        // Pro divider banner before the first locked week
-                        if (isFirstLockedWeek && !state.isUserPremium) {
+                        // Pro divider banner before the first premium-locked week
+                        if (isFirstPremiumLockedWeek && !state.isUserPremium) {
                             item {
                                 ProWeekDivider(
-                                    lockedLessonsCount = state.lessonsWithProgress.count { it.isLocked },
+                                    lockedLessonsCount = state.lessonsWithProgress.count {
+                                        it.lockReason == LockReason.PremiumRequired
+                                    },
                                     onPremiumClick = onNavigateToPremium
                                 )
                             }
@@ -176,14 +183,14 @@ fun CourseDetailScreen(
                                 Text(
                                     text = "Тиждень $weekNumber",
                                     style = AppTypography.titleLarge,
-                                    color = if (weekHasLockedLessons && !state.isUserPremium)
+                                    color = if (weekHasPremiumLocked && !state.isUserPremium)
                                         Color.White.copy(alpha = 0.6f)
                                     else Color.White,
                                     fontSize = 22.sp,
                                     fontWeight = FontWeight.ExtraBold
                                 )
 
-                                if (weekHasLockedLessons && !state.isUserPremium) {
+                                if (weekHasPremiumLocked && !state.isUserPremium) {
                                     Box(
                                         modifier = Modifier
                                             .background(
@@ -214,11 +221,21 @@ fun CourseDetailScreen(
                             LessonListItem(
                                 lessonWithProgress = lessonWithProgress,
                                 onClick = {
-                                    if (!lessonWithProgress.isLocked) {
-                                        viewModel.onEvent(CourseDetailEvent.LessonClicked(lessonWithProgress.lesson.id))
-                                        onNavigateToLesson(courseId, lessonWithProgress.lesson.id)
-                                    } else {
-                                        onNavigateToPremium()
+                                    when (lessonWithProgress.lockReason) {
+                                        LockReason.None -> {
+                                            viewModel.onEvent(CourseDetailEvent.LessonClicked(lessonWithProgress.lesson.id))
+                                            onNavigateToLesson(courseId, lessonWithProgress.lesson.id)
+                                        }
+                                        LockReason.PrerequisiteNotMet -> {
+                                            scope.launch {
+                                                snackbarHostState.showSnackbar(
+                                                    "Спочатку завершіть попередні уроки"
+                                                )
+                                            }
+                                        }
+                                        LockReason.PremiumRequired -> {
+                                            onNavigateToPremium()
+                                        }
                                     }
                                 }
                             )
@@ -227,6 +244,13 @@ fun CourseDetailScreen(
                 }
             }
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 100.dp)
+        )
     }
 }
 

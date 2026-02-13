@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.aivoicepower.ui.screens.courses.LessonWithProgress
+import com.aivoicepower.ui.screens.courses.LockReason
 import com.aivoicepower.ui.theme.*
 import com.aivoicepower.ui.theme.modifiers.*
 
@@ -208,8 +209,8 @@ fun LessonListItem(
             }
         }
 
-        // Pro badge — top-right corner
-        if (isLocked) {
+        // Pro badge — top-right corner (only for premium-locked lessons)
+        if (lessonWithProgress.lockReason == LockReason.PremiumRequired) {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
