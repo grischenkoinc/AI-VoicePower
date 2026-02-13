@@ -1,11 +1,11 @@
 package com.aivoicepower.ui.screens.improvisation
 
+import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -15,34 +15,79 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.domain.model.exercise.StoryFormat
+import com.aivoicepower.ui.components.AnalysisLimitBottomSheet
+import com.aivoicepower.ui.components.AnalysisLimitInfo
+import com.aivoicepower.ui.components.AnalysisResultsContent
+import com.aivoicepower.ui.components.AnalyzingContent
+import com.aivoicepower.ui.screens.improvisation.components.ImprovisationRecordingCard
+import com.aivoicepower.ui.screens.improvisation.components.PreparationTimerCard
 import com.aivoicepower.ui.screens.improvisation.components.StoryFormatCard
 import com.aivoicepower.ui.screens.improvisation.components.StoryPromptCard
-import com.aivoicepower.ui.screens.improvisation.components.StoryRecordingCard
-import com.aivoicepower.ui.screens.improvisation.components.PreparationTimerCard
 import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
 import com.aivoicepower.ui.theme.components.GradientBackground
 import com.aivoicepower.ui.theme.components.PrimaryButton
 import com.aivoicepower.ui.theme.components.SecondaryButton
+import com.aivoicepower.utils.constants.FreeTierLimits
 import kotlinx.coroutines.launch
 
-@Suppress("UNUSED_PARAMETER")
 @Composable
 fun StorytellingScreen(
     viewModel: StorytellingViewModel = hiltViewModel(),
+    rewardedAdManager: RewardedAdManager? = null,
     onNavigateBack: () -> Unit,
-    onNavigateToResults: (recordingId: String) -> Unit
+    onNavigateToResults: (recordingId: String) -> Unit,
+    onNavigateToPremium: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val activity = context as? Activity
     var backPressedTime by remember { mutableStateOf(0L) }
+
+    // Analysis Limit Bottom Sheet
+    if (state.showAnalysisLimitSheet) {
+        AnalysisLimitBottomSheet(
+            limitInfo = AnalysisLimitInfo(
+                usedAnalyses = FreeTierLimits.FREE_IMPROV_ANALYSES_PER_DAY,
+                maxFreeAnalyses = FreeTierLimits.FREE_IMPROV_ANALYSES_PER_DAY,
+                remainingAdAnalyses = state.remainingAdImprovAnalyses,
+                isAdLoaded = state.isAdLoaded,
+                isImprovisation = true
+            ),
+            onWatchAd = {
+                viewModel.onEvent(StorytellingEvent.WatchAdForAnalysis)
+                if (activity != null && rewardedAdManager != null) {
+                    rewardedAdManager.showAd(
+                        activity = activity,
+                        onRewarded = { viewModel.proceedWithAnalysisAfterAd() },
+                        onFailed = { error ->
+                            scope.launch { snackbarHostState.showSnackbar(error) }
+                        }
+                    )
+                }
+            },
+            onPremium = {
+                viewModel.onEvent(StorytellingEvent.DismissAnalysisLimitSheet)
+                onNavigateToPremium()
+            },
+            onContinueWithout = {
+                viewModel.onEvent(StorytellingEvent.ContinueWithoutAnalysis)
+            },
+            onDismiss = {
+                viewModel.onEvent(StorytellingEvent.DismissAnalysisLimitSheet)
+            }
+        )
+    }
 
     // Double-back to exit protection (only when NOT on format selection)
     BackHandler(enabled = state.selectedFormat != null) {
@@ -62,7 +107,7 @@ fun StorytellingScreen(
 
     // Auto-start preparation timer when format is selected
     LaunchedEffect(state.selectedFormat, state.isPreparationPhase) {
-        if (state.selectedFormat != null && state.isPreparationPhase && state.preparationTimeLeft == 30) {
+        if (state.selectedFormat != null && state.isPreparationPhase && state.preparationTimeLeft == 15) {
             viewModel.onEvent(StorytellingEvent.StartPreparation)
         }
     }
@@ -77,58 +122,23 @@ fun StorytellingScreen(
                 .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 130.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Header with back button
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(
-                        text = "Імпровізація",
-                        style = AppTypography.labelMedium,
-                        color = TextColors.onDarkSecondary,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = "📖 Розкажи історію",
-                        style = AppTypography.displayLarge,
-                        color = TextColors.onDarkPrimary,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        letterSpacing = (-0.8).sp
-                    )
-                }
-
-                // Back button
-                Row(
-                    modifier = Modifier
-                        .shadow(
-                            elevation = 12.dp,
-                            shape = RoundedCornerShape(16.dp),
-                            spotColor = Color.Black.copy(alpha = 0.2f)
-                        )
-                        .background(Color.White, RoundedCornerShape(16.dp))
-                        .clickable { onNavigateBack() }
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "←",
-                        fontSize = 24.sp,
-                        color = Color(0xFF667EEA),
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Назад",
-                        style = AppTypography.bodyMedium,
-                        color = TextColors.onLightPrimary,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+            // Header
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text = "Імпровізація",
+                    style = AppTypography.labelMedium,
+                    color = TextColors.onDarkSecondary,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "📖 Розкажи історію",
+                    style = AppTypography.displayLarge,
+                    color = TextColors.onDarkPrimary,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = (-0.8).sp
+                )
             }
             when {
                 state.selectedFormat == null -> {
@@ -151,6 +161,21 @@ fun StorytellingScreen(
                     }
                 }
 
+                state.isAnalyzing -> {
+                    AnalyzingContent()
+                }
+
+                state.analysisResult != null -> {
+                    AnalysisResultsContent(
+                        result = state.analysisResult!!,
+                        onDismiss = {
+                            viewModel.onEvent(StorytellingEvent.DismissAnalysis)
+                            onNavigateBack()
+                        },
+                        dismissButtonText = "Готово"
+                    )
+                }
+
                 state.isPreparationPhase -> {
                     // Preparation phase
                     StoryPromptCard(
@@ -165,11 +190,11 @@ fun StorytellingScreen(
                         }
                     )
 
-                    if (state.preparationTimeLeft == 0) {
+                    if (state.preparationTimeLeft > 0) {
                         PrimaryButton(
-                            text = "🎤 Почати розповідь",
+                            text = "Почати вправу",
                             onClick = {
-                                viewModel.onEvent(StorytellingEvent.StartRecording)
+                                viewModel.onEvent(StorytellingEvent.SkipPreparation)
                             },
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -185,10 +210,9 @@ fun StorytellingScreen(
                 }
 
                 state.isRecording -> {
-                    // Recording phase
-                    StoryRecordingCard(
-                        format = state.selectedFormat!!,
-                        prompt = state.storyPrompt,
+                    ImprovisationRecordingCard(
+                        title = "Розповідай історію",
+                        subtitle = state.storyPrompt,
                         durationMs = state.recordingDurationMs,
                         onStop = {
                             viewModel.onEvent(StorytellingEvent.StopRecording)
@@ -229,13 +253,9 @@ fun StorytellingScreen(
                     }
 
                     PrimaryButton(
-                        text = "Завершити",
+                        text = "Отримати аналіз",
                         onClick = {
                             viewModel.onEvent(StorytellingEvent.CompleteTask)
-                            state.recordingId?.let { _ ->
-                                // For now, just go back since Results screen not yet ready for improvisation
-                                onNavigateBack()
-                            }
                         },
                         modifier = Modifier.fillMaxWidth()
                     )

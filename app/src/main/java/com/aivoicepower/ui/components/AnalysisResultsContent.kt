@@ -2,6 +2,7 @@ package com.aivoicepower.ui.components
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -36,9 +37,22 @@ fun AnalyzingContent() {
     )
 
     Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 20.dp,
+                shape = RoundedCornerShape(24.dp),
+                spotColor = Color.Black.copy(alpha = 0.15f)
+            )
+            .border(
+                width = 2.dp,
+                brush = Brush.linearGradient(listOf(Color(0xFF667EEA), Color(0xFF764BA2))),
+                shape = RoundedCornerShape(24.dp)
+            )
+            .background(Color.White, RoundedCornerShape(24.dp))
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(20.dp),
-        modifier = Modifier.padding(vertical = 24.dp)
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         // AI icon with pulse
         Box(
@@ -126,6 +140,20 @@ fun AnalysisResultsContent(
     }
 
     Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 20.dp,
+                shape = RoundedCornerShape(24.dp),
+                spotColor = Color.Black.copy(alpha = 0.15f)
+            )
+            .border(
+                width = 2.dp,
+                brush = Brush.linearGradient(listOf(Color(0xFF667EEA), Color(0xFF764BA2))),
+                shape = RoundedCornerShape(24.dp)
+            )
+            .background(Color.White, RoundedCornerShape(24.dp))
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -163,13 +191,17 @@ fun AnalysisResultsContent(
             }
         }
 
-        // Metrics
-        val metrics = listOf(
-            "Дикція" to result.diction,
-            "Темп" to result.tempo,
-            "Плавність" to result.intonation,
-            "Гучність" to result.volume
-        )
+        // Metrics — show all scored criteria
+        val metrics = buildList {
+            add("Дикція" to result.diction)
+            add("Темп" to result.tempo)
+            add("Інтонація" to result.intonation)
+            add("Гучність" to result.volume)
+            add("Впевненість" to result.confidence)
+            if (result.fillerWords > 0) add("Без слів-паразитів" to result.fillerWords)
+            if (result.structure > 0) add("Структура" to result.structure)
+            if (result.persuasiveness > 0) add("Переконливість" to result.persuasiveness)
+        }
 
         Column(
             modifier = Modifier.fillMaxWidth(),

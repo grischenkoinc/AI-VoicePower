@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.data.content.TongueTwistersProvider
+import com.aivoicepower.data.firebase.sync.ServerLimitService
 import com.aivoicepower.data.local.database.dao.RecordingDao
 import com.aivoicepower.data.local.database.entity.RecordingEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
@@ -13,6 +14,7 @@ import com.aivoicepower.domain.model.content.TongueTwister
 import com.aivoicepower.domain.repository.VoiceAnalysisRepository
 import com.aivoicepower.utils.PremiumChecker
 import com.aivoicepower.utils.audio.AudioRecorderUtil
+import com.aivoicepower.utils.constants.FreeTierLimits
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
@@ -32,7 +34,8 @@ class TongueTwistersViewModel @Inject constructor(
     private val voiceAnalysisRepository: VoiceAnalysisRepository,
     private val recordingDao: RecordingDao,
     private val userPreferencesDataStore: UserPreferencesDataStore,
-    private val rewardedAdManager: RewardedAdManager
+    private val rewardedAdManager: RewardedAdManager,
+    private val serverLimitService: ServerLimitService
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(TongueTwistersState())
@@ -211,10 +214,19 @@ class TongueTwistersViewModel @Inject constructor(
 
                 _state.update { it.copy(isRecording = true, recordingDurationMs = 0) }
 
+                val prefs = userPreferencesDataStore.userPreferencesFlow.first()
+                val maxDurationMs = if (prefs.isPremium)
+                    FreeTierLimits.PRO_RECORDING_DURATION_SECONDS * 1000L
+                else FreeTierLimits.FREE_RECORDING_DURATION_SECONDS * 1000L
+
                 recordingTimerJob = launch {
                     while (_state.value.isRecording) {
                         delay(100)
                         _state.update { it.copy(recordingDurationMs = it.recordingDurationMs + 100) }
+                        if (_state.value.recordingDurationMs >= maxDurationMs) {
+                            stopRecording()
+                            break
+                        }
                     }
                 }
             } catch (e: Exception) {
@@ -239,6 +251,12 @@ class TongueTwistersViewModel @Inject constructor(
                 )
 
                 if (!canAnalyze) {
+                    _state.update { it.copy(showAnalysisLimitSheet = true) }
+                    return@launch
+                }
+
+                // Server-side limit check for free users
+                if (!prefs.isPremium && !serverLimitService.canAnalyze(isImprov = false)) {
                     _state.update { it.copy(showAnalysisLimitSheet = true) }
                     return@launch
                 }
@@ -273,6 +291,7 @@ class TongueTwistersViewModel @Inject constructor(
                 val prefs = userPreferencesDataStore.userPreferencesFlow.first()
                 if (!prefs.isPremium) {
                     userPreferencesDataStore.incrementFreeAnalyses()
+                    serverLimitService.incrementAnalysis(isImprov = false)
                 }
             }
 

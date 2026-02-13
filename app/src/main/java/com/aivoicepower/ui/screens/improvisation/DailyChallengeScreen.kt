@@ -1,11 +1,11 @@
 package com.aivoicepower.ui.screens.improvisation
 
+import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -15,18 +15,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.aivoicepower.data.ads.RewardedAdManager
+import com.aivoicepower.ui.components.AnalysisLimitBottomSheet
+import com.aivoicepower.ui.components.AnalysisLimitInfo
+import com.aivoicepower.ui.components.AnalysisResultsContent
+import com.aivoicepower.ui.components.AnalyzingContent
 import com.aivoicepower.ui.screens.improvisation.components.DailyChallengeCard
-import com.aivoicepower.ui.screens.improvisation.components.DailyChallengeRecordingCard
+import com.aivoicepower.ui.screens.improvisation.components.ImprovisationRecordingCard
 import com.aivoicepower.ui.screens.improvisation.components.PreparationTimerCard
 import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
 import com.aivoicepower.ui.theme.components.GradientBackground
 import com.aivoicepower.ui.theme.components.PrimaryButton
+import com.aivoicepower.utils.constants.FreeTierLimits
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.launch
@@ -35,12 +42,51 @@ import kotlinx.coroutines.launch
 fun DailyChallengeScreen(
     viewModel: DailyChallengeViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
-    onNavigateToResults: (recordingId: String) -> Unit
+    onNavigateToResults: (recordingId: String) -> Unit,
+    rewardedAdManager: RewardedAdManager? = null,
+    onNavigateToPremium: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var backPressedTime by remember { mutableStateOf(0L) }
+    val context = LocalContext.current
+    val activity = context as? Activity
+
+    // Analysis Limit Bottom Sheet
+    if (state.showAnalysisLimitSheet) {
+        AnalysisLimitBottomSheet(
+            limitInfo = AnalysisLimitInfo(
+                usedAnalyses = FreeTierLimits.FREE_IMPROV_ANALYSES_PER_DAY,
+                maxFreeAnalyses = FreeTierLimits.FREE_IMPROV_ANALYSES_PER_DAY,
+                remainingAdAnalyses = state.remainingAdImprovAnalyses,
+                isAdLoaded = state.isAdLoaded,
+                isImprovisation = true
+            ),
+            onWatchAd = {
+                viewModel.onEvent(DailyChallengeEvent.WatchAdForAnalysis)
+                if (activity != null && rewardedAdManager != null) {
+                    rewardedAdManager.showAd(
+                        activity = activity,
+                        onRewarded = { viewModel.proceedWithAnalysisAfterAd() },
+                        onFailed = { error ->
+                            scope.launch { snackbarHostState.showSnackbar(error) }
+                        }
+                    )
+                }
+            },
+            onPremium = {
+                viewModel.onEvent(DailyChallengeEvent.DismissAnalysisLimitSheet)
+                onNavigateToPremium()
+            },
+            onContinueWithout = {
+                viewModel.onEvent(DailyChallengeEvent.ContinueWithoutAnalysis)
+            },
+            onDismiss = {
+                viewModel.onEvent(DailyChallengeEvent.DismissAnalysisLimitSheet)
+            }
+        )
+    }
 
     // Double-back to exit protection
     BackHandler {
@@ -61,7 +107,7 @@ fun DailyChallengeScreen(
     // Auto-start preparation timer when challenge is loaded
     LaunchedEffect(state.challenge, state.isPreparationPhase) {
         if (state.challenge != null && state.isPreparationPhase &&
-            state.preparationTimeLeft == 20 && !state.isCompleted) {
+            state.preparationTimeLeft == 15 && !state.isCompleted) {
             viewModel.onEvent(DailyChallengeEvent.StartPreparation)
         }
     }
@@ -73,58 +119,23 @@ fun DailyChallengeScreen(
                 .fillMaxSize()
                 .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 130.dp)
         ) {
-            // Header with back button
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(
-                        text = "Імпровізація",
-                        style = AppTypography.labelMedium,
-                        color = TextColors.onDarkSecondary,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = "🏆 Щоденний челендж",
-                        style = AppTypography.displayLarge,
-                        color = TextColors.onDarkPrimary,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        letterSpacing = (-0.8).sp
-                    )
-                }
-
-                // Back button
-                Row(
-                    modifier = Modifier
-                        .shadow(
-                            elevation = 12.dp,
-                            shape = RoundedCornerShape(16.dp),
-                            spotColor = Color.Black.copy(alpha = 0.2f)
-                        )
-                        .background(Color.White, RoundedCornerShape(16.dp))
-                        .clickable { onNavigateBack() }
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "←",
-                        fontSize = 24.sp,
-                        color = Color(0xFF667EEA),
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Назад",
-                        style = AppTypography.bodyMedium,
-                        color = TextColors.onLightPrimary,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+            // Header
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text = "Імпровізація",
+                    style = AppTypography.labelMedium,
+                    color = TextColors.onDarkSecondary,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "🏆 Щоденний челендж",
+                    style = AppTypography.displayLarge,
+                    color = TextColors.onDarkPrimary,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = (-0.8).sp
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -237,6 +248,21 @@ fun DailyChallengeScreen(
                     ) {
                         state.challenge?.let { challenge ->
                             when {
+                                state.isAnalyzing -> {
+                                    AnalyzingContent()
+                                }
+
+                                state.analysisResult != null -> {
+                                    AnalysisResultsContent(
+                                        result = state.analysisResult!!,
+                                        onDismiss = {
+                                            viewModel.onEvent(DailyChallengeEvent.DismissAnalysis)
+                                            onNavigateBack()
+                                        },
+                                        dismissButtonText = "Готово"
+                                    )
+                                }
+
                                 state.isPreparationPhase -> {
                                     // Preparation phase
                                     DailyChallengeCard(
@@ -249,11 +275,11 @@ fun DailyChallengeScreen(
                                         onGenerateNew = null // Can't regenerate daily challenge
                                     )
 
-                                    if (state.preparationTimeLeft == 0) {
+                                    if (state.preparationTimeLeft > 0) {
                                         PrimaryButton(
-                                            text = "🎤 Почати виклик",
+                                            text = "Почати вправу",
                                             onClick = {
-                                                viewModel.onEvent(DailyChallengeEvent.StartRecording)
+                                                viewModel.onEvent(DailyChallengeEvent.SkipPreparation)
                                             },
                                             modifier = Modifier.fillMaxWidth()
                                         )
@@ -262,8 +288,9 @@ fun DailyChallengeScreen(
 
                                 state.isRecording -> {
                                     // Recording phase
-                                    DailyChallengeRecordingCard(
-                                        challenge = challenge,
+                                    ImprovisationRecordingCard(
+                                        title = challenge.title,
+                                        subtitle = challenge.description,
                                         durationMs = state.recordingDurationMs,
                                         onStop = {
                                             viewModel.onEvent(DailyChallengeEvent.StopRecording)
@@ -309,7 +336,7 @@ fun DailyChallengeScreen(
                                     }
 
                                     PrimaryButton(
-                                        text = "Завершити виклик",
+                                        text = "Отримати аналіз",
                                         onClick = {
                                             viewModel.onEvent(DailyChallengeEvent.CompleteChallenge)
                                         },

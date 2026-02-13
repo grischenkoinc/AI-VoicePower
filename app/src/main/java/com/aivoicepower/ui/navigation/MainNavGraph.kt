@@ -266,10 +266,12 @@ fun MainNavGraph(
 
         composable(route = Screen.Storytelling.route) {
             StorytellingScreen(
+                rewardedAdManager = rewardedAdManager,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToResults = { _ ->
                     navController.popBackStack()
-                }
+                },
+                onNavigateToPremium = onNavigateToPremium
             )
         }
 
@@ -278,7 +280,9 @@ fun MainNavGraph(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToResults = { _ ->
                     navController.popBackStack()
-                }
+                },
+                rewardedAdManager = rewardedAdManager,
+                onNavigateToPremium = onNavigateToPremium
             )
         }
 

@@ -5,12 +5,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.data.content.ImprovisationTopicsProvider
+import com.aivoicepower.data.firebase.sync.ServerLimitService
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.domain.repository.VoiceAnalysisRepository
 import com.aivoicepower.utils.PremiumChecker
 import com.aivoicepower.utils.audio.AudioRecorderUtil
+import com.aivoicepower.utils.constants.FreeTierLimits
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -23,10 +26,12 @@ class RandomTopicViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val userPreferencesDataStore: UserPreferencesDataStore,
     private val voiceAnalysisRepository: VoiceAnalysisRepository,
-    private val rewardedAdManager: RewardedAdManager
+    private val rewardedAdManager: RewardedAdManager,
+    private val serverLimitService: ServerLimitService
 ) : ViewModel() {
 
     private val audioRecorderUtil = AudioRecorderUtil(context)
+    private var preparationTimerJob: Job? = null
 
     private val _state = MutableStateFlow(RandomTopicState())
     val state: StateFlow<RandomTopicState> = _state.asStateFlow()
@@ -44,6 +49,10 @@ class RandomTopicViewModel @Inject constructor(
             RandomTopicEvent.StartPreparation -> {
                 startPreparationTimer()
             }
+            RandomTopicEvent.SkipPreparation -> {
+                preparationTimerJob?.cancel()
+                startRecording()
+            }
             RandomTopicEvent.StartRecording -> {
                 startRecording()
             }
@@ -52,6 +61,9 @@ class RandomTopicViewModel @Inject constructor(
             }
             RandomTopicEvent.CompleteTask -> {
                 completeTask()
+            }
+            RandomTopicEvent.DismissAnalysis -> {
+                _state.update { it.copy(analysisResult = null) }
             }
             RandomTopicEvent.DismissAnalysisLimitSheet -> {
                 _state.update { it.copy(showAnalysisLimitSheet = false) }
@@ -97,6 +109,7 @@ class RandomTopicViewModel @Inject constructor(
     }
 
     private fun generateNewTopic() {
+        preparationTimerJob?.cancel()
         val allTopics = ImprovisationTopicsProvider.getAllTopics()
         val randomTopic = allTopics.random()
 
@@ -113,14 +126,14 @@ class RandomTopicViewModel @Inject constructor(
     }
 
     private fun startPreparationTimer() {
-        viewModelScope.launch {
-            for (i in 15 downTo 0) {
-                _state.update { it.copy(preparationTimeLeft = i) }
+        preparationTimerJob?.cancel()
+        preparationTimerJob = viewModelScope.launch {
+            while (_state.value.preparationTimeLeft > 0) {
                 delay(1000)
+                _state.update { it.copy(preparationTimeLeft = _state.value.preparationTimeLeft - 1) }
             }
-
-            // Timer finished
-            _state.update { it.copy(isPreparationPhase = false) }
+            // Timer finished — auto-start recording
+            startRecording()
         }
     }
 
@@ -143,11 +156,18 @@ class RandomTopicViewModel @Inject constructor(
                     )
                 }
 
-                // Track recording duration
+                // Track recording duration with limit
+                val maxDurationMs = if (_state.value.isPremium)
+                    FreeTierLimits.PRO_RECORDING_DURATION_SECONDS * 1000L
+                    else FreeTierLimits.FREE_RECORDING_DURATION_SECONDS * 1000L
                 val startTime = System.currentTimeMillis()
                 while (_state.value.isRecording) {
                     val duration = System.currentTimeMillis() - startTime
                     _state.update { it.copy(recordingDurationMs = duration) }
+                    if (duration >= maxDurationMs) {
+                        stopRecording()
+                        break
+                    }
                     delay(100)
                 }
             } catch (e: Exception) {
@@ -182,38 +202,73 @@ class RandomTopicViewModel @Inject constructor(
                 return@launch
             }
 
+            // Server-side limit check for free users
+            if (!prefs.isPremium && !serverLimitService.canAnalyze(isImprov = true)) {
+                _state.update { it.copy(showAnalysisLimitSheet = true) }
+                return@launch
+            }
+
             performAnalysis()
         }
     }
 
     private fun performAnalysis() {
+        _state.update { it.copy(isAnalyzing = true, error = null) }
+
         viewModelScope.launch {
             try {
                 val recordingPath = _state.value.recordingPath
                 val topic = _state.value.currentTopic
 
-                // Analyze recording with Gemini if path exists
-                if (recordingPath != null && topic != null) {
-                    val analysisResult = voiceAnalysisRepository.analyzeRecording(
-                        audioFilePath = recordingPath,
-                        expectedText = null, // Free improvisation - no expected text
-                        exerciseType = "random_topic",
-                        context = "Тема для імпровізації: ${topic.title}"
-                    )
-                    // Analysis result is available for future use (e.g., showing score)
-                    analysisResult.getOrNull()
+                if (recordingPath == null || topic == null) {
+                    _state.update {
+                        it.copy(
+                            isAnalyzing = false,
+                            error = "Помилка: запис не знайдено. Спробуйте записати ще раз."
+                        )
+                    }
+                    return@launch
                 }
 
-                // Increment counters
+                val apiResult = voiceAnalysisRepository.analyzeRecording(
+                    audioFilePath = recordingPath,
+                    expectedText = null,
+                    exerciseType = "random_topic",
+                    context = "Тема для імпровізації: ${topic.title}"
+                )
+
+                val result = apiResult.getOrNull()
+
+                // Increment counters (local + server)
                 val prefs = userPreferencesDataStore.userPreferencesFlow.first()
                 if (!prefs.isPremium) {
                     userPreferencesDataStore.incrementFreeImprovAnalyses()
+                    serverLimitService.incrementAnalysis(isImprov = true)
                 }
                 userPreferencesDataStore.incrementFreeImprovisations()
 
+                if (result != null) {
+                    _state.update {
+                        it.copy(
+                            isAnalyzing = false,
+                            analysisResult = result
+                        )
+                    }
+                } else {
+                    val errorMsg = apiResult.exceptionOrNull()?.message ?: "Невідома помилка"
+                    _state.update {
+                        it.copy(
+                            isAnalyzing = false,
+                            error = "Помилка аналізу: $errorMsg"
+                        )
+                    }
+                }
             } catch (e: Exception) {
                 _state.update {
-                    it.copy(error = "Помилка збереження: ${e.message}")
+                    it.copy(
+                        isAnalyzing = false,
+                        error = "Помилка аналізу: ${e.message}"
+                    )
                 }
             }
         }

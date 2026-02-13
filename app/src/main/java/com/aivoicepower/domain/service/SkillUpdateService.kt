@@ -178,7 +178,8 @@ class SkillUpdateService @Inject constructor(
     suspend fun updateFromAnalysis(result: VoiceAnalysisResult, exerciseType: String) {
         val progress = getOrCreateProgress()
         val resetProgress = resetDailyChangesIfNewDay(progress)
-        val skillMap = exerciseSkillMap[exerciseType] ?: return
+        val normalizedType = normalizeExerciseType(exerciseType)
+        val skillMap = exerciseSkillMap[normalizedType] ?: return
         val baseAlpha = getBaseAlpha(exerciseType)
         val dailyCap = if (exerciseType == "diagnostic") DAILY_CAP_DIAGNOSTIC else DAILY_CAP_EXERCISE
 
@@ -365,6 +366,25 @@ class SkillUpdateService @Inject constructor(
             dailyChangeFillerWords = 0f,
             lastDailyResetDate = today
         )
+    }
+
+    /**
+     * Normalizes exercise type to match exerciseSkillMap keys.
+     * Handles: random_topic → free_speech, storytelling_* → storytelling, daily_challenge_* → base type
+     */
+    private fun normalizeExerciseType(exerciseType: String): String {
+        // Direct match
+        if (exerciseSkillMap.containsKey(exerciseType)) return exerciseType
+
+        return when {
+            exerciseType == "random_topic" -> "free_speech"
+            exerciseType.startsWith("storytelling_") -> "storytelling"
+            exerciseType.startsWith("daily_challenge_") -> {
+                val baseType = exerciseType.removePrefix("daily_challenge_")
+                exerciseSkillMap[baseType]?.let { baseType } ?: "free_speech"
+            }
+            else -> exerciseType
+        }
     }
 
     private fun getBaseAlpha(exerciseType: String): Float = when (exerciseType) {

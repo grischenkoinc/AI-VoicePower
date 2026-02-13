@@ -181,7 +181,7 @@ private fun ImprovisationContent(
                     viewModel.onEvent(ImprovisationEvent.RandomTopicClicked)
                     onNavigateToRandomTopic()
                 } else {
-                    onNavigateToPremium()
+                    onShowProSheet { onNavigateToRandomTopic() }
                 }
             }
         )
@@ -197,7 +197,7 @@ private fun ImprovisationContent(
                     viewModel.onEvent(ImprovisationEvent.StorytellingClicked)
                     onNavigateToStorytelling()
                 } else {
-                    onNavigateToPremium()
+                    onShowProSheet { onNavigateToStorytelling() }
                 }
             }
         )
@@ -213,7 +213,7 @@ private fun ImprovisationContent(
                     viewModel.onEvent(ImprovisationEvent.DailyChallengeClicked)
                     onNavigateToChallenge()
                 } else {
-                    onNavigateToPremium()
+                    onShowProSheet { onNavigateToChallenge() }
                 }
             }
         )

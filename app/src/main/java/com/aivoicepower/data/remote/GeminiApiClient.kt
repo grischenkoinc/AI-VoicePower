@@ -41,7 +41,7 @@ class GeminiApiClient @Inject constructor(
             temperature = 0.8f
             topK = 40
             topP = 0.95f
-            maxOutputTokens = 800
+            maxOutputTokens = 2000
         }
     )
 

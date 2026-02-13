@@ -1,7 +1,7 @@
 package com.aivoicepower.utils.constants
 
 /**
- * Ліміти для безкоштовних користувачів
+ * Ліміти для безкоштовних та Pro користувачів
  */
 object FreeTierLimits {
     // AI Coach
@@ -15,6 +15,10 @@ object FreeTierLimits {
 
     // Re-diagnostic
     const val FREE_DIAGNOSTICS = 1
+
+    // Recording duration limits (seconds)
+    const val FREE_RECORDING_DURATION_SECONDS = 60
+    const val PRO_RECORDING_DURATION_SECONDS = 120
 
     // AI Analysis (voice recording analysis via Gemini)
     const val FREE_ANALYSES_PER_DAY = 5

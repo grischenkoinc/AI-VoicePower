@@ -6,6 +6,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.ads.RewardedAdManager
+import com.aivoicepower.data.firebase.sync.ServerLimitService
 import com.aivoicepower.data.local.database.dao.CourseProgressDao
 import com.aivoicepower.data.local.database.dao.RecordingDao
 import com.aivoicepower.data.local.database.entity.CourseProgressEntity
@@ -45,7 +46,8 @@ class LessonViewModel @Inject constructor(
     private val skillUpdateService: SkillUpdateService,
     private val achievementRepository: AchievementRepository,
     private val userPreferencesDataStore: UserPreferencesDataStore,
-    private val rewardedAdManager: RewardedAdManager
+    private val rewardedAdManager: RewardedAdManager,
+    private val serverLimitService: ServerLimitService
 ) : ViewModel() {
 
     private val courseId: String = savedStateHandle["courseId"] ?: ""
@@ -383,6 +385,12 @@ class LessonViewModel @Inject constructor(
                     return@launch
                 }
 
+                // Server-side limit check for free users
+                if (!prefs.isPremium && !serverLimitService.canAnalyze(isImprov = false)) {
+                    _state.update { it.copy(showAnalysisLimitSheet = true) }
+                    return@launch
+                }
+
                 // Proceed with analysis
                 performAnalysis()
             }
@@ -420,6 +428,7 @@ class LessonViewModel @Inject constructor(
                     val prefs = userPreferencesDataStore.userPreferencesFlow.first()
                     if (!prefs.isPremium) {
                         userPreferencesDataStore.incrementFreeAnalyses()
+                        serverLimitService.incrementAnalysis(isImprov = false)
                     }
                 }
 

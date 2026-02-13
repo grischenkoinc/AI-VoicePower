@@ -1,6 +1,7 @@
 package com.aivoicepower.ui.screens.improvisation
 
 import com.aivoicepower.domain.model.ImprovisationTopic
+import com.aivoicepower.domain.model.VoiceAnalysisResult
 
 data class RandomTopicState(
     val currentTopic: ImprovisationTopic? = null,
@@ -12,6 +13,9 @@ data class RandomTopicState(
     val recordingId: String? = null,
     val isLoading: Boolean = false,
     val error: String? = null,
+    // Analysis
+    val isAnalyzing: Boolean = false,
+    val analysisResult: VoiceAnalysisResult? = null,
     // Analysis limits
     val showAnalysisLimitSheet: Boolean = false,
     val isPremium: Boolean = true,

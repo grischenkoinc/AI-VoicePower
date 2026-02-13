@@ -75,7 +75,7 @@ class UserPreferencesDataStore @Inject constructor(
         }
         .map { preferences ->
             UserPreferences(
-                isPremium = preferences[PreferencesKeys.IS_PREMIUM] ?: false,
+                isPremium = preferences[PreferencesKeys.IS_PREMIUM] ?: true, // TODO: change back to false before release
                 currentStreak = preferences[PreferencesKeys.CURRENT_STREAK] ?: 0,
                 todayMinutes = preferences[PreferencesKeys.TODAY_MINUTES] ?: 0,
                 hasCompletedOnboarding = preferences[PreferencesKeys.HAS_COMPLETED_ONBOARDING] ?: false,

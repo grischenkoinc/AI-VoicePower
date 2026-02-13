@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -25,6 +24,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.ui.components.AnalysisLimitBottomSheet
 import com.aivoicepower.ui.components.AnalysisLimitInfo
+import com.aivoicepower.ui.components.AnalysisResultsContent
+import com.aivoicepower.ui.components.AnalyzingContent
 import com.aivoicepower.ui.screens.improvisation.components.*
 import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
@@ -122,60 +123,42 @@ fun RandomTopicScreen(
                 .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 130.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Header with back button
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(
-                        text = "Імпровізація",
-                        style = AppTypography.labelMedium,
-                        color = TextColors.onDarkSecondary,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = "🎲 Випадкова тема",
-                        style = AppTypography.displayLarge,
-                        color = TextColors.onDarkPrimary,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        letterSpacing = (-0.8).sp
+            // Header
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text = "Імпровізація",
+                    style = AppTypography.labelMedium,
+                    color = TextColors.onDarkSecondary,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "🎲 Випадкова тема",
+                    style = AppTypography.displayLarge,
+                    color = TextColors.onDarkPrimary,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = (-0.8).sp
+                )
+            }
+            when {
+                state.isAnalyzing -> {
+                    // Analysis in progress
+                    AnalyzingContent()
+                }
+
+                state.analysisResult != null -> {
+                    // Analysis results
+                    AnalysisResultsContent(
+                        result = state.analysisResult!!,
+                        onDismiss = {
+                            viewModel.onEvent(RandomTopicEvent.DismissAnalysis)
+                            onNavigateBack()
+                        },
+                        dismissButtonText = "Готово"
                     )
                 }
 
-                // Back button
-                Row(
-                    modifier = Modifier
-                        .shadow(
-                            elevation = 12.dp,
-                            shape = RoundedCornerShape(16.dp),
-                            spotColor = Color.Black.copy(alpha = 0.2f)
-                        )
-                        .background(Color.White, RoundedCornerShape(16.dp))
-                        .clickable { onNavigateBack() }
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "←",
-                        fontSize = 24.sp,
-                        color = Color(0xFF667EEA),
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Назад",
-                        style = AppTypography.bodyMedium,
-                        color = TextColors.onLightPrimary,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-            when {
                 state.isPreparationPhase -> {
                     // Preparation phase
                     state.currentTopic?.let { topic ->
@@ -189,11 +172,12 @@ fun RandomTopicScreen(
                         )
                     }
 
-                    if (state.preparationTimeLeft == 0) {
+                    // Skip preparation button
+                    if (state.preparationTimeLeft > 0) {
                         PrimaryButton(
-                            text = "🎤 Почати запис",
+                            text = "Почати вправу",
                             onClick = {
-                                viewModel.onEvent(RandomTopicEvent.StartRecording)
+                                viewModel.onEvent(RandomTopicEvent.SkipPreparation)
                             },
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -203,8 +187,9 @@ fun RandomTopicScreen(
                 state.isRecording -> {
                     // Recording phase
                     state.currentTopic?.let { topic ->
-                        RandomTopicRecordingCard(
-                            topic = topic,
+                        ImprovisationRecordingCard(
+                            title = "Говори 1-3 хвилини",
+                            subtitle = topic.title,
                             durationMs = state.recordingDurationMs,
                             onStop = {
                                 viewModel.onEvent(RandomTopicEvent.StopRecording)
@@ -214,7 +199,7 @@ fun RandomTopicScreen(
                 }
 
                 else -> {
-                    // Recording completed
+                    // Recording completed — show summary before analysis
                     state.currentTopic?.let { _ ->
                         Column(
                             modifier = Modifier
@@ -247,14 +232,9 @@ fun RandomTopicScreen(
                         }
 
                         PrimaryButton(
-                            text = "Завершити",
+                            text = "Отримати аналіз",
                             onClick = {
                                 viewModel.onEvent(RandomTopicEvent.CompleteTask)
-                                // Navigate to placeholder results (TODO: implement actual results screen)
-                                state.recordingId?.let { _ ->
-                                    // For now, just go back since Results screen not yet ready for improvisation
-                                    onNavigateBack()
-                                }
                             },
                             modifier = Modifier.fillMaxWidth()
                         )
