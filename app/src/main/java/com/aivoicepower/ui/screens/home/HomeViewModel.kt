@@ -418,35 +418,22 @@ class HomeViewModel @Inject constructor(
         val preferences = userPreferencesDataStore.userPreferencesFlow.first()
         val currentTime = System.currentTimeMillis()
         val lastUpdateTime = preferences.lastTipUpdateTime
-        val sixHoursInMillis = 6 * 60 * 60 * 1000
+        val fourHoursInMillis = 4 * 60 * 60 * 1000L
 
-        android.util.Log.d("HomeViewModel", "getDailyTip: currentTime=$currentTime, lastUpdate=$lastUpdateTime")
+        val isColdStart = dailyTipsRepository.isColdStart
+        val timeExpired = currentTime - lastUpdateTime > fourHoursInMillis
+        val noTipYet = preferences.currentTipId == null
 
-        // Перевіряємо чи минуло 6 годин з останнього оновлення
-        val shouldUpdate = currentTime - lastUpdateTime > sixHoursInMillis
+        if (isColdStart || timeExpired || noTipYet) {
+            dailyTipsRepository.markColdStartHandled()
 
-        if (shouldUpdate || preferences.currentTipId == null) {
-            android.util.Log.d("HomeViewModel", "Updating tip (shouldUpdate=$shouldUpdate, currentTipId=${preferences.currentTipId})")
-            // Генеруємо новий seed на основі поточного часу (округленого до 6 годин)
-            val seed = currentTime / sixHoursInMillis
-            val newTip = dailyTipsRepository.getRandomTip(seed)
-
-            // Зберігаємо нову пораду
+            val newTip = dailyTipsRepository.getRandomTip(excludeId = preferences.currentTipId)
             userPreferencesDataStore.updateDailyTip(newTip.id, currentTime)
-
             return newTip.copy(date = getCurrentDateString())
         } else {
-            android.util.Log.d("HomeViewModel", "Using cached tip: ${preferences.currentTipId}")
-            // Повертаємо збережену пораду
             val allTips = dailyTipsRepository.loadTips()
             val cachedTip = allTips.find { it.id == preferences.currentTipId }
-                ?: allTips.firstOrNull()
-                ?: com.aivoicepower.domain.model.home.DailyTip(
-                    id = "default",
-                    title = "Порада дня",
-                    content = "Розповідай історії замість фактів",
-                    date = getCurrentDateString()
-                )
+                ?: dailyTipsRepository.getRandomTip()
 
             return cachedTip.copy(date = getCurrentDateString())
         }

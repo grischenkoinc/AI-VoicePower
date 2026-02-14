@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -413,6 +414,8 @@ private fun MotivationCard(
     tip: com.aivoicepower.domain.model.home.DailyTip,
     modifier: Modifier = Modifier
 ) {
+    val isAuthorQuote = tip.title != "Порада дня"
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -453,7 +456,10 @@ private fun MotivationCard(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "💡", fontSize = 32.sp)
+                Text(
+                    text = if (isAuthorQuote) "\uD83D\uDCAC" else "\uD83D\uDCA1",
+                    fontSize = 32.sp
+                )
             }
 
             // Content
@@ -461,22 +467,34 @@ private fun MotivationCard(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
+                if (!isAuthorQuote) {
+                    Text(
+                        text = "ПОРАДА ДНЯ",
+                        style = AppTypography.labelMedium,
+                        color = Color(0xFFD97706),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 0.5.sp
+                    )
+                }
                 Text(
-                    text = tip.title,
-                    style = AppTypography.labelMedium,
-                    color = Color(0xFFD97706), // Темно-помаранчевий
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = 0.5.sp
-                )
-                Text(
-                    text = tip.content,
+                    text = if (isAuthorQuote) "\u00AB${tip.content}\u00BB" else tip.content,
                     style = AppTypography.bodyMedium,
-                    color = Color(0xFF92400E), // Темно-коричневий
+                    color = Color(0xFF92400E),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                     lineHeight = 19.sp
                 )
+                if (isAuthorQuote) {
+                    Text(
+                        text = "— ${tip.title}",
+                        style = AppTypography.bodySmall,
+                        color = Color(0xFFB45309),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        fontStyle = FontStyle.Italic
+                    )
+                }
             }
         }
     }
