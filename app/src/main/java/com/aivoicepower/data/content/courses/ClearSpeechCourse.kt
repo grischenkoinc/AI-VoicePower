@@ -1,5 +1,6 @@
 package com.aivoicepower.data.content.courses
 
+import com.aivoicepower.data.content.TongueTwistersProvider
 import com.aivoicepower.domain.model.course.*
 import com.aivoicepower.domain.model.exercise.*
 import com.aivoicepower.domain.model.user.SkillType
@@ -134,57 +135,37 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
+            // Читання тексту
             LessonExercise(
                 id = "ex_1_5",
-                type = ExerciseType.ARTICULATION,
-                title = "Коник",
-                instruction = "Поцокай язиком, імітуючи цокіт копит. Починай повільно, відчуваючи, як язик 'присмоктується' до піднебіння. Поступово пришвидшуйся. Виконай 20 цоків.",
-                content = ExerciseContent.ArticulationExercise(
-                    hasTimer = true,
-                    durationSeconds = 30
+                type = ExerciseType.READING,
+                title = "Читання: чітка вимова",
+                instruction = "Прочитай текст повільно та чітко, артикулюючи кожен звук. Слідкуй за роботою губ і язика. Запиши своє читання.",
+                content = ExerciseContent.ReadingText(
+                    text = "Кожне слово має звучати ясно і виразно. Губи працюють активно, язик точно торкається потрібних місць. Не поспішай — краще повільно і чітко, ніж швидко і змазано. Добре мовлення починається з уваги до кожного звуку."
                 ),
-                durationSeconds = 30,
-                targetMetrics = listOf(SkillType.DICTION)
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
-            // Скоромовки для запису
+            // Скоромовка
             LessonExercise(
                 id = "ex_1_6",
                 type = ExerciseType.TONGUE_TWISTER,
-                title = "Скоромовка 1",
-                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: чітка робота губ на звуках Б, П.",
-                content = ExerciseContent.TongueTwister(
-                    text = "Був бик тупогуб, тупогубенький бичок.",
-                    difficulty = 1,
-                    targetSounds = listOf("Б", "П")
-                ),
+                title = "Скоромовка",
+                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: чіткість кожного звуку.",
+                content = TongueTwistersProvider.toExerciseContent("tt_c_002"),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
+            // Повільне читання
             LessonExercise(
                 id = "ex_1_7",
-                type = ExerciseType.TONGUE_TWISTER,
-                title = "Скоромовка 2",
-                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: чіткість звуків К, Ч та закінчень слів.",
-                content = ExerciseContent.TongueTwister(
-                    text = "Ходить квочка коло кілочка, водить діточок коло квіточок.",
-                    difficulty = 2,
-                    targetSounds = listOf("К", "Ч")
-                ),
-                durationSeconds = 60,
-                targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
-            ),
-            LessonExercise(
-                id = "ex_1_8",
-                type = ExerciseType.TONGUE_TWISTER,
-                title = "Скоромовка 3",
-                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: шиплячі звуки Ш та плавні переходи.",
-                content = ExerciseContent.TongueTwister(
-                    text = "Сів шпак на шпаківню, заспівав шпак півню: ти не вмієш так, як я!",
-                    difficulty = 2,
-                    targetSounds = listOf("Ш", "П")
-                ),
-                durationSeconds = 60,
-                targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+                type = ExerciseType.SLOW_MOTION,
+                title = "Повільне читання",
+                instruction = "Прочитай скоромовку максимально повільно, розтягуючи кожен склад. Відчуй роботу кожного м'яза. Мінімум 30 секунд на всю скоромовку.",
+                content = TongueTwistersProvider.toSlowMotionContent("tt_c_005"),
+                durationSeconds = 45,
+                targetMetrics = listOf(SkillType.DICTION)
             )
         ),
         estimatedMinutes = 10
@@ -271,18 +252,6 @@ object ClearSpeechCourse {
             LessonExercise(
                 id = "ex_2_4",
                 type = ExerciseType.ARTICULATION,
-                title = "Змикання-Розмикання",
-                instruction = "Щільно зімкни губи. Вимов довге 'Ммммм', відчуваючи вібрацію в носі та губах. Різко відкрий рот на 'А': 'Мммм-А!'. Потім: 'Мммм-О!', 'Мммм-У!'. Повтори 5 циклів.",
-                content = ExerciseContent.ArticulationExercise(
-                    hasTimer = true,
-                    durationSeconds = 45
-                ),
-                durationSeconds = 45,
-                targetMetrics = listOf(SkillType.DICTION)
-            ),
-            LessonExercise(
-                id = "ex_2_5",
-                type = ExerciseType.ARTICULATION,
                 title = "Губні склади",
                 instruction = "Вимовляй чітко, з активними губами: БА-БО-БУ-БИ-БЕ, ПА-ПО-ПУ-ПИ-ПЕ, МА-МО-МУ-МИ-МЕ, ВА-ВО-ВУ-ВИ-ВЕ, ФА-ФО-ФУ-ФИ-ФЕ. Повтори 2 цикли.",
                 content = ExerciseContent.ArticulationExercise(
@@ -292,17 +261,33 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
+            // Мінімальні пари
+            LessonExercise(
+                id = "ex_2_5",
+                type = ExerciseType.MINIMAL_PAIRS,
+                title = "Мінімальні пари: Б-П, В-Ф",
+                instruction = "Вимовляй пари слів, відчуваючи різницю між дзвінкими та глухими. Б — з голосом, П — тільки повітря. В — з вібрацією, Ф — без. Запиши, чітко розрізняючи кожну пару.",
+                content = ExerciseContent.MinimalPairs(
+                    pairs = listOf(
+                        "бас" to "пас",
+                        "бити" to "пити",
+                        "бік" to "пік",
+                        "бар" to "пар",
+                        "вага" to "фара",
+                        "вас" to "фас"
+                    ),
+                    targetSounds = listOf("Б", "П", "В", "Ф")
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.DICTION)
+            ),
             // Скоромовки
             LessonExercise(
                 id = "ex_2_6",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 1",
-                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук Б у різних позиціях — на початку слова, в середині.",
-                content = ExerciseContent.TongueTwister(
-                    text = "Бабин біб розцвів у дощ — буде бабі біб у борщ.",
-                    difficulty = 2,
-                    targetSounds = listOf("Б")
-                ),
+                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук Б у різних позиціях.",
+                content = TongueTwistersProvider.toExerciseContent("tt_labial_003"),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
@@ -311,11 +296,7 @@ object ClearSpeechCourse {
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2",
                 instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук П та сполучення ПР.",
-                content = ExerciseContent.TongueTwister(
-                    text = "Прийшов Прокіп — кипів окріп, пішов Прокіп — кипить окріп.",
-                    difficulty = 3,
-                    targetSounds = listOf("П", "Р")
-                ),
+                content = TongueTwistersProvider.toExerciseContent("tt_labial_008"),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
@@ -323,12 +304,8 @@ object ClearSpeechCourse {
                 id = "ex_2_8",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 3",
-                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук В на початку слів.",
-                content = ExerciseContent.TongueTwister(
-                    text = "Ввічливий Василь возив Вікторії великі валізи у вагоні.",
-                    difficulty = 2,
-                    targetSounds = listOf("В")
-                ),
+                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: чітка робота губ на звуках Б, П.",
+                content = TongueTwistersProvider.toExerciseContent("tt_labial_001"),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             )
@@ -414,41 +391,39 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
+            // Чергування звуків
             LessonExercise(
                 id = "ex_3_4",
-                type = ExerciseType.ARTICULATION,
-                title = "Катапульта",
-                instruction = "Притисни кінчик язика до альвеол. Накопич 'напругу' на 2 секунди. Різко 'вистріли' язиком зі звуком 'Т!'. Повтори з 'Д!'. Відчуй різницю: Т — тільки повітря, Д — з голосом. По 10 кожного звуку.",
-                content = ExerciseContent.ArticulationExercise(
-                    hasTimer = true,
-                    durationSeconds = 45
-                ),
-                durationSeconds = 45,
-                targetMetrics = listOf(SkillType.DICTION)
-            ),
-            LessonExercise(
-                id = "ex_3_5",
-                type = ExerciseType.ARTICULATION,
-                title = "Язикові склади",
-                instruction = "Вимовляй чітко, слідкуючи за кінчиком язика: ТА-ТО-ТУ-ТИ-ТЕ, ДА-ДО-ДУ-ДИ-ДЕ, НА-НО-НУ-НИ-НЕ, ЛА-ЛО-ЛУ-ЛИ-ЛЕ. Повтори 2 цикли.",
-                content = ExerciseContent.ArticulationExercise(
-                    hasTimer = true,
-                    durationSeconds = 60
+                type = ExerciseType.CONTRAST_SOUNDS,
+                title = "Контраст Т-Д, Н-Л",
+                instruction = "Чергуй звуки, відчуваючи різницю. Т — глухий удар, Д — дзвінкий удар, Н — носовий, Л — боковий. Запиши чітке чергування.",
+                content = ExerciseContent.ContrastSounds(
+                    sequence = "та-да-та-да, на-ла-на-ла, ти-ді-ні-лі, ту-ду-ну-лу",
+                    targetSounds = listOf("Т", "Д", "Н", "Л"),
+                    repetitions = 5
                 ),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
+            ),
+            // Читання тексту
+            LessonExercise(
+                id = "ex_3_5",
+                type = ExerciseType.READING,
+                title = "Читання: язикові звуки",
+                instruction = "Прочитай текст, концентруючись на чіткій вимові звуків Т, Д, Н, Л. Кінчик язика торкається альвеол, а не зубів. Запиши своє читання.",
+                content = ExerciseContent.ReadingText(
+                    text = "Тато та Данило ділили дині. Нині на долині тихо. Лелека летіла далеко, на тоненьку тополю. Надія тихо підняла натхнення до небес. Діти надворі танцюють до ночі."
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
             // Скоромовки
             LessonExercise(
                 id = "ex_3_6",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 1",
-                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук Т у сполученнях ТА, ТЕ, ТІ, ТР.",
-                content = ExerciseContent.TongueTwister(
-                    text = "Тато тесав тесом тісно, татів тесел в тіста тріснув.",
-                    difficulty = 3,
-                    targetSounds = listOf("Т")
-                ),
+                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук Т у різних позиціях.",
+                content = TongueTwistersProvider.toExerciseContent("tt_lingual_001"),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
@@ -456,12 +431,8 @@ object ClearSpeechCourse {
                 id = "ex_3_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2",
-                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук Д на початку та в середині слів.",
-                content = ExerciseContent.TongueTwister(
-                    text = "Дід Данило дуба доглядав, добре дід Данило дуба доглядав.",
-                    difficulty = 2,
-                    targetSounds = listOf("Д")
-                ),
+                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук Д на початку слів.",
+                content = TongueTwistersProvider.toExerciseContent("tt_lingual_002"),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
@@ -469,12 +440,8 @@ object ClearSpeechCourse {
                 id = "ex_3_8",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 3",
-                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук Л у повторюваних сполученнях.",
-                content = ExerciseContent.TongueTwister(
-                    text = "Летіла лелека, летіла, летіла, на полі далекім тихенько присіла.",
-                    difficulty = 2,
-                    targetSounds = listOf("Л")
-                ),
+                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук Н у повторюваних сполученнях.",
+                content = TongueTwistersProvider.toExerciseContent("tt_lingual_003"),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             )
@@ -560,26 +527,36 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
+            // Мінімальні пари С-Ш
             LessonExercise(
                 id = "ex_4_4",
-                type = ExerciseType.ARTICULATION,
-                title = "Контраст С-Ш",
-                instruction = "С: посмішка, язик внизу біля зубів → 'ссс'. Ш: губи округлені, язик піднятий → 'шшш'. Чергуй: С-Ш-С-Ш. Відчуй різницю в позиції губ та язика. Повтори 10 пар.",
-                content = ExerciseContent.ArticulationExercise(
-                    hasTimer = true,
-                    durationSeconds = 45
+                type = ExerciseType.MINIMAL_PAIRS,
+                title = "Мінімальні пари: С-Ш, З-Ж",
+                instruction = "Вимовляй пари, чітко розрізняючи свистячі та шиплячі. С — посмішка, язик внизу. Ш — губи округлені, язик вгорі. Запиши кожну пару окремо.",
+                content = ExerciseContent.MinimalPairs(
+                    pairs = listOf(
+                        "сар" to "шар",
+                        "сити" to "шити",
+                        "каса" to "каша",
+                        "зал" to "жал",
+                        "коза" to "кожа",
+                        "суд" to "шут"
+                    ),
+                    targetSounds = listOf("С", "Ш", "З", "Ж")
                 ),
-                durationSeconds = 45,
+                durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
+            // Чергування звуків
             LessonExercise(
                 id = "ex_4_5",
-                type = ExerciseType.ARTICULATION,
-                title = "Свистячі склади",
-                instruction = "Вимовляй чітко, зберігаючи посмішку: СА-СО-СУ-СИ-СЕ, ЗА-ЗО-ЗУ-ЗИ-ЗЕ, ЦА-ЦО-ЦУ-ЦИ-ЦЕ. Повтори 2 цикли.",
-                content = ExerciseContent.ArticulationExercise(
-                    hasTimer = true,
-                    durationSeconds = 60
+                type = ExerciseType.CONTRAST_SOUNDS,
+                title = "Чергування С-З-Ц",
+                instruction = "Чергуй свистячі звуки, зберігаючи посмішку і правильну позицію язика. С — глухий свист, З — дзвінкий свист, Ц — короткий удар. Запиши чітке чергування.",
+                content = ExerciseContent.ContrastSounds(
+                    sequence = "са-за-ца, со-зо-цо, су-зу-цу, си-зи-ці",
+                    targetSounds = listOf("С", "З", "Ц"),
+                    repetitions = 5
                 ),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
@@ -589,12 +566,8 @@ object ClearSpeechCourse {
                 id = "ex_4_6",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 1",
-                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук С на початку слів та в сполученнях.",
-                content = ExerciseContent.TongueTwister(
-                    text = "Сьогодні сонце світить ясно, у синім небі — все прекрасно.",
-                    difficulty = 2,
-                    targetSounds = listOf("С")
-                ),
+                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук С на початку слів.",
+                content = TongueTwistersProvider.toExerciseContent("tt_w_002"),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
@@ -602,12 +575,8 @@ object ClearSpeechCourse {
                 id = "ex_4_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2",
-                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук З у різних позиціях.",
-                content = ExerciseContent.TongueTwister(
-                    text = "Зозуля зозулятко забавляла, зозуленя в гніздечку скакало.",
-                    difficulty = 2,
-                    targetSounds = listOf("З")
-                ),
+                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук Ц у різних позиціях.",
+                content = TongueTwistersProvider.toExerciseContent("tt_w_006"),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
@@ -615,12 +584,8 @@ object ClearSpeechCourse {
                 id = "ex_4_8",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 3",
-                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звуки С і Ц разом.",
-                content = ExerciseContent.TongueTwister(
-                    text = "У киці на лапці кігтики-царапки, царапки ці — киці, кігтики для мишки.",
-                    difficulty = 3,
-                    targetSounds = listOf("С", "Ц")
-                ),
+                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звуки Ц та К разом.",
+                content = TongueTwistersProvider.toExerciseContent("tt_w_004"),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             )
@@ -713,67 +678,55 @@ object ClearSpeechCourse {
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
+            // Чергування звуків
             LessonExercise(
                 id = "ex_5_4",
-                type = ExerciseType.ARTICULATION,
-                title = "Округлення губ",
-                instruction = "Витягни губи трубочкою (як для поцілунку). Тримаючи цю позицію, вимовляй: 'Шшш', потім 'Жжж'. Перевір: якщо посміхнешся під час Ш — звук зміниться (стане схожим на С). По 5 секунд, 3 підходи.",
-                content = ExerciseContent.ArticulationExercise(
-                    hasTimer = true,
-                    durationSeconds = 45
-                ),
-                durationSeconds = 45,
-                targetMetrics = listOf(SkillType.DICTION)
-            ),
-            LessonExercise(
-                id = "ex_5_5",
-                type = ExerciseType.ARTICULATION,
-                title = "Шиплячі склади",
-                instruction = "Вимовляй чітко, з округленими губами: ША-ШО-ШУ-ШИ-ШЕ, ЖА-ЖО-ЖУ-ЖИ-ЖЕ, ЧА-ЧО-ЧУ-ЧИ-ЧЕ, ЩА-ЩО-ЩУ-ЩИ-ЩЕ. Повтори 2 цикли.",
-                content = ExerciseContent.ArticulationExercise(
-                    hasTimer = true,
-                    durationSeconds = 60
+                type = ExerciseType.CONTRAST_SOUNDS,
+                title = "Контраст Ш-Ж, Ч-Щ",
+                instruction = "Чергуй шиплячі, зберігаючи округлення губ. Ш — глухий, Ж — дзвінкий, Ч — короткий удар, Щ — довгий. Запиши чітке чергування.",
+                content = ExerciseContent.ContrastSounds(
+                    sequence = "ша-жа-ша-жа, чо-що-чо-що, шу-жу-чу-щу",
+                    targetSounds = listOf("Ш", "Ж", "Ч", "Щ"),
+                    repetitions = 5
                 ),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
             // Скоромовки
             LessonExercise(
-                id = "ex_5_6",
+                id = "ex_5_5",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 1",
                 instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук Ш у різних позиціях.",
-                content = ExerciseContent.TongueTwister(
-                    text = "Шила шапку — вийшла ковпак, шила ковпак — вийшла шапка.",
-                    difficulty = 2,
-                    targetSounds = listOf("Ш")
-                ),
+                content = TongueTwistersProvider.toExerciseContent("tt_sh_001"),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
             LessonExercise(
-                id = "ex_5_7",
+                id = "ex_5_6",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2",
-                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук Ж на початку слів.",
-                content = ExerciseContent.TongueTwister(
-                    text = "Жук жує журу з жоржиною, жовту жабу з жоржем бачив він навесні.",
-                    difficulty = 3,
-                    targetSounds = listOf("Ж")
-                ),
+                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук Ж.",
+                content = TongueTwistersProvider.toExerciseContent("tt_sh_003"),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+            ),
+            // Повільне читання
+            LessonExercise(
+                id = "ex_5_7",
+                type = ExerciseType.SLOW_MOTION,
+                title = "Повільне читання: Ч та Щ",
+                instruction = "Прочитай скоромовку максимально повільно, розтягуючи кожен склад. Відчуй, як формуються звуки Ч і Щ. Мінімум 30 секунд.",
+                content = TongueTwistersProvider.toSlowMotionContent("tt_sh_004"),
+                durationSeconds = 45,
+                targetMetrics = listOf(SkillType.DICTION)
             ),
             LessonExercise(
                 id = "ex_5_8",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 3",
-                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звуки Ч і Щ.",
-                content = ExerciseContent.TongueTwister(
-                    text = "Чорна черепашка чекає на чай, у чашці — печиво, частуй, не зівай!",
-                    difficulty = 2,
-                    targetSounds = listOf("Ч", "Щ")
-                ),
+                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: звук Щ.",
+                content = TongueTwistersProvider.toExerciseContent("tt_sh_009"),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             )
@@ -851,18 +804,6 @@ object ClearSpeechCourse {
             LessonExercise(
                 id = "ex_6_3",
                 type = ExerciseType.ARTICULATION,
-                title = "Коник плюс",
-                instruction = "Цокай язиком 10 разів. Після цокання затримай язик 'присмоктаним' до піднебіння. Сильно видихни — можливо, кінчик язика завібрує. Повтори цикл 5 разів.",
-                content = ExerciseContent.ArticulationExercise(
-                    hasTimer = true,
-                    durationSeconds = 45
-                ),
-                durationSeconds = 45,
-                targetMetrics = listOf(SkillType.DICTION)
-            ),
-            LessonExercise(
-                id = "ex_6_4",
-                type = ExerciseType.ARTICULATION,
                 title = "Тигр",
                 instruction = "Рикай як тигр: 'Р-р-р-р' (або 'ДР-р-р' якщо без Д не виходить). Потім додай голосні: РА-РО-РУ-РИ-РЕ. Потім Р у кінці: АР-ОР-УР-ИР-ЕР. Не переживай, якщо вібрація слабка. Повтори 3 цикли.",
                 content = ExerciseContent.ArticulationExercise(
@@ -872,14 +813,26 @@ object ClearSpeechCourse {
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
+            // Повільне читання
+            LessonExercise(
+                id = "ex_6_4",
+                type = ExerciseType.SLOW_MOTION,
+                title = "Повільне читання: Р",
+                instruction = "Прочитай скоромовку максимально повільно. Відчуй, як кінчик язика вібрує на кожному Р. Розтягуй кожне Р. Мінімум 30 секунд.",
+                content = TongueTwistersProvider.toSlowMotionContent("tt_r_001"),
+                durationSeconds = 45,
+                targetMetrics = listOf(SkillType.DICTION)
+            ),
+            // Чергування звуків
             LessonExercise(
                 id = "ex_6_5",
-                type = ExerciseType.ARTICULATION,
-                title = "Р з приголосними",
-                instruction = "Вимовляй склади, де Р йде після іншого приголосного — так легше 'запустити' вібрацію: ТРА-ТРО-ТРУ, ДРА-ДРО-ДРУ, КРА-КРО-КРУ, ГРА-ГРО-ГРУ, ПРА-ПРО-ПРУ. Повтори 2 цикли.",
-                content = ExerciseContent.ArticulationExercise(
-                    hasTimer = true,
-                    durationSeconds = 60
+                type = ExerciseType.CONTRAST_SOUNDS,
+                title = "Контраст Р-Л",
+                instruction = "Чергуй Р та Л, відчуваючи різницю. Р — вібрація кінчика язика, Л — язик торкається альвеол, повітря проходить з боків. Запиши чітке чергування.",
+                content = ExerciseContent.ContrastSounds(
+                    sequence = "ра-ла-ра-ла, ро-ло-ро-ло, ру-лу-ру-лу, ри-лі-рі-лі",
+                    targetSounds = listOf("Р", "Л"),
+                    repetitions = 5
                 ),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION)
@@ -889,12 +842,8 @@ object ClearSpeechCourse {
                 id = "ex_6_6",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 1",
-                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: Р у різних позиціях слова.",
-                content = ExerciseContent.TongueTwister(
-                    text = "Рила свиня тупорила, білорила, весь двір перерила, рилом рила.",
-                    difficulty = 3,
-                    targetSounds = listOf("Р")
-                ),
+                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: Р з іншими приголосними.",
+                content = TongueTwistersProvider.toExerciseContent("tt_r_005"),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
@@ -902,30 +851,23 @@ object ClearSpeechCourse {
                 id = "ex_6_7",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2",
-                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: Р у сполученнях з Л.",
-                content = ExerciseContent.TongueTwister(
-                    text = "Тридцять три кораблі лавірували, лавірували, та не вилавірували.",
-                    difficulty = 4,
-                    targetSounds = listOf("Р", "Л")
-                ),
+                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: Р у різних позиціях слова.",
+                content = TongueTwistersProvider.toExerciseContent("tt_r_008"),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
+            // Батл скоромовок
             LessonExercise(
                 id = "ex_6_8",
-                type = ExerciseType.TONGUE_TWISTER,
-                title = "Скоромовка 3",
-                instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: Р у сполученнях ДР, ТР.",
-                content = ExerciseContent.TongueTwister(
-                    text = "Дрова рубали два дроворуби, на дворі трава, на траві — дрова.",
-                    difficulty = 3,
-                    targetSounds = listOf("Р", "Д", "Т")
-                ),
-                durationSeconds = 60,
+                type = ExerciseType.TONGUE_TWISTER_BATTLE,
+                title = "Батл скоромовок: Р",
+                instruction = "Три скоромовки на звук Р поспіль без помилок! Прочитай кожну чітко, не зупиняючись. Це фінальний челендж уроку.",
+                content = TongueTwistersProvider.toTwisterBattleContent("tt_r_003", "tt_r_010", "tt_r_013"),
+                durationSeconds = 90,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             )
         ),
-        estimatedMinutes = 10
+        estimatedMinutes = 12
     )
 
     // ==================== УРОК 7: Підсумок тижня ====================
@@ -984,93 +926,64 @@ object ClearSpeechCourse {
                 durationSeconds = 120,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
+            // Читання тексту
             LessonExercise(
                 id = "ex_7_2",
-                type = ExerciseType.ARTICULATION,
-                title = "Губні звуки",
-                instruction = "Вимовляй чітко, з активними губами: БА-БО-БУ-БИ-БЕ, ПА-ПО-ПУ-ПИ-ПЕ, МА-МО-МУ-МИ-МЕ, ВА-ВО-ВУ-ВИ-ВЕ, ФА-ФО-ФУ-ФИ-ФЕ.",
-                content = ExerciseContent.ArticulationExercise(
-                    hasTimer = true,
-                    durationSeconds = 45
+                type = ExerciseType.READING,
+                title = "Читання: всі групи звуків",
+                instruction = "Прочитай текст чітко та виразно. Тут є всі групи звуків: губні, язикові, свистячі, шиплячі, Р. Слідкуй за правильною артикуляцією кожного звуку. Запиши своє читання.",
+                content = ExerciseContent.ReadingText(
+                    text = "Прекрасний ранок починається з посмішки. Сонце встає над лісом, птахи щебечуть серед дерев. Вітер повільно несе запах квітів через долину. Бджоли дзижчать, збираючи нектар. Василько з Петриком побігли до ставка, де жаби веселе концерт влаштували. Чудовий день — кожен звук природи лунає чітко та яскраво."
                 ),
-                durationSeconds = 45,
-                targetMetrics = listOf(SkillType.DICTION)
-            ),
-            LessonExercise(
-                id = "ex_7_3",
-                type = ExerciseType.ARTICULATION,
-                title = "Язикові звуки",
-                instruction = "Кінчик язика працює біля альвеол: ТА-ТО-ТУ-ТИ-ТЕ, ДА-ДО-ДУ-ДИ-ДЕ, НА-НО-НУ-НИ-НЕ, ЛА-ЛО-ЛУ-ЛИ-ЛЕ.",
-                content = ExerciseContent.ArticulationExercise(
-                    hasTimer = true,
-                    durationSeconds = 45
-                ),
-                durationSeconds = 45,
-                targetMetrics = listOf(SkillType.DICTION)
-            ),
-            LessonExercise(
-                id = "ex_7_4",
-                type = ExerciseType.ARTICULATION,
-                title = "Свистячі та шиплячі",
-                instruction = "Свистячі (посмішка, язик внизу): СА-ЗА-ЦА. Шиплячі (округлені губи, язик чашечкою): ША-ЖА-ЧА-ЩА. Контраст: СА-ША, СО-ШО, СУ-ШУ, ЗА-ЖА, ЗО-ЖО, ЗУ-ЖУ.",
-                content = ExerciseContent.ArticulationExercise(
-                    hasTimer = true,
-                    durationSeconds = 60
-                ),
-                durationSeconds = 60,
-                targetMetrics = listOf(SkillType.DICTION)
-            ),
-            LessonExercise(
-                id = "ex_7_5",
-                type = ExerciseType.ARTICULATION,
-                title = "Звук Р",
-                instruction = "Практика вібранта: РА-РО-РУ-РИ-РЕ, АР-ОР-УР-ИР-ЕР, ТРА-ДРА-КРА-ГРА-ПРА.",
-                content = ExerciseContent.ArticulationExercise(
-                    hasTimer = true,
-                    durationSeconds = 45
-                ),
-                durationSeconds = 45,
-                targetMetrics = listOf(SkillType.DICTION)
+                durationSeconds = 90,
+                targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
             // Скоромовки
             LessonExercise(
-                id = "ex_7_6",
+                id = "ex_7_3",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 1 (комплексна)",
-                instruction = "Комплексна скоромовка на губні + Р + язикові. Прочитай повільно, потім швидше, потім запиши.",
-                content = ExerciseContent.TongueTwister(
-                    text = "Бурі бобри брід перебрели, забули бобри забрати торби.",
-                    difficulty = 3,
-                    targetSounds = listOf("Б", "Р", "Т", "Д", "Л")
-                ),
+                instruction = "Комплексна скоромовка на різні групи звуків. Прочитай повільно, потім швидше, потім запиши.",
+                content = TongueTwistersProvider.toExerciseContent("tt_c_001"),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
             LessonExercise(
-                id = "ex_7_7",
+                id = "ex_7_4",
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2 (комплексна)",
-                instruction = "Комплексна скоромовка на свистячі + язикові + шиплячі. Прочитай повільно, потім швидше, потім запиши.",
-                content = ExerciseContent.TongueTwister(
-                    text = "Понад ставом стоїть стадо, ставить ставу стадо шкоду.",
-                    difficulty = 3,
-                    targetSounds = listOf("С", "Т", "Д", "Ш")
-                ),
+                instruction = "Комплексна скоромовка на шиплячі + губні. Прочитай повільно, потім швидше, потім запиши.",
+                content = TongueTwistersProvider.toExerciseContent("tt_c_003"),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
+            // Батл скоромовок
             LessonExercise(
-                id = "ex_7_8",
-                type = ExerciseType.TONGUE_TWISTER,
-                title = "Скоромовка 3 (фінальний челендж)",
-                instruction = "Фінальна скоромовка на всі групи звуків. Спробуй прискоритись без втрати чіткості!",
-                content = ExerciseContent.TongueTwister(
-                    text = "Розкажу вам про покупки: про які такі покупки? Про покупки, про покупки, про покупочки мої!",
-                    difficulty = 3,
-                    targetSounds = listOf("Р", "П", "К")
-                ),
-                durationSeconds = 60,
+                id = "ex_7_5",
+                type = ExerciseType.TONGUE_TWISTER_BATTLE,
+                title = "Батл скоромовок: фінал тижня",
+                instruction = "Три складних скоромовки поспіль без помилок! Це фінальний челендж першого тижня. Прочитай кожну чітко, без зупинок.",
+                content = TongueTwistersProvider.toTwisterBattleContent("tt_c_006", "tt_c_004", "tt_c_007"),
+                durationSeconds = 120,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
+            ),
+            // Вільне мовлення
+            LessonExercise(
+                id = "ex_7_6",
+                type = ExerciseType.FREE_SPEECH,
+                title = "Підсумок тижня",
+                instruction = "Розкажи вільно про свій досвід за перший тиждень. Що було найлегше? Які звуки досі складні? Намагайся говорити чітко та виразно.",
+                content = ExerciseContent.FreeSpeechTopic(
+                    topic = "Мій прогрес за перший тиждень курсу",
+                    hints = listOf(
+                        "Які вправи сподобались найбільше?",
+                        "Які звуки покращилися?",
+                        "Що було найскладнішим?",
+                        "Чи помічаєш зміни у повсякденному мовленні?"
+                    )
+                ),
+                durationSeconds = 120,
+                targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO, SkillType.INTONATION)
             )
         ),
         estimatedMinutes = 15
@@ -1292,15 +1205,15 @@ object ClearSpeechCourse {
             ),
             LessonExercise(
                 id = "ex_9_5",
-                type = ExerciseType.ARTICULATION,
-                title = "Затримка",
-                instruction = "Вимовляй 'с-с-с-т', затримуючи звук С на 3 секунди перед Т. Потім так само 'с-с-с-ть'. Відчуй, як Т та ТЬ завершують слово. Повтори 5 разів кожен варіант.",
-                content = ExerciseContent.ArticulationExercise(
-                    hasTimer = true,
-                    durationSeconds = 45
+                type = ExerciseType.READING,
+                title = "Читання з фокусом на кінцівки",
+                instruction = "Прочитай текст повільно, свідомо 'дотягуючи' кожне слово до кінця. Особлива увага на -ть, -сть, -ст.",
+                content = ExerciseContent.ReadingText(
+                    text = "Радість і щирість — це якість характеру, що надає впевненість. Гідність та мудрість приходять через досвід. Текст, контекст, підтекст — кожне слово має свій вміст.",
+                    emotion = null
                 ),
-                durationSeconds = 45,
-                targetMetrics = listOf(SkillType.DICTION)
+                durationSeconds = 90,
+                targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
             LessonExercise(
                 id = "ex_9_6",
@@ -1458,11 +1371,7 @@ object ClearSpeechCourse {
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка 2",
                 instruction = "Прочитай скоромовку повільно, потім у нормальному темпі, потім запиши. Фокус: дзвінкі Б та Д без оглушення.",
-                content = ExerciseContent.TongueTwister(
-                    text = "Бабин біб розцвів у дощ — буде бабі біб у борщ.",
-                    difficulty = 3,
-                    targetSounds = listOf("Б", "Д")
-                ),
+                content = TongueTwistersProvider.toExerciseContent("tt_labial_003"),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),
@@ -1725,14 +1634,15 @@ object ClearSpeechCourse {
             ),
             LessonExercise(
                 id = "ex_12_5",
-                type = ExerciseType.ARTICULATION,
+                type = ExerciseType.CONTRAST_SOUNDS,
                 title = "Контраст носових і ротових",
-                instruction = "Вимовляй пари, відчуваючи різницю: 'мак-бак, ніс-біс, мити-бити, нам-дам'. М і Н мають вібрувати в носі, Б і Д — ні. Повтори кожну пару 5 разів.",
-                content = ExerciseContent.ArticulationExercise(
-                    hasTimer = true,
-                    durationSeconds = 60
+                instruction = "Вимовляй пари, відчуваючи різницю: М вібрує в носі, Б — ні. Н вібрує в носі, Д — ні. Запиши кожну пару чітко.",
+                content = ExerciseContent.ContrastSounds(
+                    sequence = "мак-бак, мити-бити, ніс-біс, нам-дам, мати-бати, ніж-діж",
+                    targetSounds = listOf("М", "Б", "Н", "Д"),
+                    repetitions = 5
                 ),
-                durationSeconds = 60,
+                durationSeconds = 90,
                 targetMetrics = listOf(SkillType.DICTION)
             ),
             // Скоромовки
@@ -2140,12 +2050,13 @@ object ClearSpeechCourse {
             ),
             LessonExercise(
                 id = "ex_15_5",
-                type = ExerciseType.ARTICULATION,
-                title = "Ланцюжок подвоєнь",
-                instruction = "Вимовляй без пауз: 'знання-вміння-бажання-кохання-навчання'. Потім: 'життя-обличчя-узбіччя-роздоріжжя'. 3 повторення кожного ланцюжка.",
-                content = ExerciseContent.ArticulationExercise(
-                    hasTimer = true,
-                    durationSeconds = 45
+                type = ExerciseType.SLOW_MOTION,
+                title = "Повільна артикуляція подвоєнь",
+                instruction = "Вимов речення МАКСИМАЛЬНО ПОВІЛЬНО (мінімум 30 секунд). Кожне подвоєння має тривати удвічі довше за звичайний звук.",
+                content = ExerciseContent.SlowMotion(
+                    text = "Знання та бажання — це визнання життя. Обличчя сповнене кохання на узбіччі роздоріжжя.",
+                    targetSounds = listOf("НН", "ЖЖ", "ТТ", "ЧЧ"),
+                    minDurationSeconds = 30
                 ),
                 durationSeconds = 45,
                 targetMetrics = listOf(SkillType.DICTION)
@@ -2262,11 +2173,7 @@ object ClearSpeechCourse {
                 type = ExerciseType.TONGUE_TWISTER,
                 title = "Скоромовка-монстр 1",
                 instruction = "Класика жанру! Спочатку дуже повільно, потім поступово пришвидшуй.",
-                content = ExerciseContent.TongueTwister(
-                    text = "Бабин біб розцвів у дощ — буде бабі біб у борщ.",
-                    difficulty = 4,
-                    targetSounds = listOf("Б", "БЬ", "Р", "Щ")
-                ),
+                content = TongueTwistersProvider.toExerciseContent("tt_labial_003"),
                 durationSeconds = 60,
                 targetMetrics = listOf(SkillType.DICTION, SkillType.TEMPO)
             ),

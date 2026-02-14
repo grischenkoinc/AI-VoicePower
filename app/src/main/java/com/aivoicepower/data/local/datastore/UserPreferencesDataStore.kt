@@ -105,7 +105,7 @@ class UserPreferencesDataStore @Inject constructor(
             }
         }
         .map { preferences ->
-            preferences[PreferencesKeys.IS_PREMIUM] ?: false
+            preferences[PreferencesKeys.IS_PREMIUM] ?: true // TODO: change back to false before release
         }
 
     // Direct Flow for hasCompletedOnboarding (used by v2 ViewModels)

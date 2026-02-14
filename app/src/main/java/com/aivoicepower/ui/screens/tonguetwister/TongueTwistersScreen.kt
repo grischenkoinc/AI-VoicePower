@@ -262,6 +262,8 @@ private fun CategoryFilters(
 ) {
     val categories = listOf(
         "Всі" to null,
+        "Б-П-М-В-Ф" to "Б-П-М-В-Ф",
+        "Т-Д-Н" to "Т-Д-Н",
         "Р" to "Р",
         "Л" to "Л",
         "С-З-Ц" to "С-З-Ц",
