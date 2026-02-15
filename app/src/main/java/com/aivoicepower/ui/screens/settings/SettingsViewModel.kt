@@ -1,10 +1,13 @@
 package com.aivoicepower.ui.screens.settings
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.domain.repository.AuthRepository
+import com.aivoicepower.utils.NotificationHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -12,7 +15,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val authRepository: AuthRepository,
-    private val userPreferencesDataStore: UserPreferencesDataStore
+    private val userPreferencesDataStore: UserPreferencesDataStore,
+    @ApplicationContext private val appContext: Context
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SettingsState())
@@ -37,7 +41,8 @@ class SettingsViewModel @Inject constructor(
                         userPhotoUrl = authUser?.photoUrl ?: photoUrl,
                         isAuthenticated = authUser != null,
                         isPremium = prefs.isPremium,
-                        dailyGoalMinutes = prefs.dailyGoalMinutes
+                        dailyGoalMinutes = prefs.dailyGoalMinutes,
+                        isReminderEnabled = prefs.isReminderEnabled
                     )
                 }
             }.collect()
@@ -48,7 +53,16 @@ class SettingsViewModel @Inject constructor(
         when (event) {
             is SettingsEvent.NavigateToPremium -> { /* handled by UI */ }
             is SettingsEvent.ToggleReminder -> {
-                _state.update { it.copy(isReminderEnabled = !it.isReminderEnabled) }
+                val newEnabled = !_state.value.isReminderEnabled
+                _state.update { it.copy(isReminderEnabled = newEnabled) }
+                viewModelScope.launch {
+                    userPreferencesDataStore.setReminderEnabled(newEnabled)
+                    if (newEnabled) {
+                        NotificationHelper.scheduleCoachReminder(appContext)
+                    } else {
+                        NotificationHelper.cancelCoachReminder(appContext)
+                    }
+                }
             }
             is SettingsEvent.SetDailyGoal -> {
                 _state.update { it.copy(dailyGoalMinutes = event.minutes, showDailyGoalPicker = false) }

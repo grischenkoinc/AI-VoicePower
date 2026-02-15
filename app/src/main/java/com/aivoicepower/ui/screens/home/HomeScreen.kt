@@ -125,9 +125,13 @@ fun HomeScreen(
                     )
                 }
 
-                // Daily Goal
+                // Daily Goal + Coach message
                 state.todayPlan?.let { plan ->
-                    DailyGoalCard(plan = plan)
+                    DailyGoalCard(
+                        plan = plan,
+                        coachMessage = state.coachMessage,
+                        onCoachClick = onNavigateToAICoach
+                    )
                 }
 
                 // Skills Section
@@ -503,6 +507,8 @@ private fun MotivationCard(
 @Composable
 private fun DailyGoalCard(
     plan: com.aivoicepower.domain.model.home.TodayPlan,
+    coachMessage: String? = null,
+    onCoachClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val completedTasks = plan.activities.count { it.isCompleted }
@@ -609,6 +615,41 @@ private fun DailyGoalCard(
                         if (activity.isCompleted) append(" • Завершено")
                     },
                     completed = activity.isCompleted
+                )
+            }
+        }
+
+        // Coach message
+        coachMessage?.let { message ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.horizontalGradient(
+                            colors = listOf(
+                                Color(0xFF8B5CF6).copy(alpha = 0.15f),
+                                Color(0xFF6366F1).copy(alpha = 0.12f)
+                            )
+                        ),
+                        RoundedCornerShape(14.dp)
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = Color(0xFF8B5CF6).copy(alpha = 0.25f),
+                        shape = RoundedCornerShape(14.dp)
+                    )
+                    .clickable(onClick = onCoachClick)
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "\uD83C\uDFCB\uFE0F", fontSize = 18.sp)
+                Text(
+                    text = message,
+                    color = Color(0xFF5B21B6),
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp,
+                    modifier = Modifier.weight(1f)
                 )
             }
         }

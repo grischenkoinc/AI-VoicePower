@@ -32,7 +32,10 @@ data class UserPreferences(
     val freeAdAnalysesToday: Int = 0,
     val freeImprovAnalysesToday: Int = 0,
     val freeAdImprovToday: Int = 0,
-    val lastLimitResetDate: String? = null
+    val lastLimitResetDate: String? = null,
+    // Reminder settings
+    val isReminderEnabled: Boolean = false,
+    val reminderHour: Int = 9
 )
 
 @Singleton
@@ -63,6 +66,8 @@ class UserPreferencesDataStore @Inject constructor(
         val FREE_IMPROV_ANALYSES_TODAY = intPreferencesKey("free_improv_analyses_today")
         val FREE_AD_IMPROV_TODAY = intPreferencesKey("free_ad_improv_today")
         val LAST_LIMIT_RESET_DATE = stringPreferencesKey("last_limit_reset_date")
+        val IS_REMINDER_ENABLED = booleanPreferencesKey("is_reminder_enabled")
+        val REMINDER_HOUR = intPreferencesKey("reminder_hour")
     }
 
     val userPreferencesFlow: Flow<UserPreferences> = context.dataStore.data
@@ -91,7 +96,9 @@ class UserPreferencesDataStore @Inject constructor(
                 freeAdAnalysesToday = preferences[PreferencesKeys.FREE_AD_ANALYSES_TODAY] ?: 0,
                 freeImprovAnalysesToday = preferences[PreferencesKeys.FREE_IMPROV_ANALYSES_TODAY] ?: 0,
                 freeAdImprovToday = preferences[PreferencesKeys.FREE_AD_IMPROV_TODAY] ?: 0,
-                lastLimitResetDate = preferences[PreferencesKeys.LAST_LIMIT_RESET_DATE]
+                lastLimitResetDate = preferences[PreferencesKeys.LAST_LIMIT_RESET_DATE],
+                isReminderEnabled = preferences[PreferencesKeys.IS_REMINDER_ENABLED] ?: false,
+                reminderHour = preferences[PreferencesKeys.REMINDER_HOUR] ?: 9
             )
         }
 
@@ -333,6 +340,20 @@ class UserPreferencesDataStore @Inject constructor(
     suspend fun setUserPhotoUrl(url: String) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.USER_PHOTO_URL] = url
+        }
+    }
+
+    // ===== Reminder settings =====
+
+    suspend fun setReminderEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.IS_REMINDER_ENABLED] = enabled
+        }
+    }
+
+    suspend fun setReminderHour(hour: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.REMINDER_HOUR] = hour
         }
     }
 

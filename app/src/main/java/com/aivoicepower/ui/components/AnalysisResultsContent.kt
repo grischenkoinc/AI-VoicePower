@@ -302,6 +302,30 @@ fun AnalysisResultsContent(
             }
         }
 
+        // Coach comment
+        if (result.coachComment.isNotEmpty()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Color(0xFF8B5CF6).copy(alpha = 0.08f),
+                        RoundedCornerShape(14.dp)
+                    )
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text(text = "\uD83C\uDFCB\uFE0F", fontSize = 18.sp)
+                Text(
+                    text = result.coachComment,
+                    style = AppTypography.bodySmall,
+                    color = TextColors.onLightPrimary,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+
         // Retry button (when score = 0 and retry is available)
         if (onRetry != null && result.overallScore == 0) {
             Box(

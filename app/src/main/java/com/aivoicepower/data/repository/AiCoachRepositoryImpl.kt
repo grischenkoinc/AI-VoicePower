@@ -4,8 +4,12 @@ import android.util.Log
 import com.aivoicepower.data.chat.ConversationContext
 import com.aivoicepower.data.chat.Message
 import com.aivoicepower.data.chat.MessageRole
+import com.aivoicepower.data.local.database.dao.CourseProgressDao
 import com.aivoicepower.data.local.database.dao.MessageDao
+import com.aivoicepower.data.local.database.dao.RecordingDao
+import com.aivoicepower.data.local.database.dao.UserProgressDao
 import com.aivoicepower.data.local.database.entity.MessageEntity
+import com.aivoicepower.data.local.database.entity.RecordingEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.data.remote.AiPrompts
 import com.aivoicepower.data.remote.GeminiApiClient
@@ -28,7 +32,10 @@ import javax.inject.Singleton
 class AiCoachRepositoryImpl @Inject constructor(
     private val messageDao: MessageDao,
     private val userPreferencesDataStore: UserPreferencesDataStore,
-    private val geminiApiClient: GeminiApiClient
+    private val geminiApiClient: GeminiApiClient,
+    private val userProgressDao: UserProgressDao,
+    private val recordingDao: RecordingDao,
+    private val courseProgressDao: CourseProgressDao
 ) : AiCoachRepository {
 
     override fun getMessagesFlow(): Flow<List<Message>> {
@@ -94,7 +101,45 @@ class AiCoachRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getUserContext(): ConversationContext {
-        return ConversationContext.empty()
+        return try {
+            val prefs = userPreferencesDataStore.userPreferencesFlow.first()
+
+            val progress = userProgressDao.getProgress()
+            val skillLevels = if (progress != null) mapOf(
+                "Дикція" to progress.dictionLevel.toInt(),
+                "Темп" to progress.tempoLevel.toInt(),
+                "Інтонація" to progress.intonationLevel.toInt(),
+                "Гучність" to progress.volumeLevel.toInt(),
+                "Структура" to progress.structureLevel.toInt(),
+                "Впевненість" to progress.confidenceLevel.toInt(),
+                "Без слів-паразитів" to progress.fillerWordsLevel.toInt()
+            ) else emptyMap()
+
+            val weakestSkills = skillLevels.entries
+                .sortedBy { it.value }
+                .take(3)
+                .map { Pair(it.key, it.value) }
+
+            val currentStreak = progress?.currentStreak ?: 0
+            val totalExercises = progress?.totalExercises ?: 0
+
+            val sevenDaysAgo = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000L
+            val recentRecordings = recordingDao.getRecordingsSince(sevenDaysAgo)
+            val recentActivity = buildRecentActivity(recentRecordings, totalExercises)
+
+            ConversationContext(
+                userName = prefs.userName,
+                userGoal = prefs.userGoal,
+                skillLevels = skillLevels,
+                weakestSkills = weakestSkills,
+                currentStreak = currentStreak,
+                totalExercises = totalExercises,
+                recentActivity = recentActivity
+            )
+        } catch (e: Exception) {
+            Log.e("AiCoach", "Error building user context", e)
+            ConversationContext.empty()
+        }
     }
 
     override suspend fun getQuickActions(): List<String> {
@@ -136,6 +181,25 @@ class AiCoachRepositoryImpl @Inject constructor(
 
         val todayCount = getTodayMessagesCount()
         return (10 - todayCount).coerceAtLeast(0)
+    }
+
+    private fun buildRecentActivity(
+        recentRecordings: List<RecordingEntity>,
+        totalExercises: Int
+    ): String {
+        if (recentRecordings.isEmpty()) {
+            return if (totalExercises == 0) "Користувач щойно почав"
+            else "Не тренувався останні 7 днів"
+        }
+        val count = recentRecordings.size
+        val minutes = (recentRecordings.sumOf { it.durationMs } / 60000).toInt()
+        val types = recentRecordings.map { it.type }.toSet()
+        val typesText = buildList {
+            if ("lesson" in types) add("уроки")
+            if ("improvisation" in types) add("імпровізації")
+            if ("warmup" in types) add("розминки")
+        }.joinToString(", ").ifEmpty { "вправи" }
+        return "$count записів ($minutes хв) за 7 днів: $typesText"
     }
 
     // ===== MAPPERS =====

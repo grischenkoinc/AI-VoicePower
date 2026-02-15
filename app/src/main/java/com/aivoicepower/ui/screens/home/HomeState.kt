@@ -12,6 +12,7 @@ data class HomeState(
     val currentCourse: CurrentCourse? = null,
     val skills: List<Skill> = emptyList(),
     val dailyTip: DailyTip? = null,
+    val coachMessage: String? = null,
     val isLoading: Boolean = true,
     val error: String? = null,
     // Analysis limits for free users

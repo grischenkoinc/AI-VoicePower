@@ -355,7 +355,8 @@ class GeminiApiClient @Inject constructor(
                 overallScore = parsed.overallScore ?: 0,
                 strengths = parsed.strengths ?: emptyList(),
                 improvements = parsed.improvements ?: listOf("Не вдалося проаналізувати запис"),
-                tip = parsed.tip ?: "Спробуйте записати ще раз"
+                tip = parsed.tip ?: "Спробуйте записати ще раз",
+                coachComment = parsed.coachComment ?: ""
             )
         } catch (e: Exception) {
             // Fallback if parsing fails
@@ -402,5 +403,6 @@ private data class VoiceAnalysisJsonResponse(
     @SerializedName("overallScore") val overallScore: Int?,
     @SerializedName("strengths") val strengths: List<String>?,
     @SerializedName("improvements") val improvements: List<String>?,
-    @SerializedName("tip") val tip: String?
+    @SerializedName("tip") val tip: String?,
+    @SerializedName("coachComment") val coachComment: String?
 )

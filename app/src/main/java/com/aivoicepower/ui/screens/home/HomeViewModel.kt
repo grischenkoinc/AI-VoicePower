@@ -83,6 +83,8 @@ class HomeViewModel @Inject constructor(
 
                 // Don't load currentCourse here - it will be loaded by observeCourseProgress()
 
+                val coachMessage = generateCoachMessage(progress, preferences)
+
                 _state.update {
                     it.copy(
                         userName = preferences.userName,
@@ -92,6 +94,7 @@ class HomeViewModel @Inject constructor(
                         weekProgress = weekProgress,
                         quickActions = quickActions,
                         dailyTip = dailyTip,
+                        coachMessage = coachMessage,
                         isLoading = false,
                         error = null
                     )
@@ -275,6 +278,54 @@ class HomeViewModel @Inject constructor(
             "Сьогодні попрацюй над ${weakest.key}"
         } else {
             "Чудовий прогрес! Продовжуй в тому ж дусі"
+        }
+    }
+
+    private fun generateCoachMessage(
+        progress: com.aivoicepower.data.local.database.entity.UserProgressEntity?,
+        preferences: com.aivoicepower.data.local.datastore.UserPreferences
+    ): String {
+        // First time — coach introduces himself
+        if (progress == null || progress.totalExercises == 0) {
+            val name = if (preferences.userName != null) "${preferences.userName}, привіт" else "Привіт"
+            return "$name! Я — твій AI-тренер з мовлення. Аналізую твої вправи, відстежую прогрес і підказую, що покращити. Почнімо з розминки або першого уроку!"
+        }
+
+        val streak = progress.currentStreak
+        val skills = mapOf(
+            "дикцією" to progress.dictionLevel,
+            "темпом" to progress.tempoLevel,
+            "інтонацією" to progress.intonationLevel,
+            "впевненістю" to progress.confidenceLevel,
+            "структурою" to progress.structureLevel
+        )
+        val weakest = skills.minByOrNull { it.value }
+        val allAbove70 = skills.values.all { it >= 70f }
+
+        return when {
+            // Streak broken
+            streak == 0 && progress.totalExercises > 5 ->
+                "Повернись до тренувань! Навіть 5 хвилин на день зберігають прогрес. Ти це можеш!"
+
+            // Great streak
+            streak >= 7 ->
+                "Вау, $streak днів поспіль! Це серйозна дисципліна. Продовжуй — результат вже помітний."
+
+            // Active streak
+            streak >= 3 ->
+                "Чудова серія — $streak днів! Тримай темп, і навички закріпляться надовго."
+
+            // All skills high
+            allAbove70 ->
+                "Відмінний рівень! Спробуй складніші вправи — імпровізації та дебати покажуть реальну силу."
+
+            // Weakest skill below 40
+            weakest != null && weakest.value < 40f ->
+                "Зверни увагу на роботу з ${weakest.key} — це твоя головна зона росту зараз."
+
+            // Default — encouraging
+            else ->
+                "Ти робиш прогрес! Продовжуй тренуватись щодня — кожна вправа наближає до мети."
         }
     }
 
