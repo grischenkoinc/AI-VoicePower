@@ -1,5 +1,7 @@
 package com.aivoicepower.ui.navigation
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -42,11 +44,19 @@ fun NavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = startDestination
+        startDestination = startDestination,
+        // Default transitions: horizontal slide + fade
+        enterTransition = { NavTransitions.enterForward },
+        exitTransition = { NavTransitions.exitForward },
+        popEnterTransition = { NavTransitions.enterBack },
+        popExitTransition = { NavTransitions.exitBack }
     ) {
         // ===== ONBOARDING FLOW =====
 
-        composable(route = Screen.Splash.route) {
+        composable(
+            route = Screen.Splash.route,
+            exitTransition = { NavTransitions.fadeThroughExit }
+        ) {
             SplashScreen(
                 onNavigateToOnboarding = {
                     navController.navigate(Screen.Onboarding.route) {
@@ -66,7 +76,14 @@ fun NavGraph(
             arguments = listOf(navArgument("startPage") {
                 type = NavType.IntType
                 defaultValue = 0
-            })
+            }),
+            enterTransition = {
+                if (initialState.destination.route == Screen.Splash.route) {
+                    NavTransitions.fadeThroughEnter
+                } else {
+                    NavTransitions.enterForward
+                }
+            }
         ) { backStackEntry ->
             val startPage = backStackEntry.arguments?.getInt("startPage") ?: 0
             OnboardingScreen(
@@ -153,7 +170,10 @@ fun NavGraph(
             )
         }
 
-        composable(route = Screen.DiagnosticResult.route) {
+        composable(
+            route = Screen.DiagnosticResult.route,
+            exitTransition = { NavTransitions.fadeThroughExit }
+        ) {
             DiagnosticResultScreen(
                 onContinue = {
                     navController.navigate(Screen.Main.route) {
@@ -165,7 +185,12 @@ fun NavGraph(
 
         // ===== MAIN SCREEN (with Bottom Navigation) =====
 
-        composable(route = Screen.Main.route) {
+        composable(
+            route = Screen.Main.route,
+            enterTransition = { NavTransitions.fadeThroughEnter },
+            popEnterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None }
+        ) {
             MainScreen(
                 onNavigateToAiCoach = {
                     navController.navigate(Screen.AiCoach.route)
@@ -178,9 +203,15 @@ fun NavGraph(
             )
         }
 
-        // ===== AI COACH =====
+        // ===== AI COACH (modal slide-up) =====
 
-        composable(route = Screen.AiCoach.route) {
+        composable(
+            route = Screen.AiCoach.route,
+            enterTransition = { NavTransitions.modalEnter },
+            exitTransition = { NavTransitions.modalExit },
+            popEnterTransition = { NavTransitions.modalEnter },
+            popExitTransition = { NavTransitions.modalExit }
+        ) {
             AiCoachScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToPremium = {
@@ -189,9 +220,15 @@ fun NavGraph(
             )
         }
 
-        // ===== PREMIUM =====
+        // ===== PREMIUM (modal slide-up) =====
 
-        composable(route = Screen.Premium.route) {
+        composable(
+            route = Screen.Premium.route,
+            enterTransition = { NavTransitions.modalEnter },
+            exitTransition = { NavTransitions.modalExit },
+            popEnterTransition = { NavTransitions.modalEnter },
+            popExitTransition = { NavTransitions.modalExit }
+        ) {
             PaywallScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onPurchaseSuccess = { navController.popBackStack() }

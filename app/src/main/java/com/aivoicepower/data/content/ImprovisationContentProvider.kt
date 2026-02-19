@@ -129,7 +129,7 @@ object ImprovisationContentProvider {
     fun getNegotiationExercise(): ImprovisationExercise {
         return ImprovisationExercise(
             id = "improv_negotiation",
-            title = "Переговори",
+            title = "Перемовини",
             description = "Практика аргументації та пошуку компромісів. 4 кроки успішних переговорів.",
             durationSeconds = 480, // 8 minutes (4 steps * ~2 min each)
             targetMetrics = listOf(

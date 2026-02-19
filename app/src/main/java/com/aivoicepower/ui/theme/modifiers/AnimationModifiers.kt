@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -344,4 +345,45 @@ fun Modifier.glowPulse(
         glowColor = color,
         intensity = intensity
     )
+}
+
+/**
+ * Staggered Entry Animation — fade + slide up with delay based on index.
+ *
+ * Usage:
+ * Modifier.staggeredEntry(index = 0, staggerDelay = 80)
+ */
+fun Modifier.staggeredEntry(
+    index: Int,
+    staggerDelay: Int = 80,
+    slideDistance: Dp = 30.dp,
+    animDuration: Int = 350
+): Modifier = composed {
+    var visible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay((index * staggerDelay).toLong())
+        visible = true
+    }
+
+    val alpha by animateFloatAsState(
+        targetValue = if (visible) 1f else 0f,
+        animationSpec = tween(animDuration, easing = FastOutSlowInEasing),
+        label = "staggerAlpha_$index"
+    )
+
+    val offsetY by animateDpAsState(
+        targetValue = if (visible) 0.dp else slideDistance,
+        animationSpec = tween(animDuration, easing = FastOutSlowInEasing),
+        label = "staggerOffset_$index"
+    )
+
+    this
+        .graphicsLayer { this.alpha = alpha }
+        .layout { measurable, constraints ->
+            val placeable = measurable.measure(constraints)
+            layout(placeable.width, placeable.height) {
+                placeable.place(0, offsetY.roundToPx())
+            }
+        }
 }

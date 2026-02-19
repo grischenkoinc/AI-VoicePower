@@ -1,5 +1,6 @@
 package com.aivoicepower.ui.components
 
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -132,12 +133,41 @@ fun AnalysisResultsContent(
     dismissButtonText: String = "Готово",
     onRetry: (() -> Unit)? = null
 ) {
-    // Overall score with color
+    // === REVEAL ORCHESTRATION ===
+    var showScore by remember { mutableStateOf(false) }
+    var showSections by remember { mutableStateOf(false) }
+    var showButtons by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(200)
+        showScore = true
+        kotlinx.coroutines.delay(1200)
+        showSections = true
+        kotlinx.coroutines.delay(600)
+        showButtons = true
+    }
+
+    // === SCORE ANIMATIONS ===
     val scoreColor = when (result.overallScore) {
         in 0..39 -> Color(0xFFEF4444)
         in 40..69 -> Color(0xFFF59E0B)
         else -> Color(0xFF22C55E)
     }
+
+    val animatedScore by animateIntAsState(
+        targetValue = if (showScore) result.overallScore else 0,
+        animationSpec = tween(800, easing = FastOutSlowInEasing),
+        label = "scoreCountUp"
+    )
+
+    val circleScale by animateFloatAsState(
+        targetValue = if (showScore) 1f else 0.5f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "circleScale"
+    )
 
     Column(
         modifier = Modifier
@@ -157,10 +187,14 @@ fun AnalysisResultsContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Overall score circle
+        // Animated overall score circle
         Box(
             modifier = Modifier
                 .size(100.dp)
+                .graphicsLayer {
+                    scaleX = circleScale
+                    scaleY = circleScale
+                }
                 .shadow(
                     elevation = 16.dp,
                     shape = CircleShape,
@@ -176,7 +210,7 @@ fun AnalysisResultsContent(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "${result.overallScore}",
+                    text = "$animatedScore",
                     color = Color.White,
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Black,
@@ -216,177 +250,225 @@ fun AnalysisResultsContent(
             }
         }
 
-        // Strengths
+        // Strengths (animated)
         if (result.strengths.isNotEmpty()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Color(0xFF22C55E).copy(alpha = 0.08f),
-                        RoundedCornerShape(14.dp)
-                    )
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Text(
-                    text = "💪 Сильні сторони",
-                    style = AppTypography.labelMedium,
-                    color = Color(0xFF16A34A),
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold
+            AnimatedVisibility(
+                visible = showSections,
+                enter = fadeIn(tween(400)) + slideInVertically(
+                    animationSpec = tween(400, easing = FastOutSlowInEasing),
+                    initialOffsetY = { it / 4 }
                 )
-                result.strengths.forEach { strength ->
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Color(0xFF22C55E).copy(alpha = 0.08f),
+                            RoundedCornerShape(14.dp)
+                        )
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
                     Text(
-                        text = "• $strength",
-                        style = AppTypography.bodySmall,
-                        color = TextColors.onLightPrimary,
+                        text = "💪 Сильні сторони",
+                        style = AppTypography.labelMedium,
+                        color = Color(0xFF16A34A),
                         fontSize = 13.sp,
-                        lineHeight = 18.sp
+                        fontWeight = FontWeight.Bold
                     )
+                    result.strengths.forEach { strength ->
+                        Text(
+                            text = "• $strength",
+                            style = AppTypography.bodySmall,
+                            color = TextColors.onLightPrimary,
+                            fontSize = 13.sp,
+                            lineHeight = 18.sp
+                        )
+                    }
                 }
             }
         }
 
-        // Improvements
+        // Improvements (animated)
         if (result.improvements.isNotEmpty()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Color(0xFFF59E0B).copy(alpha = 0.08f),
-                        RoundedCornerShape(14.dp)
-                    )
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Text(
-                    text = "🎯 Що покращити",
-                    style = AppTypography.labelMedium,
-                    color = Color(0xFFD97706),
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold
+            AnimatedVisibility(
+                visible = showSections,
+                enter = fadeIn(tween(400, delayMillis = 200)) + slideInVertically(
+                    animationSpec = tween(400, delayMillis = 200, easing = FastOutSlowInEasing),
+                    initialOffsetY = { it / 4 }
                 )
-                result.improvements.forEach { improvement ->
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Color(0xFFF59E0B).copy(alpha = 0.08f),
+                            RoundedCornerShape(14.dp)
+                        )
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
                     Text(
-                        text = "• $improvement",
+                        text = "🎯 Що покращити",
+                        style = AppTypography.labelMedium,
+                        color = Color(0xFFD97706),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    result.improvements.forEach { improvement ->
+                        Text(
+                            text = "• $improvement",
+                            style = AppTypography.bodySmall,
+                            color = TextColors.onLightPrimary,
+                            fontSize = 13.sp,
+                            lineHeight = 18.sp
+                        )
+                    }
+                }
+            }
+        }
+
+        // Tip (animated)
+        if (result.tip.isNotEmpty()) {
+            AnimatedVisibility(
+                visible = showSections,
+                enter = fadeIn(tween(400, delayMillis = 400)) + slideInVertically(
+                    animationSpec = tween(400, delayMillis = 400, easing = FastOutSlowInEasing),
+                    initialOffsetY = { it / 4 }
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Color(0xFF667EEA).copy(alpha = 0.08f),
+                            RoundedCornerShape(14.dp)
+                        )
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(text = "💡", fontSize = 18.sp)
+                    Text(
+                        text = result.tip,
                         style = AppTypography.bodySmall,
                         color = TextColors.onLightPrimary,
                         fontSize = 13.sp,
-                        lineHeight = 18.sp
+                        lineHeight = 18.sp,
+                        modifier = Modifier.weight(1f)
                     )
                 }
             }
         }
 
-        // Tip
-        if (result.tip.isNotEmpty()) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Color(0xFF667EEA).copy(alpha = 0.08f),
-                        RoundedCornerShape(14.dp)
-                    )
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Text(text = "💡", fontSize = 18.sp)
-                Text(
-                    text = result.tip,
-                    style = AppTypography.bodySmall,
-                    color = TextColors.onLightPrimary,
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-
-        // Coach comment
+        // Coach comment (animated)
         if (result.coachComment.isNotEmpty()) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Color(0xFF8B5CF6).copy(alpha = 0.08f),
-                        RoundedCornerShape(14.dp)
-                    )
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Text(text = "\uD83C\uDFCB\uFE0F", fontSize = 18.sp)
-                Text(
-                    text = result.coachComment,
-                    style = AppTypography.bodySmall,
-                    color = TextColors.onLightPrimary,
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp,
-                    modifier = Modifier.weight(1f)
+            AnimatedVisibility(
+                visible = showSections,
+                enter = fadeIn(tween(400, delayMillis = 600)) + slideInVertically(
+                    animationSpec = tween(400, delayMillis = 600, easing = FastOutSlowInEasing),
+                    initialOffsetY = { it / 4 }
                 )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Color(0xFF8B5CF6).copy(alpha = 0.08f),
+                            RoundedCornerShape(14.dp)
+                        )
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(text = "\uD83C\uDFCB\uFE0F", fontSize = 18.sp)
+                    Text(
+                        text = result.coachComment,
+                        style = AppTypography.bodySmall,
+                        color = TextColors.onLightPrimary,
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
 
-        // Retry button (when score = 0 and retry is available)
+        // Retry button (animated)
         if (onRetry != null && result.overallScore == 0) {
+            AnimatedVisibility(
+                visible = showButtons,
+                enter = fadeIn(tween(300)) + scaleIn(
+                    initialScale = 0.9f,
+                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                )
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 12.dp,
+                            shape = RoundedCornerShape(14.dp),
+                            spotColor = Color(0xFF10B981).copy(alpha = 0.3f)
+                        )
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(Color(0xFF10B981), Color(0xFF059669))
+                            ),
+                            RoundedCornerShape(14.dp)
+                        )
+                        .clickable { onRetry() }
+                        .padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Перезаписати",
+                        style = AppTypography.bodyLarge,
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        // Done/Next button (animated)
+        AnimatedVisibility(
+            visible = showButtons,
+            enter = fadeIn(tween(300)) + scaleIn(
+                initialScale = 0.9f,
+                animationSpec = tween(300, easing = FastOutSlowInEasing)
+            )
+        ) {
+            val isSecondary = onRetry != null && result.overallScore == 0
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .shadow(
                         elevation = 12.dp,
                         shape = RoundedCornerShape(14.dp),
-                        spotColor = Color(0xFF10B981).copy(alpha = 0.3f)
+                        spotColor = if (isSecondary) Color(0xFF6B7280).copy(alpha = 0.3f)
+                        else Color(0xFF667EEA).copy(alpha = 0.3f)
                     )
                     .background(
                         Brush.linearGradient(
-                            colors = listOf(Color(0xFF10B981), Color(0xFF059669))
+                            colors = if (isSecondary) listOf(Color(0xFF9CA3AF), Color(0xFF6B7280))
+                            else listOf(Color(0xFF667EEA), Color(0xFF764BA2))
                         ),
                         RoundedCornerShape(14.dp)
                     )
-                    .clickable { onRetry() }
+                    .clickable { onDismiss() }
                     .padding(vertical = 16.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Перезаписати",
+                    text = dismissButtonText,
                     style = AppTypography.bodyLarge,
                     color = Color.White,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-        }
-
-        // Done/Next button
-        val isSecondary = onRetry != null && result.overallScore == 0
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .shadow(
-                    elevation = 12.dp,
-                    shape = RoundedCornerShape(14.dp),
-                    spotColor = if (isSecondary) Color(0xFF6B7280).copy(alpha = 0.3f)
-                        else Color(0xFF667EEA).copy(alpha = 0.3f)
-                )
-                .background(
-                    Brush.linearGradient(
-                        colors = if (isSecondary) listOf(Color(0xFF9CA3AF), Color(0xFF6B7280))
-                            else listOf(Color(0xFF667EEA), Color(0xFF764BA2))
-                    ),
-                    RoundedCornerShape(14.dp)
-                )
-                .clickable { onDismiss() }
-                .padding(vertical = 16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = dismissButtonText,
-                style = AppTypography.bodyLarge,
-                color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
         }
     }
 }

@@ -105,7 +105,7 @@ object SimulationScenariosProvider {
 
     private fun getNegotiationScenario() = SimulationScenario(
         id = "negotiation",
-        title = "Переговори",
+        title = "Перемовини",
         description = "Практика аргументації та компромісів",
         steps = listOf(
             SimulationStep(

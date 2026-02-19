@@ -1,6 +1,8 @@
 package com.aivoicepower.ui.screens.improvisation
 
 import com.aivoicepower.data.content.DebateTopicsProvider
+import com.aivoicepower.domain.model.VoiceAnalysisResult
+import com.aivoicepower.ui.screens.improvisation.components.OrbState
 
 data class DebateState(
     val selectedTopic: DebateTopicsProvider.DebateTopic? = null,
@@ -10,23 +12,30 @@ data class DebateState(
     val maxRounds: Int = 5,
     val rounds: List<DebateRound> = emptyList(),
     val isRecording: Boolean = false,
-    val isAiThinking: Boolean = false,
+    val isListening: Boolean = false,
     val recordingSeconds: Int = 0,
-    val maxRecordingSeconds: Int = 60,
-    val error: String? = null
+    val maxRecordingSeconds: Int = 90,
+    val audioLevel: Float = 0f,
+    val orbState: OrbState = OrbState.IDLE,
+    val aiText: String = "",
+    val hint: String? = null,
+    val isAiThinking: Boolean = false,
+    val isTtsSpeaking: Boolean = false,
+    val error: String? = null,
+    val isAnalyzing: Boolean = false,
+    val analysisResult: VoiceAnalysisResult? = null
 )
 
 enum class DebatePosition {
-    FOR,        // ЗА
-    AGAINST     // ПРОТИ
+    FOR,
+    AGAINST
 }
 
 sealed class DebatePhase {
     object TopicSelection : DebatePhase()
     object PositionSelection : DebatePhase()
-    object UserArgument : DebatePhase()
-    object AiResponse : DebatePhase()
-    object DebateComplete : DebatePhase()
+    object Conversation : DebatePhase()
+    object Complete : DebatePhase()
 }
 
 data class DebateRound(

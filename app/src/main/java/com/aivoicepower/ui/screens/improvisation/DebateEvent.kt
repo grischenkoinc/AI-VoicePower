@@ -7,6 +7,9 @@ sealed class DebateEvent {
     data class PositionSelected(val position: DebatePosition) : DebateEvent()
     object StartRecordingClicked : DebateEvent()
     object StopRecordingClicked : DebateEvent()
-    object NextRoundClicked : DebateEvent()
     object FinishDebateClicked : DebateEvent()
+    object AnalyzeClicked : DebateEvent()
+    object SkipClicked : DebateEvent()
+    object DismissAnalysis : DebateEvent()
+    object CountdownComplete : DebateEvent()
 }

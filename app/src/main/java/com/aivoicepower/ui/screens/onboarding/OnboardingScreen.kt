@@ -7,9 +7,11 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aivoicepower.ui.screens.onboarding.components.*
+import kotlin.math.absoluteValue
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -53,58 +55,76 @@ fun OnboardingScreen(
         modifier = Modifier.fillMaxSize(),
         userScrollEnabled = startPage == 0 // Disable swipe back to welcome if we started from page 1
     ) { page ->
-        when (page) {
-            0 -> OnboardingPage1(
-                onNextClick = {
-                    // Navigate to Auth screen instead of next page
-                    onNavigateToAuth()
-                }
-            )
+        // Parallax depth effect — pages scale down and fade as they move off-screen
+        val pageOffset = ((pagerState.currentPage - page) +
+            pagerState.currentPageOffsetFraction).absoluteValue
 
-            1 -> OnboardingPage2(
-                selectedGoal = state.selectedGoal,
-                onGoalSelected = { goal ->
-                    viewModel.onEvent(OnboardingEvent.GoalSelected(goal))
-                },
-                onNextClick = {
-                    scope.launch {
-                        viewModel.onEvent(OnboardingEvent.NextClicked)
-                    }
-                },
-                onBackClick = {
-                    scope.launch {
-                        viewModel.onEvent(OnboardingEvent.BackClicked)
-                    }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    val fraction = pageOffset.coerceIn(0f, 1f)
+                    // Scale: 1.0 → 0.92 as page moves away
+                    val scale = 1f - (fraction * 0.08f)
+                    scaleX = scale
+                    scaleY = scale
+                    // Alpha: 1.0 → 0.6 as page moves away
+                    alpha = 1f - (fraction * 0.4f)
                 }
-            )
+        ) {
+            when (page) {
+                0 -> OnboardingPage1(
+                    onNextClick = {
+                        // Navigate to Auth screen instead of next page
+                        onNavigateToAuth()
+                    }
+                )
 
-            2 -> OnboardingPage3(
-                selectedMinutes = state.dailyMinutes,
-                onMinutesSelected = { minutes ->
-                    viewModel.onEvent(OnboardingEvent.MinutesSelected(minutes))
-                },
-                onNextClick = {
-                    scope.launch {
-                        viewModel.onEvent(OnboardingEvent.NextClicked)
+                1 -> OnboardingPage2(
+                    selectedGoal = state.selectedGoal,
+                    onGoalSelected = { goal ->
+                        viewModel.onEvent(OnboardingEvent.GoalSelected(goal))
+                    },
+                    onNextClick = {
+                        scope.launch {
+                            viewModel.onEvent(OnboardingEvent.NextClicked)
+                        }
+                    },
+                    onBackClick = {
+                        scope.launch {
+                            viewModel.onEvent(OnboardingEvent.BackClicked)
+                        }
                     }
-                },
-                onBackClick = {
-                    scope.launch {
-                        viewModel.onEvent(OnboardingEvent.BackClicked)
-                    }
-                }
-            )
+                )
 
-            3 -> OnboardingPage4(
-                onStartDiagnostic = {
-                    viewModel.onEvent(OnboardingEvent.StartDiagnosticClicked)
-                },
-                onBackClick = {
-                    scope.launch {
-                        viewModel.onEvent(OnboardingEvent.BackClicked)
+                2 -> OnboardingPage3(
+                    selectedMinutes = state.dailyMinutes,
+                    onMinutesSelected = { minutes ->
+                        viewModel.onEvent(OnboardingEvent.MinutesSelected(minutes))
+                    },
+                    onNextClick = {
+                        scope.launch {
+                            viewModel.onEvent(OnboardingEvent.NextClicked)
+                        }
+                    },
+                    onBackClick = {
+                        scope.launch {
+                            viewModel.onEvent(OnboardingEvent.BackClicked)
+                        }
                     }
-                }
-            )
+                )
+
+                3 -> OnboardingPage4(
+                    onStartDiagnostic = {
+                        viewModel.onEvent(OnboardingEvent.StartDiagnosticClicked)
+                    },
+                    onBackClick = {
+                        scope.launch {
+                            viewModel.onEvent(OnboardingEvent.BackClicked)
+                        }
+                    }
+                )
+            }
         }
     }
 }

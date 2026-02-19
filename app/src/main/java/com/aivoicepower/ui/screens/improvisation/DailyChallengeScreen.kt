@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aivoicepower.data.ads.RewardedAdManager
+import com.aivoicepower.ui.components.FocusCountdownOverlay
 import com.aivoicepower.ui.components.AnalysisLimitBottomSheet
 import com.aivoicepower.ui.components.AnalysisLimitInfo
 import com.aivoicepower.ui.components.AnalysisResultsContent
@@ -111,6 +112,8 @@ fun DailyChallengeScreen(
             viewModel.onEvent(DailyChallengeEvent.StartPreparation)
         }
     }
+
+    var showFocus by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         GradientBackground(content = {})
@@ -279,7 +282,7 @@ fun DailyChallengeScreen(
                                         PrimaryButton(
                                             text = "Почати вправу",
                                             onClick = {
-                                                viewModel.onEvent(DailyChallengeEvent.SkipPreparation)
+                                                showFocus = true
                                             },
                                             modifier = Modifier.fillMaxWidth()
                                         )
@@ -386,6 +389,18 @@ fun DailyChallengeScreen(
                 containerColor = Color(0xFF667EEA),
                 contentColor = Color.White,
                 modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        // Focus countdown overlay
+        if (showFocus) {
+            FocusCountdownOverlay(
+                exerciseName = "Щоденний виклик",
+                topic = state.challenge?.title ?: "",
+                onComplete = {
+                    showFocus = false
+                    viewModel.onEvent(DailyChallengeEvent.SkipPreparation)
+                }
             )
         }
     }

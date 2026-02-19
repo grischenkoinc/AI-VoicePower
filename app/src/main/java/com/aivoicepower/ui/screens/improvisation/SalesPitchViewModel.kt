@@ -1,23 +1,25 @@
 package com.aivoicepower.ui.screens.improvisation
 
 import android.content.Context
+import android.media.MediaRecorder
+import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.content.SalesProductsProvider
-import com.aivoicepower.data.local.database.dao.RecordingDao
-import com.aivoicepower.data.local.database.entity.RecordingEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.data.remote.GeminiApiClient
 import com.aivoicepower.data.remote.SalesStage
-import com.aivoicepower.domain.repository.VoiceAnalysisRepository
-import com.aivoicepower.utils.audio.AudioRecorderUtil
+import com.aivoicepower.domain.service.SkillUpdateService
+import com.aivoicepower.ui.screens.improvisation.components.OrbState
+import com.aivoicepower.utils.CloudTtsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.util.*
+import java.io.File
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -25,21 +27,46 @@ class SalesPitchViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val geminiApiClient: GeminiApiClient,
     private val salesProductsProvider: SalesProductsProvider,
-    private val recordingDao: RecordingDao,
     private val userPreferencesDataStore: UserPreferencesDataStore,
-    private val voiceAnalysisRepository: VoiceAnalysisRepository
+    private val skillUpdateService: SkillUpdateService,
+    val ttsManager: CloudTtsManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SalesPitchState())
     val state: StateFlow<SalesPitchState> = _state.asStateFlow()
 
-    private val audioRecorder = AudioRecorderUtil(context)
+    private var mediaRecorder: MediaRecorder? = null
+    private var currentRecordingPath: String? = null
     private var recordingTimerJob: Job? = null
-    private var recordingPath: String? = null
+
+    init {
+        ttsManager.warmUp()
+        observeTts()
+    }
+
+    private fun observeTts() {
+        viewModelScope.launch {
+            ttsManager.isSpeaking.collect { speaking ->
+                _state.update {
+                    it.copy(
+                        isTtsSpeaking = speaking,
+                        orbState = when {
+                            speaking -> OrbState.SPEAKING
+                            it.isListening -> OrbState.LISTENING
+                            it.isAiThinking -> OrbState.THINKING
+                            it.phase == SalesPhase.Complete -> OrbState.COMPLETE
+                            else -> OrbState.IDLE
+                        }
+                    )
+                }
+            }
+        }
+    }
 
     override fun onCleared() {
         super.onCleared()
-        audioRecorder.release()
+        releaseRecorder()
+        ttsManager.stop()
         recordingTimerJob?.cancel()
     }
 
@@ -56,201 +83,271 @@ class SalesPitchViewModel @Inject constructor(
                 }
             }
             SalesPitchEvent.StartPitchClicked -> {
-                _state.update { it.copy(phase = SalesPhase.OpeningPitch) }
+                _state.update { it.copy(phase = SalesPhase.Conversation) }
             }
-            SalesPitchEvent.StartRecordingClicked -> {
-                startRecording()
-            }
-            SalesPitchEvent.StopRecordingClicked -> {
-                stopRecording()
-            }
-            SalesPitchEvent.ContinueToObjectionClicked -> {
-                _state.update { it.copy(phase = SalesPhase.HandlingObjection) }
-            }
-            SalesPitchEvent.FinishSalesClicked -> {
+            SalesPitchEvent.CountdownComplete -> startConversation()
+            SalesPitchEvent.StartRecordingClicked -> startVoiceInput()
+            SalesPitchEvent.StopRecordingClicked -> stopVoiceInput()
+            SalesPitchEvent.FinishClicked -> finishSales()
+            SalesPitchEvent.AnalyzeClicked -> analyzeExercise()
+            SalesPitchEvent.SkipClicked -> finishSales()
+            SalesPitchEvent.DismissAnalysis -> {
                 finishSales()
+                _state.update { it.copy(analysisResult = null) }
             }
         }
     }
 
-    private fun startRecording() {
+    private fun startConversation() {
         viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    currentRound = 1,
+                    orbState = OrbState.THINKING,
+                    isAiThinking = true,
+                    aiText = "",
+                    hint = "Очікуйте — клієнт готується до розмови..."
+                )
+            }
+
+            generateAiResponse("")
+        }
+    }
+
+    private fun generateAiResponse(userSpeech: String) {
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    isAiThinking = true,
+                    orbState = OrbState.THINKING
+                )
+            }
+
             try {
-                val outputFile = context.filesDir.resolve("recordings/sales_${UUID.randomUUID()}.m4a")
-                outputFile.parentFile?.mkdirs()
+                val product = _state.value.selectedProduct?.name ?: ""
+                val customerType = _state.value.customerProfile?.type ?: ""
+                val round = _state.value.currentRound
+                val isFirstRound = round == 1 && userSpeech.isBlank()
 
-                audioRecorder.startRecording(outputFile.absolutePath)
-                recordingPath = outputFile.absolutePath
-
-                _state.update {
-                    it.copy(
-                        isRecording = true,
-                        recordingSeconds = 0
-                    )
+                val stage = when {
+                    isFirstRound -> SalesStage.INITIAL_PITCH
+                    round >= _state.value.maxRounds -> SalesStage.HANDLING_OBJECTION
+                    else -> SalesStage.INITIAL_PITCH
                 }
 
-                // Timer
-                recordingTimerJob = launch {
-                    var elapsed = 0
-                    while (elapsed < _state.value.maxRecordingSeconds && _state.value.isRecording) {
-                        delay(1000)
-                        elapsed++
-                        _state.update { it.copy(recordingSeconds = elapsed) }
+                val result = geminiApiClient.generateSalesResponse(
+                    product = product,
+                    customerType = customerType,
+                    userPitch = if (isFirstRound) "Привіт, я хочу представити вам продукт: $product" else userSpeech,
+                    interactionStage = stage
+                )
+
+                result.onSuccess { aiResponse ->
+                    val newRounds = if (userSpeech.isNotBlank()) {
+                        _state.value.rounds + SalesRound(
+                            roundNumber = _state.value.currentRound,
+                            userSpeech = userSpeech,
+                            aiResponse = aiResponse
+                        )
+                    } else _state.value.rounds
+
+                    val isComplete = _state.value.currentRound > _state.value.maxRounds
+
+                    _state.update {
+                        it.copy(
+                            aiText = aiResponse,
+                            isAiThinking = false,
+                            orbState = OrbState.SPEAKING,
+                            rounds = newRounds,
+                            hint = when {
+                                isComplete -> null
+                                isFirstRound -> "Презентуйте товар: ${_state.value.selectedProduct?.name}"
+                                else -> "Відповідайте на заперечення клієнта"
+                            },
+                            phase = if (isComplete) SalesPhase.Complete else SalesPhase.Conversation
+                        )
                     }
 
-                    if (elapsed >= _state.value.maxRecordingSeconds) {
-                        stopRecording()
+                    ttsManager.speak(aiResponse)
+                }.onFailure { error ->
+                    _state.update {
+                        it.copy(
+                            error = "Помилка AI: ${error.message}",
+                            isAiThinking = false,
+                            orbState = OrbState.IDLE
+                        )
                     }
                 }
             } catch (e: Exception) {
                 _state.update {
                     it.copy(
-                        error = "Помилка запису: ${e.message}",
-                        isRecording = false
+                        error = "Помилка: ${e.message}",
+                        isAiThinking = false,
+                        orbState = OrbState.IDLE
                     )
                 }
             }
         }
     }
 
-    private fun stopRecording() {
-        viewModelScope.launch {
-            try {
-                recordingTimerJob?.cancel()
-                audioRecorder.stopRecording()
-                _state.update { it.copy(isRecording = false) }
+    private fun startVoiceInput() {
+        ttsManager.stop()
 
-                // Simulate transcription
-                delay(1500)
-                val mockTranscription = "[Презентація продавця - транскрипція буде доступна в Phase 8]"
-
-                handleTranscribedPitch(mockTranscription)
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(
-                        error = "Помилка зупинки: ${e.message}",
-                        isRecording = false
-                    )
-                }
-            }
-        }
-    }
-
-    private fun handleTranscribedPitch(transcription: String) {
-        viewModelScope.launch {
-            val currentPhase = _state.value.phase
-
-            when (currentPhase) {
-                SalesPhase.OpeningPitch -> {
-                    // Save user pitch
-                    _state.update {
-                        it.copy(
-                            userPitch = transcription,
-                            isAiThinking = true,
-                            phase = SalesPhase.CustomerReaction
-                        )
-                    }
-
-                    // Generate customer reaction
-                    generateCustomerResponse(transcription, SalesStage.INITIAL_PITCH)
-                }
-                SalesPhase.HandlingObjection -> {
-                    // Save user objection response
-                    _state.update {
-                        it.copy(
-                            userObjectionResponse = transcription,
-                            isAiThinking = true,
-                            phase = SalesPhase.FinalDecision
-                        )
-                    }
-
-                    // Generate final decision
-                    generateCustomerResponse(transcription, SalesStage.HANDLING_OBJECTION)
-                }
-                else -> {}
-            }
-
-            // Save recording
-            saveRecording(transcription)
-        }
-    }
-
-    private suspend fun generateCustomerResponse(userMessage: String, stage: SalesStage) {
         try {
-            val product = _state.value.selectedProduct?.name ?: ""
-            val customerType = _state.value.customerProfile?.type ?: ""
+            val recordingsDir = File(context.filesDir, "improv_recordings")
+            recordingsDir.mkdirs()
+            val outputFile = File(recordingsDir, "${UUID.randomUUID()}.m4a")
+            currentRecordingPath = outputFile.absolutePath
 
-            val result = geminiApiClient.generateSalesResponse(
-                product = product,
-                customerType = customerType,
-                userPitch = userMessage,
-                interactionStage = stage
+            mediaRecorder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                MediaRecorder(context)
+            } else {
+                @Suppress("DEPRECATION")
+                MediaRecorder()
+            }.apply {
+                setAudioSource(MediaRecorder.AudioSource.MIC)
+                setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+                setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+                setAudioEncodingBitRate(128000)
+                setAudioSamplingRate(44100)
+                setOutputFile(outputFile.absolutePath)
+                prepare()
+                start()
+            }
+
+            _state.update {
+                it.copy(
+                    orbState = OrbState.LISTENING,
+                    isRecording = true,
+                    isListening = true,
+                    recordingSeconds = 0
+                )
+            }
+
+            startRecordingTimer()
+        } catch (e: Exception) {
+            _state.update { it.copy(error = "Помилка мікрофону: ${e.message}") }
+            releaseRecorder()
+        }
+    }
+
+    private fun stopVoiceInput() {
+        recordingTimerJob?.cancel()
+        val filePath = currentRecordingPath
+
+        try {
+            mediaRecorder?.apply {
+                stop()
+                release()
+            }
+        } catch (_: Exception) {}
+        mediaRecorder = null
+
+        _state.update {
+            it.copy(
+                isListening = false,
+                isRecording = false,
+                audioLevel = 0f,
+                orbState = OrbState.THINKING
             )
+        }
 
-            result.onSuccess { aiResponse ->
-                when (stage) {
-                    SalesStage.INITIAL_PITCH -> {
-                        _state.update {
-                            it.copy(
-                                customerResponse = aiResponse,
-                                isAiThinking = false
-                            )
-                        }
-                    }
-                    SalesStage.HANDLING_OBJECTION -> {
-                        _state.update {
-                            it.copy(
-                                finalDecision = aiResponse,
-                                isAiThinking = false
-                            )
-                        }
+        if (filePath != null && File(filePath).exists()) {
+            transcribeAndProcess(filePath)
+        } else {
+            _state.update { it.copy(orbState = OrbState.IDLE) }
+        }
+    }
+
+    private fun transcribeAndProcess(filePath: String) {
+        viewModelScope.launch {
+            _state.update { it.copy(isAiThinking = true, hint = "Розпізнаю мовлення...") }
+
+            geminiApiClient.transcribeAudio(filePath).onSuccess { text ->
+                try { File(filePath).delete() } catch (_: Exception) {}
+
+                if (text.isNotBlank()) {
+                    handleUserSpeech(text)
+                } else {
+                    _state.update {
+                        it.copy(
+                            isAiThinking = false,
+                            orbState = OrbState.IDLE,
+                            hint = "Не вдалося розпізнати мовлення. Спробуйте ще раз."
+                        )
                     }
                 }
             }.onFailure { error ->
+                try { File(filePath).delete() } catch (_: Exception) {}
                 _state.update {
                     it.copy(
-                        error = "Помилка AI: ${error.message}",
-                        isAiThinking = false
+                        isAiThinking = false,
+                        orbState = OrbState.IDLE,
+                        error = "Помилка розпізнавання: ${error.message}"
                     )
                 }
-            }
-        } catch (e: Exception) {
-            _state.update {
-                it.copy(
-                    error = "Помилка: ${e.message}",
-                    isAiThinking = false
-                )
             }
         }
     }
 
-    private suspend fun saveRecording(transcription: String) {
+    private fun releaseRecorder() {
         try {
-            val path = recordingPath ?: return
-            val product = _state.value.selectedProduct
-            val customer = _state.value.customerProfile
+            mediaRecorder?.apply {
+                stop()
+                release()
+            }
+        } catch (_: Exception) {}
+        mediaRecorder = null
+        currentRecordingPath?.let {
+            try { File(it).delete() } catch (_: Exception) {}
+        }
+        currentRecordingPath = null
+    }
 
-            // Analyze recording with Gemini
-            voiceAnalysisRepository.analyzeRecording(
-                audioFilePath = path,
-                expectedText = null,
-                exerciseType = "sales_pitch",
-                context = "Продаж продукту: ${product?.name ?: ""}, тип клієнта: ${customer?.type ?: ""}"
-            )
+    private fun startRecordingTimer() {
+        recordingTimerJob?.cancel()
+        recordingTimerJob = viewModelScope.launch {
+            var elapsed = 0
+            while (elapsed < _state.value.maxRecordingSeconds) {
+                delay(1000)
+                elapsed++
+                _state.update { it.copy(recordingSeconds = elapsed) }
+            }
+            stopVoiceInput()
+        }
+    }
 
-            val recordingEntity = RecordingEntity(
-                id = UUID.randomUUID().toString(),
-                filePath = path,
-                durationMs = _state.value.recordingSeconds * 1000L,
-                type = "improvisation",
-                contextId = "sales_${product?.id ?: ""}",
-                transcription = transcription,
-                isAnalyzed = true
-            )
+    private fun handleUserSpeech(text: String) {
+        val nextRound = _state.value.currentRound + 1
+        _state.update { it.copy(currentRound = nextRound) }
+        generateAiResponse(text)
+    }
 
-            recordingDao.insert(recordingEntity)
-        } catch (e: Exception) {
-            // Log error
+    private fun analyzeExercise() {
+        viewModelScope.launch {
+            _state.update { it.copy(isAnalyzing = true, error = null) }
+
+            val currentState = _state.value
+            val rounds = currentState.rounds.map { it.userSpeech to it.aiResponse }
+            val context = "Товар: ${currentState.selectedProduct?.name}, Клiєнт: ${currentState.customerProfile?.type}"
+
+            geminiApiClient.analyzeImprovisationExercise(
+                exerciseType = "Продаж товару",
+                rounds = rounds,
+                exerciseContext = context
+            ).onSuccess { result ->
+                try {
+                    skillUpdateService.updateFromAnalysis(result, "sales")
+                } catch (_: Exception) {}
+                _state.update { it.copy(isAnalyzing = false, analysisResult = result) }
+            }.onFailure { error ->
+                _state.update {
+                    it.copy(
+                        isAnalyzing = false,
+                        error = "Помилка аналiзу: ${error.message}"
+                    )
+                }
+            }
         }
     }
 
@@ -258,10 +355,7 @@ class SalesPitchViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 userPreferencesDataStore.incrementFreeImprovisations()
-                _state.update { it.copy(phase = SalesPhase.SalesComplete) }
-            } catch (e: Exception) {
-                _state.update { it.copy(error = "Помилка завершення: ${e.message}") }
-            }
+            } catch (_: Exception) {}
         }
     }
 }

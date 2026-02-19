@@ -48,7 +48,7 @@ class SkillDetailViewModel @Inject constructor(
         "sales" to "Продажі",
         "job_interview" to "Співбесіда",
         "presentation" to "Презентація",
-        "negotiation" to "Переговори",
+        "negotiation" to "Перемовини",
         "retelling" to "Переказ",
         "dialogue" to "Діалог",
         "no_hesitation" to "Без зупинок",

@@ -25,9 +25,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.aivoicepower.ui.components.ProgressSkeletonContent
 import com.aivoicepower.ui.screens.progress.components.*
 import com.aivoicepower.ui.theme.*
 import com.aivoicepower.ui.theme.components.GradientBackground
+import com.aivoicepower.ui.theme.modifiers.scaleOnPress
+import com.aivoicepower.ui.theme.modifiers.staggeredEntry
 
 @Composable
 fun ProgressScreen(
@@ -44,12 +47,7 @@ fun ProgressScreen(
         GradientBackground(content = {})
 
         if (state.isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(color = Color.White)
-            }
+            ProgressSkeletonContent()
         } else {
             ProgressContent(
                 state = state,
@@ -84,7 +82,8 @@ private fun ProgressContent(
     ) {
         // Header
         ProgressHeader(
-            onNavigateBack = onNavigateBack
+            onNavigateBack = onNavigateBack,
+            modifier = Modifier.staggeredEntry(index = 0)
         )
 
         // Combined Progress Overview
@@ -94,11 +93,15 @@ private fun ProgressContent(
             longestStreak = state.longestStreak,
             totalExercises = state.totalExercises,
             totalMinutes = state.totalMinutes,
-            totalRecordings = state.totalRecordings
+            totalRecordings = state.totalRecordings,
+            modifier = Modifier.staggeredEntry(index = 1)
         )
 
         // Journey Section
-        JourneySection(overallLevel = state.overallLevel)
+        JourneySection(
+            overallLevel = state.overallLevel,
+            modifier = Modifier.staggeredEntry(index = 2)
+        )
 
         // Skill Levels
         Text(
@@ -107,11 +110,13 @@ private fun ProgressContent(
             color = TextColors.onDarkPrimary,
             fontSize = 20.sp,
             fontWeight = FontWeight.ExtraBold,
-            letterSpacing = (-0.5).sp
+            letterSpacing = (-0.5).sp,
+            modifier = Modifier.staggeredEntry(index = 3)
         )
 
         Column(
             modifier = Modifier
+                .staggeredEntry(index = 4)
                 .fillMaxWidth()
                 .shadow(
                     elevation = 20.dp,
@@ -151,7 +156,9 @@ private fun ProgressContent(
         // Recent Achievements
         if (state.recentAchievements.isNotEmpty()) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .staggeredEntry(index = 5)
+                    .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -175,6 +182,7 @@ private fun ProgressContent(
 
             Column(
                 modifier = Modifier
+                    .staggeredEntry(index = 6)
                     .fillMaxWidth()
                     .shadow(
                         elevation = 20.dp,
@@ -208,19 +216,22 @@ private fun ProgressContent(
             color = TextColors.onDarkPrimary,
             fontSize = 20.sp,
             fontWeight = FontWeight.ExtraBold,
-            letterSpacing = (-0.5).sp
+            letterSpacing = (-0.5).sp,
+            modifier = Modifier.staggeredEntry(index = 7)
         )
 
         ActionCard(
             icon = Icons.Default.Compare,
             title = "Порівняти з початком",
-            onClick = onNavigateToCompare
+            onClick = onNavigateToCompare,
+            modifier = Modifier.staggeredEntry(index = 8)
         )
 
         ActionCard(
             icon = Icons.Default.History,
             title = "Історія записів",
-            onClick = onNavigateToHistory
+            onClick = onNavigateToHistory,
+            modifier = Modifier.staggeredEntry(index = 9)
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -270,6 +281,7 @@ private fun ActionCard(
                 spotColor = Color.Black.copy(alpha = 0.12f)
             )
             .background(Color.White, RoundedCornerShape(20.dp))
+            .scaleOnPress(pressedScale = 0.97f)
             .clickable { onClick() }
             .padding(20.dp),
         horizontalArrangement = Arrangement.SpaceBetween,

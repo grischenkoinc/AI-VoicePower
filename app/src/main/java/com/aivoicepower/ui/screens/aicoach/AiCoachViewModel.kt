@@ -15,6 +15,7 @@ import com.aivoicepower.data.chat.MessageRole
 import com.aivoicepower.data.content.SimulationScenariosProvider
 import com.aivoicepower.data.remote.AiPrompts
 import com.aivoicepower.domain.repository.AiCoachRepository
+import com.aivoicepower.utils.CloudTtsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
@@ -28,7 +29,8 @@ import javax.inject.Inject
 class AiCoachViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val aiCoachRepository: AiCoachRepository,
-    private val userPreferencesDataStore: UserPreferencesDataStore
+    private val userPreferencesDataStore: UserPreferencesDataStore,
+    val ttsManager: CloudTtsManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AiCoachState())
@@ -37,6 +39,7 @@ class AiCoachViewModel @Inject constructor(
     private var speechRecognizer: SpeechRecognizer? = null
 
     init {
+        ttsManager.warmUp()
         loadMessages()
         loadQuickActions()
         loadTemplates()
@@ -46,6 +49,7 @@ class AiCoachViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         speechRecognizer?.destroy()
+        ttsManager.stop()
     }
 
     private fun loadMessages() {
@@ -200,6 +204,23 @@ class AiCoachViewModel @Inject constructor(
             is AiCoachEvent.ApplyTemplate -> {
                 applyTemplate(event.template)
             }
+
+            // Voice-first: toggle message expand/collapse
+            is AiCoachEvent.ToggleMessageExpanded -> {
+                toggleMessageExpanded(event.messageId)
+            }
+        }
+    }
+
+    private fun toggleMessageExpanded(messageId: String) {
+        _state.update { state ->
+            val expanded = state.expandedMessageIds.toMutableSet()
+            if (messageId in expanded) {
+                expanded.remove(messageId)
+            } else {
+                expanded.add(messageId)
+            }
+            state.copy(expandedMessageIds = expanded)
         }
     }
 
@@ -221,8 +242,9 @@ class AiCoachViewModel @Inject constructor(
                 val result = aiCoachRepository.sendMessage(text)
 
                 result.fold(
-                    onSuccess = {
+                    onSuccess = { aiMessage ->
                         _state.update { it.copy(isSending = false) }
+                        ttsManager.speak(aiMessage.content)
 
                         // Check if in simulation mode
                         if (_state.value.activeSimulation != null) {
@@ -292,7 +314,11 @@ class AiCoachViewModel @Inject constructor(
             override fun onResults(results: Bundle?) {
                 val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 val text = matches?.firstOrNull() ?: ""
-                _state.update { it.copy(inputText = text, isListening = false) }
+                _state.update { it.copy(inputText = text, isListening = false, audioLevel = 0f) }
+                // Auto-send after voice recognition
+                if (text.isNotBlank()) {
+                    sendMessage()
+                }
             }
 
             override fun onPartialResults(partialResults: Bundle?) {
@@ -315,6 +341,7 @@ class AiCoachViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         isListening = false,
+                        audioLevel = 0f,
                         error = errorMessage
                     )
                 }
@@ -329,7 +356,11 @@ class AiCoachViewModel @Inject constructor(
             }
 
             override fun onBeginningOfSpeech() {}
-            override fun onRmsChanged(rmsdB: Float) {}
+            override fun onRmsChanged(rmsdB: Float) {
+                // Normalize rms to 0..1 range (rms typically -2..10)
+                val normalized = ((rmsdB + 2f) / 12f).coerceIn(0f, 1f)
+                _state.update { it.copy(audioLevel = normalized) }
+            }
             override fun onBufferReceived(buffer: ByteArray?) {}
             override fun onEvent(eventType: Int, params: Bundle?) {}
         })
@@ -339,7 +370,7 @@ class AiCoachViewModel @Inject constructor(
 
     private fun stopVoiceInput() {
         speechRecognizer?.stopListening()
-        _state.update { it.copy(isListening = false) }
+        _state.update { it.copy(isListening = false, audioLevel = 0f) }
     }
 
     // ===== Audio Upload =====

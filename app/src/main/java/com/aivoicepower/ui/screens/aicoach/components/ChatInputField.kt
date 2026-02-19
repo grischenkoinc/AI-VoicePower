@@ -1,131 +1,137 @@
 package com.aivoicepower.ui.screens.aicoach.components
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AttachFile
-import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.aivoicepower.ui.theme.PrimaryColors
 
 @Composable
 fun ChatInputField(
     text: String,
     onTextChange: (String) -> Unit,
     onSendClick: () -> Unit,
-    onVoiceInputClick: () -> Unit,
     onUploadClick: () -> Unit,
     enabled: Boolean,
     isLoading: Boolean,
-    isListening: Boolean,
     modifier: Modifier = Modifier
 ) {
-    // Animation for microphone when listening
-    val infiniteTransition = rememberInfiniteTransition(label = "mic_pulse")
-    val micScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.2f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(500),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "mic_scale"
-    )
+    val canSend = enabled && text.isNotBlank() && !isLoading
 
-    val micColor by animateColorAsState(
-        targetValue = if (isListening) {
-            MaterialTheme.colorScheme.error
-        } else {
-            MaterialTheme.colorScheme.onSurfaceVariant
-        },
-        label = "mic_color"
-    )
-
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        tonalElevation = 3.dp
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.Bottom,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Row(
+        // Attach button
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.Bottom,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.06f))
+                .border(1.dp, Color.White.copy(alpha = 0.1f), CircleShape),
+            contentAlignment = Alignment.Center
         ) {
-            // Attach button
             IconButton(
                 onClick = onUploadClick,
-                enabled = enabled && !isListening
+                enabled = enabled,
+                modifier = Modifier.size(36.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.AttachFile,
                     contentDescription = "Завантажити аудіо",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = Color.White.copy(alpha = 0.5f),
+                    modifier = Modifier.size(18.dp)
                 )
             }
+        }
 
-            // Text field
-            OutlinedTextField(
-                value = text,
-                onValueChange = onTextChange,
-                modifier = Modifier.weight(1f),
-                placeholder = {
-                    Text(
-                        if (isListening) "Говоріть..." else "Запитайте про мовлення..."
-                    )
-                },
-                enabled = enabled && !isListening,
-                maxLines = 4,
-                singleLine = false
-            )
-
-            // Voice input button
-            IconButton(
-                onClick = onVoiceInputClick,
-                enabled = enabled
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Mic,
-                    contentDescription = if (isListening) "Зупинити" else "Голосовий ввід",
-                    tint = micColor,
-                    modifier = if (isListening) {
-                        Modifier.graphicsLayer {
-                            scaleX = micScale
-                            scaleY = micScale
-                        }
-                    } else {
-                        Modifier
-                    }
+        // Compact text field
+        OutlinedTextField(
+            value = text,
+            onValueChange = onTextChange,
+            modifier = Modifier.weight(1f),
+            placeholder = {
+                Text(
+                    text = "Або напишіть...",
+                    color = Color.White.copy(alpha = 0.3f),
+                    style = TextStyle(fontSize = 13.sp)
                 )
-            }
+            },
+            enabled = enabled,
+            maxLines = 3,
+            singleLine = false,
+            textStyle = TextStyle(
+                color = Color.White.copy(alpha = 0.9f),
+                fontSize = 13.sp
+            ),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = Color.White.copy(alpha = 0.05f),
+                unfocusedContainerColor = Color.White.copy(alpha = 0.03f),
+                disabledContainerColor = Color.White.copy(alpha = 0.02f),
+                focusedBorderColor = PrimaryColors.light.copy(alpha = 0.4f),
+                unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+                disabledBorderColor = Color.White.copy(alpha = 0.06f),
+                cursorColor = PrimaryColors.light
+            ),
+            shape = RoundedCornerShape(20.dp)
+        )
 
-            // Send button
-            IconButton(
-                onClick = onSendClick,
-                enabled = enabled && text.isNotBlank() && !isLoading && !isListening
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        strokeWidth = 2.dp
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Send,
-                        contentDescription = "Надіслати",
-                        tint = if (text.isNotBlank() && !isListening) {
-                            MaterialTheme.colorScheme.primary
+        // Send button (visible when text present)
+        if (text.isNotBlank()) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(
+                        brush = if (canSend) {
+                            Brush.linearGradient(
+                                colors = listOf(Color(0xFF667EEA), Color(0xFF8B5CF6))
+                            )
                         } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant
+                            Brush.linearGradient(
+                                colors = listOf(Color.White.copy(alpha = 0.05f), Color.White.copy(alpha = 0.05f))
+                            )
                         }
-                    )
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                IconButton(
+                    onClick = onSendClick,
+                    enabled = canSend,
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp,
+                            color = PrimaryColors.light
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Send,
+                            contentDescription = "Надіслати",
+                            tint = if (canSend) Color.White else Color.White.copy(alpha = 0.2f),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
         }

@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
+import com.aivoicepower.ui.theme.modifiers.scaleOnPress
 
 @Composable
 fun ImprovisationModeCard(
@@ -45,6 +46,7 @@ fun ImprovisationModeCard(
                     ambientColor = Color.Black.copy(alpha = 0.08f)
                 )
                 .background(Color.White, RoundedCornerShape(20.dp))
+                .scaleOnPress(pressedScale = 0.97f)
                 .clickable(enabled = !isComingSoon, onClick = onClick)
                 .padding(20.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),

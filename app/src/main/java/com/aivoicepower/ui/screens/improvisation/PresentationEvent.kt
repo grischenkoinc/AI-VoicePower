@@ -4,5 +4,9 @@ sealed class PresentationEvent {
     object StartSimulation : PresentationEvent()
     object StartRecording : PresentationEvent()
     object StopRecording : PresentationEvent()
-    object NextStep : PresentationEvent()
+    object FinishPresentation : PresentationEvent()
+    object AnalyzeClicked : PresentationEvent()
+    object SkipClicked : PresentationEvent()
+    object DismissAnalysis : PresentationEvent()
+    object CountdownComplete : PresentationEvent()
 }

@@ -23,6 +23,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.domain.model.exercise.StoryFormat
+import com.aivoicepower.ui.components.FocusCountdownOverlay
 import com.aivoicepower.ui.components.AnalysisLimitBottomSheet
 import com.aivoicepower.ui.components.AnalysisLimitInfo
 import com.aivoicepower.ui.components.AnalysisResultsContent
@@ -112,6 +113,8 @@ fun StorytellingScreen(
         }
     }
 
+    var showFocus by remember { mutableStateOf(false) }
+
     Box(modifier = Modifier.fillMaxSize()) {
         GradientBackground(content = {})
 
@@ -194,7 +197,7 @@ fun StorytellingScreen(
                         PrimaryButton(
                             text = "Почати вправу",
                             onClick = {
-                                viewModel.onEvent(StorytellingEvent.SkipPreparation)
+                                showFocus = true
                             },
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -315,6 +318,18 @@ fun StorytellingScreen(
                 containerColor = Color(0xFF667EEA),
                 contentColor = Color.White,
                 modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        // Focus countdown overlay
+        if (showFocus) {
+            FocusCountdownOverlay(
+                exerciseName = "Сторiтелiнг",
+                topic = state.storyPrompt,
+                onComplete = {
+                    showFocus = false
+                    viewModel.onEvent(StorytellingEvent.SkipPreparation)
+                }
             )
         }
     }

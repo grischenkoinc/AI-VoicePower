@@ -1,42 +1,69 @@
 package com.aivoicepower.ui.screens.improvisation
 
 import android.content.Context
+import android.media.MediaRecorder
+import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aivoicepower.data.local.database.dao.RecordingDao
-import com.aivoicepower.data.local.database.entity.RecordingEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.data.remote.GeminiApiClient
-import com.aivoicepower.domain.repository.VoiceAnalysisRepository
-import com.aivoicepower.utils.audio.AudioRecorderUtil
+import com.aivoicepower.domain.service.SkillUpdateService
+import com.aivoicepower.ui.screens.improvisation.components.OrbState
+import com.aivoicepower.utils.CloudTtsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.util.*
+import java.io.File
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class DebateViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val geminiApiClient: GeminiApiClient,
-    private val recordingDao: RecordingDao,
     private val userPreferencesDataStore: UserPreferencesDataStore,
-    private val voiceAnalysisRepository: VoiceAnalysisRepository
+    private val skillUpdateService: SkillUpdateService,
+    val ttsManager: CloudTtsManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DebateState())
     val state: StateFlow<DebateState> = _state.asStateFlow()
 
-    private val audioRecorder = AudioRecorderUtil(context)
+    private var mediaRecorder: MediaRecorder? = null
+    private var currentRecordingPath: String? = null
     private var recordingTimerJob: Job? = null
-    private var recordingPath: String? = null
+
+    init {
+        ttsManager.warmUp()
+        observeTts()
+    }
+
+    private fun observeTts() {
+        viewModelScope.launch {
+            ttsManager.isSpeaking.collect { speaking ->
+                _state.update {
+                    it.copy(
+                        isTtsSpeaking = speaking,
+                        orbState = when {
+                            speaking -> OrbState.SPEAKING
+                            it.isListening -> OrbState.LISTENING
+                            it.isAiThinking -> OrbState.THINKING
+                            it.phase == DebatePhase.Complete -> OrbState.COMPLETE
+                            else -> OrbState.IDLE
+                        }
+                    )
+                }
+            }
+        }
+    }
 
     override fun onCleared() {
         super.onCleared()
-        audioRecorder.release()
+        releaseRecorder()
+        ttsManager.stop()
         recordingTimerJob?.cancel()
     }
 
@@ -54,92 +81,43 @@ class DebateViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         userPosition = event.position,
-                        phase = DebatePhase.UserArgument,
+                        phase = DebatePhase.Conversation,
                         currentRound = 1
                     )
                 }
             }
-            DebateEvent.StartRecordingClicked -> {
-                startRecording()
-            }
-            DebateEvent.StopRecordingClicked -> {
-                stopRecording()
-            }
-            DebateEvent.NextRoundClicked -> {
-                startNextRound()
-            }
-            DebateEvent.FinishDebateClicked -> {
+            DebateEvent.CountdownComplete -> startConversation()
+            DebateEvent.StartRecordingClicked -> startVoiceInput()
+            DebateEvent.StopRecordingClicked -> stopVoiceInput()
+            DebateEvent.FinishDebateClicked -> finishDebate()
+            DebateEvent.AnalyzeClicked -> analyzeExercise()
+            DebateEvent.SkipClicked -> finishDebate()
+            DebateEvent.DismissAnalysis -> {
                 finishDebate()
+                _state.update { it.copy(analysisResult = null) }
             }
         }
     }
 
-    private fun startRecording() {
+    private fun startConversation() {
         viewModelScope.launch {
-            try {
-                val outputFile = context.filesDir.resolve("recordings/debate_${UUID.randomUUID()}.m4a")
-                outputFile.parentFile?.mkdirs()
-
-                audioRecorder.startRecording(outputFile.absolutePath)
-                recordingPath = outputFile.absolutePath
-
-                _state.update {
-                    it.copy(
-                        isRecording = true,
-                        recordingSeconds = 0
-                    )
-                }
-
-                // Timer
-                recordingTimerJob = launch {
-                    var elapsed = 0
-                    while (elapsed < _state.value.maxRecordingSeconds && _state.value.isRecording) {
-                        delay(1000)
-                        elapsed++
-                        _state.update { it.copy(recordingSeconds = elapsed) }
-                    }
-
-                    if (elapsed >= _state.value.maxRecordingSeconds) {
-                        stopRecording()
-                    }
-                }
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(
-                        error = "Помилка запису: ${e.message}",
-                        isRecording = false
-                    )
-                }
+            _state.update {
+                it.copy(
+                    orbState = OrbState.THINKING,
+                    isAiThinking = true,
+                    aiText = "",
+                    hint = "AI-опонент готує перший аргумент..."
+                )
             }
+            generateAiResponse("")
         }
     }
 
-    private fun stopRecording() {
+    private fun generateAiResponse(userArgument: String) {
         viewModelScope.launch {
-            try {
-                recordingTimerJob?.cancel()
-                audioRecorder.stopRecording()
-                _state.update { it.copy(isRecording = false) }
-
-                // Simulate transcription (placeholder until Phase 8)
-                delay(1500)
-                val mockTranscription = "[Аргумент користувача - транскрипція буде доступна в Phase 8]"
-
-                handleTranscribedArgument(mockTranscription)
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(
-                        error = "Помилка зупинки: ${e.message}",
-                        isRecording = false
-                    )
-                }
+            _state.update {
+                it.copy(isAiThinking = true, orbState = OrbState.THINKING)
             }
-        }
-    }
-
-    private fun handleTranscribedArgument(transcription: String) {
-        viewModelScope.launch {
-            _state.update { it.copy(isAiThinking = true, phase = DebatePhase.AiResponse) }
 
             try {
                 val topic = _state.value.selectedTopic?.topic ?: ""
@@ -148,38 +126,51 @@ class DebateViewModel @Inject constructor(
                     DebatePosition.AGAINST -> "ПРОТИ"
                     else -> ""
                 }
-                val roundNumber = _state.value.currentRound
+                val round = _state.value.currentRound
                 val history = _state.value.rounds.map { it.userArgument to it.aiResponse }
 
                 val result = geminiApiClient.generateDebateResponse(
                     topic = topic,
                     userPosition = position,
-                    userArgument = transcription,
-                    roundNumber = roundNumber,
+                    userArgument = if (userArgument.isBlank()) "Починаю дебати" else userArgument,
+                    roundNumber = round,
+                    totalRounds = _state.value.maxRounds,
                     conversationHistory = history
                 )
 
                 result.onSuccess { aiResponse ->
-                    val newRound = DebateRound(
-                        roundNumber = roundNumber,
-                        userArgument = transcription,
-                        aiResponse = aiResponse
-                    )
+                    val newRounds = if (userArgument.isNotBlank()) {
+                        _state.value.rounds + DebateRound(
+                            roundNumber = _state.value.currentRound,
+                            userArgument = userArgument,
+                            aiResponse = aiResponse
+                        )
+                    } else _state.value.rounds
 
-                    // Save recording to DB
-                    saveRecording(transcription)
+                    val isComplete = _state.value.currentRound > _state.value.maxRounds
 
                     _state.update {
                         it.copy(
-                            rounds = it.rounds + newRound,
-                            isAiThinking = false
+                            aiText = aiResponse,
+                            isAiThinking = false,
+                            orbState = if (isComplete) OrbState.COMPLETE else OrbState.SPEAKING,
+                            rounds = newRounds,
+                            phase = if (isComplete) DebatePhase.Complete else DebatePhase.Conversation,
+                            hint = when {
+                                isComplete -> null
+                                round == 1 && userArgument.isBlank() -> "Наведіть свій перший аргумент"
+                                else -> "Раунд $round — наведіть контраргумент"
+                            }
                         )
                     }
+
+                    ttsManager.speak(aiResponse)
                 }.onFailure { error ->
                     _state.update {
                         it.copy(
                             error = "Помилка AI: ${error.message}",
-                            isAiThinking = false
+                            isAiThinking = false,
+                            orbState = OrbState.IDLE
                         )
                     }
                 }
@@ -187,54 +178,178 @@ class DebateViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         error = "Помилка: ${e.message}",
-                        isAiThinking = false
+                        isAiThinking = false,
+                        orbState = OrbState.IDLE
                     )
                 }
             }
         }
     }
 
-    private suspend fun saveRecording(transcription: String) {
+    private fun startVoiceInput() {
+        ttsManager.stop()
+
         try {
-            val path = recordingPath ?: return
-            val topic = _state.value.selectedTopic
+            val recordingsDir = File(context.filesDir, "improv_recordings")
+            recordingsDir.mkdirs()
+            val outputFile = File(recordingsDir, "${UUID.randomUUID()}.m4a")
+            currentRecordingPath = outputFile.absolutePath
 
-            // Analyze recording with Gemini
-            voiceAnalysisRepository.analyzeRecording(
-                audioFilePath = path,
-                expectedText = null,
-                exerciseType = "debate",
-                context = "Дебати на тему: ${topic?.topic ?: ""}, позиція: ${_state.value.userPosition?.name}"
-            )
+            mediaRecorder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                MediaRecorder(context)
+            } else {
+                @Suppress("DEPRECATION")
+                MediaRecorder()
+            }.apply {
+                setAudioSource(MediaRecorder.AudioSource.MIC)
+                setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+                setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+                setAudioEncodingBitRate(128000)
+                setAudioSamplingRate(44100)
+                setOutputFile(outputFile.absolutePath)
+                prepare()
+                start()
+            }
 
-            val recordingEntity = RecordingEntity(
-                id = UUID.randomUUID().toString(),
-                filePath = path,
-                durationMs = _state.value.recordingSeconds * 1000L,
-                type = "improvisation",
-                contextId = "debate_${topic?.id ?: ""}",
-                transcription = transcription,
-                isAnalyzed = true
-            )
-
-            recordingDao.insert(recordingEntity)
-        } catch (e: Exception) {
-            // Log error
-        }
-    }
-
-    private fun startNextRound() {
-        val nextRound = _state.value.currentRound + 1
-        if (nextRound <= _state.value.maxRounds) {
             _state.update {
                 it.copy(
-                    currentRound = nextRound,
-                    phase = DebatePhase.UserArgument,
+                    orbState = OrbState.LISTENING,
+                    isRecording = true,
+                    isListening = true,
                     recordingSeconds = 0
                 )
             }
+
+            startRecordingTimer()
+        } catch (e: Exception) {
+            _state.update { it.copy(error = "Помилка мікрофону: ${e.message}") }
+            releaseRecorder()
+        }
+    }
+
+    private fun stopVoiceInput() {
+        recordingTimerJob?.cancel()
+        val filePath = currentRecordingPath
+
+        try {
+            mediaRecorder?.apply {
+                stop()
+                release()
+            }
+        } catch (_: Exception) {}
+        mediaRecorder = null
+
+        _state.update {
+            it.copy(
+                isListening = false,
+                isRecording = false,
+                audioLevel = 0f,
+                orbState = OrbState.THINKING
+            )
+        }
+
+        if (filePath != null && File(filePath).exists()) {
+            transcribeAndProcess(filePath)
         } else {
-            finishDebate()
+            _state.update { it.copy(orbState = OrbState.IDLE) }
+        }
+    }
+
+    private fun transcribeAndProcess(filePath: String) {
+        viewModelScope.launch {
+            _state.update { it.copy(isAiThinking = true, hint = "Розпізнаю мовлення...") }
+
+            geminiApiClient.transcribeAudio(filePath).onSuccess { text ->
+                // Clean up recording file
+                try { File(filePath).delete() } catch (_: Exception) {}
+
+                if (text.isNotBlank()) {
+                    handleUserArgument(text)
+                } else {
+                    _state.update {
+                        it.copy(
+                            isAiThinking = false,
+                            orbState = OrbState.IDLE,
+                            hint = "Не вдалося розпізнати мовлення. Спробуйте ще раз."
+                        )
+                    }
+                }
+            }.onFailure { error ->
+                try { File(filePath).delete() } catch (_: Exception) {}
+                _state.update {
+                    it.copy(
+                        isAiThinking = false,
+                        orbState = OrbState.IDLE,
+                        error = "Помилка розпізнавання: ${error.message}"
+                    )
+                }
+            }
+        }
+    }
+
+    private fun releaseRecorder() {
+        try {
+            mediaRecorder?.apply {
+                stop()
+                release()
+            }
+        } catch (_: Exception) {}
+        mediaRecorder = null
+        currentRecordingPath?.let {
+            try { File(it).delete() } catch (_: Exception) {}
+        }
+        currentRecordingPath = null
+    }
+
+    private fun startRecordingTimer() {
+        recordingTimerJob?.cancel()
+        recordingTimerJob = viewModelScope.launch {
+            var elapsed = 0
+            while (elapsed < _state.value.maxRecordingSeconds) {
+                delay(1000)
+                elapsed++
+                _state.update { it.copy(recordingSeconds = elapsed) }
+            }
+            stopVoiceInput()
+        }
+    }
+
+    private fun handleUserArgument(text: String) {
+        val nextRound = _state.value.currentRound + 1
+        _state.update { it.copy(currentRound = nextRound) }
+        generateAiResponse(text)
+    }
+
+    private fun analyzeExercise() {
+        viewModelScope.launch {
+            _state.update { it.copy(isAnalyzing = true, error = null) }
+
+            val currentState = _state.value
+            val rounds = currentState.rounds.map { it.userArgument to it.aiResponse }
+            val positionText = when (currentState.userPosition) {
+                DebatePosition.FOR -> "ЗА"
+                DebatePosition.AGAINST -> "ПРОТИ"
+                else -> ""
+            }
+            val context = "Тема: ${currentState.selectedTopic?.topic}, Позицiя: $positionText"
+
+            geminiApiClient.analyzeImprovisationExercise(
+                exerciseType = "Дебати з AI",
+                rounds = rounds,
+                exerciseContext = context
+            ).onSuccess { result ->
+                try {
+                    skillUpdateService.updateFromAnalysis(result, "debate")
+                } catch (_: Exception) {}
+                _state.update { it.copy(isAnalyzing = false, analysisResult = result) }
+            }.onFailure { error ->
+                _state.update {
+                    it.copy(
+                        isAnalyzing = false,
+                        error = "Помилка аналiзу: ${error.message}"
+                    )
+                }
+            }
         }
     }
 
@@ -242,10 +357,7 @@ class DebateViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 userPreferencesDataStore.incrementFreeImprovisations()
-                _state.update { it.copy(phase = DebatePhase.DebateComplete) }
-            } catch (e: Exception) {
-                _state.update { it.copy(error = "Помилка завершення: ${e.message}") }
-            }
+            } catch (_: Exception) {}
         }
     }
 }

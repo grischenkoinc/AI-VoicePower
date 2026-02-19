@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aivoicepower.data.ads.RewardedAdManager
+import com.aivoicepower.ui.components.FocusCountdownOverlay
 import com.aivoicepower.ui.components.AnalysisLimitBottomSheet
 import com.aivoicepower.ui.components.AnalysisLimitInfo
 import com.aivoicepower.ui.components.AnalysisResultsContent
@@ -113,6 +114,8 @@ fun RandomTopicScreen(
         }
     }
 
+    var showFocus by remember { mutableStateOf(false) }
+
     Box(modifier = Modifier.fillMaxSize()) {
         GradientBackground(content = {})
 
@@ -172,13 +175,11 @@ fun RandomTopicScreen(
                         )
                     }
 
-                    // Skip preparation button
+                    // Start exercise button
                     if (state.preparationTimeLeft > 0) {
                         PrimaryButton(
                             text = "Почати вправу",
-                            onClick = {
-                                viewModel.onEvent(RandomTopicEvent.SkipPreparation)
-                            },
+                            onClick = { showFocus = true },
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
@@ -287,6 +288,18 @@ fun RandomTopicScreen(
                 containerColor = Color(0xFF667EEA),
                 contentColor = Color.White,
                 modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        // Focus countdown overlay
+        if (showFocus) {
+            FocusCountdownOverlay(
+                exerciseName = "Випадкова тема",
+                topic = state.currentTopic?.title ?: "",
+                onComplete = {
+                    showFocus = false
+                    viewModel.onEvent(RandomTopicEvent.SkipPreparation)
+                }
             )
         }
     }

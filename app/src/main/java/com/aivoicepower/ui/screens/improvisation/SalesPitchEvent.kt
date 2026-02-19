@@ -7,6 +7,9 @@ sealed class SalesPitchEvent {
     object StartPitchClicked : SalesPitchEvent()
     object StartRecordingClicked : SalesPitchEvent()
     object StopRecordingClicked : SalesPitchEvent()
-    object ContinueToObjectionClicked : SalesPitchEvent()
-    object FinishSalesClicked : SalesPitchEvent()
+    object FinishClicked : SalesPitchEvent()
+    object AnalyzeClicked : SalesPitchEvent()
+    object SkipClicked : SalesPitchEvent()
+    object DismissAnalysis : SalesPitchEvent()
+    object CountdownComplete : SalesPitchEvent()
 }

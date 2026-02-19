@@ -1,171 +1,338 @@
 package com.aivoicepower.ui.screens.improvisation
 
 import android.content.Context
-import android.util.Log
+import android.media.MediaRecorder
+import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aivoicepower.data.content.ImprovisationContentProvider
-import com.aivoicepower.data.local.database.dao.RecordingDao
-import com.aivoicepower.data.local.database.entity.RecordingEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
-import com.aivoicepower.domain.model.content.ImprovisationTask
-import com.aivoicepower.domain.repository.VoiceAnalysisRepository
-import com.aivoicepower.utils.audio.AudioRecorderUtil
+import com.aivoicepower.data.remote.GeminiApiClient
+import com.aivoicepower.domain.service.SkillUpdateService
+import com.aivoicepower.ui.screens.improvisation.components.OrbState
+import com.aivoicepower.utils.CloudTtsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.util.*
+import java.io.File
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class PresentationViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val voiceAnalysisRepository: VoiceAnalysisRepository,
-    private val recordingDao: RecordingDao,
-    private val userPreferencesDataStore: UserPreferencesDataStore
+    private val geminiApiClient: GeminiApiClient,
+    private val userPreferencesDataStore: UserPreferencesDataStore,
+    private val skillUpdateService: SkillUpdateService,
+    val ttsManager: CloudTtsManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PresentationState())
     val state: StateFlow<PresentationState> = _state.asStateFlow()
 
-    private val audioRecorder = AudioRecorderUtil(context)
+    private var mediaRecorder: MediaRecorder? = null
+    private var currentRecordingPath: String? = null
     private var recordingTimerJob: Job? = null
-    private var recordingPath: String? = null
-    private var exerciseId: String = ""
 
     init {
-        loadExercise()
+        ttsManager.warmUp()
+        observeTts()
     }
 
-    private fun loadExercise() {
-        val exercise = ImprovisationContentProvider.getPresentationExercise()
-        exerciseId = exercise.id
-
-        val steps = when (val task = exercise.task) {
-            is ImprovisationTask.Presentation -> {
-                task.steps.map { step ->
-                    PresentationStep(
-                        stepNumber = step.stepNumber,
-                        question = step.question,
-                        hint = step.hint
-                    )
-                }
-            }
-            else -> emptyList()
-        }
-
-        _state.update { it.copy(steps = steps) }
-    }
-
-    fun onEvent(event: PresentationEvent) {
-        when (event) {
-            PresentationEvent.StartSimulation -> {
-                _state.update { it.copy(isStarted = true, currentStepIndex = 0) }
-            }
-
-            PresentationEvent.StartRecording -> {
-                startRecording()
-            }
-
-            PresentationEvent.StopRecording -> {
-                stopRecording()
-            }
-
-            PresentationEvent.NextStep -> {
-                moveToNextStep()
-            }
-        }
-    }
-
-    private fun startRecording() {
+    private fun observeTts() {
         viewModelScope.launch {
-            try {
-                val outputFile = context.filesDir.resolve("recordings/presentation_${UUID.randomUUID()}.m4a")
-                outputFile.parentFile?.mkdirs()
-
-                audioRecorder.startRecording(outputFile.absolutePath)
-                recordingPath = outputFile.absolutePath
-
-                _state.update { it.copy(isRecording = true, recordingDurationMs = 0) }
-
-                recordingTimerJob = launch {
-                    while (_state.value.isRecording) {
-                        delay(100)
-                        _state.update { it.copy(recordingDurationMs = it.recordingDurationMs + 100) }
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("PresentationVM", "Recording start error", e)
-                _state.update { it.copy(isRecording = false) }
-            }
-        }
-    }
-
-    private fun stopRecording() {
-        viewModelScope.launch {
-            try {
-                recordingTimerJob?.cancel()
-                audioRecorder.stopRecording()
-
-                val currentStep = _state.value.steps.getOrNull(_state.value.currentStepIndex)
-
+            ttsManager.isSpeaking.collect { speaking ->
                 _state.update {
                     it.copy(
-                        isRecording = false,
-                        recordingIds = it.recordingIds + "${exerciseId}_step_${it.currentStepIndex}_${System.currentTimeMillis()}"
+                        isTtsSpeaking = speaking,
+                        orbState = when {
+                            speaking -> OrbState.SPEAKING
+                            it.isListening -> OrbState.LISTENING
+                            it.isAiThinking -> OrbState.THINKING
+                            !it.isStarted -> OrbState.IDLE
+                            it.currentRound > it.maxRounds -> OrbState.COMPLETE
+                            else -> OrbState.IDLE
+                        }
                     )
                 }
-
-                saveRecording(currentStep)
-                moveToNextStep()
-            } catch (e: Exception) {
-                Log.e("PresentationVM", "Recording stop error", e)
-                _state.update { it.copy(isRecording = false) }
-                moveToNextStep()
             }
-        }
-    }
-
-    private suspend fun saveRecording(step: PresentationStep?) {
-        try {
-            val path = recordingPath ?: return
-
-            voiceAnalysisRepository.analyzeRecording(
-                audioFilePath = path,
-                expectedText = null,
-                exerciseType = "presentation",
-                context = "Презентація, крок ${step?.stepNumber ?: 0}: ${step?.question ?: ""}"
-            )
-
-            val recordingEntity = RecordingEntity(
-                id = UUID.randomUUID().toString(),
-                filePath = path,
-                durationMs = _state.value.recordingDurationMs,
-                type = "improvisation",
-                contextId = "presentation_step_${_state.value.currentStepIndex}",
-                transcription = null,
-                isAnalyzed = true,
-                exerciseId = exerciseId
-            )
-
-            recordingDao.insert(recordingEntity)
-        } catch (e: Exception) {
-            Log.e("PresentationVM", "Save recording error", e)
-        }
-    }
-
-    private fun moveToNextStep() {
-        _state.update {
-            it.copy(currentStepIndex = it.currentStepIndex + 1)
         }
     }
 
     override fun onCleared() {
         super.onCleared()
-        audioRecorder.release()
+        releaseRecorder()
+        ttsManager.stop()
         recordingTimerJob?.cancel()
+    }
+
+    fun onEvent(event: PresentationEvent) {
+        when (event) {
+            PresentationEvent.StartSimulation -> {
+                _state.update { it.copy(isStarted = true) }
+            }
+            PresentationEvent.CountdownComplete -> startPresentation()
+            PresentationEvent.StartRecording -> startVoiceInput()
+            PresentationEvent.StopRecording -> stopVoiceInput()
+            PresentationEvent.FinishPresentation -> finishPresentation()
+            PresentationEvent.AnalyzeClicked -> analyzeExercise()
+            PresentationEvent.SkipClicked -> finishPresentation()
+            PresentationEvent.DismissAnalysis -> {
+                finishPresentation()
+                _state.update { it.copy(analysisResult = null) }
+            }
+        }
+    }
+
+    private fun startPresentation() {
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    currentRound = 1,
+                    orbState = OrbState.THINKING,
+                    isAiThinking = true,
+                    aiText = "",
+                    hint = "Аудиторія чекає на вашу презентацію..."
+                )
+            }
+            generateAiResponse("")
+        }
+    }
+
+    private fun generateAiResponse(userSpeech: String) {
+        viewModelScope.launch {
+            _state.update {
+                it.copy(isAiThinking = true, orbState = OrbState.THINKING)
+            }
+
+            try {
+                val round = _state.value.currentRound
+                val history = _state.value.rounds.map { it.userSpeech to it.aiResponse }
+
+                val result = geminiApiClient.generatePresentationResponse(
+                    userSpeech = userSpeech,
+                    roundNumber = round,
+                    totalRounds = _state.value.maxRounds,
+                    conversationHistory = history
+                )
+
+                result.onSuccess { aiResponse ->
+                    val newRounds = if (userSpeech.isNotBlank()) {
+                        _state.value.rounds + PresentationRound(
+                            roundNumber = _state.value.currentRound,
+                            userSpeech = userSpeech,
+                            aiResponse = aiResponse
+                        )
+                    } else _state.value.rounds
+
+                    val isComplete = _state.value.currentRound > _state.value.maxRounds
+
+                    _state.update {
+                        it.copy(
+                            aiText = aiResponse,
+                            isAiThinking = false,
+                            orbState = OrbState.SPEAKING,
+                            rounds = newRounds,
+                            hint = when {
+                                isComplete -> null
+                                round == 1 && userSpeech.isBlank() -> "Розкажіть про проблему та актуальність"
+                                round == 2 -> "Представте ваше рішення"
+                                round == 3 -> "Розкажіть про реалізацію"
+                                else -> "Підсумуйте та закрийте презентацію"
+                            }
+                        )
+                    }
+
+                    ttsManager.speak(aiResponse)
+                }.onFailure { error ->
+                    _state.update {
+                        it.copy(
+                            error = "Помилка AI: ${error.message}",
+                            isAiThinking = false,
+                            orbState = OrbState.IDLE
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        error = "Помилка: ${e.message}",
+                        isAiThinking = false,
+                        orbState = OrbState.IDLE
+                    )
+                }
+            }
+        }
+    }
+
+    private fun startVoiceInput() {
+        ttsManager.stop()
+
+        try {
+            val recordingsDir = File(context.filesDir, "improv_recordings")
+            recordingsDir.mkdirs()
+            val outputFile = File(recordingsDir, "${UUID.randomUUID()}.m4a")
+            currentRecordingPath = outputFile.absolutePath
+
+            mediaRecorder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                MediaRecorder(context)
+            } else {
+                @Suppress("DEPRECATION")
+                MediaRecorder()
+            }.apply {
+                setAudioSource(MediaRecorder.AudioSource.MIC)
+                setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+                setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+                setAudioEncodingBitRate(128000)
+                setAudioSamplingRate(44100)
+                setOutputFile(outputFile.absolutePath)
+                prepare()
+                start()
+            }
+
+            _state.update {
+                it.copy(
+                    orbState = OrbState.LISTENING,
+                    isRecording = true,
+                    isListening = true,
+                    recordingSeconds = 0
+                )
+            }
+
+            startRecordingTimer()
+        } catch (e: Exception) {
+            _state.update { it.copy(error = "Помилка мікрофону: ${e.message}") }
+            releaseRecorder()
+        }
+    }
+
+    private fun stopVoiceInput() {
+        recordingTimerJob?.cancel()
+        val filePath = currentRecordingPath
+
+        try {
+            mediaRecorder?.apply {
+                stop()
+                release()
+            }
+        } catch (_: Exception) {}
+        mediaRecorder = null
+
+        _state.update {
+            it.copy(
+                isListening = false,
+                isRecording = false,
+                audioLevel = 0f,
+                orbState = OrbState.THINKING
+            )
+        }
+
+        if (filePath != null && File(filePath).exists()) {
+            transcribeAndProcess(filePath)
+        } else {
+            _state.update { it.copy(orbState = OrbState.IDLE) }
+        }
+    }
+
+    private fun transcribeAndProcess(filePath: String) {
+        viewModelScope.launch {
+            _state.update { it.copy(isAiThinking = true, hint = "Розпізнаю мовлення...") }
+
+            geminiApiClient.transcribeAudio(filePath).onSuccess { text ->
+                try { File(filePath).delete() } catch (_: Exception) {}
+
+                if (text.isNotBlank()) {
+                    handleUserSpeech(text)
+                } else {
+                    _state.update {
+                        it.copy(
+                            isAiThinking = false,
+                            orbState = OrbState.IDLE,
+                            hint = "Не вдалося розпізнати мовлення. Спробуйте ще раз."
+                        )
+                    }
+                }
+            }.onFailure { error ->
+                try { File(filePath).delete() } catch (_: Exception) {}
+                _state.update {
+                    it.copy(
+                        isAiThinking = false,
+                        orbState = OrbState.IDLE,
+                        error = "Помилка розпізнавання: ${error.message}"
+                    )
+                }
+            }
+        }
+    }
+
+    private fun releaseRecorder() {
+        try {
+            mediaRecorder?.apply {
+                stop()
+                release()
+            }
+        } catch (_: Exception) {}
+        mediaRecorder = null
+        currentRecordingPath?.let {
+            try { File(it).delete() } catch (_: Exception) {}
+        }
+        currentRecordingPath = null
+    }
+
+    private fun startRecordingTimer() {
+        recordingTimerJob?.cancel()
+        recordingTimerJob = viewModelScope.launch {
+            var elapsed = 0
+            while (elapsed < _state.value.maxRecordingSeconds) {
+                delay(1000)
+                elapsed++
+                _state.update { it.copy(recordingSeconds = elapsed) }
+            }
+            stopVoiceInput()
+        }
+    }
+
+    private fun handleUserSpeech(text: String) {
+        val nextRound = _state.value.currentRound + 1
+        _state.update { it.copy(currentRound = nextRound) }
+        generateAiResponse(text)
+    }
+
+    private fun analyzeExercise() {
+        viewModelScope.launch {
+            _state.update { it.copy(isAnalyzing = true, error = null) }
+
+            val currentState = _state.value
+            val rounds = currentState.rounds.map { it.userSpeech to it.aiResponse }
+            val context = "Презентацiя перед аудиторiєю"
+
+            geminiApiClient.analyzeImprovisationExercise(
+                exerciseType = "Презентацiя",
+                rounds = rounds,
+                exerciseContext = context
+            ).onSuccess { result ->
+                try {
+                    skillUpdateService.updateFromAnalysis(result, "presentation")
+                } catch (_: Exception) {}
+                _state.update { it.copy(isAnalyzing = false, analysisResult = result) }
+            }.onFailure { error ->
+                _state.update {
+                    it.copy(
+                        isAnalyzing = false,
+                        error = "Помилка аналiзу: ${error.message}"
+                    )
+                }
+            }
+        }
+    }
+
+    private fun finishPresentation() {
+        viewModelScope.launch {
+            try {
+                userPreferencesDataStore.incrementFreeImprovisations()
+            } catch (_: Exception) {}
+        }
     }
 }

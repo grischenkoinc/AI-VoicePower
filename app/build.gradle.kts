@@ -34,6 +34,9 @@ android {
 
         // Gemini API Key from local.properties
         buildConfigField("String", "GEMINI_API_KEY", "\"${localProperties.getProperty("GEMINI_API_KEY") ?: ""}\"")
+
+        // Google Cloud TTS API Key from local.properties
+        buildConfigField("String", "GOOGLE_CLOUD_TTS_API_KEY", "\"${localProperties.getProperty("GOOGLE_CLOUD_TTS_API_KEY") ?: ""}\"")
     }
 
     buildTypes {

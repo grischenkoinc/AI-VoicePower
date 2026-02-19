@@ -53,11 +53,13 @@ class GeminiApiClient @Inject constructor(
         userPosition: String,
         userArgument: String,
         roundNumber: Int,
+        totalRounds: Int = 5,
         conversationHistory: List<Pair<String, String>> = emptyList()
     ): Result<String> {
         return try {
+            val isFinal = roundNumber > totalRounds
             val systemPrompt = AiPrompts.buildDebateSystemPrompt(topic, userPosition, roundNumber)
-            val userPrompt = AiPrompts.buildDebateUserPrompt(userArgument, conversationHistory)
+            val userPrompt = AiPrompts.buildDebateUserPrompt(userArgument, conversationHistory, isFinal = isFinal)
 
             val response = generativeModel.generateContent(
                 content {
@@ -115,6 +117,101 @@ class GeminiApiClient @Inject constructor(
 
             val evaluation = response.text ?: "Гарна спроба!"
             Result.success(evaluation)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Генерує відповідь AI HR-менеджера для симуляції співбесіди
+     */
+    suspend fun generateInterviewResponse(
+        userAnswer: String,
+        roundNumber: Int,
+        totalRounds: Int,
+        conversationHistory: List<Pair<String, String>> = emptyList(),
+        profession: String = "",
+        hrName: String = "",
+        companyName: String = "",
+        userName: String? = null
+    ): Result<String> {
+        return try {
+            val isFinal = roundNumber > totalRounds
+            val systemPrompt = AiPrompts.buildInterviewSystemPrompt(
+                roundNumber = roundNumber,
+                totalRounds = totalRounds,
+                profession = profession,
+                hrName = hrName,
+                companyName = companyName,
+                userName = userName
+            )
+            val userPrompt = AiPrompts.buildInterviewUserPrompt(userAnswer, conversationHistory, isFinal = isFinal)
+
+            val response = generativeModel.generateContent(
+                content {
+                    text(systemPrompt)
+                    text(userPrompt)
+                }
+            )
+
+            val aiResponse = response.text ?: "Цікаво. Давайте продовжимо."
+            Result.success(aiResponse)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Генерує відповідь AI-аудиторії для симуляції презентації
+     */
+    suspend fun generatePresentationResponse(
+        userSpeech: String,
+        roundNumber: Int,
+        totalRounds: Int,
+        conversationHistory: List<Pair<String, String>> = emptyList()
+    ): Result<String> {
+        return try {
+            val isFinal = roundNumber > totalRounds
+            val systemPrompt = AiPrompts.buildPresentationSystemPrompt(roundNumber, totalRounds)
+            val userPrompt = AiPrompts.buildPresentationUserPrompt(userSpeech, conversationHistory, isFinal = isFinal)
+
+            val response = generativeModel.generateContent(
+                content {
+                    text(systemPrompt)
+                    text(userPrompt)
+                }
+            )
+
+            val aiResponse = response.text ?: "Цікаво, розкажіть детальніше."
+            Result.success(aiResponse)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Генерує відповідь AI-партнера для симуляції переговорів
+     */
+    suspend fun generateNegotiationResponse(
+        userProposal: String,
+        roundNumber: Int,
+        totalRounds: Int,
+        conversationHistory: List<Pair<String, String>> = emptyList()
+    ): Result<String> {
+        return try {
+            val isFinal = roundNumber > totalRounds
+            val systemPrompt = AiPrompts.buildNegotiationSystemPrompt(roundNumber, totalRounds)
+            val userPrompt = AiPrompts.buildNegotiationUserPrompt(userProposal, conversationHistory, isFinal = isFinal)
+
+            val response = generativeModel.generateContent(
+                content {
+                    text(systemPrompt)
+                    text(userPrompt)
+                }
+            )
+
+            val aiResponse = response.text ?: "Цікава пропозиція. Давайте обговоримо."
+            Result.success(aiResponse)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -326,6 +423,35 @@ class GeminiApiClient @Inject constructor(
         return Result.failure(lastException ?: Exception("Unknown error after $maxAttempts attempts"))
     }
 
+    /**
+     * Транскрибує аудіо файл у текст через Gemini
+     */
+    suspend fun transcribeAudio(audioFilePath: String): Result<String> {
+        return try {
+            val audioFile = File(audioFilePath)
+            if (!audioFile.exists()) {
+                return Result.failure(Exception("Аудіо файл не знайдено"))
+            }
+            val mimeType = getMimeType(audioFilePath)
+            val audioBytes = audioFile.readBytes()
+            if (audioBytes.size < 1000) {
+                return Result.failure(Exception("Запис занадто короткий"))
+            }
+
+            val response = generativeModel.generateContent(
+                content {
+                    text("Транскрибуй це аудіо українською мовою. Поверни ТІЛЬКИ текст того що сказано, без пояснень, без лапок, без додаткових коментарів. Якщо нічого не сказано — поверни порожній рядок.")
+                    blob(mimeType, audioBytes)
+                }
+            )
+
+            val text = response.text?.trim().orEmpty()
+            Result.success(text)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     private fun getMimeType(filePath: String): String {
         return when {
             filePath.endsWith(".m4a", ignoreCase = true) -> "audio/mp4"
@@ -361,6 +487,29 @@ class GeminiApiClient @Inject constructor(
         } catch (e: Exception) {
             // Fallback if parsing fails
             VoiceAnalysisResult.default()
+        }
+    }
+
+    /**
+     * Аналізує імпровізаційну вправу на основі тексту (без аудіо).
+     * Повертає VoiceAnalysisResult з детальними метриками.
+     */
+    suspend fun analyzeImprovisationExercise(
+        exerciseType: String,
+        rounds: List<Pair<String, String>>,
+        exerciseContext: String = ""
+    ): Result<VoiceAnalysisResult> {
+        return try {
+            val prompt = AiPrompts.buildImprovisationAnalysisPrompt(exerciseType, rounds, exerciseContext)
+            val response = generativeModel.generateContent(
+                content { text(prompt) }
+            )
+            val responseText = response.text ?: return Result.failure(Exception("Пуста відповідь від AI"))
+            val analysisResult = parseVoiceAnalysisResponse(responseText)
+            Result.success(analysisResult)
+        } catch (e: Exception) {
+            Log.e("Gemini", "analyzeImprovisationExercise FAILED: ${e.message}")
+            Result.failure(e)
         }
     }
 

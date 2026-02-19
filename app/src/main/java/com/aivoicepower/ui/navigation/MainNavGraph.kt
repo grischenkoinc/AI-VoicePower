@@ -1,5 +1,8 @@
 package com.aivoicepower.ui.navigation
 
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -7,6 +10,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -35,8 +40,6 @@ import com.aivoicepower.ui.screens.warmup.*
 
 /**
  * Navigation graph for Main screen (inside bottom navigation)
- *
- * TODO: Add Courses, Progress screens when repositories are ready
  */
 @Composable
 fun MainNavGraph(
@@ -51,10 +54,16 @@ fun MainNavGraph(
     NavHost(
         navController = navController,
         startDestination = Screen.Home.route,
-        modifier = modifier
+        modifier = modifier,
+        // Default: horizontal slide + fade for detail screens
+        enterTransition = { NavTransitions.enterForward },
+        exitTransition = { NavTransitions.exitForward },
+        popEnterTransition = { NavTransitions.enterBack },
+        popExitTransition = { NavTransitions.exitBack }
     ) {
-        // ===== HOME =====
-        composable(route = Screen.Home.route) {
+        // ===== TAB SCREENS (crossfade between tabs, slide to details) =====
+
+        tabComposable(route = Screen.Home.route) {
             HomeScreen(
                 onNavigateToCourse = { courseId ->
                     navController.navigate(Screen.CourseDetail.createRoute(courseId))
@@ -94,8 +103,7 @@ fun MainNavGraph(
             )
         }
 
-        // ===== COURSES =====
-        composable(route = Screen.Courses.route) {
+        tabComposable(route = Screen.Courses.route) {
             CoursesScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToCourse = { courseId ->
@@ -103,6 +111,73 @@ fun MainNavGraph(
                 }
             )
         }
+
+        tabComposable(route = Screen.Warmup.route) {
+            WarmupScreen(
+                onNavigateToArticulation = {
+                    navController.navigate(Screen.WarmupArticulation.route)
+                },
+                onNavigateToBreathing = {
+                    navController.navigate(Screen.WarmupBreathing.route)
+                },
+                onNavigateToVoice = {
+                    navController.navigate(Screen.WarmupVoice.route)
+                },
+                onNavigateToQuick = {
+                    navController.navigate(Screen.WarmupQuick.route)
+                }
+            )
+        }
+
+        tabComposable(route = Screen.Improvisation.route) {
+            ImprovisationScreen(
+                rewardedAdManager = rewardedAdManager,
+                onNavigateToRandomTopic = {
+                    navController.navigate(Screen.RandomTopic.route)
+                },
+                onNavigateToStorytelling = {
+                    navController.navigate(Screen.Storytelling.route)
+                },
+                onNavigateToDebate = {
+                    navController.navigate(Screen.Debate.route)
+                },
+                onNavigateToSales = {
+                    navController.navigate(Screen.SalesPitch.route)
+                },
+                onNavigateToChallenge = {
+                    navController.navigate(Screen.DailyChallenge.route)
+                },
+                onNavigateToJobInterview = {
+                    navController.navigate(Screen.JobInterview.route)
+                },
+                onNavigateToPresentation = {
+                    navController.navigate(Screen.Presentation.route)
+                },
+                onNavigateToNegotiation = {
+                    navController.navigate(Screen.Negotiation.route)
+                },
+                onNavigateToPremium = onNavigateToPremium
+            )
+        }
+
+        tabComposable(route = Screen.Progress.route) {
+            ProgressScreen(
+                onNavigateToCompare = {
+                    navController.navigate(Screen.Compare.route)
+                },
+                onNavigateToAchievements = {
+                    navController.navigate(Screen.Achievements.route)
+                },
+                onNavigateToHistory = {
+                    navController.navigate(Screen.RecordingHistory.route)
+                },
+                onNavigateToSkillDetail = { skillType ->
+                    navController.navigate(Screen.SkillDetail.createRoute(skillType.name))
+                }
+            )
+        }
+
+        // ===== COURSE DETAIL SCREENS (standard slide transitions from NavHost defaults) =====
 
         composable(
             route = Screen.CourseDetail.route,
@@ -163,23 +238,7 @@ fun MainNavGraph(
             )
         }
 
-        // ===== WARMUP =====
-        composable(route = Screen.Warmup.route) {
-            WarmupScreen(
-                onNavigateToArticulation = {
-                    navController.navigate(Screen.WarmupArticulation.route)
-                },
-                onNavigateToBreathing = {
-                    navController.navigate(Screen.WarmupBreathing.route)
-                },
-                onNavigateToVoice = {
-                    navController.navigate(Screen.WarmupVoice.route)
-                },
-                onNavigateToQuick = {
-                    navController.navigate(Screen.WarmupQuick.route)
-                }
-            )
-        }
+        // ===== WARMUP DETAIL SCREENS =====
 
         composable(route = Screen.WarmupArticulation.route) {
             ArticulationScreen(
@@ -221,37 +280,7 @@ fun MainNavGraph(
             )
         }
 
-        // ===== IMPROVISATION =====
-        composable(route = Screen.Improvisation.route) {
-            ImprovisationScreen(
-                rewardedAdManager = rewardedAdManager,
-                onNavigateToRandomTopic = {
-                    navController.navigate(Screen.RandomTopic.route)
-                },
-                onNavigateToStorytelling = {
-                    navController.navigate(Screen.Storytelling.route)
-                },
-                onNavigateToDebate = {
-                    navController.navigate(Screen.Debate.route)
-                },
-                onNavigateToSales = {
-                    navController.navigate(Screen.SalesPitch.route)
-                },
-                onNavigateToChallenge = {
-                    navController.navigate(Screen.DailyChallenge.route)
-                },
-                onNavigateToJobInterview = {
-                    navController.navigate(Screen.JobInterview.route)
-                },
-                onNavigateToPresentation = {
-                    navController.navigate(Screen.Presentation.route)
-                },
-                onNavigateToNegotiation = {
-                    navController.navigate(Screen.Negotiation.route)
-                },
-                onNavigateToPremium = onNavigateToPremium
-            )
-        }
+        // ===== IMPROVISATION DETAIL SCREENS =====
 
         composable(route = Screen.RandomTopic.route) {
             RandomTopicScreen(
@@ -298,7 +327,6 @@ fun MainNavGraph(
             )
         }
 
-        // AI Coach simulations (moved from Phase 6 to Improvisation)
         composable(route = Screen.JobInterview.route) {
             JobInterviewScreen(
                 onNavigateBack = { navController.popBackStack() },
@@ -326,23 +354,7 @@ fun MainNavGraph(
             )
         }
 
-        // ===== PROGRESS =====
-        composable(route = Screen.Progress.route) {
-            ProgressScreen(
-                onNavigateToCompare = {
-                    navController.navigate(Screen.Compare.route)
-                },
-                onNavigateToAchievements = {
-                    navController.navigate(Screen.Achievements.route)
-                },
-                onNavigateToHistory = {
-                    navController.navigate(Screen.RecordingHistory.route)
-                },
-                onNavigateToSkillDetail = { skillType ->
-                    navController.navigate(Screen.SkillDetail.createRoute(skillType.name))
-                }
-            )
-        }
+        // ===== PROGRESS DETAIL SCREENS =====
 
         composable(route = Screen.Compare.route) {
             CompareScreen(
@@ -375,7 +387,8 @@ fun MainNavGraph(
             )
         }
 
-        // ===== SETTINGS =====
+        // ===== SETTINGS (standard slide from defaults) =====
+
         composable(route = Screen.Settings.route) {
             SettingsScreen(
                 onNavigateBack = { navController.popBackStack() },
@@ -387,21 +400,63 @@ fun MainNavGraph(
             )
         }
 
-        // ===== ABOUT =====
         composable(route = Screen.About.route) {
             AboutScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }
 
-        // ===== PREMIUM/PAYWALL =====
-        composable(route = Screen.Premium.route) {
+        // ===== PREMIUM (modal slide-up) =====
+
+        composable(
+            route = Screen.Premium.route,
+            enterTransition = { NavTransitions.modalEnter },
+            exitTransition = { NavTransitions.modalExit },
+            popEnterTransition = { NavTransitions.modalEnter },
+            popExitTransition = { NavTransitions.modalExit }
+        ) {
             PaywallScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onPurchaseSuccess = { navController.popBackStack() }
             )
         }
     }
+}
+
+/**
+ * Helper for tab composables with smart transitions:
+ * - Tab ↔ Tab: crossfade (200ms)
+ * - Tab → Detail: slide out left + fade
+ * - Detail → Tab (pop): slide in from left + fade
+ */
+private fun NavGraphBuilder.tabComposable(
+    route: String,
+    content: @Composable AnimatedContentScope.(NavBackStackEntry) -> Unit
+) {
+    composable(
+        route = route,
+        enterTransition = {
+            if (initialState.destination.route in NavTransitions.tabRoutes) {
+                NavTransitions.crossfadeIn
+            } else {
+                NavTransitions.enterBack
+            }
+        },
+        exitTransition = {
+            if (targetState.destination.route in NavTransitions.tabRoutes) {
+                NavTransitions.crossfadeOut
+            } else {
+                NavTransitions.exitForward
+            }
+        },
+        popEnterTransition = {
+            NavTransitions.enterBack
+        },
+        popExitTransition = {
+            NavTransitions.exitBack
+        },
+        content = content
+    )
 }
 
 @Composable

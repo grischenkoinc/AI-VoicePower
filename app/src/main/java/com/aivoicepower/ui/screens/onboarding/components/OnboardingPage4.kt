@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aivoicepower.ui.theme.*
 import com.aivoicepower.ui.theme.components.GradientBackground
+import com.aivoicepower.ui.theme.modifiers.pulseAnimation
 
 @Composable
 fun OnboardingPage4(
@@ -132,6 +133,7 @@ fun OnboardingPage4(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
+                        .pulseAnimation(scaleFrom = 1f, scaleTo = 1.03f, duration = 2000)
                         .shadow(12.dp, RoundedCornerShape(16.dp), spotColor = Color(0xFF667EEA).copy(alpha = 0.4f))
                         .background(
                             Brush.linearGradient(

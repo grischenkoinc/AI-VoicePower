@@ -30,6 +30,7 @@ import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.ui.screens.improvisation.components.ImprovisationModeCard
 import com.aivoicepower.ui.theme.*
 import com.aivoicepower.ui.theme.components.GradientBackground
+import com.aivoicepower.ui.theme.modifiers.staggeredEntry
 import kotlinx.coroutines.launch
 
 @Composable
@@ -158,7 +159,10 @@ private fun ImprovisationContent(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Header
-        ImprovisationHeader(onNavigateBack = onNavigateBack)
+        ImprovisationHeader(
+            onNavigateBack = onNavigateBack,
+            modifier = Modifier.staggeredEntry(index = 0)
+        )
 
         // Subtitle
         Text(
@@ -166,7 +170,8 @@ private fun ImprovisationContent(
             style = AppTypography.bodyLarge,
             color = TextColors.onDarkSecondary,
             fontSize = 15.sp,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.staggeredEntry(index = 1)
         )
 
         // Mode cards
@@ -183,7 +188,8 @@ private fun ImprovisationContent(
                 } else {
                     onShowProSheet { onNavigateToRandomTopic() }
                 }
-            }
+            },
+            modifier = Modifier.staggeredEntry(index = 2)
         )
 
         ImprovisationModeCard(
@@ -199,7 +205,8 @@ private fun ImprovisationContent(
                 } else {
                     onShowProSheet { onNavigateToStorytelling() }
                 }
-            }
+            },
+            modifier = Modifier.staggeredEntry(index = 3)
         )
 
         ImprovisationModeCard(
@@ -215,7 +222,8 @@ private fun ImprovisationContent(
                 } else {
                     onShowProSheet { onNavigateToChallenge() }
                 }
-            }
+            },
+            modifier = Modifier.staggeredEntry(index = 4)
         )
 
         ImprovisationModeCard(
@@ -231,7 +239,8 @@ private fun ImprovisationContent(
                 } else {
                     onShowProSheet { onNavigateToDebate() }
                 }
-            }
+            },
+            modifier = Modifier.staggeredEntry(index = 5)
         )
 
         ImprovisationModeCard(
@@ -247,7 +256,8 @@ private fun ImprovisationContent(
                 } else {
                     onShowProSheet { onNavigateToSales() }
                 }
-            }
+            },
+            modifier = Modifier.staggeredEntry(index = 6)
         )
 
         ImprovisationModeCard(
@@ -263,7 +273,8 @@ private fun ImprovisationContent(
                 } else {
                     onShowProSheet { onNavigateToJobInterview() }
                 }
-            }
+            },
+            modifier = Modifier.staggeredEntry(index = 7)
         )
 
         ImprovisationModeCard(
@@ -279,12 +290,13 @@ private fun ImprovisationContent(
                 } else {
                     onShowProSheet { onNavigateToPresentation() }
                 }
-            }
+            },
+            modifier = Modifier.staggeredEntry(index = 8)
         )
 
         ImprovisationModeCard(
             emoji = "\uD83E\uDD1D",
-            title = "Переговори",
+            title = "Перемовини",
             description = "Практикуй аргументацію та компроміси",
             isLocked = !state.isPremium,
             isComingSoon = false,
@@ -295,7 +307,8 @@ private fun ImprovisationContent(
                 } else {
                     onShowProSheet { onNavigateToNegotiation() }
                 }
-            }
+            },
+            modifier = Modifier.staggeredEntry(index = 9)
         )
 
         // Premium prompt (if needed)

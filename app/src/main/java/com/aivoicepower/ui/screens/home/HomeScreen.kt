@@ -37,6 +37,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aivoicepower.domain.model.home.CurrentCourse
 import com.aivoicepower.domain.model.home.QuickAction
+import com.aivoicepower.ui.components.HomeSkeletonContent
 import com.aivoicepower.ui.theme.*
 import com.aivoicepower.ui.theme.components.*
 import com.aivoicepower.ui.theme.modifiers.*
@@ -88,6 +89,9 @@ fun HomeScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         GradientBackground(content = {})
 
+        if (state.isLoading) {
+            HomeSkeletonContent()
+        } else {
         // Scrollable Content
         Column(
             modifier = Modifier
@@ -101,18 +105,23 @@ fun HomeScreen(
                     userName = state.userName,
                     greeting = state.greeting,
                     onSettings = onNavigateToSettings,
-                    onMenu = onOpenDrawer
+                    onMenu = onOpenDrawer,
+                    modifier = Modifier.staggeredEntry(index = 0)
                 )
 
                 // Streak Card
                 StreakCard(
                     currentStreak = state.currentStreak,
-                    weekProgress = state.weekProgress
+                    weekProgress = state.weekProgress,
+                    modifier = Modifier.staggeredEntry(index = 1)
                 )
 
                 // Motivation Card
                 state.dailyTip?.let { tip ->
-                    MotivationCard(tip = tip)
+                    MotivationCard(
+                        tip = tip,
+                        modifier = Modifier.staggeredEntry(index = 2)
+                    )
                 }
 
                 // Daily Limits Card (for free users)
@@ -121,7 +130,8 @@ fun HomeScreen(
                         remainingAnalyses = state.remainingAnalyses,
                         maxAnalyses = state.maxFreeAnalyses,
                         remainingImprovAnalyses = state.remainingImprovAnalyses,
-                        maxImprovAnalyses = state.maxFreeImprovAnalyses
+                        maxImprovAnalyses = state.maxFreeImprovAnalyses,
+                        modifier = Modifier.staggeredEntry(index = 3)
                     )
                 }
 
@@ -130,12 +140,16 @@ fun HomeScreen(
                     DailyGoalCard(
                         plan = plan,
                         coachMessage = state.coachMessage,
-                        onCoachClick = onNavigateToAICoach
+                        onCoachClick = onNavigateToAICoach,
+                        modifier = Modifier.staggeredEntry(index = 4)
                     )
                 }
 
                 // Skills Section
-                SkillsSection(skills = state.skills)
+                SkillsSection(
+                    skills = state.skills,
+                    modifier = Modifier.staggeredEntry(index = 5)
+                )
 
                 // Continue Course
                 state.currentCourse?.let { course ->
@@ -146,7 +160,8 @@ fun HomeScreen(
                                 course.courseId,
                                 course.nextLessonId
                             )
-                        }
+                        },
+                        modifier = Modifier.staggeredEntry(index = 6)
                     )
                 }
 
@@ -161,11 +176,13 @@ fun HomeScreen(
                             "recording_history" -> onNavigateToRecordingHistory()
                             else -> {}
                         }
-                    }
+                    },
+                    modifier = Modifier.staggeredEntry(index = 7)
                 )
 
             Spacer(modifier = Modifier.height(24.dp))
         }
+        } // end else (!isLoading)
 
         // Snackbar
         SnackbarHost(

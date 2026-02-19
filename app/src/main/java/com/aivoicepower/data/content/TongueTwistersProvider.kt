@@ -209,7 +209,7 @@ object TongueTwistersProvider {
         return listOf(
             TongueTwister(
                 id = "tt_lingual_001",
-                text = "Тато тесав тесом тес — тато втомився і тес кинув.",
+                text = "Та́то теса́в те́сом тес — та́то втоми́вся і тес ки́нув.",
                 difficulty = 2,
                 targetSounds = listOf("Т"),
                 category = "Т-Д-Н",
@@ -217,7 +217,7 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_lingual_002",
-                text = "Дід Данило дав дітям два дуби.",
+                text = "Дід Дани́ло дав ді́тям два дуби́.",
                 difficulty = 1,
                 targetSounds = listOf("Д"),
                 category = "Т-Д-Н",
@@ -225,7 +225,7 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_lingual_003",
-                text = "Наш Наум нам наварив нуду — ні нам нудно, ні Наум нудний.",
+                text = "Наш Нау́м нам наві́в нуду́ — ні нам ну́дно, ні Нау́м ну́дний.",
                 difficulty = 3,
                 targetSounds = listOf("Н"),
                 category = "Т-Д-Н",
@@ -247,14 +247,14 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_lingual_006",
-                text = "Тетяна тата та Настуня тітку тут і там тягали.",
+                text = "Тетя́на та́тові, а Насту́ня ті́тці ті́стечка тут і там тяга́ли.",
                 difficulty = 3,
                 targetSounds = listOf("Т", "Н"),
                 category = "Т-Д-Н"
             ),
             TongueTwister(
                 id = "tt_lingual_007",
-                text = "Дніпром дуднить, дуднить Дніпро.",
+                text = "Дід Дани́ло до́вго дуді́в у ду́ду.",
                 difficulty = 2,
                 targetSounds = listOf("Д", "Н"),
                 category = "Т-Д-Н"
@@ -289,7 +289,7 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_lingual_012",
-                text = "Ніна ніжно наніжнила Настю, а Настя нині ніжна.",
+                text = "Ні́на ни́ні на́шій не́ньці наліпи́ла нале́сників.",
                 difficulty = 3,
                 targetSounds = listOf("Н"),
                 category = "Т-Д-Н"
@@ -310,7 +310,7 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_lingual_015",
-                text = "Наталка надіяла намисто, а Надійка нову хустку.",
+                text = "Наталка наділа намисто, а Надійка нову хустку.",
                 difficulty = 2,
                 targetSounds = listOf("Н"),
                 category = "Т-Д-Н"
@@ -331,7 +331,7 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_lingual_018",
-                text = "Данні Данку дано надвір, а надвір Данкові дано далеко.",
+                text = "Да́нко дав ді́ду два дина́ри, а дід Да́нкові — до́брий дари́нок.",                
                 difficulty = 3,
                 targetSounds = listOf("Д", "Н"),
                 category = "Т-Д-Н"
@@ -359,7 +359,7 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_r_003",
-                text = "Три́дцять три кораблі́ лаві́рували, лаві́рували, та не вилаві́рували.",
+                text = "Три́дцять три кораблі́ лаві́рували, лаві́рували, та не ви́лавірували.",
                 difficulty = 3,
                 targetSounds = listOf("Р", "Л", "В"),
                 category = "Р",
@@ -483,7 +483,7 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_r_020",
-                text = "Риє кріт но́ру, риє кріт трав'я́ні доро́жки.",
+                text = "Риє кріт но́ру, риє кріт трав'я́ні дорі́жки.",
                 difficulty = 3,
                 targetSounds = listOf("Р", "К", "Т"),
                 category = "Р"
@@ -517,7 +517,7 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_l_002",
-                text = "Літа́ли ле́леки бі́ля вели́кої ріки́.",
+                text = "Літа́ли леле́ки бі́ля вели́кої ріки́.",
                 difficulty = 1,
                 targetSounds = listOf("Л", "Р"),
                 category = "Л"
@@ -566,7 +566,7 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_l_009",
-                text = "Леті́ли ле́леки з лі́ликами, і бі́лі ле́беді пла́вали бі́ля бе́рега.",
+                text = "Леті́ли леле́ки над лева́дами, і бі́лі ле́беді пла́вали бі́ля лі́лій.",                
                 difficulty = 4,
                 targetSounds = listOf("Л", "Б"),
                 category = "Л"
@@ -580,7 +580,7 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_l_011",
-                text = "Оле́на коло́ла соло́му, соло́ма Оле́ну коло́ла.",
+                text = "Оле́на поло́ла поло́нину, поло́нина Оле́ні поло́ти не дала́.",
                 difficulty = 3,
                 targetSounds = listOf("Л", "О"),
                 category = "Л"
@@ -622,7 +622,7 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_l_017",
-                text = "Леті́в мете́лик ко́ло ву́лика, облі́тав мете́лик ву́лик обере́жно.",
+                text = "Леті́в мете́лик ко́ло ву́лика, обліта́в мете́лик ву́лик обере́жно.",
                 difficulty = 3,
                 targetSounds = listOf("Л", "В"),
                 category = "Л"
@@ -685,7 +685,7 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_w_003",
-                text = "Везли́ на возі́ сі́но, сі́но з'ї́ла коза́.",
+                text = "Везли́ на во́зі сі́но, сі́но з'ї́ла коза́.",
                 difficulty = 2,
                 targetSounds = listOf("С", "З"),
                 category = "С-З-Ц"
@@ -707,7 +707,7 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_w_006",
-                text = "Цу́цик сиді́в на ці́пку, а ці́пок на цу́цика цика́в.",
+                text = "Цу́цик ціка́вився ці́пком, а ці́пок цу́цику не ці́кавий.",
                 difficulty = 3,
                 targetSounds = listOf("Ц", "С"),
                 category = "С-З-Ц",
@@ -778,14 +778,14 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_w_016",
-                text = "Записува́в За́хар за́пис про За́хара в за́писнику.",
+                text = "Записува́в Заха́р за́пис про Заха́ра в записни́ку.",
                 difficulty = 3,
                 targetSounds = listOf("З", "П"),
                 category = "С-З-Ц"
             ),
             TongueTwister(
                 id = "tt_w_017",
-                text = "Со́нце сві́тить, со́нце ся́є, со́нце сосну́ освітля́є.",
+                text = "Со́нце сві́тить, со́нце ся́є, со́нце со́сну освітля́є.",
                 difficulty = 2,
                 targetSounds = listOf("С"),
                 category = "С-З-Ц"
@@ -842,7 +842,7 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_sh_004",
-                text = "Чоти́ри чо́рних чума́чки чобо́ти чи́стили щі́ткою.",
+                text = "Чоти́ри чо́рних чума́чки чо́боти чи́стили щі́ткою.",
                 difficulty = 4,
                 targetSounds = listOf("Ч", "Щ"),
                 category = "Ш-Ж-Ч-Щ",
@@ -886,7 +886,7 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_sh_010",
-                text = "Жайворо́нок жив у жи́ті, жужели́ця жабі́ щебета́ла.",
+                text = "Жайворо́нок жив у жи́ті, жужели́ця жа́бі щебета́ла.",
                 difficulty = 3,
                 targetSounds = listOf("Ж"),
                 category = "Ш-Ж-Ч-Щ"
@@ -914,7 +914,7 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_sh_014",
-                text = "Чіпля́ла ча́йка чепчи́к, чепчи́к чіпля́ла ча́йка.",
+                text = "Чо́тири черепа́хи чемно́ чо́вгали чере́з чага́рники.",
                 difficulty = 3,
                 targetSounds = listOf("Ч"),
                 category = "Ш-Ж-Ч-Щ"
@@ -993,7 +993,7 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_c_004",
-                text = "Попі́д пі́ччю пе́чуть пе́чиво, попі́д пі́ччю пе́че піша́к.",
+                text = "Попі́д пі́ччю печу́ть пе́чиво, попі́д пі́ччю пече́ піша́к.",
                 difficulty = 4,
                 targetSounds = listOf("П", "Ч"),
                 category = "Комбіновані",
@@ -1017,7 +1017,7 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_c_007",
-                text = "Шиє швець ша́пку шевцеві́, ше́вець шиє швецеві́ чобо́ти.",
+                text = "Ши́є шва́чка ша́пку шевце́ві, а шеве́ць ши́є шва́чці чо́боти.",
                 difficulty = 4,
                 targetSounds = listOf("Ш", "В", "Ц"),
                 category = "Комбіновані",
@@ -1025,14 +1025,14 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_c_008",
-                text = "Купи́ кіп кіп, купи́ ку́пу пу́ху.",
+                text = "Купи́в Пили́п ку́пу ка́пи, ку́пу ка́пи купи́в Пили́п.", 
                 difficulty = 3,
                 targetSounds = listOf("К", "П"),
                 category = "Комбіновані"
             ),
             TongueTwister(
                 id = "tt_c_009",
-                text = "Дід Дани́ло ді́лив ди́ню: до́льку Ді́ні, до́льку Да́ні.",
+                text = "Дід Дани́ло діли́в ди́ню: до́льку Ді́ні, до́льку Да́ні.",
                 difficulty = 3,
                 targetSounds = listOf("Д"),
                 category = "Комбіновані"
@@ -1046,7 +1046,7 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_c_011",
-                text = "Баране́ць барана́ баранце́м обари́в.",
+                text = "Бара́н бу́рий бі́г по бо́ру, бо́ром бі́г бара́н бу́рий.",
                 difficulty = 3,
                 targetSounds = listOf("Б", "Р"),
                 category = "Комбіновані"
@@ -1067,7 +1067,7 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_c_014",
-                text = "Проміня́ла Прокопе́нка Проко́пові при Проко́повому поро́зі.",
+                text = "Прокі́п Проко́пові пиріжки́ приніс, Проко́п Проко́пові пиріжки́ припра́вив.",
                 difficulty = 5,
                 targetSounds = listOf("П", "Р", "К"),
                 category = "Комбіновані"
@@ -1081,7 +1081,7 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_c_016",
-                text = "Во́зи вівса́ перепра́вляли га́тком, а віз вівса́ впав у поті́к.",
+                text = "Во́зи вівса́ переправля́ли га́ттю, а ві́з вівса́ впав у поті́к.",
                 difficulty = 3,
                 targetSounds = listOf("В", "П", "Т"),
                 category = "Комбіновані"
@@ -1102,14 +1102,14 @@ object TongueTwistersProvider {
             ),
             TongueTwister(
                 id = "tt_c_019",
-                text = "Пішо́в Прокі́п кро́пу купи́ть, прийшо́в Прокі́п — кро́пу скипі́в.",
+                text = "Пішо́в Прокі́п крі́пу купи́ть, прийшо́в Прокі́п — кріп скипі́в.",
                 difficulty = 4,
                 targetSounds = listOf("П", "К", "Р"),
                 category = "Комбіновані"
             ),
             TongueTwister(
                 id = "tt_c_020",
-                text = "Коро́ль Оре́л — оре́л, а оре́л — Коро́ль.",
+                text = "Орли́ця з орля́тами на ске́лі, а о́рел поле́тів у дале́кі просто́ри.",
                 difficulty = 3,
                 targetSounds = listOf("Р", "Л", "К"),
                 category = "Комбіновані"
