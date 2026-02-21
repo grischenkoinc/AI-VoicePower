@@ -18,8 +18,10 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import android.view.HapticFeedbackConstants
 import androidx.compose.ui.unit.sp
 import com.aivoicepower.domain.model.course.Lesson
 import com.aivoicepower.domain.model.user.Achievement
@@ -275,6 +277,7 @@ private fun NextLessonButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
@@ -289,7 +292,7 @@ private fun NextLessonButton(
             .clickable(
                 interactionSource = interactionSource,
                 indication = null
-            ) { onClick() }
+            ) { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onClick() }
             .padding(horizontal = 24.dp, vertical = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp)

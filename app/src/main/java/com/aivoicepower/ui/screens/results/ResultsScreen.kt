@@ -11,9 +11,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import android.view.HapticFeedbackConstants
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -30,6 +32,7 @@ fun ResultsScreen(
     onNavigateBack: () -> Unit,
     onNextExercise: (String) -> Unit
 ) {
+    val view = LocalView.current
     // Mock data for now - in production, fetch from ViewModel
     val mockMetrics = VoiceMetrics(
         clarity = 85f,
@@ -56,7 +59,7 @@ fun ResultsScreen(
             TopAppBar(
                 title = { Text("Результати аналізу") },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+                    IconButton(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateBack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
                     }
                 },
@@ -103,7 +106,7 @@ fun ResultsScreen(
             item {
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(
-                    onClick = onNavigateBack,
+                    onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateBack() },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Завершити урок")

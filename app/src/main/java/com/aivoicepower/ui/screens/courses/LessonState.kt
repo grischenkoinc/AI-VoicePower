@@ -17,6 +17,7 @@ data class LessonState(
     val isPlaying: Boolean = false,
     val isLastLessonInCourse: Boolean = false,
     val courseName: String = "",
+    val courseIconEmoji: String = "\uD83D\uDCDA",
     val courseCompletionBadge: Achievement? = null,
     // Analysis limits
     val showAnalysisLimitSheet: Boolean = false,

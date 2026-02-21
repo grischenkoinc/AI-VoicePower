@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import android.view.HapticFeedbackConstants
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -36,11 +38,12 @@ fun CourseCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     Card(
         modifier = modifier
             .fillMaxWidth()
             .shadowPreset(ShadowPreset.CARD, RoundedCornerShape(CornerRadius.lg))
-            .clickable(enabled = !isLocked, onClick = onClick),
+            .clickable(enabled = !isLocked, onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onClick() }),
         shape = RoundedCornerShape(CornerRadius.lg),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
@@ -176,6 +179,7 @@ fun LessonCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -184,7 +188,7 @@ fun LessonCard(
                 if (isCompleted) ShadowPreset.CARD_ELEVATED else ShadowPreset.CARD,
                 RoundedCornerShape(CornerRadius.lg)
             )
-            .clickable(enabled = !isLocked, onClick = onClick),
+            .clickable(enabled = !isLocked, onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onClick() }),
         shape = RoundedCornerShape(CornerRadius.lg),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {

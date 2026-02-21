@@ -1,19 +1,33 @@
 package com.aivoicepower.ui.screens.onboarding
 
+import android.media.MediaPlayer
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.aivoicepower.R
 import com.aivoicepower.ui.theme.*
-import com.aivoicepower.ui.theme.components.GradientBackground
 import kotlinx.coroutines.delay
 
 @Composable
@@ -23,22 +37,117 @@ fun SplashScreen(
     onNavigateToHome: () -> Unit
 ) {
     val hasCompletedOnboarding by viewModel.hasCompletedOnboarding.collectAsState(initial = null)
+    val context = LocalContext.current
 
-    // Pulse animation for logo
-    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-    val scale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "scale"
+    // Sequenced phase triggers — start quickly since gradient bg is already visible
+    var showEmoji by remember { mutableStateOf(false) }
+    var showTitle by remember { mutableStateOf(false) }
+    var showDivider by remember { mutableStateOf(false) }
+    var showSubtitle by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        delay(100)
+        showEmoji = true
+        // Use MediaPlayer for splash brand (SoundPool may not be loaded at app start)
+        try {
+            MediaPlayer.create(context, R.raw.sound_splash_brand)?.apply {
+                setVolume(0.7f, 0.7f)
+                // 20% faster playback
+                playbackParams = playbackParams.setSpeed(1.2f)
+                setOnCompletionListener { release() }
+                start()
+            }
+        } catch (_: Exception) {}
+        delay(800)
+        showTitle = true
+        delay(400)
+        showSubtitle = true
+        delay(350)
+        showDivider = true
+    }
+
+    // === MICROPHONE: smooth scale with gentle overshoot ===
+    val emojiScale by animateFloatAsState(
+        targetValue = if (showEmoji) 1f else 0f,
+        animationSpec = spring(dampingRatio = 0.5f, stiffness = 100f),
+        label = "emojiScale"
     )
 
-    LaunchedEffect(hasCompletedOnboarding) {
-        delay(1500)
+    // === TITLE ===
+    val titleAlpha by animateFloatAsState(
+        targetValue = if (showTitle) 1f else 0f,
+        animationSpec = tween(900, easing = EaseOut),
+        label = "titleAlpha"
+    )
+    val titleScale by animateFloatAsState(
+        targetValue = if (showTitle) 1f else 1.08f,
+        animationSpec = tween(1000, easing = EaseOut),
+        label = "titleScale"
+    )
 
+    // === DIVIDER ===
+    val dividerProgress by animateFloatAsState(
+        targetValue = if (showDivider) 1f else 0f,
+        animationSpec = tween(800, easing = EaseOut),
+        label = "dividerProgress"
+    )
+
+    // === SUBTITLE ===
+    val subtitleAlpha by animateFloatAsState(
+        targetValue = if (showSubtitle) 1f else 0f,
+        animationSpec = tween(800, easing = EaseOut),
+        label = "subtitleAlpha"
+    )
+    val subtitleOffsetY by animateFloatAsState(
+        targetValue = if (showSubtitle) 0f else 10f,
+        animationSpec = tween(800, easing = EaseOut),
+        label = "subtitleOffset"
+    )
+
+    // === CONTINUOUS AMBIENT ANIMATIONS ===
+    val infiniteTransition = rememberInfiniteTransition(label = "splashAmbient")
+
+    // Breathing glow behind icon
+    val glowScale by infiniteTransition.animateFloat(
+        initialValue = 0.92f, targetValue = 1.12f,
+        animationSpec = infiniteRepeatable(
+            tween(2800, easing = EaseInOut), RepeatMode.Reverse
+        ), label = "glowScale"
+    )
+    val glowAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.18f, targetValue = 0.5f,
+        animationSpec = infiniteRepeatable(
+            tween(2800, easing = EaseInOut), RepeatMode.Reverse
+        ), label = "glowAlpha"
+    )
+
+    // Gentle vertical float for icon
+    val floatOffset by infiniteTransition.animateFloat(
+        initialValue = 0f, targetValue = 7f,
+        animationSpec = infiniteRepeatable(
+            tween(3200, easing = EaseInOut), RepeatMode.Reverse
+        ), label = "floatOffset"
+    )
+
+    // Slow rotating gradient ring
+    val ringRotation by infiniteTransition.animateFloat(
+        initialValue = 0f, targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            tween(12000, easing = LinearEasing), RepeatMode.Restart
+        ), label = "ringRotation"
+    )
+
+    // Shimmer sweep on the divider
+    val shimmerX by infiniteTransition.animateFloat(
+        initialValue = -1f, targetValue = 2f,
+        animationSpec = infiniteRepeatable(
+            tween(3500, easing = LinearEasing), RepeatMode.Restart
+        ), label = "shimmerX"
+    )
+
+    // Navigate after reveal completes (+0.7s for extended display)
+    LaunchedEffect(hasCompletedOnboarding) {
+        delay(3700)
         when (hasCompletedOnboarding) {
             true -> onNavigateToHome()
             false -> onNavigateToOnboarding()
@@ -46,52 +155,182 @@ fun SplashScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        GradientBackground(content = {})
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Gradients.appBackground)
+    ) {
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
+                .padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Logo with pulse animation
-            Text(
-                text = "🎤",
-                fontSize = 80.sp,
-                modifier = Modifier.graphicsLayer {
-                    scaleX = scale
-                    scaleY = scale
+            // === ICON AREA ===
+            Box(
+                modifier = Modifier.size(180.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                // Rotating gradient arc ring — premium look
+                Canvas(
+                    modifier = Modifier
+                        .size(170.dp)
+                        .graphicsLayer { alpha = emojiScale }
+                ) {
+                    val strokeW = 2.dp.toPx()
+                    val pad = strokeW / 2f
+                    rotate(ringRotation) {
+                        drawArc(
+                            brush = Brush.sweepGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    Color(0xFF8B5CF6).copy(alpha = 0.5f),
+                                    Color.White.copy(alpha = 0.7f),
+                                    Color(0xFF667EEA).copy(alpha = 0.5f),
+                                    Color.Transparent
+                                )
+                            ),
+                            startAngle = 0f,
+                            sweepAngle = 270f,
+                            useCenter = false,
+                            style = Stroke(width = strokeW, cap = StrokeCap.Round),
+                            topLeft = Offset(pad, pad),
+                            size = Size(size.width - strokeW, size.height - strokeW)
+                        )
+                    }
                 }
-            )
 
-            Spacer(modifier = Modifier.height(24.dp))
+                // Breathing glow orb
+                Box(
+                    modifier = Modifier
+                        .size(130.dp)
+                        .graphicsLayer {
+                            scaleX = glowScale
+                            scaleY = glowScale
+                            alpha = glowAlpha * emojiScale
+                        }
+                        .shadow(40.dp, CircleShape, spotColor = Color(0xFF667EEA))
+                        .background(
+                            Brush.radialGradient(
+                                colors = listOf(
+                                    Color(0xFF667EEA).copy(alpha = 0.4f),
+                                    Color(0xFF764BA2).copy(alpha = 0.2f),
+                                    Color(0xFF8B5CF6).copy(alpha = 0.08f),
+                                    Color.Transparent
+                                )
+                            ),
+                            CircleShape
+                        )
+                )
 
+                // Soft white core glow
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .graphicsLayer { alpha = 0.18f * emojiScale }
+                        .background(
+                            Brush.radialGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = 0.3f),
+                                    Color.Transparent
+                                )
+                            ),
+                            CircleShape
+                        )
+                )
+
+                // Microphone emoji
+                Text(
+                    text = "\uD83C\uDFA4",
+                    fontSize = 76.sp,
+                    modifier = Modifier.graphicsLayer {
+                        scaleX = emojiScale
+                        scaleY = emojiScale
+                        translationY = -floatOffset
+                    }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            // === TITLE ===
             Text(
                 text = "AI VoicePower",
                 style = AppTypography.displayLarge,
                 color = Color.White,
-                fontSize = 36.sp,
-                fontWeight = FontWeight.Black
+                fontSize = 40.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = (-1.5).sp,
+                modifier = Modifier.graphicsLayer {
+                    alpha = titleAlpha
+                    scaleX = titleScale
+                    scaleY = titleScale
+                }
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
+            // === SHIMMER DIVIDER LINE ===
+            val lineWidthDp = 100.dp
+            val lineWidthPx = with(LocalDensity.current) { lineWidthDp.toPx() }
+            Canvas(
+                modifier = Modifier
+                    .width(lineWidthDp)
+                    .height(1.5.dp)
+                    .graphicsLayer { alpha = dividerProgress }
+            ) {
+                val actualW = size.width * dividerProgress
+                val sx = (size.width - actualW) / 2f
+                drawLine(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.White.copy(alpha = 0.5f),
+                            Color.White.copy(alpha = 0.9f),
+                            Color.White.copy(alpha = 0.5f),
+                            Color.Transparent
+                        ),
+                        startX = shimmerX * lineWidthPx - lineWidthPx * 0.3f,
+                        endX = shimmerX * lineWidthPx + lineWidthPx * 0.3f
+                    ),
+                    start = Offset(sx, size.height / 2f),
+                    end = Offset(sx + actualW, size.height / 2f),
+                    strokeWidth = size.height,
+                    cap = StrokeCap.Round
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // === SUBTITLE ===
             Text(
                 text = "Твій голос — твоя сила",
                 style = AppTypography.bodyLarge,
-                color = Color.White.copy(alpha = 0.8f),
-                fontSize = 18.sp
+                color = Color.White.copy(alpha = 0.85f),
+                fontSize = 17.sp,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center,
+                letterSpacing = 1.2.sp,
+                modifier = Modifier.graphicsLayer {
+                    alpha = subtitleAlpha
+                    translationY = subtitleOffsetY
+                }
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(56.dp))
 
+            // === LOADER (only while deciding navigation) ===
             if (hasCompletedOnboarding == null) {
                 CircularProgressIndicator(
-                    color = Color.White,
-                    strokeWidth = 3.dp,
-                    modifier = Modifier.size(32.dp)
+                    color = Color.White.copy(alpha = 0.5f),
+                    strokeWidth = 1.5.dp,
+                    modifier = Modifier
+                        .size(20.dp)
+                        .graphicsLayer {
+                            alpha = subtitleAlpha * 0.8f
+                        }
                 )
             }
         }

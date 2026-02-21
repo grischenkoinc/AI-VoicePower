@@ -2,6 +2,8 @@ package com.aivoicepower.ui.screens.warmup
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aivoicepower.audio.SoundEffect
+import com.aivoicepower.audio.SoundManager
 import com.aivoicepower.data.local.database.dao.WarmupCompletionDao
 import com.aivoicepower.data.local.database.entity.WarmupCompletionEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
@@ -22,7 +24,8 @@ import javax.inject.Inject
 class VoiceWarmupViewModel @Inject constructor(
     private val warmupCompletionDao: WarmupCompletionDao,
     private val userPreferencesDataStore: UserPreferencesDataStore,
-    private val skillUpdateService: SkillUpdateService
+    private val skillUpdateService: SkillUpdateService,
+    private val soundManager: SoundManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(VoiceWarmupState())
@@ -153,6 +156,8 @@ class VoiceWarmupViewModel @Inject constructor(
         viewModelScope.launch {
             // Чекаємо 1 секунду, щоб анімація таймера встигла закінчитися
             delay(1000)
+
+            soundManager.play(SoundEffect.EXERCISE_COMPLETED)
 
             // Показуємо completion overlay
             _state.update {

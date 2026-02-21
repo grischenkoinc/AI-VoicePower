@@ -11,6 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalView
+import android.view.HapticFeedbackConstants
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -25,6 +27,7 @@ fun CourseCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -35,7 +38,7 @@ fun CourseCard(
             )
             .background(Color.White, RoundedCornerShape(24.dp))
             .scaleOnPress(pressedScale = 0.98f)
-            .clickable(onClick = onClick)
+            .clickable(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onClick() })
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {

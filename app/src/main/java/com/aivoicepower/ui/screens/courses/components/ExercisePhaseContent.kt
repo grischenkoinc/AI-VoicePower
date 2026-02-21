@@ -1,5 +1,6 @@
 package com.aivoicepower.ui.screens.courses.components
 
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -10,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -30,6 +32,7 @@ fun ExercisePhaseContent(
     lesson: Lesson,
     currentExerciseIndex: Int,
     exerciseState: ExerciseState?,
+    exerciseStates: List<ExerciseState> = emptyList(),
     totalExercises: Int,
     isPlaying: Boolean,
     onEvent: (LessonEvent) -> Unit,
@@ -39,18 +42,11 @@ fun ExercisePhaseContent(
 ) {
     if (exerciseState == null) return
 
-    val scrollState = rememberScrollState()
-
-    // Reset scroll to top when exercise changes
-    LaunchedEffect(currentExerciseIndex) {
-        scrollState.animateScrollTo(0)
-    }
-
     Box(modifier = modifier.fillMaxSize()) {
         GradientBackground(
             content = {
                 Column(modifier = Modifier.fillMaxSize()) {
-                    // Fixed Progress Header
+                    // Fixed Progress Header (stays in place)
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -65,6 +61,34 @@ fun ExercisePhaseContent(
                         )
                     }
 
+                    // Animated exercise content
+                    AnimatedContent(
+                        targetState = currentExerciseIndex,
+                        transitionSpec = {
+                            // Use initialState (reliable) instead of manual previousIndex tracking
+                            if (targetState > initialState) {
+                                // Forward: new enters from RIGHT, old exits LEFT
+                                // Exactly matching the theory→exercise phase transition
+                                (fadeIn(tween(400)) + slideInHorizontally(tween(400)) { it / 3 })
+                                    .togetherWith(
+                                        fadeOut(tween(300)) + slideOutHorizontally(tween(300)) { -it / 3 })
+                            } else {
+                                // Back: new enters from LEFT, old exits RIGHT
+                                (fadeIn(tween(400)) + slideInHorizontally(tween(400)) { -it / 3 })
+                                    .togetherWith(
+                                        fadeOut(tween(300)) + slideOutHorizontally(tween(300)) { it / 3 })
+                            }
+                        },
+                        label = "exerciseTransition"
+                    ) { animatedIndex ->
+                        val animatedExerciseState = exerciseStates.getOrNull(animatedIndex) ?: return@AnimatedContent
+                        val scrollState = rememberScrollState()
+
+                        // Reset scroll when exercise changes
+                        LaunchedEffect(animatedIndex) {
+                            scrollState.scrollTo(0)
+                        }
+
                     // Scrollable Content
                     Column(
                         modifier = Modifier
@@ -75,7 +99,7 @@ fun ExercisePhaseContent(
                         verticalArrangement = Arrangement.spacedBy(20.dp)
                     ) {
                         // Пульсуюча рамка навколо всієї картки при записі
-                        val isRecording = exerciseState.status == ExerciseStatus.Recording
+                        val isRecording = animatedExerciseState.status == ExerciseStatus.Recording
 
                         val infiniteTransition = rememberInfiniteTransition(label = "border")
                         val borderAlpha by infiniteTransition.animateFloat(
@@ -106,14 +130,14 @@ fun ExercisePhaseContent(
                             PracticeCard(
                                 header = {
                                 SectionTag(
-                                    emoji = getExerciseEmoji(exerciseState.exercise.type),
-                                    text = "${currentExerciseIndex + 1}/$totalExercises",
+                                    emoji = getExerciseEmoji(animatedExerciseState.exercise.type),
+                                    text = "${animatedIndex + 1}/$totalExercises",
                                     isPractice = true
                                 )
 
                                 // BigTitle inline
                                 Text(
-                                    text = exerciseState.exercise.title,
+                                    text = animatedExerciseState.exercise.title,
                                     style = AppTypography.displayLarge,
                                     color = TextColors.onDarkPrimary,
                                     fontSize = 36.sp,
@@ -123,11 +147,11 @@ fun ExercisePhaseContent(
                             },
                             content = {
                                 // Remaining analyses indicator for free users
-                                if (remainingAnalyses != null && exerciseState.status != ExerciseStatus.Analyzing &&
-                                    exerciseState.status != ExerciseStatus.ShowingResults &&
-                                    exerciseState.status != ExerciseStatus.CompletedWithoutAnalysis &&
-                                    exerciseState.exercise.type != com.aivoicepower.domain.model.exercise.ExerciseType.ARTICULATION &&
-                                    exerciseState.exercise.type != com.aivoicepower.domain.model.exercise.ExerciseType.BREATHING
+                                if (remainingAnalyses != null && animatedExerciseState.status != ExerciseStatus.Analyzing &&
+                                    animatedExerciseState.status != ExerciseStatus.ShowingResults &&
+                                    animatedExerciseState.status != ExerciseStatus.CompletedWithoutAnalysis &&
+                                    animatedExerciseState.exercise.type != com.aivoicepower.domain.model.exercise.ExerciseType.ARTICULATION &&
+                                    animatedExerciseState.exercise.type != com.aivoicepower.domain.model.exercise.ExerciseType.BREATHING
                                 ) {
                                     val color = when {
                                         remainingAnalyses > 3 -> Color(0xFF22C55E) // green
@@ -142,12 +166,12 @@ fun ExercisePhaseContent(
                                     )
                                 }
 
-                                when (exerciseState.status) {
+                                when (animatedExerciseState.status) {
                                     ExerciseStatus.Analyzing -> {
                                         AnalyzingContent()
                                     }
                                     ExerciseStatus.ShowingResults -> {
-                                        exerciseState.analysisResult?.let { result ->
+                                        animatedExerciseState.analysisResult?.let { result ->
                                             AnalysisResultsContent(
                                                 result = result,
                                                 onDismiss = { onEvent(LessonEvent.ContinueAfterAnalysisClicked) },
@@ -163,7 +187,7 @@ fun ExercisePhaseContent(
                                     }
                                     ExerciseStatus.CompletedWithoutAnalysis -> {
                                         NoAnalysisResultCard(
-                                            recordingDurationMs = exerciseState.recordingDurationMs
+                                            recordingDurationMs = animatedExerciseState.recordingDurationMs
                                         )
                                         Spacer(modifier = Modifier.height(16.dp))
                                         PrimaryButton(
@@ -174,15 +198,15 @@ fun ExercisePhaseContent(
                                     }
                                     else -> {
                                         // Exercise Card (окремий компонент)
-                                        ExerciseCard(exerciseState = exerciseState)
+                                        ExerciseCard(exerciseState = animatedExerciseState)
 
                                         Spacer(modifier = Modifier.height(8.dp))
 
                                         // Recording Controls (не показувати для ARTICULATION та BREATHING)
-                                        if (exerciseState.exercise.type != com.aivoicepower.domain.model.exercise.ExerciseType.ARTICULATION &&
-                                            exerciseState.exercise.type != com.aivoicepower.domain.model.exercise.ExerciseType.BREATHING) {
+                                        if (animatedExerciseState.exercise.type != com.aivoicepower.domain.model.exercise.ExerciseType.ARTICULATION &&
+                                            animatedExerciseState.exercise.type != com.aivoicepower.domain.model.exercise.ExerciseType.BREATHING) {
                                             RecordingControls(
-                                                exerciseState = exerciseState,
+                                                exerciseState = animatedExerciseState,
                                                 isPlaying = isPlaying,
                                                 onStartRecording = { onEvent(LessonEvent.StartRecordingClicked) },
                                                 onStopRecording = { onEvent(LessonEvent.StopRecordingClicked) },
@@ -200,18 +224,19 @@ fun ExercisePhaseContent(
 
                         // Navigation
                         BottomNavRow(
-                            onPrevious = if (currentExerciseIndex == 0) {
+                            onPrevious = if (animatedIndex == 0) {
                                 { onEvent(LessonEvent.NavigateBackClicked) }
                             } else {
                                 { onEvent(LessonEvent.PreviousExerciseClicked) }
                             },
                             onNext = { onEvent(LessonEvent.SkipExerciseClicked) },
-                            previousText = if (currentExerciseIndex == 0) "До теорії" else "Назад",
+                            previousText = if (animatedIndex == 0) "До теорії" else "Назад",
                             nextText = "Далі"
                         )
 
                         Spacer(modifier = Modifier.height(24.dp))
                     }
+                    } // AnimatedContent
                 }
             }
         )

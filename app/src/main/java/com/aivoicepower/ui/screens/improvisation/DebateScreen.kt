@@ -4,6 +4,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import android.view.HapticFeedbackConstants
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -173,6 +175,7 @@ private fun DebateTopicSelectionScreen(
     onTopicSelected: (DebateTopicsProvider.DebateTopic) -> Unit,
     onNavigateBack: () -> Unit
 ) {
+    val view = LocalView.current
     val topics = remember { DebateTopicsProvider().getAllTopics() }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -210,7 +213,7 @@ private fun DebateTopicSelectionScreen(
                     modifier = Modifier
                         .shadow(12.dp, RoundedCornerShape(16.dp), spotColor = Color.Black.copy(alpha = 0.2f))
                         .background(Color.White, RoundedCornerShape(16.dp))
-                        .clickable { onNavigateBack() }
+                        .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateBack() }
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -242,7 +245,7 @@ private fun DebateTopicSelectionScreen(
                             .fillMaxWidth()
                             .shadow(12.dp, RoundedCornerShape(16.dp), spotColor = Color.Black.copy(alpha = 0.12f))
                             .background(Color.White, RoundedCornerShape(16.dp))
-                            .clickable { onTopicSelected(topic) }
+                            .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onTopicSelected(topic) }
                             .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
@@ -262,6 +265,7 @@ private fun DebatePositionScreen(
     onPositionSelected: (DebatePosition) -> Unit,
     onNavigateBack: () -> Unit
 ) {
+    val view = LocalView.current
     Box(modifier = Modifier.fillMaxSize()) {
         GradientBackground(content = {})
 
@@ -292,7 +296,7 @@ private fun DebatePositionScreen(
                     .fillMaxWidth()
                     .shadow(12.dp, RoundedCornerShape(16.dp), spotColor = Color(0xFF10B981).copy(alpha = 0.2f))
                     .background(Color.White, RoundedCornerShape(16.dp))
-                    .clickable { onPositionSelected(DebatePosition.FOR) }
+                    .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onPositionSelected(DebatePosition.FOR) }
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -305,7 +309,7 @@ private fun DebatePositionScreen(
                     .fillMaxWidth()
                     .shadow(12.dp, RoundedCornerShape(16.dp), spotColor = Color(0xFFEF4444).copy(alpha = 0.2f))
                     .background(Color.White, RoundedCornerShape(16.dp))
-                    .clickable { onPositionSelected(DebatePosition.AGAINST) }
+                    .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onPositionSelected(DebatePosition.AGAINST) }
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {

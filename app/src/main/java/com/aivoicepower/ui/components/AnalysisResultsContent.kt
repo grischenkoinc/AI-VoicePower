@@ -6,6 +6,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import android.view.HapticFeedbackConstants
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -133,6 +135,7 @@ fun AnalysisResultsContent(
     dismissButtonText: String = "Готово",
     onRetry: (() -> Unit)? = null
 ) {
+    val view = LocalView.current
     // === REVEAL ORCHESTRATION ===
     var showScore by remember { mutableStateOf(false) }
     var showSections by remember { mutableStateOf(false) }
@@ -415,7 +418,7 @@ fun AnalysisResultsContent(
                             ),
                             RoundedCornerShape(14.dp)
                         )
-                        .clickable { onRetry() }
+                        .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onRetry() }
                         .padding(vertical = 16.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -457,7 +460,7 @@ fun AnalysisResultsContent(
                         ),
                         RoundedCornerShape(14.dp)
                     )
-                    .clickable { onDismiss() }
+                    .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onDismiss() }
                     .padding(vertical = 16.dp),
                 contentAlignment = Alignment.Center
             ) {

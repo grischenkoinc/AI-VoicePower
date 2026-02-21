@@ -1,5 +1,6 @@
 package com.aivoicepower.ui.screens.warmup.components
 
+import android.view.HapticFeedbackConstants
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -20,11 +21,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aivoicepower.ui.screens.warmup.ArticulationExercise
 import com.aivoicepower.ui.theme.AppTypography
+import com.aivoicepower.ui.utils.performHaptic
 import com.aivoicepower.ui.theme.TextColors
 import com.aivoicepower.ui.theme.components.GradientBackground
 
@@ -43,6 +46,7 @@ fun ArticulationExerciseDialog(
     totalExercises: Int = 0,
     completedExercises: Int = 0
 ) {
+    val view = LocalView.current
     var showInstructions by remember { mutableStateOf(false) }
     var showExitWarning by remember { mutableStateOf(false) }
 
@@ -96,6 +100,7 @@ fun ArticulationExerciseDialog(
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier
                             .clickable {
+                                performHaptic(view)
                                 if (totalExercises > 0) {
                                     // Quick Warmup - show warning
                                     showExitWarning = true
@@ -207,7 +212,7 @@ fun ArticulationExerciseDialog(
                                 ),
                                 RoundedCornerShape(16.dp)
                             )
-                            .clickable { if (isTimerRunning) onPauseTimer() else onStartTimer() }
+                            .clickable { performHaptic(view); if (isTimerRunning) onPauseTimer() else onStartTimer() }
                             .padding(vertical = 16.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -235,7 +240,7 @@ fun ArticulationExerciseDialog(
                                     spotColor = Color.Black.copy(alpha = 0.15f)
                                 )
                                 .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(16.dp))
-                                .clickable { onSkip() }
+                                .clickable { performHaptic(view); onSkip() }
                                 .padding(vertical = 14.dp),
                             contentAlignment = Alignment.Center
                         ) {
@@ -263,7 +268,7 @@ fun ArticulationExerciseDialog(
                                     ),
                                     RoundedCornerShape(16.dp)
                                 )
-                                .clickable { onMarkCompleted() }
+                                .clickable { performHaptic(view); onMarkCompleted() }
                                 .padding(vertical = 14.dp),
                             contentAlignment = Alignment.Center
                         ) {
@@ -382,7 +387,7 @@ fun ArticulationExerciseDialog(
                                 ),
                                 RoundedCornerShape(16.dp)
                             )
-                            .clickable { showInstructions = false }
+                            .clickable { performHaptic(view); showInstructions = false }
                             .padding(vertical = 16.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -488,6 +493,7 @@ fun ArticulationExerciseDialog(
                 confirmButton = {
                     androidx.compose.material3.TextButton(
                         onClick = {
+                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
                             showExitWarning = false
                             onDismiss()
                         }
@@ -501,7 +507,7 @@ fun ArticulationExerciseDialog(
                 },
                 dismissButton = {
                     androidx.compose.material3.TextButton(
-                        onClick = { showExitWarning = false }
+                        onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); showExitWarning = false }
                     ) {
                         Text(
                             text = "Скасувати",

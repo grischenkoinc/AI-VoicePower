@@ -3,6 +3,8 @@ package com.aivoicepower.ui.screens.premium
 import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aivoicepower.audio.SoundEffect
+import com.aivoicepower.audio.SoundManager
 import com.aivoicepower.data.billing.BillingRepository
 import com.aivoicepower.data.billing.PurchaseResult
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
@@ -25,7 +27,8 @@ sealed class PaywallEvent {
 @HiltViewModel
 class PaywallViewModel @Inject constructor(
     private val userPreferencesDataStore: UserPreferencesDataStore,
-    private val billingRepository: BillingRepository
+    private val billingRepository: BillingRepository,
+    private val soundManager: SoundManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PaywallState())
@@ -95,6 +98,7 @@ class PaywallViewModel @Inject constructor(
             billingRepository.isPremiumFromBilling.collect { isPremium ->
                 if (isPremium) {
                     billingRepository.handleSuccessfulPurchase()
+                    soundManager.play(SoundEffect.PREMIUM_UNLOCKED)
                     _state.update { it.copy(isPremium = true) }
                 }
             }

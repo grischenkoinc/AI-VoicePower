@@ -4,6 +4,8 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import android.view.HapticFeedbackConstants
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -24,6 +26,7 @@ fun RecordButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     Box(
         modifier = modifier.size(115.dp),
         contentAlignment = Alignment.Center
@@ -134,7 +137,7 @@ fun RecordButton(
                     Gradients.recordButton,
                     CircleShape
                 )
-                .clickable(onClick = onClick),
+                .clickable(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onClick() }),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -151,12 +154,13 @@ fun CompactRecordButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     Box(
         modifier = modifier
             .size(56.dp)
             .gradientBackground(Gradients.recordButton, CircleShape)
             .shadowPreset(ShadowPreset.RECORD_BUTTON, CircleShape)
-            .clickable(onClick = onClick),
+            .clickable(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onClick() }),
         contentAlignment = Alignment.Center
     ) {
         Text(

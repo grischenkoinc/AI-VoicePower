@@ -4,6 +4,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import android.view.HapticFeedbackConstants
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -204,6 +206,7 @@ private fun ProfessionSelectionScreen(
 ) {
     var customProfession by remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
+    val view = LocalView.current
 
     Box(modifier = Modifier.fillMaxSize()) {
         GradientBackground(content = {})
@@ -216,23 +219,61 @@ private fun ProfessionSelectionScreen(
                 .padding(horizontal = 20.dp)
                 .padding(top = 20.dp, bottom = 20.dp)
         ) {
-            // Header
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(
-                    text = "Симуляція",
-                    style = AppTypography.labelMedium,
-                    color = TextColors.onDarkSecondary,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = "\uD83D\uDCBC Співбесіда",
-                    style = AppTypography.displayLarge,
-                    color = TextColors.onDarkPrimary,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = (-0.8).sp
-                )
+            // Header with back button
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    Text(
+                        text = "Симуляція",
+                        style = AppTypography.labelMedium,
+                        color = TextColors.onDarkSecondary,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "\uD83D\uDCBC Співбесіда",
+                        style = AppTypography.displayLarge,
+                        color = TextColors.onDarkPrimary,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = (-0.8).sp
+                    )
+                }
+
+                // Back button
+                Row(
+                    modifier = Modifier
+                        .shadow(
+                            elevation = 12.dp,
+                            shape = RoundedCornerShape(16.dp),
+                            spotColor = Color.Black.copy(alpha = 0.2f)
+                        )
+                        .background(Color.White, RoundedCornerShape(16.dp))
+                        .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateBack() }
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "\u2190",
+                        fontSize = 24.sp,
+                        color = Color(0xFF667EEA),
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "\u041D\u0430\u0437\u0430\u0434",
+                        style = AppTypography.bodyMedium,
+                        color = TextColors.onLightPrimary,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -332,13 +373,14 @@ private fun ProfessionCard(
     profession: ProfessionOption,
     onClick: () -> Unit
 ) {
+    val view = LocalView.current
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .shadow(8.dp, RoundedCornerShape(16.dp), spotColor = Color.Black.copy(alpha = 0.08f))
             .background(Color.White, RoundedCornerShape(16.dp))
             .clip(RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick)
+            .clickable(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onClick() })
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)

@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import android.view.HapticFeedbackConstants
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -39,6 +41,7 @@ fun AnalysisLimitBottomSheet(
     onContinueWithout: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    val view = LocalView.current
     val maxAnalyses = if (limitInfo.isImprovisation) {
         FreeTierLimits.FREE_IMPROV_ANALYSES_PER_DAY
     } else {
@@ -162,7 +165,7 @@ fun AnalysisLimitBottomSheet(
                             ),
                             RoundedCornerShape(16.dp)
                         )
-                        .clickable { onPremium() }
+                        .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onPremium() }
                         .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -194,7 +197,7 @@ fun AnalysisLimitBottomSheet(
                                 color = Color(0xFFD1D5DB),
                                 shape = RoundedCornerShape(16.dp)
                             )
-                            .clickable(enabled = limitInfo.isAdLoaded) { onWatchAd() }
+                            .clickable(enabled = limitInfo.isAdLoaded) { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onWatchAd() }
                             .padding(14.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -225,7 +228,7 @@ fun AnalysisLimitBottomSheet(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier
-                        .clickable { onContinueWithout() }
+                        .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onContinueWithout() }
                         .padding(vertical = 8.dp)
                 )
 
@@ -252,6 +255,7 @@ fun NoAnalysisResultCard(
     onWatchAd: (() -> Unit)? = null,
     onPremium: (() -> Unit)? = null
 ) {
+    val view = LocalView.current
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -323,7 +327,7 @@ fun NoAnalysisResultCard(
                         color = Color(0xFF22C55E),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.clickable { onWatchAd() }
+                        modifier = Modifier.clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onWatchAd() }
                     )
                     if (onPremium != null) {
                         Text(
@@ -339,7 +343,7 @@ fun NoAnalysisResultCard(
                         color = Color(0xFF8B5CF6),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.clickable { onPremium() }
+                        modifier = Modifier.clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onPremium() }
                     )
                 }
             }

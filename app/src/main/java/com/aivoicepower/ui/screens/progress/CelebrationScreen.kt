@@ -25,6 +25,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.aivoicepower.audio.LocalSoundManager
+import com.aivoicepower.audio.SoundEffect
 import com.aivoicepower.domain.model.user.Achievement
 import com.aivoicepower.ui.theme.AppTypography
 import kotlinx.coroutines.delay
@@ -37,6 +39,7 @@ fun CelebrationOverlay(
     achievement: Achievement,
     onDismiss: () -> Unit
 ) {
+    val soundManager = LocalSoundManager.current
     var showContent by remember { mutableStateOf(false) }
     var showTitle by remember { mutableStateOf(false) }
     var showDescription by remember { mutableStateOf(false) }
@@ -45,6 +48,7 @@ fun CelebrationOverlay(
     LaunchedEffect(achievement) {
         delay(200)
         showContent = true
+        soundManager.play(SoundEffect.CELEBRATION)
         delay(400)
         showTitle = true
         delay(300)

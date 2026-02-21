@@ -2,6 +2,7 @@ package com.aivoicepower.ui.screens.progress
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -14,8 +15,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import android.view.HapticFeedbackConstants
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -114,17 +117,38 @@ private fun SkillHeader(
     currentLevel: Int,
     onNavigateBack: () -> Unit
 ) {
+    val view = LocalView.current
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            IconButton(onClick = onNavigateBack) {
-                Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Назад",
-                    tint = Color.White
+            Row(
+                modifier = Modifier
+                    .shadow(
+                        elevation = 12.dp,
+                        shape = RoundedCornerShape(16.dp),
+                        spotColor = Color.Black.copy(alpha = 0.2f)
+                    )
+                    .background(Color.White, RoundedCornerShape(16.dp))
+                    .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateBack() }
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "←",
+                    fontSize = 24.sp,
+                    color = Color(0xFF667EEA),
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Назад",
+                    style = AppTypography.bodyMedium,
+                    color = TextColors.onLightPrimary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))

@@ -27,7 +27,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.app.Activity
+import android.view.HapticFeedbackConstants
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aivoicepower.data.ads.RewardedAdManager
@@ -165,6 +167,7 @@ private fun TongueTwisterHeader(
     totalCount: Int,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -196,7 +199,7 @@ private fun TongueTwisterHeader(
                     spotColor = Color.Black.copy(alpha = 0.2f)
                 )
                 .background(Color.White, RoundedCornerShape(16.dp))
-                .clickable { onNavigateBack() }
+                .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateBack() }
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically

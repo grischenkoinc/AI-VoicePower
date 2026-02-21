@@ -27,7 +27,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import android.view.HapticFeedbackConstants
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -54,6 +56,7 @@ fun AiCoachScreen(
     val listState = rememberLazyListState()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+    val view = LocalView.current
     var showMenu by remember { mutableStateOf(false) }
 
     // TTS state
@@ -163,7 +166,7 @@ fun AiCoachScreen(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            IconButton(onClick = onNavigateBack) {
+                            IconButton(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateBack() }) {
                                 Icon(
                                     Icons.AutoMirrored.Filled.ArrowBack,
                                     contentDescription = "Назад",
@@ -197,7 +200,7 @@ fun AiCoachScreen(
 
                             if (state.activeSimulation != null) {
                                 IconButton(
-                                    onClick = { viewModel.onEvent(AiCoachEvent.ExitSimulation) }
+                                    onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); viewModel.onEvent(AiCoachEvent.ExitSimulation) }
                                 ) {
                                     Icon(
                                         Icons.Default.Close,
@@ -208,7 +211,7 @@ fun AiCoachScreen(
                             }
 
                             Box {
-                                IconButton(onClick = { showMenu = true }) {
+                                IconButton(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); showMenu = true }) {
                                     Icon(
                                         Icons.Default.MoreVert,
                                         contentDescription = "Меню",

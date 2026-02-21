@@ -35,7 +35,12 @@ data class UserPreferences(
     val lastLimitResetDate: String? = null,
     // Reminder settings
     val isReminderEnabled: Boolean = false,
-    val reminderHour: Int = 9
+    val reminderHour: Int = 9,
+    // Sound settings
+    val isSoundEnabled: Boolean = true,
+    val uiVolume: Float = 0.8f,
+    val feedbackVolume: Float = 0.9f,
+    val celebrationVolume: Float = 1.0f
 )
 
 @Singleton
@@ -68,6 +73,11 @@ class UserPreferencesDataStore @Inject constructor(
         val LAST_LIMIT_RESET_DATE = stringPreferencesKey("last_limit_reset_date")
         val IS_REMINDER_ENABLED = booleanPreferencesKey("is_reminder_enabled")
         val REMINDER_HOUR = intPreferencesKey("reminder_hour")
+        // Sound settings
+        val IS_SOUND_ENABLED = booleanPreferencesKey("is_sound_enabled")
+        val UI_VOLUME = floatPreferencesKey("ui_volume")
+        val FEEDBACK_VOLUME = floatPreferencesKey("feedback_volume")
+        val CELEBRATION_VOLUME = floatPreferencesKey("celebration_volume")
     }
 
     val userPreferencesFlow: Flow<UserPreferences> = context.dataStore.data
@@ -98,7 +108,11 @@ class UserPreferencesDataStore @Inject constructor(
                 freeAdImprovToday = preferences[PreferencesKeys.FREE_AD_IMPROV_TODAY] ?: 0,
                 lastLimitResetDate = preferences[PreferencesKeys.LAST_LIMIT_RESET_DATE],
                 isReminderEnabled = preferences[PreferencesKeys.IS_REMINDER_ENABLED] ?: false,
-                reminderHour = preferences[PreferencesKeys.REMINDER_HOUR] ?: 9
+                reminderHour = preferences[PreferencesKeys.REMINDER_HOUR] ?: 9,
+                isSoundEnabled = preferences[PreferencesKeys.IS_SOUND_ENABLED] ?: true,
+                uiVolume = preferences[PreferencesKeys.UI_VOLUME] ?: 0.8f,
+                feedbackVolume = preferences[PreferencesKeys.FEEDBACK_VOLUME] ?: 0.9f,
+                celebrationVolume = preferences[PreferencesKeys.CELEBRATION_VOLUME] ?: 1.0f
             )
         }
 
@@ -363,6 +377,52 @@ class UserPreferencesDataStore @Inject constructor(
             preferences.remove(PreferencesKeys.USER_EMAIL)
             preferences.remove(PreferencesKeys.USER_PHOTO_URL)
             preferences[PreferencesKeys.HAS_COMPLETED_AUTH] = false
+        }
+    }
+
+    // ===== Sound settings =====
+
+    data class SoundSettings(
+        val isSoundEnabled: Boolean = true,
+        val uiVolume: Float = 0.8f,
+        val feedbackVolume: Float = 0.9f,
+        val celebrationVolume: Float = 1.0f
+    )
+
+    val soundSettingsFlow: Flow<SoundSettings> = context.dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences()) else throw exception
+        }
+        .map { preferences ->
+            SoundSettings(
+                isSoundEnabled = preferences[PreferencesKeys.IS_SOUND_ENABLED] ?: true,
+                uiVolume = preferences[PreferencesKeys.UI_VOLUME] ?: 0.8f,
+                feedbackVolume = preferences[PreferencesKeys.FEEDBACK_VOLUME] ?: 0.9f,
+                celebrationVolume = preferences[PreferencesKeys.CELEBRATION_VOLUME] ?: 1.0f
+            )
+        }
+
+    suspend fun setSoundEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.IS_SOUND_ENABLED] = enabled
+        }
+    }
+
+    suspend fun setUiVolume(volume: Float) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.UI_VOLUME] = volume.coerceIn(0f, 1f)
+        }
+    }
+
+    suspend fun setFeedbackVolume(volume: Float) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.FEEDBACK_VOLUME] = volume.coerceIn(0f, 1f)
+        }
+    }
+
+    suspend fun setCelebrationVolume(volume: Float) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.CELEBRATION_VOLUME] = volume.coerceIn(0f, 1f)
         }
     }
 }

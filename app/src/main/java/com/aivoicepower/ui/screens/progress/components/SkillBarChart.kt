@@ -13,9 +13,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalView
+import android.view.HapticFeedbackConstants
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -31,6 +41,7 @@ import com.aivoicepower.utils.SkillLevelUtils
 fun SkillBarChart(
     skillLevels: Map<SkillType, Int>,
     onSkillClick: (SkillType) -> Unit,
+    animateBars: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -42,6 +53,7 @@ fun SkillBarChart(
                 skillType = skill,
                 name = skill.toDisplayString(),
                 level = level,
+                animateNow = animateBars,
                 onClick = { onSkillClick(skill) }
             )
         }
@@ -54,14 +66,27 @@ private fun SkillBar(
     skillType: SkillType,
     name: String,
     level: Int,
+    animateNow: Boolean,
     onClick: () -> Unit
 ) {
+    val view = LocalView.current
     val barColors = getGradientColorsForLevel(level)
+
+    // Animate bar from 0 to target value when triggered
+    val animatedProgress by animateFloatAsState(
+        targetValue = if (animateNow) level / 100f else 0f,
+        animationSpec = tween(
+            durationMillis = 800,
+            delayMillis = 200,
+            easing = FastOutSlowInEasing
+        ),
+        label = "barProgress_${skillType.name}"
+    )
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onClick() })
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -96,7 +121,7 @@ private fun SkillBar(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // 3D Progress bar with gradient
+        // 3D Progress bar with gradient - animated
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -118,10 +143,10 @@ private fun SkillBar(
                     )
             )
 
-            // Gradient progress bar with 3D effect
+            // Gradient progress bar with 3D effect - animated width
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(level / 100f)
+                    .fillMaxWidth(animatedProgress)
                     .height(14.dp)
                     .shadow(
                         elevation = 4.dp,

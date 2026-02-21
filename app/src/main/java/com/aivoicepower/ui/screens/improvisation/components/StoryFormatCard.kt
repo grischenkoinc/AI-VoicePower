@@ -3,6 +3,8 @@ package com.aivoicepower.ui.screens.improvisation.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import android.view.HapticFeedbackConstants
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -22,6 +24,7 @@ fun StoryFormatCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -31,7 +34,7 @@ fun StoryFormatCard(
                 spotColor = Color.Black.copy(alpha = 0.12f)
             )
             .background(Color.White, RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick)
+            .clickable(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onClick() })
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {

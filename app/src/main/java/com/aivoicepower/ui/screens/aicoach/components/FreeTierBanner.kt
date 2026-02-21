@@ -4,11 +4,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import android.view.HapticFeedbackConstants
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -26,6 +28,7 @@ fun FreeTierBanner(
     onUpgradeClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     val bannerShape = RoundedCornerShape(16.dp)
 
     Box(
@@ -77,7 +80,7 @@ fun FreeTierBanner(
                         )
                     )
             ) {
-                TextButton(onClick = onUpgradeClick) {
+                TextButton(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onUpgradeClick() }) {
                     Text(
                         text = "Оновити",
                         color = Color.White,

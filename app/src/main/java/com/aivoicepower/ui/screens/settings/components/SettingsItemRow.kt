@@ -1,5 +1,6 @@
 package com.aivoicepower.ui.screens.settings.components
 
+import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,11 +43,12 @@ fun SettingsItemRow(
     onClick: () -> Unit = {},
     onCheckedChange: ((Boolean) -> Unit)? = null
 ) {
+    val view = LocalView.current
     Column {
         Row(
             modifier = modifier
                 .fillMaxWidth()
-                .clickable(onClick = onClick)
+                .clickable(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onClick() })
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {

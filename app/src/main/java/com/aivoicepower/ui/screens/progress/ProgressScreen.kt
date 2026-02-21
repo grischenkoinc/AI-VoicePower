@@ -1,5 +1,6 @@
 package com.aivoicepower.ui.screens.progress
 
+import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,7 +15,15 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
@@ -71,7 +80,12 @@ private fun ProgressContent(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     val scrollState = rememberScrollState()
+    val density = LocalDensity.current
+    val screenHeightPx = with(density) { LocalConfiguration.current.screenHeightDp.dp.toPx() }
+    // Track if skills block has become visible (animate once, then stay)
+    var skillsBarsAnimated by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -125,7 +139,17 @@ private fun ProgressContent(
                     ambientColor = Color.Black.copy(alpha = 0.08f)
                 )
                 .background(Color.White, RoundedCornerShape(20.dp))
-                .padding(20.dp),
+                .padding(20.dp)
+                .onGloballyPositioned { coordinates ->
+                    if (!skillsBarsAnimated) {
+                        val posY = coordinates.positionInRoot().y
+                        val height = coordinates.size.height
+                        // Trigger when at least part of the card is visible
+                        if (posY < screenHeightPx && posY + height > 0) {
+                            skillsBarsAnimated = true
+                        }
+                    }
+                },
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Radar Chart
@@ -138,7 +162,7 @@ private fun ProgressContent(
 
             // Helper text for interactivity
             Text(
-                text = "💡 Натисніть на навичку, щоб дізнатися більше",
+                text = "\uD83D\uDCA1 Натисніть на навичку, щоб дізнатися більше",
                 style = AppTypography.bodySmall,
                 color = TextColors.onLightSecondary,
                 fontSize = 13.sp,
@@ -146,43 +170,19 @@ private fun ProgressContent(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Bar Chart
+            // Bar Chart — animates when scrolled into view, stays fixed after
             SkillBarChart(
                 skillLevels = state.skillLevels,
-                onSkillClick = onNavigateToSkillDetail
+                onSkillClick = onNavigateToSkillDetail,
+                animateBars = skillsBarsAnimated
             )
         }
 
         // Recent Achievements
         if (state.recentAchievements.isNotEmpty()) {
-            Row(
-                modifier = Modifier
-                    .staggeredEntry(index = 5)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Останні досягнення",
-                    style = AppTypography.titleLarge,
-                    color = TextColors.onDarkPrimary,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = (-0.5).sp
-                )
-                Text(
-                    text = "Всі →",
-                    style = AppTypography.bodyMedium,
-                    color = TextColors.onDarkSecondary,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.clickable { onNavigateToAchievements() }
-                )
-            }
-
             Column(
                 modifier = Modifier
-                    .staggeredEntry(index = 6)
+                    .staggeredEntry(index = 5)
                     .fillMaxWidth()
                     .shadow(
                         elevation = 20.dp,
@@ -190,22 +190,51 @@ private fun ProgressContent(
                         spotColor = Color.Black.copy(alpha = 0.18f)
                     )
                     .background(Color.White, RoundedCornerShape(20.dp))
+                    .clickable {
+                        view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                        onNavigateToAchievements()
+                    }
                     .padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Досягнення",
+                        style = AppTypography.titleLarge,
+                        color = TextColors.onLightPrimary,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "${state.unlockedAchievements}/${state.totalAchievements}",
+                            style = AppTypography.bodyMedium,
+                            color = Color(0xFF667EEA),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Icon(
+                            imageVector = Icons.Filled.ChevronRight,
+                            contentDescription = null,
+                            tint = Color(0xFF667EEA),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+
                 state.recentAchievements.forEach { achievement ->
                     AchievementBadge(
                         achievement = achievement,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
-
-                Text(
-                    text = "Відкрито: ${state.unlockedAchievements}/${state.totalAchievements}",
-                    style = AppTypography.bodySmall,
-                    color = TextColors.onLightMuted,
-                    fontSize = 13.sp
-                )
             }
         }
 

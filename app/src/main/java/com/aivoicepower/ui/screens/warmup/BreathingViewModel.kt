@@ -2,6 +2,8 @@ package com.aivoicepower.ui.screens.warmup
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aivoicepower.audio.SoundEffect
+import com.aivoicepower.audio.SoundManager
 import com.aivoicepower.data.local.database.dao.WarmupCompletionDao
 import com.aivoicepower.data.local.database.entity.WarmupCompletionEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
@@ -22,13 +24,21 @@ import javax.inject.Inject
 class BreathingViewModel @Inject constructor(
     private val warmupCompletionDao: WarmupCompletionDao,
     private val userPreferencesDataStore: UserPreferencesDataStore,
-    private val skillUpdateService: SkillUpdateService
+    private val skillUpdateService: SkillUpdateService,
+    private val soundManager: SoundManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BreathingState())
     val state: StateFlow<BreathingState> = _state.asStateFlow()
 
     private var breathingJob: Job? = null
+    private var lastPhase: BreathingPhase? = null
+    private var currentBreathStreamId: Int = 0
+
+    companion object {
+        private const val INHALE_SOUND_DURATION = 3.04f // seconds
+        private const val EXHALE_SOUND_DURATION = 4.49f // seconds
+    }
 
     init {
         loadTodayProgress()
@@ -77,6 +87,22 @@ class BreathingViewModel @Inject constructor(
             }
 
             is BreathingEvent.Tick -> {
+                if (event.phase != lastPhase) {
+                    soundManager.stop(currentBreathStreamId)
+                    lastPhase = event.phase
+                    val pattern = _state.value.selectedExercise?.pattern
+                    when (event.phase) {
+                        BreathingPhase.INHALE -> {
+                            val rate = if (pattern != null) (INHALE_SOUND_DURATION / pattern.inhaleSeconds).coerceIn(0.5f, 2.0f) else 1.0f
+                            currentBreathStreamId = soundManager.play(SoundEffect.BREATH_INHALE, rate)
+                        }
+                        BreathingPhase.EXHALE -> {
+                            val rate = if (pattern != null) (EXHALE_SOUND_DURATION / pattern.exhaleSeconds).coerceIn(0.5f, 2.0f) else 1.0f
+                            currentBreathStreamId = soundManager.play(SoundEffect.BREATH_EXHALE, rate)
+                        }
+                        else -> { currentBreathStreamId = 0 }
+                    }
+                }
                 _state.update {
                     it.copy(
                         elapsedSeconds = event.elapsedSeconds,
@@ -128,6 +154,7 @@ class BreathingViewModel @Inject constructor(
     private fun startBreathing() {
         stopBreathing()
 
+        lastPhase = null // Reset so first INHALE sound plays immediately
         _state.update { it.copy(isRunning = true) }
 
         val pattern = _state.value.selectedExercise?.pattern ?: return
@@ -158,6 +185,9 @@ class BreathingViewModel @Inject constructor(
 
     private fun stopBreathing() {
         breathingJob?.cancel()
+        soundManager.stop(currentBreathStreamId)
+        currentBreathStreamId = 0
+        lastPhase = null
         _state.update { it.copy(isRunning = false) }
     }
 
@@ -195,6 +225,8 @@ class BreathingViewModel @Inject constructor(
 
     private fun markCurrentAsCompleted() {
         val exerciseId = _state.value.selectedExercise?.id ?: return
+        stopBreathing()
+        soundManager.play(SoundEffect.EXERCISE_COMPLETED)
 
         _state.update {
             it.copy(

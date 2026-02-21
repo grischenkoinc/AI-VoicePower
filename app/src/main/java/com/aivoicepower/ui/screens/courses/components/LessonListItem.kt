@@ -12,6 +12,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalView
+import android.view.HapticFeedbackConstants
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -29,6 +31,7 @@ fun LessonListItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     val isCompleted = lessonWithProgress.isCompleted
     val isLocked = lessonWithProgress.isLocked
 
@@ -67,7 +70,7 @@ fun LessonListItem(
                     RoundedCornerShape(20.dp)
                 )
                 .scaleOnPress(pressedScale = 0.97f)
-                .clickable(onClick = onClick)
+                .clickable(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onClick() })
                 .padding(14.dp),
             horizontalArrangement = Arrangement.spacedBy(14.dp),
             verticalAlignment = Alignment.CenterVertically

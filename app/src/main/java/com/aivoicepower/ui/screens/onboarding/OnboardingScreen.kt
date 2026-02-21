@@ -10,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.aivoicepower.audio.LocalSoundManager
+import com.aivoicepower.audio.SoundEffect
 import com.aivoicepower.ui.screens.onboarding.components.*
 import kotlin.math.absoluteValue
 import kotlinx.coroutines.launch
@@ -23,11 +25,19 @@ fun OnboardingScreen(
     onNavigateToDiagnostic: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val soundManager = LocalSoundManager.current
     val pagerState = rememberPagerState(
         initialPage = startPage,
         pageCount = { 4 }
     )
     val scope = rememberCoroutineScope()
+
+    // Page change sound
+    LaunchedEffect(Unit) {
+        snapshotFlow { pagerState.currentPage }.collect {
+            soundManager.play(SoundEffect.ONBOARDING_PAGE)
+        }
+    }
 
     // Синхронізація pagerState з state.currentPage
     LaunchedEffect(state.currentPage) {

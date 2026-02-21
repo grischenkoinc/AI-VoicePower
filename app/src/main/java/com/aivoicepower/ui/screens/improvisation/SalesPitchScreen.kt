@@ -4,6 +4,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import android.view.HapticFeedbackConstants
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -176,6 +178,7 @@ private fun ProductSelectionScreen(
     onProductSelected: (SalesProductsProvider.SalesProduct) -> Unit,
     onNavigateBack: () -> Unit
 ) {
+    val view = LocalView.current
     val products = remember { SalesProductsProvider().getAllProducts(includeAbsurd = true) }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -214,7 +217,7 @@ private fun ProductSelectionScreen(
                     modifier = Modifier
                         .shadow(12.dp, RoundedCornerShape(16.dp), spotColor = Color.Black.copy(alpha = 0.2f))
                         .background(Color.White, RoundedCornerShape(16.dp))
-                        .clickable { onNavigateBack() }
+                        .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateBack() }
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -246,7 +249,7 @@ private fun ProductSelectionScreen(
                             .fillMaxWidth()
                             .shadow(12.dp, RoundedCornerShape(16.dp), spotColor = if (product.isAbsurd) Color(0xFFA855F7).copy(alpha = 0.2f) else Color.Black.copy(alpha = 0.12f))
                             .background(Color.White, RoundedCornerShape(16.dp))
-                            .clickable { onProductSelected(product) }
+                            .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onProductSelected(product) }
                             .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {

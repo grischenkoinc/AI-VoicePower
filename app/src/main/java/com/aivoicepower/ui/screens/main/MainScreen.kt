@@ -23,6 +23,10 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import android.view.HapticFeedbackConstants
+import androidx.compose.ui.platform.LocalView
+import com.aivoicepower.audio.LocalSoundManager
+import com.aivoicepower.audio.SoundEffect
 import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.ui.navigation.MainNavGraph
 import com.aivoicepower.ui.navigation.Screen
@@ -41,6 +45,8 @@ fun MainScreen(
     rewardedAdManager: RewardedAdManager? = null,
     rootNavController: NavHostController = rememberNavController()
 ) {
+    val soundManager = LocalSoundManager.current
+    val view = LocalView.current
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -138,7 +144,9 @@ fun MainScreen(
                                     indicatorColor = Color.Transparent
                                 ),
                                 onClick = {
+                                    view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
                                     if (!selected) {
+                                        soundManager.play(SoundEffect.TAB_SWITCH)
                                         navController.navigate(item.route) {
                                             popUpTo(navController.graph.findStartDestination().id) {
                                                 saveState = true
@@ -156,7 +164,7 @@ fun MainScreen(
             floatingActionButton = {
                 if (shouldShowBottomBar) {
                     FloatingActionButton(
-                        onClick = onNavigateToAiCoach,
+                        onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateToAiCoach() },
                         containerColor = MaterialTheme.colorScheme.primary
                     ) {
                         Icon(

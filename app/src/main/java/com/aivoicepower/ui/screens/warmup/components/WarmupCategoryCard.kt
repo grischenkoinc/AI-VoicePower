@@ -11,8 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.view.HapticFeedbackConstants
 import com.aivoicepower.ui.screens.warmup.WarmupCategory
 import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
@@ -23,6 +25,7 @@ fun WarmupCategoryCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -33,7 +36,7 @@ fun WarmupCategoryCard(
                 ambientColor = Color.Black.copy(alpha = 0.08f)
             )
             .background(Color.White, RoundedCornerShape(20.dp))
-            .clickable(onClick = onClick)
+            .clickable(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onClick() })
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {

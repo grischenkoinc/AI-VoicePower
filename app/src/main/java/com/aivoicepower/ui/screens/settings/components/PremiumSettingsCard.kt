@@ -1,5 +1,6 @@
 package com.aivoicepower.ui.screens.settings.components
 
+import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,6 +29,7 @@ fun PremiumSettingsCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     val primaryGradient = Brush.linearGradient(
         colors = listOf(Color(0xFF667EEA), Color(0xFF764BA2))
     )
@@ -47,7 +50,7 @@ fun PremiumSettingsCard(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(20.dp))
                 .background(primaryGradient, RoundedCornerShape(20.dp))
-                .clickable(onClick = onClick)
+                .clickable(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onClick() })
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {

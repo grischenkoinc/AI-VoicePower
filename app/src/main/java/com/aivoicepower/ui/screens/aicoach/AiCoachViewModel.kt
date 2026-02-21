@@ -10,6 +10,8 @@ import android.speech.SpeechRecognizer
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aivoicepower.audio.SoundEffect
+import com.aivoicepower.audio.SoundManager
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.data.chat.MessageRole
 import com.aivoicepower.data.content.SimulationScenariosProvider
@@ -30,6 +32,7 @@ class AiCoachViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val aiCoachRepository: AiCoachRepository,
     private val userPreferencesDataStore: UserPreferencesDataStore,
+    private val soundManager: SoundManager,
     val ttsManager: CloudTtsManager
 ) : ViewModel() {
 
@@ -244,6 +247,7 @@ class AiCoachViewModel @Inject constructor(
                 result.fold(
                     onSuccess = { aiMessage ->
                         _state.update { it.copy(isSending = false) }
+                        // soundManager.play(SoundEffect.COACH_PING) // Disabled for now
                         ttsManager.speak(aiMessage.content)
 
                         // Check if in simulation mode

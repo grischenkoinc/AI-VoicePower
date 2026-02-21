@@ -5,6 +5,8 @@ import android.media.MediaRecorder
 import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aivoicepower.audio.SoundEffect
+import com.aivoicepower.audio.SoundManager
 import com.aivoicepower.data.content.SalesProductsProvider
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.data.remote.GeminiApiClient
@@ -29,6 +31,7 @@ class SalesPitchViewModel @Inject constructor(
     private val salesProductsProvider: SalesProductsProvider,
     private val userPreferencesDataStore: UserPreferencesDataStore,
     private val skillUpdateService: SkillUpdateService,
+    private val soundManager: SoundManager,
     val ttsManager: CloudTtsManager
 ) : ViewModel() {
 
@@ -215,6 +218,7 @@ class SalesPitchViewModel @Inject constructor(
                 start()
             }
 
+            soundManager.play(SoundEffect.RECORD_START)
             _state.update {
                 it.copy(
                     orbState = OrbState.LISTENING,
@@ -243,6 +247,7 @@ class SalesPitchViewModel @Inject constructor(
         } catch (_: Exception) {}
         mediaRecorder = null
 
+        soundManager.play(SoundEffect.RECORD_STOP)
         _state.update {
             it.copy(
                 isListening = false,
@@ -339,8 +344,14 @@ class SalesPitchViewModel @Inject constructor(
                 try {
                     skillUpdateService.updateFromAnalysis(result, "sales")
                 } catch (_: Exception) {}
+                if (result.overallScore > 0) {
+                    soundManager.play(SoundEffect.ANALYSIS_SUCCESS)
+                } else {
+                    soundManager.play(SoundEffect.ANALYSIS_ERROR)
+                }
                 _state.update { it.copy(isAnalyzing = false, analysisResult = result) }
             }.onFailure { error ->
+                soundManager.play(SoundEffect.ANALYSIS_ERROR)
                 _state.update {
                     it.copy(
                         isAnalyzing = false,

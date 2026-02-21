@@ -5,6 +5,8 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aivoicepower.audio.SoundEffect
+import com.aivoicepower.audio.SoundManager
 import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.data.firebase.sync.ServerLimitService
 import com.aivoicepower.data.local.database.dao.CourseProgressDao
@@ -47,7 +49,8 @@ class LessonViewModel @Inject constructor(
     private val achievementRepository: AchievementRepository,
     private val userPreferencesDataStore: UserPreferencesDataStore,
     private val rewardedAdManager: RewardedAdManager,
-    private val serverLimitService: ServerLimitService
+    private val serverLimitService: ServerLimitService,
+    private val soundManager: SoundManager
 ) : ViewModel() {
 
     private val courseId: String = savedStateHandle["courseId"] ?: ""
@@ -147,6 +150,7 @@ class LessonViewModel @Inject constructor(
     }
 
     fun proceedWithAnalysisAfterAd() {
+        soundManager.play(SoundEffect.AD_REWARD)
         viewModelScope.launch {
             userPreferencesDataStore.incrementFreeAdAnalyses()
             performAnalysis()
@@ -232,7 +236,8 @@ class LessonViewModel @Inject constructor(
                                 isLoading = false,
                                 error = null,
                                 isLastLessonInCourse = isLastLesson,
-                                courseName = courseName
+                                courseName = courseName,
+                                courseIconEmoji = course?.iconEmoji ?: "\uD83D\uDCDA"
                             )
                         }
                     }
@@ -283,6 +288,7 @@ class LessonViewModel @Inject constructor(
                 outputFile.parentFile?.mkdirs()
 
                 audioRecorder.startRecording(outputFile.absolutePath)
+                soundManager.play(SoundEffect.RECORD_START)
 
                 updateCurrentExerciseState { it.copy(status = ExerciseStatus.Recording) }
             } catch (e: Exception) {
@@ -295,6 +301,7 @@ class LessonViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val result = audioRecorder.stopRecording()
+                soundManager.play(SoundEffect.RECORD_STOP)
 
                 if (result != null) {
                     updateCurrentExerciseState {
@@ -395,6 +402,7 @@ class LessonViewModel @Inject constructor(
                 )
 
                 if (!canAnalyze) {
+                    soundManager.play(SoundEffect.LIMIT_REACHED)
                     // Show limit bottom sheet
                     _state.update { it.copy(showAnalysisLimitSheet = true) }
                     return@launch
@@ -454,6 +462,11 @@ class LessonViewModel @Inject constructor(
                 }
 
                 // Show results to user
+                if (result != null && result.overallScore > 0) {
+                    soundManager.play(SoundEffect.ANALYSIS_SUCCESS)
+                } else {
+                    soundManager.play(SoundEffect.ANALYSIS_ERROR)
+                }
                 updateCurrentExerciseState {
                     it.copy(
                         status = ExerciseStatus.ShowingResults,
@@ -476,6 +489,7 @@ class LessonViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e("LessonVM", "Analysis error: ${e.message}", e)
+                soundManager.play(SoundEffect.ANALYSIS_ERROR)
                 // On error, skip analysis and proceed
                 updateCurrentExerciseState { it.copy(status = ExerciseStatus.Completed) }
                 proceedAfterExercise()
@@ -491,6 +505,7 @@ class LessonViewModel @Inject constructor(
         } else {
             ExerciseStatus.Completed
         }
+        // Sound is played in proceedAfterExercise (EXERCISE_COMPLETED or LESSON_COMPLETED)
         updateCurrentExerciseState { it.copy(status = newStatus) }
         proceedAfterExercise()
     }
@@ -565,6 +580,7 @@ class LessonViewModel @Inject constructor(
 
             val badgeDef = AchievementDefinitions.getForCourse(courseId)
             if (badgeDef != null) {
+                soundManager.play(SoundEffect.COURSE_COMPLETED)
                 _state.update {
                     it.copy(
                         courseCompletionBadge = Achievement(

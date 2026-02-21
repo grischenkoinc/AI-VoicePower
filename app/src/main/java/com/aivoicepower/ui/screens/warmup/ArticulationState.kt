@@ -47,7 +47,7 @@ private fun getArticulationExercises(): List<ArticulationExercise> {
             id = 5,
             title = "Клацання язиком",
             durationSeconds = 15,
-            instruction = "Клацай язиком, як коник цокає копитами. Робіт чіткі, голосні звуки."
+            instruction = "Клацай язиком, як коник цокає копитами. Робіть чіткі, голосні звуки."
         ),
         ArticulationExercise(
             id = 6,

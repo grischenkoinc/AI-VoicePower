@@ -7,6 +7,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import android.view.HapticFeedbackConstants
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -173,6 +175,7 @@ private fun VoiceExerciseTopBar(
     stepInfo: String,
     onBackClick: () -> Unit
 ) {
+    val view = LocalView.current
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -185,7 +188,7 @@ private fun VoiceExerciseTopBar(
                 .clip(CircleShape)
                 .background(Color.White.copy(alpha = 0.12f))
                 .border(1.dp, Color.White.copy(alpha = 0.15f), CircleShape)
-                .clickable { onBackClick() },
+                .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onBackClick() },
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -331,6 +334,7 @@ private fun VoiceActionButton(
     onRecordClick: () -> Unit,
     onStopClick: () -> Unit
 ) {
+    val view = LocalView.current
     val enabled = orbState == OrbState.IDLE || orbState == OrbState.LISTENING
 
     val infiniteTransition = rememberInfiniteTransition(label = "btn_pulse")
@@ -376,6 +380,7 @@ private fun VoiceActionButton(
                 indication = null,
                 enabled = enabled
             ) {
+                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
                 if (isRecording) onStopClick() else onRecordClick()
             }
     ) {
@@ -409,6 +414,7 @@ private fun CompletionButtons(
     onAnalyzeClick: () -> Unit,
     onSkipClick: () -> Unit
 ) {
+    val view = LocalView.current
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -424,7 +430,7 @@ private fun CompletionButtons(
                 .clip(RoundedCornerShape(26.dp))
                 .background(brush = Brush.linearGradient(listOf(Color(0xFF667EEA), Color(0xFF764BA2))))
                 .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(26.dp))
-                .clickable { onAnalyzeClick() }
+                .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onAnalyzeClick() }
         ) {
             Text(
                 text = "Отримати аналіз",
@@ -444,7 +450,7 @@ private fun CompletionButtons(
                 .clip(RoundedCornerShape(22.dp))
                 .background(Color.White.copy(alpha = 0.08f))
                 .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(22.dp))
-                .clickable { onSkipClick() }
+                .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onSkipClick() }
         ) {
             Text(
                 text = "Продовжити без аналізу",
@@ -488,6 +494,7 @@ fun ImprovisationAnalysisScreen(
     exerciseTitle: String,
     onDismiss: () -> Unit
 ) {
+    val view = LocalView.current
     // === REVEAL ORCHESTRATION ===
     var showScore by remember { mutableStateOf(false) }
     var showBars by remember { mutableStateOf(false) }
@@ -577,7 +584,7 @@ fun ImprovisationAnalysisScreen(
                         .clip(CircleShape)
                         .background(Color.White.copy(alpha = 0.12f))
                         .border(1.dp, Color.White.copy(alpha = 0.15f), CircleShape)
-                        .clickable { onDismiss() },
+                        .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onDismiss() },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -932,7 +939,7 @@ fun ImprovisationAnalysisScreen(
                         .clip(RoundedCornerShape(26.dp))
                         .background(brush = Brush.linearGradient(listOf(Color(0xFF667EEA), Color(0xFF764BA2))))
                         .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(26.dp))
-                        .clickable { onDismiss() }
+                        .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onDismiss() }
                 ) {
                     Text(
                         text = "Готово",

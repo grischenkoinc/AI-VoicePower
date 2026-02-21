@@ -1,5 +1,6 @@
 package com.aivoicepower.ui.screens.settings
 
+import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,12 +14,16 @@ import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -38,6 +43,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val view = LocalView.current
 
     // Dialogs
     if (state.showLogoutDialog) {
@@ -107,7 +113,7 @@ fun SettingsScreen(
                         )
                         .clip(CircleShape)
                         .background(Color.White, CircleShape)
-                        .clickable(onClick = onNavigateBack),
+                        .clickable(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateBack() }),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -206,9 +212,34 @@ fun SettingsScreen(
                     trailingType = SettingsTrailingType.SWITCH,
                     isChecked = state.isSoundEnabled,
                     onCheckedChange = { viewModel.onEvent(SettingsEvent.ToggleSound) },
-                    showDivider = false,
+                    showDivider = state.isSoundEnabled,
                     onClick = { viewModel.onEvent(SettingsEvent.ToggleSound) }
                 )
+                AnimatedVisibility(
+                    visible = state.isSoundEnabled,
+                    enter = expandVertically(),
+                    exit = shrinkVertically()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(start = 68.dp, end = 16.dp, bottom = 8.dp)
+                    ) {
+                        SoundVolumeRow(
+                            label = "Навігація",
+                            value = state.uiVolume,
+                            onValueChange = { viewModel.onEvent(SettingsEvent.SetUiVolume(it)) }
+                        )
+                        SoundVolumeRow(
+                            label = "Зворотний зв'язок",
+                            value = state.feedbackVolume,
+                            onValueChange = { viewModel.onEvent(SettingsEvent.SetFeedbackVolume(it)) }
+                        )
+                        SoundVolumeRow(
+                            label = "Святкування",
+                            value = state.celebrationVolume,
+                            onValueChange = { viewModel.onEvent(SettingsEvent.SetCelebrationVolume(it)) }
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -293,4 +324,41 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(12.dp))
         }
     })
+}
+
+@Composable
+private fun SoundVolumeRow(
+    label: String,
+    value: Float,
+    onValueChange: (Float) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            fontSize = 13.sp,
+            color = Color(0xFF9CA3AF),
+            modifier = Modifier.width(120.dp)
+        )
+        Slider(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier.weight(1f),
+            colors = SliderDefaults.colors(
+                thumbColor = Color(0xFF8B5CF6),
+                activeTrackColor = Color(0xFF8B5CF6),
+                inactiveTrackColor = Color(0xFFE5E7EB)
+            )
+        )
+        Text(
+            text = "${(value * 100).toInt()}%",
+            fontSize = 12.sp,
+            color = Color(0xFF9CA3AF),
+            modifier = Modifier.width(36.dp)
+        )
+    }
 }

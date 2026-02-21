@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import android.view.HapticFeedbackConstants
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -11,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -28,6 +30,7 @@ fun ConfirmationDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    val view = LocalView.current
     val confirmGradient = if (isDangerous) {
         Brush.linearGradient(
             colors = listOf(Color(0xFFEF4444), Color(0xFFDC2626))
@@ -66,7 +69,7 @@ fun ConfirmationDialog(
                     .background(confirmGradient, RoundedCornerShape(12.dp))
             ) {
                 TextButton(
-                    onClick = onConfirm,
+                    onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onConfirm() },
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.textButtonColors(
                         contentColor = Color.White
@@ -83,7 +86,7 @@ fun ConfirmationDialog(
         },
         dismissButton = {
             TextButton(
-                onClick = onDismiss,
+                onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onDismiss() },
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.textButtonColors(
                     contentColor = Color.White.copy(alpha = 0.7f)

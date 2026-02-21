@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import android.view.HapticFeedbackConstants
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.foundation.rememberScrollState
@@ -352,6 +354,7 @@ private fun PremiumPromptCard(
     onNavigateToPremium: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -369,7 +372,7 @@ private fun PremiumPromptCard(
                 ),
                 RoundedCornerShape(20.dp)
             )
-            .clickable { onNavigateToPremium() }
+            .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateToPremium() }
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -419,6 +422,7 @@ private fun ProFeatureBottomSheet(
     onPremium: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    val view = LocalView.current
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = Color.White,
@@ -525,7 +529,7 @@ private fun ProFeatureBottomSheet(
                             ),
                             RoundedCornerShape(16.dp)
                         )
-                        .clickable { onPremium() }
+                        .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onPremium() }
                         .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -556,7 +560,7 @@ private fun ProFeatureBottomSheet(
                             color = Color(0xFFD1D5DB),
                             shape = RoundedCornerShape(16.dp)
                         )
-                        .clickable(enabled = isAdLoaded) { onWatchAd() }
+                        .clickable(enabled = isAdLoaded) { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onWatchAd() }
                         .padding(14.dp),
                     contentAlignment = Alignment.Center
                 ) {

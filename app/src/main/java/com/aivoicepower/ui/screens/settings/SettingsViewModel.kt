@@ -42,7 +42,11 @@ class SettingsViewModel @Inject constructor(
                         isAuthenticated = authUser != null,
                         isPremium = prefs.isPremium,
                         dailyGoalMinutes = prefs.dailyGoalMinutes,
-                        isReminderEnabled = prefs.isReminderEnabled
+                        isReminderEnabled = prefs.isReminderEnabled,
+                        isSoundEnabled = prefs.isSoundEnabled,
+                        uiVolume = prefs.uiVolume,
+                        feedbackVolume = prefs.feedbackVolume,
+                        celebrationVolume = prefs.celebrationVolume
                     )
                 }
             }.collect()
@@ -74,7 +78,29 @@ class SettingsViewModel @Inject constructor(
                 _state.update { it.copy(showDailyGoalPicker = true) }
             }
             is SettingsEvent.ToggleSound -> {
-                _state.update { it.copy(isSoundEnabled = !it.isSoundEnabled) }
+                val newEnabled = !_state.value.isSoundEnabled
+                _state.update { it.copy(isSoundEnabled = newEnabled) }
+                viewModelScope.launch {
+                    userPreferencesDataStore.setSoundEnabled(newEnabled)
+                }
+            }
+            is SettingsEvent.SetUiVolume -> {
+                _state.update { it.copy(uiVolume = event.volume) }
+                viewModelScope.launch {
+                    userPreferencesDataStore.setUiVolume(event.volume)
+                }
+            }
+            is SettingsEvent.SetFeedbackVolume -> {
+                _state.update { it.copy(feedbackVolume = event.volume) }
+                viewModelScope.launch {
+                    userPreferencesDataStore.setFeedbackVolume(event.volume)
+                }
+            }
+            is SettingsEvent.SetCelebrationVolume -> {
+                _state.update { it.copy(celebrationVolume = event.volume) }
+                viewModelScope.launch {
+                    userPreferencesDataStore.setCelebrationVolume(event.volume)
+                }
             }
             is SettingsEvent.ToggleSync -> {
                 _state.update { it.copy(isSyncEnabled = !it.isSyncEnabled) }

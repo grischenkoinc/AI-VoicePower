@@ -3,6 +3,8 @@ package com.aivoicepower.ui.screens.improvisation
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aivoicepower.audio.SoundEffect
+import com.aivoicepower.audio.SoundManager
 import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.data.content.ImprovisationTopicsProvider
 import com.aivoicepower.data.firebase.sync.ServerLimitService
@@ -27,7 +29,8 @@ class RandomTopicViewModel @Inject constructor(
     private val userPreferencesDataStore: UserPreferencesDataStore,
     private val voiceAnalysisRepository: VoiceAnalysisRepository,
     private val rewardedAdManager: RewardedAdManager,
-    private val serverLimitService: ServerLimitService
+    private val serverLimitService: ServerLimitService,
+    private val soundManager: SoundManager
 ) : ViewModel() {
 
     private val audioRecorderUtil = AudioRecorderUtil(context)
@@ -146,6 +149,7 @@ class RandomTopicViewModel @Inject constructor(
                 val outputPath = File(recordingsDir, "${recordingId}.m4a").absolutePath
 
                 audioRecorderUtil.startRecording(outputPath)
+                soundManager.play(SoundEffect.RECORD_START)
 
                 _state.update {
                     it.copy(
@@ -184,6 +188,7 @@ class RandomTopicViewModel @Inject constructor(
     private fun stopRecording() {
         viewModelScope.launch {
             audioRecorderUtil.stopRecording()
+            soundManager.play(SoundEffect.RECORD_STOP)
             _state.update {
                 it.copy(isRecording = false)
             }
@@ -198,12 +203,14 @@ class RandomTopicViewModel @Inject constructor(
             )
 
             if (!canAnalyze) {
+                soundManager.play(SoundEffect.LIMIT_REACHED)
                 _state.update { it.copy(showAnalysisLimitSheet = true) }
                 return@launch
             }
 
             // Server-side limit check for free users
             if (!prefs.isPremium && !serverLimitService.canAnalyze(isImprov = true)) {
+                soundManager.play(SoundEffect.LIMIT_REACHED)
                 _state.update { it.copy(showAnalysisLimitSheet = true) }
                 return@launch
             }
@@ -248,6 +255,11 @@ class RandomTopicViewModel @Inject constructor(
                 userPreferencesDataStore.incrementFreeImprovisations()
 
                 if (result != null) {
+                    if (result.overallScore > 0) {
+                        soundManager.play(SoundEffect.ANALYSIS_SUCCESS)
+                    } else {
+                        soundManager.play(SoundEffect.ANALYSIS_ERROR)
+                    }
                     _state.update {
                         it.copy(
                             isAnalyzing = false,
@@ -256,6 +268,7 @@ class RandomTopicViewModel @Inject constructor(
                     }
                 } else {
                     val errorMsg = apiResult.exceptionOrNull()?.message ?: "Невідома помилка"
+                    soundManager.play(SoundEffect.ANALYSIS_ERROR)
                     _state.update {
                         it.copy(
                             isAnalyzing = false,
@@ -264,6 +277,7 @@ class RandomTopicViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
+                soundManager.play(SoundEffect.ANALYSIS_ERROR)
                 _state.update {
                     it.copy(
                         isAnalyzing = false,

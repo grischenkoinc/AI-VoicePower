@@ -9,11 +9,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.compose.rememberNavController
+import com.aivoicepower.audio.LocalSoundManager
+import com.aivoicepower.audio.SoundManager
 import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.data.firebase.auth.GoogleSignInHelper
 import com.aivoicepower.ui.navigation.NavGraph
@@ -29,6 +32,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var rewardedAdManager: RewardedAdManager
+
+    @Inject
+    lateinit var soundManager: SoundManager
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -68,17 +74,19 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            AIVoicePowerTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = Color.Transparent
-                ) {
-                    val navController = rememberNavController()
-                    NavGraph(
-                        navController = navController,
-                        googleSignInHelper = googleSignInHelper,
-                        rewardedAdManager = rewardedAdManager
-                    )
+            CompositionLocalProvider(LocalSoundManager provides soundManager) {
+                AIVoicePowerTheme {
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = Color.Transparent
+                    ) {
+                        val navController = rememberNavController()
+                        NavGraph(
+                            navController = navController,
+                            googleSignInHelper = googleSignInHelper,
+                            rewardedAdManager = rewardedAdManager
+                        )
+                    }
                 }
             }
         }

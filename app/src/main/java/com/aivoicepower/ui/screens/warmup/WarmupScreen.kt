@@ -24,6 +24,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aivoicepower.ui.screens.warmup.components.*
 import com.aivoicepower.ui.theme.*
 import com.aivoicepower.ui.theme.components.GradientBackground
+import com.aivoicepower.ui.theme.modifiers.staggeredEntry
 
 @Composable
 fun WarmupScreen(
@@ -98,7 +99,10 @@ private fun WarmupContent(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Header
-        WarmupHeader(onNavigateBack = onNavigateBack)
+        WarmupHeader(
+            onNavigateBack = onNavigateBack,
+            modifier = Modifier.staggeredEntry(index = 0)
+        )
 
         // Quick Warmup Section
         Text(
@@ -107,13 +111,17 @@ private fun WarmupContent(
             color = TextColors.onDarkPrimary,
             fontSize = 20.sp,
             fontWeight = FontWeight.ExtraBold,
-            letterSpacing = (-0.5).sp
+            letterSpacing = (-0.5).sp,
+            modifier = Modifier.staggeredEntry(index = 1)
         )
 
-        QuickWarmupCard(onClick = onQuickWarmupClick)
+        QuickWarmupCard(
+            onClick = onQuickWarmupClick,
+            modifier = Modifier.staggeredEntry(index = 2)
+        )
 
         // Tip Card
-        TipCard()
+        TipCard(modifier = Modifier.staggeredEntry(index = 3))
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -124,13 +132,15 @@ private fun WarmupContent(
             color = TextColors.onDarkPrimary,
             fontSize = 20.sp,
             fontWeight = FontWeight.ExtraBold,
-            letterSpacing = (-0.5).sp
+            letterSpacing = (-0.5).sp,
+            modifier = Modifier.staggeredEntry(index = 4)
         )
 
-        state.categories.forEach { category ->
+        state.categories.forEachIndexed { index, category ->
             WarmupCategoryCard(
                 category = category,
-                onClick = { onCategoryClick(category.id) }
+                onClick = { onCategoryClick(category.id) },
+                modifier = Modifier.staggeredEntry(index = 5 + index)
             )
         }
 
@@ -141,7 +151,7 @@ private fun WarmupContent(
 @Composable
 private fun WarmupHeader(
     onNavigateBack: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),

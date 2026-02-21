@@ -5,6 +5,7 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import android.view.HapticFeedbackConstants
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,12 +20,14 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aivoicepower.ui.components.breathing.BreathingAnimation
 import com.aivoicepower.ui.screens.warmup.BreathingExercise
 import com.aivoicepower.ui.screens.warmup.BreathingPattern
+import com.aivoicepower.ui.utils.performHaptic
 import com.aivoicepower.ui.screens.warmup.BreathingPhase
 import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
@@ -50,6 +53,7 @@ fun BreathingExerciseDialog(
     completedExercises: Int = 0
 ) {
     val context = LocalContext.current
+    val view = LocalView.current
     var showExitWarning by remember { mutableStateOf(false) }
 
     // Haptic feedback on phase change
@@ -112,6 +116,7 @@ fun BreathingExerciseDialog(
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier
                             .clickable {
+                                performHaptic(view)
                                 if (totalExercises > 0) {
                                     // Quick Warmup - show warning
                                     showExitWarning = true
@@ -253,7 +258,7 @@ fun BreathingExerciseDialog(
                                 ),
                                 RoundedCornerShape(16.dp)
                             )
-                            .clickable { if (isRunning) onPause() else onStart() }
+                            .clickable { performHaptic(view); if (isRunning) onPause() else onStart() }
                             .padding(vertical = 16.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -281,7 +286,7 @@ fun BreathingExerciseDialog(
                                     spotColor = Color.Black.copy(alpha = 0.15f)
                                 )
                                 .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(16.dp))
-                                .clickable { onSkip() }
+                                .clickable { performHaptic(view); onSkip() }
                                 .padding(vertical = 14.dp),
                             contentAlignment = Alignment.Center
                         ) {
@@ -309,7 +314,7 @@ fun BreathingExerciseDialog(
                                     ),
                                     RoundedCornerShape(16.dp)
                                 )
-                                .clickable { onMarkCompleted() }
+                                .clickable { performHaptic(view); onMarkCompleted() }
                                 .padding(vertical = 14.dp),
                             contentAlignment = Alignment.Center
                         ) {
@@ -457,7 +462,7 @@ fun BreathingExerciseDialog(
                                 ),
                                 RoundedCornerShape(16.dp)
                             )
-                            .clickable { onHideInstructions() }
+                            .clickable { performHaptic(view); onHideInstructions() }
                             .padding(vertical = 16.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -497,6 +502,7 @@ fun BreathingExerciseDialog(
                 confirmButton = {
                     androidx.compose.material3.TextButton(
                         onClick = {
+                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
                             showExitWarning = false
                             onDismiss()
                         }
@@ -510,7 +516,7 @@ fun BreathingExerciseDialog(
                 },
                 dismissButton = {
                     androidx.compose.material3.TextButton(
-                        onClick = { showExitWarning = false }
+                        onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); showExitWarning = false }
                     ) {
                         Text(
                             text = "Скасувати",

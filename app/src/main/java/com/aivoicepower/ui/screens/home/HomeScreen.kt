@@ -1,6 +1,7 @@
 package com.aivoicepower.ui.screens.home
 
 import android.app.Activity
+import android.view.HapticFeedbackConstants
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -28,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -37,7 +39,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aivoicepower.domain.model.home.CurrentCourse
 import com.aivoicepower.domain.model.home.QuickAction
-import com.aivoicepower.ui.components.HomeSkeletonContent
 import com.aivoicepower.ui.theme.*
 import com.aivoicepower.ui.theme.components.*
 import com.aivoicepower.ui.theme.modifiers.*
@@ -89,9 +90,21 @@ fun HomeScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         GradientBackground(content = {})
 
+        // Show loading spinner while data loads, then stagger content in
         if (state.isLoading) {
-            HomeSkeletonContent()
-        } else {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                androidx.compose.material3.CircularProgressIndicator(
+                    color = Color.White.copy(alpha = 0.6f),
+                    strokeWidth = 2.dp,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+            return@Box
+        }
+
         // Scrollable Content
         Column(
             modifier = Modifier
@@ -106,21 +119,21 @@ fun HomeScreen(
                     greeting = state.greeting,
                     onSettings = onNavigateToSettings,
                     onMenu = onOpenDrawer,
-                    modifier = Modifier.staggeredEntry(index = 0)
+                    modifier = Modifier.staggeredEntry(index = 0, staggerDelay = 60)
                 )
 
                 // Streak Card
                 StreakCard(
                     currentStreak = state.currentStreak,
                     weekProgress = state.weekProgress,
-                    modifier = Modifier.staggeredEntry(index = 1)
+                    modifier = Modifier.staggeredEntry(index = 1, staggerDelay = 60)
                 )
 
                 // Motivation Card
                 state.dailyTip?.let { tip ->
                     MotivationCard(
                         tip = tip,
-                        modifier = Modifier.staggeredEntry(index = 2)
+                        modifier = Modifier.staggeredEntry(index = 2, staggerDelay = 60)
                     )
                 }
 
@@ -131,7 +144,7 @@ fun HomeScreen(
                         maxAnalyses = state.maxFreeAnalyses,
                         remainingImprovAnalyses = state.remainingImprovAnalyses,
                         maxImprovAnalyses = state.maxFreeImprovAnalyses,
-                        modifier = Modifier.staggeredEntry(index = 3)
+                        modifier = Modifier.staggeredEntry(index = 3, staggerDelay = 60)
                     )
                 }
 
@@ -141,14 +154,14 @@ fun HomeScreen(
                         plan = plan,
                         coachMessage = state.coachMessage,
                         onCoachClick = onNavigateToAICoach,
-                        modifier = Modifier.staggeredEntry(index = 4)
+                        modifier = Modifier.staggeredEntry(index = 4, staggerDelay = 60)
                     )
                 }
 
                 // Skills Section
                 SkillsSection(
                     skills = state.skills,
-                    modifier = Modifier.staggeredEntry(index = 5)
+                    modifier = Modifier.staggeredEntry(index = 5, staggerDelay = 60)
                 )
 
                 // Continue Course
@@ -161,7 +174,7 @@ fun HomeScreen(
                                 course.nextLessonId
                             )
                         },
-                        modifier = Modifier.staggeredEntry(index = 6)
+                        modifier = Modifier.staggeredEntry(index = 6, staggerDelay = 60)
                     )
                 }
 
@@ -177,13 +190,11 @@ fun HomeScreen(
                             else -> {}
                         }
                     },
-                    modifier = Modifier.staggeredEntry(index = 7)
+                    modifier = Modifier.staggeredEntry(index = 7, staggerDelay = 60)
                 )
 
             Spacer(modifier = Modifier.height(24.dp))
         }
-        } // end else (!isLoading)
-
         // Snackbar
         SnackbarHost(
             hostState = snackbarHostState,
@@ -210,6 +221,7 @@ private fun HomeHeader(
     onMenu: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -227,7 +239,7 @@ private fun HomeHeader(
                         Color.White.copy(alpha = 0.15f),
                         CircleShape
                     )
-                    .clickable { onMenu() },
+                    .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onMenu() },
                 contentAlignment = Alignment.Center
             ) {
                 Text(text = "☰", fontSize = 18.sp, color = Color.White)
@@ -262,7 +274,7 @@ private fun HomeHeader(
                     ),
                     CircleShape
                 )
-                .clickable { onSettings() },
+                .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onSettings() },
             contentAlignment = Alignment.Center
         ) {
             Text(text = "⚙️", fontSize = 20.sp)
@@ -528,6 +540,7 @@ private fun DailyGoalCard(
     onCoachClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     val completedTasks = plan.activities.count { it.isCompleted }
     val totalTasks = plan.activities.size
     val remainingMinutes = plan.activities.filter { !it.isCompleted }.sumOf { it.estimatedMinutes }
@@ -655,7 +668,7 @@ private fun DailyGoalCard(
                         color = Color(0xFF8B5CF6).copy(alpha = 0.25f),
                         shape = RoundedCornerShape(14.dp)
                     )
-                    .clickable(onClick = onCoachClick)
+                    .clickable(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onCoachClick() })
                     .padding(12.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -746,6 +759,7 @@ private fun TaskRow(
     completed: Boolean,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -755,7 +769,7 @@ private fun TaskRow(
                 RoundedCornerShape(12.dp)
             )
             .scaleOnPress(pressedScale = 0.98f)
-            .clickable { }
+            .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY) }
             .padding(12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -849,6 +863,7 @@ private fun SkillCard(
     skill: com.aivoicepower.domain.model.home.Skill,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     // Конвертуємо hex кольори в Color об'єкти
     val gradientColors = skill.gradientColors.map { hexColor ->
         Color(android.graphics.Color.parseColor(hexColor))
@@ -866,7 +881,7 @@ private fun SkillCard(
                 elevation = 8.dp,
                 spotColor = Color.Black.copy(alpha = 0.15f)
             )
-            .clickable { }
+            .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY) }
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -943,6 +958,7 @@ private fun ContinueCourseSection(
     onCourseClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -962,7 +978,7 @@ private fun ContinueCourseSection(
                     spotColor = Color.Black.copy(alpha = 0.2f)
                 )
                 .background(Color.White, RoundedCornerShape(24.dp))
-                .clickable(onClick = onCourseClick)
+                .clickable(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onCourseClick() })
                 .padding(0.dp)
         ) {
             // Header з градієнтом курсу
@@ -1201,6 +1217,7 @@ private fun QuickActionCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     // Map action IDs to gradient colors
     val gradientColors = when (action.id) {
         "tongue_twisters" -> listOf(Color(0xFFC0C0C0), Color(0xFFE8E8E8)) // Сріблястий градієнт
@@ -1221,7 +1238,7 @@ private fun QuickActionCard(
             )
             .background(Color.White, RoundedCornerShape(20.dp))
             .scaleOnPress(pressedScale = 0.95f)
-            .clickable { onClick() }
+            .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onClick() }
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {

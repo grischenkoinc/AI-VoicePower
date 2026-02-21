@@ -1,7 +1,9 @@
 package com.aivoicepower.ui.screens.improvisation
 
+import android.view.HapticFeedbackConstants
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -17,6 +19,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.LocalView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aivoicepower.ui.components.FocusCountdownOverlay
 import com.aivoicepower.ui.screens.improvisation.components.AnalyzingScreen
@@ -160,6 +163,8 @@ private fun NegotiationWelcomeScreen(
     onStart: () -> Unit,
     onNavigateBack: () -> Unit
 ) {
+    val view = LocalView.current
+
     Box(modifier = Modifier.fillMaxSize()) {
         GradientBackground(content = {})
 
@@ -169,22 +174,61 @@ private fun NegotiationWelcomeScreen(
                 .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 130.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(
-                    text = "Симуляція",
-                    style = AppTypography.labelMedium,
-                    color = TextColors.onDarkSecondary,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = "\uD83E\uDD1D Перемовини",
-                    style = AppTypography.displayLarge,
-                    color = TextColors.onDarkPrimary,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = (-0.8).sp
-                )
+            // Header with back button
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    Text(
+                        text = "Симуляція",
+                        style = AppTypography.labelMedium,
+                        color = TextColors.onDarkSecondary,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "\uD83E\uDD1D Перемовини",
+                        style = AppTypography.displayLarge,
+                        color = TextColors.onDarkPrimary,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = (-0.8).sp
+                    )
+                }
+
+                // Back button
+                Row(
+                    modifier = Modifier
+                        .shadow(
+                            elevation = 12.dp,
+                            shape = RoundedCornerShape(16.dp),
+                            spotColor = Color.Black.copy(alpha = 0.2f)
+                        )
+                        .background(Color.White, RoundedCornerShape(16.dp))
+                        .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateBack() }
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "\u2190",
+                        fontSize = 24.sp,
+                        color = Color(0xFF667EEA),
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "\u041D\u0430\u0437\u0430\u0434",
+                        style = AppTypography.bodyMedium,
+                        color = TextColors.onLightPrimary,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))

@@ -7,10 +7,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import android.view.HapticFeedbackConstants
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -30,6 +32,7 @@ fun ScenarioDialog(
     onScenarioSelected: (SimulationScenario) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val view = LocalView.current
     Dialog(onDismissRequest = onDismiss) {
         val dialogShape = RoundedCornerShape(24.dp)
 
@@ -74,7 +77,7 @@ fun ScenarioDialog(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                TextButton(onClick = onDismiss) {
+                TextButton(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onDismiss() }) {
                     Text(
                         text = "Закрити",
                         color = PrimaryColors.light

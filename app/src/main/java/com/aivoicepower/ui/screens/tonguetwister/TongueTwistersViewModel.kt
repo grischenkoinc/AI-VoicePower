@@ -4,6 +4,8 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aivoicepower.audio.SoundEffect
+import com.aivoicepower.audio.SoundManager
 import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.data.content.TongueTwistersProvider
 import com.aivoicepower.data.firebase.sync.ServerLimitService
@@ -35,7 +37,8 @@ class TongueTwistersViewModel @Inject constructor(
     private val recordingDao: RecordingDao,
     private val userPreferencesDataStore: UserPreferencesDataStore,
     private val rewardedAdManager: RewardedAdManager,
-    private val serverLimitService: ServerLimitService
+    private val serverLimitService: ServerLimitService,
+    private val soundManager: SoundManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(TongueTwistersState())
@@ -211,6 +214,7 @@ class TongueTwistersViewModel @Inject constructor(
 
                 audioRecorder.startRecording(outputFile.absolutePath)
                 recordingPath = outputFile.absolutePath
+                soundManager.play(SoundEffect.RECORD_START)
 
                 _state.update { it.copy(isRecording = true, recordingDurationMs = 0) }
 
@@ -241,6 +245,7 @@ class TongueTwistersViewModel @Inject constructor(
             try {
                 recordingTimerJob?.cancel()
                 audioRecorder.stopRecording()
+                soundManager.play(SoundEffect.RECORD_STOP)
 
                 _state.update { it.copy(isRecording = false) }
 
@@ -251,12 +256,14 @@ class TongueTwistersViewModel @Inject constructor(
                 )
 
                 if (!canAnalyze) {
+                    soundManager.play(SoundEffect.LIMIT_REACHED)
                     _state.update { it.copy(showAnalysisLimitSheet = true) }
                     return@launch
                 }
 
                 // Server-side limit check for free users
                 if (!prefs.isPremium && !serverLimitService.canAnalyze(isImprov = false)) {
+                    soundManager.play(SoundEffect.LIMIT_REACHED)
                     _state.update { it.copy(showAnalysisLimitSheet = true) }
                     return@launch
                 }
@@ -310,6 +317,12 @@ class TongueTwistersViewModel @Inject constructor(
                 recordingDao.insert(recordingEntity)
             }
 
+            if (analysisResult != null && analysisResult.overallScore > 0) {
+                soundManager.play(SoundEffect.ANALYSIS_SUCCESS)
+            } else {
+                soundManager.play(SoundEffect.ANALYSIS_ERROR)
+            }
+
             _state.update {
                 it.copy(
                     isAnalyzing = false,
@@ -318,6 +331,7 @@ class TongueTwistersViewModel @Inject constructor(
             }
         } catch (e: Exception) {
             Log.e("TongueTwistersVM", "Save recording error", e)
+            soundManager.play(SoundEffect.ANALYSIS_ERROR)
             _state.update { it.copy(isAnalyzing = false) }
         }
     }

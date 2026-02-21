@@ -13,6 +13,8 @@ import com.aivoicepower.domain.repository.VoiceAnalysisRepository
 import com.aivoicepower.utils.PremiumChecker
 import com.aivoicepower.utils.audio.AudioRecorderUtil
 import com.aivoicepower.utils.constants.FreeTierLimits
+import com.aivoicepower.audio.SoundEffect
+import com.aivoicepower.audio.SoundManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
@@ -36,7 +38,8 @@ class DailyChallengeViewModel @Inject constructor(
     private val userPreferencesDataStore: UserPreferencesDataStore,
     private val voiceAnalysisRepository: VoiceAnalysisRepository,
     private val rewardedAdManager: RewardedAdManager,
-    private val serverLimitService: ServerLimitService
+    private val serverLimitService: ServerLimitService,
+    private val soundManager: SoundManager
 ) : ViewModel() {
 
     private val audioRecorderUtil = AudioRecorderUtil(context)
@@ -185,6 +188,7 @@ class DailyChallengeViewModel @Inject constructor(
 
         try {
             audioRecorderUtil.startRecording(outputPath)
+            soundManager.play(SoundEffect.RECORD_START)
             currentRecordingPath = outputPath
 
             _state.value = _state.value.copy(
@@ -224,6 +228,7 @@ class DailyChallengeViewModel @Inject constructor(
     private fun stopRecording() {
         recordingTimerJob?.cancel()
         audioRecorderUtil.stopRecording()
+        soundManager.play(SoundEffect.RECORD_STOP)
         _state.value = _state.value.copy(
             isRecording = false
         )
@@ -236,11 +241,13 @@ class DailyChallengeViewModel @Inject constructor(
                 prefs.isPremium, prefs.freeImprovAnalysesToday, prefs.freeAdImprovToday
             )
             if (!canAnalyze) {
+                soundManager.play(SoundEffect.LIMIT_REACHED)
                 _state.value = _state.value.copy(showAnalysisLimitSheet = true)
                 return@launch
             }
             // Server-side limit check for free users
             if (!prefs.isPremium && !serverLimitService.canAnalyze(isImprov = true)) {
+                soundManager.play(SoundEffect.LIMIT_REACHED)
                 _state.value = _state.value.copy(showAnalysisLimitSheet = true)
                 return@launch
             }
@@ -259,6 +266,7 @@ class DailyChallengeViewModel @Inject constructor(
                 val recordingPath = currentRecordingPath
 
                 if (recordingPath == null) {
+                    soundManager.play(SoundEffect.ANALYSIS_ERROR)
                     _state.value = _state.value.copy(
                         isAnalyzing = false,
                         error = "Помилка: запис не знайдено. Спробуйте записати ще раз."
@@ -295,6 +303,11 @@ class DailyChallengeViewModel @Inject constructor(
                 userPreferencesDataStore.incrementFreeImprovisations()
 
                 if (analysisResult != null) {
+                    if (analysisResult.overallScore > 0) {
+                        soundManager.play(SoundEffect.ANALYSIS_SUCCESS)
+                    } else {
+                        soundManager.play(SoundEffect.ANALYSIS_ERROR)
+                    }
                     _state.value = _state.value.copy(
                         isAnalyzing = false,
                         analysisResult = analysisResult,
@@ -302,6 +315,7 @@ class DailyChallengeViewModel @Inject constructor(
                     )
                 } else {
                     val errorMsg = apiResult.exceptionOrNull()?.message ?: "Невідома помилка"
+                    soundManager.play(SoundEffect.ANALYSIS_ERROR)
                     _state.value = _state.value.copy(
                         isAnalyzing = false,
                         isCompleted = true,
@@ -310,6 +324,7 @@ class DailyChallengeViewModel @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
+                soundManager.play(SoundEffect.ANALYSIS_ERROR)
                 _state.value = _state.value.copy(
                     isAnalyzing = false,
                     error = "Помилка аналізу: ${e.message}"

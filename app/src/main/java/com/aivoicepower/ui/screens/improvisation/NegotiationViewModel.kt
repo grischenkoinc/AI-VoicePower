@@ -7,6 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.data.remote.GeminiApiClient
+import com.aivoicepower.audio.SoundEffect
+import com.aivoicepower.audio.SoundManager
 import com.aivoicepower.domain.service.SkillUpdateService
 import com.aivoicepower.ui.screens.improvisation.components.OrbState
 import com.aivoicepower.utils.CloudTtsManager
@@ -26,6 +28,7 @@ class NegotiationViewModel @Inject constructor(
     private val geminiApiClient: GeminiApiClient,
     private val userPreferencesDataStore: UserPreferencesDataStore,
     private val skillUpdateService: SkillUpdateService,
+    private val soundManager: SoundManager,
     val ttsManager: CloudTtsManager
 ) : ViewModel() {
 
@@ -192,6 +195,8 @@ class NegotiationViewModel @Inject constructor(
                 start()
             }
 
+            soundManager.play(SoundEffect.RECORD_START)
+
             _state.update {
                 it.copy(
                     orbState = OrbState.LISTENING,
@@ -219,6 +224,8 @@ class NegotiationViewModel @Inject constructor(
             }
         } catch (_: Exception) {}
         mediaRecorder = null
+
+        soundManager.play(SoundEffect.RECORD_STOP)
 
         _state.update {
             it.copy(
@@ -316,8 +323,14 @@ class NegotiationViewModel @Inject constructor(
                 try {
                     skillUpdateService.updateFromAnalysis(result, "negotiation")
                 } catch (_: Exception) {}
+                if (result.overallScore > 0) {
+                    soundManager.play(SoundEffect.ANALYSIS_SUCCESS)
+                } else {
+                    soundManager.play(SoundEffect.ANALYSIS_ERROR)
+                }
                 _state.update { it.copy(isAnalyzing = false, analysisResult = result) }
             }.onFailure { error ->
+                soundManager.play(SoundEffect.ANALYSIS_ERROR)
                 _state.update {
                     it.copy(
                         isAnalyzing = false,

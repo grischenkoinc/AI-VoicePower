@@ -3,6 +3,12 @@ package com.aivoicepower.ui.navigation
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -379,7 +385,31 @@ fun MainNavGraph(
 
         composable(
             route = Screen.SkillDetail.route,
-            arguments = listOf(navArgument("skillType") { type = NavType.StringType })
+            arguments = listOf(navArgument("skillType") { type = NavType.StringType }),
+            // Dive-in: zoom up from depth + upward slide — slow and expressive
+            enterTransition = {
+                scaleIn(
+                    initialScale = 0.7f,
+                    animationSpec = tween(550, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+                ) + fadeIn(tween(500, easing = androidx.compose.animation.core.FastOutSlowInEasing)) +
+                    slideInVertically(
+                        animationSpec = tween(550, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                        initialOffsetY = { it / 10 }
+                    )
+            },
+            exitTransition = {
+                scaleOut(targetScale = 1.1f, animationSpec = tween(350)) + fadeOut(tween(350))
+            },
+            // Pop back: shrink back down to where we came from
+            popEnterTransition = {
+                scaleIn(initialScale = 1.1f, animationSpec = tween(350)) + fadeIn(tween(350))
+            },
+            popExitTransition = {
+                scaleOut(
+                    targetScale = 0.8f,
+                    animationSpec = tween(350, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+                ) + fadeOut(tween(350, easing = androidx.compose.animation.core.FastOutSlowInEasing))
+            }
         ) { backStackEntry ->
             backStackEntry.arguments?.getString("skillType") ?: return@composable
             SkillDetailScreen(
@@ -438,6 +468,9 @@ private fun NavGraphBuilder.tabComposable(
         enterTransition = {
             if (initialState.destination.route in NavTransitions.tabRoutes) {
                 NavTransitions.crossfadeIn
+            } else if (initialState.destination.route == Screen.SkillDetail.route) {
+                // Coming back from SkillDetail — fade in to complement zoom
+                fadeIn(tween(350))
             } else {
                 NavTransitions.enterBack
             }
@@ -445,12 +478,20 @@ private fun NavGraphBuilder.tabComposable(
         exitTransition = {
             if (targetState.destination.route in NavTransitions.tabRoutes) {
                 NavTransitions.crossfadeOut
+            } else if (targetState.destination.route == Screen.SkillDetail.route) {
+                // Going to SkillDetail — just fade out to let the zoom dominate
+                fadeOut(tween(300))
             } else {
                 NavTransitions.exitForward
             }
         },
         popEnterTransition = {
-            NavTransitions.enterBack
+            if (initialState.destination.route == Screen.SkillDetail.route) {
+                // Returning from SkillDetail — fade in to complement shrink-back
+                fadeIn(tween(350))
+            } else {
+                NavTransitions.enterBack
+            }
         },
         popExitTransition = {
             NavTransitions.exitBack

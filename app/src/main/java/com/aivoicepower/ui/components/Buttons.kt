@@ -16,8 +16,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import com.aivoicepower.ui.theme.*
+import com.aivoicepower.ui.utils.performHaptic
 
 /**
  * Primary Button - основна дія
@@ -32,6 +34,7 @@ fun PrimaryButton(
     loading: Boolean = false,
     icon: (@Composable () -> Unit)? = null
 ) {
+    val view = LocalView.current
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
@@ -58,7 +61,7 @@ fun PrimaryButton(
                 interactionSource = interactionSource,
                 indication = null,
                 enabled = enabled && !loading,
-                onClick = onClick
+                onClick = { performHaptic(view); onClick() }
             )
             .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
         contentAlignment = Alignment.Center
@@ -102,6 +105,7 @@ fun SecondaryButton(
     loading: Boolean = false,
     icon: (@Composable () -> Unit)? = null
 ) {
+    val view = LocalView.current
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
@@ -135,7 +139,7 @@ fun SecondaryButton(
                 interactionSource = interactionSource,
                 indication = null,
                 enabled = enabled && !loading,
-                onClick = onClick
+                onClick = { performHaptic(view); onClick() }
             )
             .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
         contentAlignment = Alignment.Center
@@ -179,6 +183,7 @@ fun CTAButton(
     loading: Boolean = false,
     icon: (@Composable () -> Unit)? = null
 ) {
+    val view = LocalView.current
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
@@ -205,7 +210,7 @@ fun CTAButton(
                 interactionSource = interactionSource,
                 indication = null,
                 enabled = enabled && !loading,
-                onClick = onClick
+                onClick = { performHaptic(view); onClick() }
             )
             .padding(horizontal = Spacing.xl, vertical = Spacing.md),
         contentAlignment = Alignment.Center
@@ -247,6 +252,7 @@ fun AppTextButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
+    val view = LocalView.current
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
@@ -264,7 +270,7 @@ fun AppTextButton(
     )
 
     TextButton(
-        onClick = onClick,
+        onClick = { performHaptic(view); onClick() },
         enabled = enabled,
         modifier = modifier,
         interactionSource = interactionSource,

@@ -2,6 +2,8 @@ package com.aivoicepower.ui.screens.warmup
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aivoicepower.audio.SoundEffect
+import com.aivoicepower.audio.SoundManager
 import com.aivoicepower.data.local.database.dao.WarmupCompletionDao
 import com.aivoicepower.data.local.database.entity.WarmupCompletionEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
@@ -22,7 +24,8 @@ import javax.inject.Inject
 class QuickWarmupViewModel @Inject constructor(
     private val warmupCompletionDao: WarmupCompletionDao,
     private val userPreferencesDataStore: UserPreferencesDataStore,
-    private val skillUpdateService: SkillUpdateService
+    private val skillUpdateService: SkillUpdateService,
+    private val soundManager: SoundManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(QuickWarmupState())
@@ -30,6 +33,13 @@ class QuickWarmupViewModel @Inject constructor(
 
     private var timerJob: Job? = null
     private var breathingJob: Job? = null
+    private var lastBreathingPhase: BreathingPhase? = null
+    private var currentBreathStreamId: Int = 0
+
+    companion object {
+        private const val INHALE_SOUND_DURATION = 3.04f
+        private const val EXHALE_SOUND_DURATION = 4.49f
+    }
 
     fun onEvent(event: QuickWarmupEvent) {
         when (event) {
@@ -98,6 +108,23 @@ class QuickWarmupViewModel @Inject constructor(
             }
 
             is QuickWarmupEvent.BreathingTick -> {
+                if (event.currentPhase != lastBreathingPhase) {
+                    soundManager.stop(currentBreathStreamId)
+                    lastBreathingPhase = event.currentPhase
+                    val currentExercise = _state.value.exercises.getOrNull(_state.value.currentExerciseIndex)
+                    val pattern = currentExercise?.breathingExercise?.pattern
+                    when (event.currentPhase) {
+                        BreathingPhase.INHALE -> {
+                            val rate = if (pattern != null) (INHALE_SOUND_DURATION / pattern.inhaleSeconds).coerceIn(0.5f, 2.0f) else 1.0f
+                            currentBreathStreamId = soundManager.play(SoundEffect.BREATH_INHALE, rate)
+                        }
+                        BreathingPhase.EXHALE -> {
+                            val rate = if (pattern != null) (EXHALE_SOUND_DURATION / pattern.exhaleSeconds).coerceIn(0.5f, 2.0f) else 1.0f
+                            currentBreathStreamId = soundManager.play(SoundEffect.BREATH_EXHALE, rate)
+                        }
+                        else -> { currentBreathStreamId = 0 }
+                    }
+                }
                 _state.update {
                     it.copy(
                         breathingElapsedSeconds = event.elapsedSeconds,
@@ -169,6 +196,7 @@ class QuickWarmupViewModel @Inject constructor(
         val currentExercise = _state.value.exercises.getOrNull(_state.value.currentExerciseIndex)
         val breathingExercise = currentExercise?.breathingExercise ?: return
 
+        lastBreathingPhase = null // Reset so first INHALE sound plays immediately
         _state.update {
             it.copy(
                 breathingIsRunning = true,
@@ -236,6 +264,9 @@ class QuickWarmupViewModel @Inject constructor(
 
     private fun stopBreathing() {
         breathingJob?.cancel()
+        soundManager.stop(currentBreathStreamId)
+        currentBreathStreamId = 0
+        lastBreathingPhase = null
         _state.update {
             it.copy(
                 breathingIsRunning = false
@@ -244,6 +275,8 @@ class QuickWarmupViewModel @Inject constructor(
     }
 
     private fun markCurrentExerciseCompleted() {
+        stopTimer()
+        stopBreathing()
         val currentIndex = _state.value.currentExerciseIndex
         val currentExerciseId = _state.value.exercises.getOrNull(currentIndex)?.id ?: return
 
@@ -251,6 +284,7 @@ class QuickWarmupViewModel @Inject constructor(
             // Чекаємо 1 секунду, щоб анімація таймера встигла закінчитися
             delay(1000)
 
+            soundManager.play(SoundEffect.EXERCISE_COMPLETED)
             _state.update {
                 it.copy(
                     completedExercises = it.completedExercises + currentExerciseId
@@ -261,6 +295,7 @@ class QuickWarmupViewModel @Inject constructor(
 
             if (nextIndex >= _state.value.exercises.size) {
                 // Всі вправи виконано - показуємо completion
+                soundManager.play(SoundEffect.WARMUP_COMPLETED)
                 _state.update { it.copy(showCompletionOverlay = true) }
                 delay(4000)
                 completeQuickWarmup()

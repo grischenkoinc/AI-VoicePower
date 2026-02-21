@@ -9,11 +9,13 @@ import androidx.compose.material.icons.automirrored.outlined.TrendingUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
+import android.view.HapticFeedbackConstants
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,6 +41,7 @@ fun AppDrawerContent(
     onNavigateToSettings: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     val navItems = listOf(
         DrawerNavItem("home", "Головна", Icons.Filled.Home, Icons.Outlined.Home, Color(0xFF667EEA)),
         DrawerNavItem("courses", "Курси", Icons.Filled.School, Icons.Outlined.School, Color(0xFF8B5CF6)),
@@ -86,7 +89,7 @@ fun AppDrawerContent(
                         )
                     },
                     selected = isSelected,
-                    onClick = { onNavigate(item.route) },
+                    onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigate(item.route) },
                     colors = NavigationDrawerItemDefaults.colors(
                         selectedContainerColor = Color.White.copy(alpha = 0.1f),
                         unselectedContainerColor = Color.Transparent
@@ -112,7 +115,7 @@ fun AppDrawerContent(
                     )
                 },
                 selected = false,
-                onClick = onNavigateToAiCoach,
+                onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateToAiCoach() },
                 colors = NavigationDrawerItemDefaults.colors(
                     unselectedContainerColor = Color.Transparent
                 ),
@@ -141,7 +144,7 @@ fun AppDrawerContent(
                     )
                 },
                 selected = false,
-                onClick = onNavigateToPremium,
+                onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateToPremium() },
                 colors = NavigationDrawerItemDefaults.colors(
                     unselectedContainerColor = Color.Transparent
                 ),
@@ -165,7 +168,7 @@ fun AppDrawerContent(
                     )
                 },
                 selected = false,
-                onClick = onNavigateToSettings,
+                onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateToSettings() },
                 colors = NavigationDrawerItemDefaults.colors(
                     unselectedContainerColor = Color.Transparent
                 ),

@@ -14,8 +14,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.view.HapticFeedbackConstants
 import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
 
@@ -24,6 +26,7 @@ fun QuickWarmupCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -42,7 +45,7 @@ fun QuickWarmupCard(
                 )
             }
             .background(Color.White, RoundedCornerShape(20.dp))
-            .clickable(onClick = onClick)
+            .clickable(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onClick() })
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -77,7 +80,7 @@ fun QuickWarmupCard(
                     ),
                     RoundedCornerShape(16.dp)
                 )
-                .clickable(onClick = onClick)
+                .clickable(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onClick() })
                 .padding(vertical = 14.dp),
             contentAlignment = Alignment.Center
         ) {

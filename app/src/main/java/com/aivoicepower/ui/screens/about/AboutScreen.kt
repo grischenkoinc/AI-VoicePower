@@ -1,5 +1,6 @@
 package com.aivoicepower.ui.screens.about
 
+import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,6 +22,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -31,6 +33,7 @@ import com.aivoicepower.ui.theme.components.GradientBackground
 fun AboutScreen(
     onNavigateBack: () -> Unit = {}
 ) {
+    val view = LocalView.current
     GradientBackground(content = {
         Column(
             modifier = Modifier
@@ -57,7 +60,7 @@ fun AboutScreen(
                         )
                         .clip(CircleShape)
                         .background(Color.White, CircleShape)
-                        .clickable(onClick = onNavigateBack),
+                        .clickable(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateBack() }),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(

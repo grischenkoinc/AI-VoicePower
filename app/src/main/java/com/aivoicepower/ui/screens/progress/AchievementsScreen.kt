@@ -1,18 +1,19 @@
 package com.aivoicepower.ui.screens.progress
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import android.view.HapticFeedbackConstants
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -61,6 +62,7 @@ private fun AchievementsContent(
     state: AchievementsState,
     onNavigateBack: () -> Unit
 ) {
+    val view = LocalView.current
     val grouped = state.achievements.groupBy { it.category }
 
     LazyColumn(
@@ -71,29 +73,60 @@ private fun AchievementsContent(
     ) {
         // Header
         item {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Назад",
-                        tint = Color.White
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    Text(
+                        text = "Досягнення",
+                        style = AppTypography.displayLarge,
+                        color = Color.White,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = (-0.8).sp
+                    )
+                    Text(
+                        text = "${state.unlockedCount}/${state.totalCount} відкрито",
+                        style = AppTypography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.7f),
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
-                Text(
-                    text = "Досягнення",
-                    style = AppTypography.displayLarge,
-                    color = Color.White,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = (-0.8).sp
-                )
-                Text(
-                    text = "${state.unlockedCount}/${state.totalCount} відкрито",
-                    style = AppTypography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.7f),
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+
+                // Back button
+                Row(
+                    modifier = Modifier
+                        .shadow(
+                            elevation = 12.dp,
+                            shape = RoundedCornerShape(16.dp),
+                            spotColor = Color.Black.copy(alpha = 0.2f)
+                        )
+                        .background(Color.White, RoundedCornerShape(16.dp))
+                        .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateBack() }
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "←",
+                        fontSize = 24.sp,
+                        color = Color(0xFF667EEA),
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Назад",
+                        style = AppTypography.bodyMedium,
+                        color = TextColors.onLightPrimary,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
 

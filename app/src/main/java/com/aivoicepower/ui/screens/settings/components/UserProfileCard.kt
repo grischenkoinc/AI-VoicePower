@@ -1,5 +1,6 @@
 package com.aivoicepower.ui.screens.settings.components
 
+import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,6 +32,7 @@ fun UserProfileCard(
     onEditProfileClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     val primaryGradient = Brush.linearGradient(
         colors = listOf(Color(0xFF667EEA), Color(0xFF764BA2))
     )
@@ -44,7 +47,7 @@ fun UserProfileCard(
             )
             .clip(RoundedCornerShape(20.dp))
             .background(Color.White, RoundedCornerShape(20.dp))
-            .clickable { if (isAuthenticated) onEditProfileClick() else onLoginClick() }
+            .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); if (isAuthenticated) onEditProfileClick() else onLoginClick() }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -99,7 +102,7 @@ fun UserProfileCard(
                 modifier = Modifier
                     .clip(RoundedCornerShape(12.dp))
                     .background(primaryGradient, RoundedCornerShape(12.dp))
-                    .clickable(onClick = onLoginClick)
+                    .clickable(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onLoginClick() })
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 contentAlignment = Alignment.Center
             ) {

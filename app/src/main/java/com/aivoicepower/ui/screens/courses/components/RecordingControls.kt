@@ -15,7 +15,9 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
+import android.view.HapticFeedbackConstants
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aivoicepower.ui.screens.courses.ExerciseState
@@ -37,6 +39,7 @@ fun RecordingControls(
     onComplete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     val isRecording = exerciseState.status == ExerciseStatus.Recording
 
     Column(
@@ -77,7 +80,7 @@ fun RecordingControls(
                                 ),
                                 CircleShape
                             )
-                            .clickable(onClick = if (isRecording) onStopRecording else onStartRecording),
+                            .clickable(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); if (isRecording) onStopRecording() else onStartRecording() }),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(

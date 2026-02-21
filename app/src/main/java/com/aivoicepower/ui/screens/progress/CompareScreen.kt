@@ -35,6 +35,8 @@ import com.aivoicepower.ui.screens.progress.components.ComparisonMetricCard
 import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
 import com.aivoicepower.ui.theme.components.GradientBackground
+import android.view.HapticFeedbackConstants
+import androidx.compose.ui.platform.LocalView
 import kotlin.math.abs
 
 @Composable
@@ -159,10 +161,6 @@ fun CompareScreen(
                             currentValue = comparison.currentValue,
                             improvement = comparison.improvement
                         )
-                    }
-
-                    item {
-                        BackButton(onClick = onNavigateBack)
                     }
 
                     item {
@@ -605,31 +603,51 @@ private fun EnhancedComparisonCard(
     }
 }
 
-@Suppress("UNUSED_PARAMETER")
 @Composable
 private fun CompareHeader(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    val view = LocalView.current
+    Row(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(2.dp)
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Top
     ) {
-        Text(
-            text = "Твій розвиток",
-            style = AppTypography.labelMedium,
-            color = TextColors.onDarkSecondary,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.SemiBold
-        )
-        Text(
-            text = "Порівняти з початком",
-            style = AppTypography.displayLarge,
-            color = TextColors.onDarkPrimary,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.ExtraBold,
-            letterSpacing = (-0.8).sp
-        )
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            Text(
+                text = "Твій розвиток",
+                style = AppTypography.labelMedium,
+                color = TextColors.onDarkSecondary,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = "Порівняти з початком",
+                style = AppTypography.displayLarge,
+                color = TextColors.onDarkPrimary,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = (-0.8).sp
+            )
+        }
+
+        // Back button
+        Row(
+            modifier = Modifier
+                .shadow(elevation = 12.dp, shape = RoundedCornerShape(16.dp), spotColor = Color.Black.copy(alpha = 0.2f))
+                .background(Color.White, RoundedCornerShape(16.dp))
+                .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateBack() }
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = "←", fontSize = 24.sp, color = Color(0xFF667EEA), fontWeight = FontWeight.Bold)
+            Text(text = "Назад", style = AppTypography.bodyMedium, color = TextColors.onLightPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        }
     }
 }
 
@@ -638,6 +656,7 @@ private fun BackButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -647,7 +666,7 @@ private fun BackButton(
                 spotColor = Color.Black.copy(alpha = 0.2f)
             )
             .background(Color.White, RoundedCornerShape(16.dp))
-            .clickable { onClick() }
+            .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onClick() }
             .padding(horizontal = 20.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically

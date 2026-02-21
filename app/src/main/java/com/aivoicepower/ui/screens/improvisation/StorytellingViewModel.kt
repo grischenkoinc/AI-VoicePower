@@ -21,6 +21,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import com.aivoicepower.audio.SoundEffect
+import com.aivoicepower.audio.SoundManager
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
@@ -32,7 +34,8 @@ class StorytellingViewModel @Inject constructor(
     private val userPreferencesDataStore: UserPreferencesDataStore,
     private val voiceAnalysisRepository: VoiceAnalysisRepository,
     private val rewardedAdManager: RewardedAdManager,
-    private val serverLimitService: ServerLimitService
+    private val serverLimitService: ServerLimitService,
+    private val soundManager: SoundManager
 ) : ViewModel() {
 
     private val audioRecorderUtil = AudioRecorderUtil(context)
@@ -153,6 +156,7 @@ class StorytellingViewModel @Inject constructor(
 
         try {
             audioRecorderUtil.startRecording(outputPath)
+            soundManager.play(SoundEffect.RECORD_START)
             currentRecordingPath = outputPath
 
             _state.value = _state.value.copy(
@@ -189,6 +193,7 @@ class StorytellingViewModel @Inject constructor(
     private fun stopRecording() {
         recordingTimerJob?.cancel()
         audioRecorderUtil.stopRecording()
+        soundManager.play(SoundEffect.RECORD_STOP)
         _state.value = _state.value.copy(
             isRecording = false
         )
@@ -202,12 +207,14 @@ class StorytellingViewModel @Inject constructor(
             )
 
             if (!canAnalyze) {
+                soundManager.play(SoundEffect.LIMIT_REACHED)
                 _state.value = _state.value.copy(showAnalysisLimitSheet = true)
                 return@launch
             }
 
             // Server-side limit check for free users
             if (!prefs.isPremium && !serverLimitService.canAnalyze(isImprov = true)) {
+                soundManager.play(SoundEffect.LIMIT_REACHED)
                 _state.value = _state.value.copy(showAnalysisLimitSheet = true)
                 return@launch
             }
@@ -226,6 +233,7 @@ class StorytellingViewModel @Inject constructor(
                 val format = _state.value.selectedFormat
 
                 if (recordingPath == null || storyPrompt.isEmpty()) {
+                    soundManager.play(SoundEffect.ANALYSIS_ERROR)
                     _state.value = _state.value.copy(
                         isAnalyzing = false,
                         error = "Помилка: запис не знайдено. Спробуйте записати ще раз."
@@ -251,18 +259,25 @@ class StorytellingViewModel @Inject constructor(
                 userPreferencesDataStore.incrementFreeImprovisations()
 
                 if (result != null) {
+                    if (result.overallScore > 0) {
+                        soundManager.play(SoundEffect.ANALYSIS_SUCCESS)
+                    } else {
+                        soundManager.play(SoundEffect.ANALYSIS_ERROR)
+                    }
                     _state.value = _state.value.copy(
                         isAnalyzing = false,
                         analysisResult = result
                     )
                 } else {
                     val errorMsg = apiResult.exceptionOrNull()?.message ?: "Невідома помилка"
+                    soundManager.play(SoundEffect.ANALYSIS_ERROR)
                     _state.value = _state.value.copy(
                         isAnalyzing = false,
                         error = "Помилка аналізу: $errorMsg"
                     )
                 }
             } catch (e: Exception) {
+                soundManager.play(SoundEffect.ANALYSIS_ERROR)
                 _state.value = _state.value.copy(
                     isAnalyzing = false,
                     error = "Помилка аналізу: ${e.message}"

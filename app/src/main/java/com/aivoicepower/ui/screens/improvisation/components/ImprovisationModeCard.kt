@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import android.view.HapticFeedbackConstants
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -33,6 +35,7 @@ fun ImprovisationModeCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     Box(
         modifier = modifier.fillMaxWidth()
     ) {
@@ -47,7 +50,7 @@ fun ImprovisationModeCard(
                 )
                 .background(Color.White, RoundedCornerShape(20.dp))
                 .scaleOnPress(pressedScale = 0.97f)
-                .clickable(enabled = !isComingSoon, onClick = onClick)
+                .clickable(enabled = !isComingSoon, onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onClick() })
                 .padding(20.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically

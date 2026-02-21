@@ -15,8 +15,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import android.view.HapticFeedbackConstants
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -38,6 +40,7 @@ fun RecordingHistoryScreen(
     onNavigateToResults: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val view = LocalView.current
 
     Box(modifier = Modifier.fillMaxSize()) {
         GradientBackground(content = {})
@@ -147,10 +150,6 @@ fun RecordingHistoryScreen(
                         }
 
                         item {
-                            BackButton(onClick = onNavigateBack)
-                        }
-
-                        item {
                             Spacer(modifier = Modifier.height(24.dp))
                         }
                     }
@@ -181,7 +180,7 @@ fun RecordingHistoryScreen(
                 },
                 confirmButton = {
                     androidx.compose.material3.TextButton(
-                        onClick = { viewModel.onEvent(RecordingHistoryEvent.ConfirmDelete) }
+                        onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); viewModel.onEvent(RecordingHistoryEvent.ConfirmDelete) }
                     ) {
                         Text(
                             text = "Видалити",
@@ -193,7 +192,7 @@ fun RecordingHistoryScreen(
                 },
                 dismissButton = {
                     androidx.compose.material3.TextButton(
-                        onClick = { viewModel.onEvent(RecordingHistoryEvent.CancelDelete) }
+                        onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); viewModel.onEvent(RecordingHistoryEvent.CancelDelete) }
                     ) {
                         Text(
                             text = "Скасувати",
@@ -215,25 +214,46 @@ private fun RecordingHistoryHeader(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    val view = LocalView.current
+    Row(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(2.dp)
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Top
     ) {
-        Text(
-            text = "Мої записи",
-            style = AppTypography.labelMedium,
-            color = TextColors.onDarkSecondary,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.SemiBold
-        )
-        Text(
-            text = "Історія записів",
-            style = AppTypography.displayLarge,
-            color = TextColors.onDarkPrimary,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.ExtraBold,
-            letterSpacing = (-0.8).sp
-        )
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            Text(
+                text = "Мої записи",
+                style = AppTypography.labelMedium,
+                color = TextColors.onDarkSecondary,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = "Історія записів",
+                style = AppTypography.displayLarge,
+                color = TextColors.onDarkPrimary,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = (-0.8).sp
+            )
+        }
+
+        // Back button
+        Row(
+            modifier = Modifier
+                .shadow(elevation = 12.dp, shape = RoundedCornerShape(16.dp), spotColor = Color.Black.copy(alpha = 0.2f))
+                .background(Color.White, RoundedCornerShape(16.dp))
+                .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateBack() }
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = "←", fontSize = 24.sp, color = Color(0xFF667EEA), fontWeight = FontWeight.Bold)
+            Text(text = "Назад", style = AppTypography.bodyMedium, color = TextColors.onLightPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        }
     }
 }
 
@@ -242,6 +262,7 @@ private fun BackButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -251,7 +272,7 @@ private fun BackButton(
                 spotColor = Color.Black.copy(alpha = 0.2f)
             )
             .background(Color.White, RoundedCornerShape(16.dp))
-            .clickable { onClick() }
+            .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onClick() }
             .padding(horizontal = 20.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
@@ -275,6 +296,7 @@ private fun RecordingListItem(
     onDelete: () -> Unit,
     onViewResults: () -> Unit
 ) {
+    val view = LocalView.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -316,7 +338,7 @@ private fun RecordingListItem(
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            IconButton(onClick = if (isPlaying) onStop else onPlay) {
+            IconButton(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); if (isPlaying) onStop() else onPlay() }) {
                 Icon(
                     imageVector = if (isPlaying) Icons.Default.Stop else Icons.Default.PlayArrow,
                     contentDescription = if (isPlaying) "Стоп" else "Грати",
@@ -324,7 +346,7 @@ private fun RecordingListItem(
                 )
             }
 
-            IconButton(onClick = onDelete) {
+            IconButton(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onDelete() }) {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Видалити",

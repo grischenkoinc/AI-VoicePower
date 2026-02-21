@@ -5,10 +5,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.*
+import android.view.HapticFeedbackConstants
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -22,6 +24,7 @@ fun ForgotPasswordDialog(
     onDismiss: () -> Unit,
     isSent: Boolean = false
 ) {
+    val view = LocalView.current
     AlertDialog(
         onDismissRequest = onDismiss,
         shape = RoundedCornerShape(24.dp),
@@ -76,18 +79,18 @@ fun ForgotPasswordDialog(
         },
         confirmButton = {
             if (isSent) {
-                TextButton(onClick = onDismiss) {
+                TextButton(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onDismiss() }) {
                     Text("OK", color = Color(0xFF8B5CF6), fontWeight = FontWeight.Bold)
                 }
             } else {
-                TextButton(onClick = onSend) {
+                TextButton(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onSend() }) {
                     Text("Надіслати", color = Color(0xFF8B5CF6), fontWeight = FontWeight.Bold)
                 }
             }
         },
         dismissButton = {
             if (!isSent) {
-                TextButton(onClick = onDismiss) {
+                TextButton(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onDismiss() }) {
                     Text("Скасувати", color = Color.White.copy(alpha = 0.6f))
                 }
             }

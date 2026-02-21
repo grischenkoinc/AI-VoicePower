@@ -18,10 +18,12 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aivoicepower.ui.theme.*
+import com.aivoicepower.ui.utils.performHaptic
 
 /**
  * AI VoicePower Button Components v2.0
@@ -42,6 +44,7 @@ fun RecordButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     // Pulse animation для idle стану
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val scale by infiniteTransition.animateFloat(
@@ -103,7 +106,7 @@ fun RecordButton(
                         Elevation.RecordButton.idleColor
                 )
                 .background(Gradients.recordButton, CircleShape)
-                .clickable { onClick() },
+                .clickable { performHaptic(view); onClick() },
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -162,6 +165,7 @@ fun NavButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
@@ -195,7 +199,7 @@ fun NavButton(
             .clickable(
                 interactionSource = interactionSource,
                 indication = null
-            ) { onClick() }
+            ) { performHaptic(view); onClick() }
             .padding(18.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically
@@ -225,6 +229,7 @@ fun PrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     Box(
         modifier = modifier
             .height(56.dp)
@@ -239,7 +244,7 @@ fun PrimaryButton(
                 ),
                 RoundedCornerShape(16.dp)
             )
-            .clickable(onClick = onClick),
+            .clickable(onClick = { performHaptic(view); onClick() }),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -262,6 +267,7 @@ fun SecondaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     Box(
         modifier = modifier
             .height(56.dp)
@@ -273,7 +279,7 @@ fun SecondaryButton(
             .background(Color.White, RoundedCornerShape(16.dp))
             .border(2.dp, Color(0xFFE5E7EB), RoundedCornerShape(16.dp))
             .clip(RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick),
+            .clickable(onClick = { performHaptic(view); onClick() }),
         contentAlignment = Alignment.Center
     ) {
         Text(

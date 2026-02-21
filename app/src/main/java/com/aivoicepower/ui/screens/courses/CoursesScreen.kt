@@ -1,5 +1,6 @@
 package com.aivoicepower.ui.screens.courses
 
+import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,6 +22,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -30,6 +32,8 @@ import com.aivoicepower.domain.model.course.Course
 import com.aivoicepower.ui.theme.*
 import com.aivoicepower.ui.theme.modifiers.*
 import com.aivoicepower.ui.theme.components.*
+import androidx.compose.foundation.lazy.itemsIndexed
+import kotlinx.coroutines.delay
 
 enum class CourseFilter {
     ALL, ACTIVE, COMPLETED, LOCKED
@@ -62,6 +66,13 @@ fun CoursesScreen(
         )
     }
 
+    // Stagger animation plays once on initial screen entry, then items stay visible
+    var staggerComplete by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        delay(1200L)
+        staggerComplete = true
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         GradientBackground(
             content = {
@@ -88,13 +99,15 @@ fun CoursesScreen(
             CoursesHeader(
                 onNavigateBack = onNavigateBack,
                 totalCourses = courses.size,
-                totalLessons = courses.sumOf { it.totalLessons }
+                totalLessons = courses.sumOf { it.totalLessons },
+                modifier = if (!staggerComplete) Modifier.staggeredEntry(index = 0) else Modifier
             )
 
             // Filter Tabs
             FilterTabs(
                 selectedFilter = selectedFilter,
-                onFilterSelected = { selectedFilter = it }
+                onFilterSelected = { selectedFilter = it },
+                modifier = if (!staggerComplete) Modifier.staggeredEntry(index = 1) else Modifier
             )
 
             // Scrollable Content
@@ -107,18 +120,20 @@ fun CoursesScreen(
                     StatsBar(
                         active = stats.first,
                         completed = stats.second,
-                        available = stats.third
+                        available = stats.third,
+                        modifier = if (!staggerComplete) Modifier.staggeredEntry(index = 2) else Modifier
                     )
                 }
 
-                items(filteredCourses) { courseWithProgress ->
+                itemsIndexed(filteredCourses) { index, courseWithProgress ->
                     CourseCardItem(
                         courseWithProgress = courseWithProgress,
                         onClick = {
                             if (!courseWithProgress.course.isPremium || courseWithProgress.isStarted) {
                                 onNavigateToCourse(courseWithProgress.course.id)
                             }
-                        }
+                        },
+                        modifier = if (!staggerComplete) Modifier.staggeredEntry(index = 3 + index) else Modifier
                     )
                 }
 
@@ -204,6 +219,7 @@ private fun FilterTab(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     Box(
         modifier = modifier
             .then(
@@ -222,7 +238,7 @@ private fun FilterTab(
                 RoundedCornerShape(14.dp)
             )
             .scaleOnPress(pressedScale = 0.95f)
-            .clickable { onClick() }
+            .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onClick() }
             .padding(horizontal = 16.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -296,6 +312,7 @@ private fun CourseCardItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     val course = courseWithProgress.course
     val gradientColors = remember(course.id) {
         when (course.id.hashCode() % 3) {
@@ -328,7 +345,7 @@ private fun CourseCardItem(
                     spotColor = Color.Black.copy(alpha = 0.15f)
                 )
                 .background(BackgroundColors.surface, RoundedCornerShape(24.dp))
-                .clickable(enabled = !isLocked) { onClick() }
+                .clickable(enabled = !isLocked) { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onClick() }
         ) {
             // Header
             Box(

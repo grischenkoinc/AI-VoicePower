@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import android.view.HapticFeedbackConstants
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -31,6 +33,7 @@ fun ImprovisationRecordingCard(
     onStop: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     // Pulsing border animation
     val infiniteTransition = rememberInfiniteTransition(label = "border")
     val borderAlpha by infiniteTransition.animateFloat(
@@ -118,7 +121,7 @@ fun ImprovisationRecordingCard(
                         ),
                         CircleShape
                     )
-                    .clickable(onClick = onStop),
+                    .clickable(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onStop() }),
                 contentAlignment = Alignment.Center
             ) {
                 Text(

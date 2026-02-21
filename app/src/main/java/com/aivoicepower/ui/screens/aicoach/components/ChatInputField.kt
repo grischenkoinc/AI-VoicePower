@@ -9,9 +9,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material3.*
+import android.view.HapticFeedbackConstants
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -31,6 +33,7 @@ fun ChatInputField(
     isLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     val canSend = enabled && text.isNotBlank() && !isLoading
 
     Row(
@@ -50,7 +53,7 @@ fun ChatInputField(
             contentAlignment = Alignment.Center
         ) {
             IconButton(
-                onClick = onUploadClick,
+                onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onUploadClick() },
                 enabled = enabled,
                 modifier = Modifier.size(36.dp)
             ) {
@@ -114,7 +117,7 @@ fun ChatInputField(
                 contentAlignment = Alignment.Center
             ) {
                 IconButton(
-                    onClick = onSendClick,
+                    onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onSendClick() },
                     enabled = canSend,
                     modifier = Modifier.size(36.dp)
                 ) {

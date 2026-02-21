@@ -23,7 +23,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.sp
+import android.view.HapticFeedbackConstants
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aivoicepower.data.firebase.auth.GoogleSignInHelper
@@ -42,6 +44,7 @@ fun AuthScreen(
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val view = LocalView.current
 
     // Navigation effect
     LaunchedEffect(state.isNavigating) {
@@ -289,7 +292,7 @@ fun AuthScreen(
             // Skip button (only during onboarding, not from settings)
             if (showSkipButton) {
                 TextButton(
-                    onClick = { viewModel.onEvent(AuthEvent.SkipClicked) }
+                    onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); viewModel.onEvent(AuthEvent.SkipClicked) }
                 ) {
                     Text(
                         text = "Пропустити",

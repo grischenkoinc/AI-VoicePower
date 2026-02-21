@@ -7,7 +7,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -73,6 +81,19 @@ fun ProgressOverviewCard(
             )
         }
 
+        // Animated progress for circle
+        var animStarted by remember { mutableStateOf(false) }
+        LaunchedEffect(Unit) { animStarted = true }
+        val animatedLevel by animateFloatAsState(
+            targetValue = if (animStarted) overallLevel.toFloat() else 0f,
+            animationSpec = tween(
+                durationMillis = 1000,
+                delayMillis = 300,
+                easing = FastOutSlowInEasing
+            ),
+            label = "overallLevelAnim"
+        )
+
         // Main Level Section
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -94,9 +115,9 @@ fun ProgressOverviewCard(
                         )
                 )
 
-                // Progress circle
+                // Progress circle - animated
                 Canvas(modifier = Modifier.size(120.dp)) {
-                    val sweepAngle = (overallLevel / 100f) * 360f
+                    val sweepAngle = (animatedLevel / 100f) * 360f
 
                     // Background track
                     drawCircle(
@@ -115,9 +136,9 @@ fun ProgressOverviewCard(
                     )
                 }
 
-                // Level text
+                // Level text - animated
                 Text(
-                    text = "$overallLevel",
+                    text = "${animatedLevel.toInt()}",
                     style = AppTypography.displayLarge,
                     color = Color.White,
                     fontSize = 52.sp,
