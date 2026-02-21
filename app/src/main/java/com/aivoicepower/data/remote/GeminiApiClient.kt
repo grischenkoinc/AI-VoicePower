@@ -344,6 +344,12 @@ class GeminiApiClient @Inject constructor(
         Log.d("DiagFlow", "Audio loaded: ${audioBytes.size} bytes, mimeType: $mimeType")
         Log.d("Gemini", "Audio file size: ${audioBytes.size} bytes, mimeType: $mimeType")
 
+        // Валідація мінімального розміру — занадто малий файл = тиша/порожній запис
+        if (audioBytes.size < 1000) {
+            Log.w("Gemini", "Audio file too small: ${audioBytes.size} bytes, treating as empty recording")
+            return Result.success(VoiceAnalysisResult.default())
+        }
+
         val prompt = AiPrompts.buildVoiceAnalysisPrompt(expectedText, exerciseType, additionalContext)
 
         var lastException: Exception? = null

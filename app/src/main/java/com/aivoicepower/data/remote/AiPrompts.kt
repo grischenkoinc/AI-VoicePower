@@ -70,6 +70,15 @@ object AiPrompts {
 
 НЕ ВИГАДУЙ сильні сторони, яких не було! Якщо нічого хорошого — strengths має бути ПОРОЖНІМ масивом [].
 Оцінюй ТІЛЬКИ те, що РЕАЛЬНО є в аудіозаписі. НІЧОГО не додавай від себе.
+
+=== КРОК 3: ПЕРЕВІРКА ВІДПОВІДНОСТІ ТЕКСТУ (ВИКОНАТИ ТРЕТЬОЮ!) ===
+Якщо є очікуваний текст І є транскрипція — ПОРІВНЯЙ їх.
+Якщо людина сказала ЗОВСІМ ІНШІ СЛОВА (не ті, що в завданні):
+• Навіть якщо вимова чудова — це НЕ виконання завдання!
+• overallScore МАКСИМУМ 10, усі метрики МАКСИМУМ 20
+• В improvements напиши: "Сказано інший текст, а не завдання"
+• В strengths — порожній масив []
+Це КРИТИЧНО: гарна вимова неправильного тексту = ПРОВАЛ завдання.
 === КІНЕЦЬ ПЕРЕВІРОК ==="""
 
     private const val SCORING_SCALE = """
@@ -1722,7 +1731,14 @@ $JSON_FOOTER
         exerciseType: String,
         additionalContext: String?
     ): String {
-        val type = exerciseType.lowercase()
+        val rawType = exerciseType.lowercase()
+        // Нормалізуємо daily_challenge_ префікс → використовуємо базовий тип
+        // Наприклад: daily_challenge_no_hesitation → no_hesitation
+        val type = if (rawType.startsWith("daily_challenge_")) {
+            rawType.removePrefix("daily_challenge_")
+        } else {
+            rawType
+        }
 
         return when {
             // --- Скоромовки ---
