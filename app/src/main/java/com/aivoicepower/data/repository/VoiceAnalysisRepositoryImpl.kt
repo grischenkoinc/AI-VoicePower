@@ -173,36 +173,58 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
         Log.d("DiagFlow", "exerciseType: $exerciseType")
         Log.d("DiagFlow", "File exists: ${File(audioFilePath).exists()}")
 
-        // --- Крок 1: Транскрипція (тільки якщо є очікуваний текст) ---
+        // --- Крок 1: Транскрипція (завжди — для тексту порівнюємо, для імпровізації рахуємо слова) ---
         var transcription: String? = null
         var completionPercent: Int? = null
+        var orderPercent: Int? = null
+        var wordCount: Int? = null
 
-        if (!expectedText.isNullOrBlank()) {
-            Log.d("DiagFlow", ">>> Step 1: Transcribing audio for text comparison...")
-            val transcribeResult = geminiApiClient.transcribeAudio(audioFilePath)
-            if (transcribeResult.isSuccess) {
-                transcription = transcribeResult.getOrNull().orEmpty()
+        Log.d("DiagFlow", ">>> Step 1: Transcribing audio...")
+        val transcribeResult = geminiApiClient.transcribeAudio(audioFilePath)
+        if (transcribeResult.isSuccess) {
+            transcription = transcribeResult.getOrNull().orEmpty()
+            wordCount = normalizeToWords(transcription).size
+            Log.d("DiagFlow", "Transcription: '${transcription.take(100)}', wordCount: $wordCount")
+
+            // Для вправ з очікуваним текстом — порівнюємо
+            if (!expectedText.isNullOrBlank()) {
                 completionPercent = calculateCompletionPercent(transcription, expectedText)
-                Log.d("DiagFlow", "Transcription: '${transcription.take(100)}', completion: $completionPercent%")
-            } else {
-                // Транскрипція не вдалася — продовжуємо без неї (fallback до старої поведінки)
-                Log.w("DiagFlow", "Transcription failed: ${transcribeResult.exceptionOrNull()?.message}, proceeding without it")
+                orderPercent = calculateOrderPercent(transcription, expectedText)
+                Log.d("DiagFlow", "Completion: $completionPercent%, order: $orderPercent%")
             }
+        } else {
+            Log.w("DiagFlow", "Transcription failed: ${transcribeResult.exceptionOrNull()?.message}, proceeding without it")
         }
 
         // --- Крок 2: Збагачуємо контекст транскрипцією ---
-        val enrichedContext = if (transcription != null && completionPercent != null) {
+        val enrichedContext = if (transcription != null) {
             buildString {
                 append(context ?: "")
                 append("\n\nТРАНСКРИПЦІЯ АУДІО (зроблена окремим кроком, це ФАКТ — довіряй цьому): ")
                 append(transcription.ifBlank { "(порожній запис — тиша)" })
-                append("\nВІДСОТОК ВИКОНАННЯ ТЕКСТУ: $completionPercent%")
+
                 if (transcription.isBlank()) {
                     append("\nУВАГА: Запис ПОРОЖНІЙ — тиша або нерозбірливе. Постав overallScore = 0!")
-                } else if (completionPercent < 15) {
-                    append("\nУВАГА: Людина сказала ЗОВСІМ ІНШІ СЛОВА — НЕ ті, що в завданні! Виконання тексту = $completionPercent%. Це означає що завдання НЕ ВИКОНАНО. Оцінка має бути ДУЖЕ НИЗЬКОЮ (overallScore максимум 10), незалежно від якості вимови.")
-                } else if (completionPercent < 100) {
-                    append("\nУВАГА: текст виконано НЕ ПОВНІСТЮ. Оцінюй ТІЛЬКИ вимовлені слова. НЕ КОМЕНТУЙ невимовлені частини!")
+                } else if (completionPercent != null) {
+                    // Вправи з очікуваним текстом
+                    append("\nВІДСОТОК ВИКОНАННЯ ТЕКСТУ: $completionPercent%")
+                    if (orderPercent != null && orderPercent < 80) {
+                        append("\nПОРЯДОК СЛІВ: $orderPercent% (слова ПЕРЕПЛУТАНІ місцями! Знижуй оцінку дикції та загальну)")
+                    }
+                    if (completionPercent < 15) {
+                        append("\nУВАГА: Людина сказала ЗОВСІМ ІНШІ СЛОВА — НЕ ті, що в завданні! Виконання тексту = $completionPercent%. Це означає що завдання НЕ ВИКОНАНО. Оцінка має бути ДУЖЕ НИЗЬКОЮ (overallScore максимум 10), незалежно від якості вимови.")
+                    } else if (completionPercent < 100) {
+                        append("\nУВАГА: текст виконано НЕ ПОВНІСТЮ ($completionPercent%).")
+                        append("\nЛюдина сказала ТІЛЬКИ те, що є в транскрипції вище.")
+                        append("\nЗАБОРОНЕНО: згадувати, коментувати чи оцінювати БУДЬ-ЯКІ слова яких НЕМАЄ в транскрипції!")
+                        append("\nstrengths/improvements — ТІЛЬКИ про слова з транскрипції, НЕ вигадуй інших!")
+                    }
+                } else {
+                    // Імпровізація (без очікуваного тексту) — повідомляємо кількість слів
+                    append("\nКількість слів: ${wordCount ?: 0}")
+                    if (wordCount != null && wordCount < 15) {
+                        append("\nУВАГА: Людина сказала ДУЖЕ МАЛО слів ($wordCount). Для цієї вправи це НЕДОСТАТНЬО — оцінки мають бути НИЗЬКИМИ!")
+                    }
                 }
             }
         } else {
@@ -232,7 +254,32 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
             finalResult = capScoreByCompletion(finalResult, completionPercent)
         }
 
-        // 4b: Мінімальний поріг — якщо < 5, вважаємо порожнім записом
+        // 4b: Cap за порядком слів (переплутані слова = штраф)
+        if (orderPercent != null && orderPercent < 80) {
+            val orderCap = when {
+                orderPercent < 30 -> 35
+                orderPercent < 50 -> 45
+                orderPercent < 80 -> 55
+                else -> 100
+            }
+            if (finalResult.overallScore > orderCap) {
+                Log.d("DiagFlow", "Capping by word order: order=$orderPercent%, orderCap=$orderCap, overallScore=${finalResult.overallScore}")
+                finalResult = finalResult.copy(
+                    diction = minOf(finalResult.diction, orderCap + 10),
+                    overallScore = minOf(finalResult.overallScore, orderCap),
+                    improvements = listOf(
+                        "Слова переплутані місцями — порядок слів: $orderPercent%"
+                    ) + finalResult.improvements
+                )
+            }
+        }
+
+        // 4c: Cap за кількістю слів (для імпровізації — без очікуваного тексту)
+        if (wordCount != null && expectedText.isNullOrBlank()) {
+            finalResult = capScoreByWordCount(finalResult, wordCount)
+        }
+
+        // 4d: Мінімальний поріг — якщо < 5, вважаємо порожнім записом
         if (finalResult.overallScore < 5) {
             Log.d("DiagFlow", "overallScore=${finalResult.overallScore} < 5, treating as empty recording")
             return@withContext Result.success(VoiceAnalysisResult.default())
@@ -251,32 +298,125 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
         Result.success(finalResult)
     }
 
-    /**
-     * Розраховує відсоток виконання тексту порівнюючи транскрипцію з очікуваним текстом.
-     * Використовує нечітке порівняння слів (contains) для толерантності до форм слова.
-     */
-    private fun calculateCompletionPercent(transcription: String, expectedText: String): Int {
-        val expectedWords = expectedText.lowercase()
-            .replace(Regex("[^а-яіїєґa-z'\\s]"), " ")
-            .split(Regex("\\s+"))
-            .filter { it.length > 1 } // ігноруємо однолітерні частки
-        val spokenWords = transcription.lowercase()
+    /** Нормалізує текст: lowercase, тільки літери, розбиває на слова */
+    private fun normalizeToWords(text: String): List<String> =
+        text.lowercase()
             .replace(Regex("[^а-яіїєґa-z'\\s]"), " ")
             .split(Regex("\\s+"))
             .filter { it.length > 1 }
+
+    /**
+     * Нечітке порівняння двох слів. Толерантне до:
+     * - різних закінчень (тупогуб/тупогубе)
+     * - помилок транскрипції (тупогуб/тупогуп)
+     * - скорочень (тупогуб/тупог)
+     */
+    private fun fuzzyMatch(spoken: String, expected: String): Boolean {
+        if (spoken == expected) return true
+
+        // Префікс: перші 3 літери збігаються (для слів >= 3 символи)
+        if (spoken.length >= 3 && expected.length >= 3 &&
+            (spoken.startsWith(expected.take(3)) || expected.startsWith(spoken.take(3)))) {
+            return true
+        }
+
+        // Одне слово містить інше (для коротких слів: "біб" в "бібу")
+        if (spoken.length >= 2 && expected.length >= 2 &&
+            (spoken.contains(expected) || expected.contains(spoken))) {
+            return true
+        }
+
+        // Відстань Леvenштейна <= 1 для слів однакової довжини (біб/біп, бик/бій)
+        if (spoken.length == expected.length && spoken.length >= 2) {
+            val diff = spoken.zip(expected).count { (a, b) -> a != b }
+            if (diff <= 1) return true
+        }
+
+        return false
+    }
+
+    /**
+     * Розраховує відсоток виконання тексту порівнюючи транскрипцію з очікуваним текстом.
+     */
+    private fun calculateCompletionPercent(transcription: String, expectedText: String): Int {
+        val expectedWords = normalizeToWords(expectedText)
+        val spokenWords = normalizeToWords(transcription)
 
         if (expectedWords.isEmpty()) return 100
         if (spokenWords.isEmpty()) return 0
 
         val matchedCount = expectedWords.count { expected ->
-            spokenWords.any { spoken ->
-                spoken == expected ||
-                (spoken.length >= 4 && expected.length >= 4 &&
-                    (spoken.startsWith(expected.take(4)) || expected.startsWith(spoken.take(4))))
-            }
+            spokenWords.any { spoken -> fuzzyMatch(spoken, expected) }
         }
 
         return ((matchedCount.toFloat() / expectedWords.size) * 100).toInt().coerceIn(0, 100)
+    }
+
+    /**
+     * Перевіряє чи слова вимовлені у правильному порядку.
+     * 100% = всі слова в правильному порядку, 0% = повністю переплутані.
+     */
+    private fun calculateOrderPercent(transcription: String, expectedText: String): Int {
+        val expectedWords = normalizeToWords(expectedText)
+        val spokenWords = normalizeToWords(transcription)
+
+        if (expectedWords.size < 2 || spokenWords.size < 2) return 100
+
+        // Скільки очікуваних слів можна знайти послідовно (в порядку) в spoken
+        var spokenIdx = 0
+        var inOrderCount = 0
+        for (expectedWord in expectedWords) {
+            for (i in spokenIdx until spokenWords.size) {
+                if (fuzzyMatch(spokenWords[i], expectedWord)) {
+                    inOrderCount++
+                    spokenIdx = i + 1
+                    break
+                }
+            }
+        }
+
+        // Загальна кількість слів що взагалі були сказані
+        val totalMatched = expectedWords.count { expected ->
+            spokenWords.any { fuzzyMatch(it, expected) }
+        }
+
+        if (totalMatched < 2) return 100
+        return ((inOrderCount.toFloat() / totalMatched) * 100).toInt().coerceIn(0, 100)
+    }
+
+    /**
+     * Обмежує оцінки за кількістю слів — для імпровізації/вільного мовлення.
+     * Якщо людина сказала лише кілька слів, оцінка не може бути високою.
+     */
+    private fun capScoreByWordCount(result: VoiceAnalysisResult, wordCount: Int): VoiceAnalysisResult {
+        val maxScore = when {
+            wordCount < 3 -> 5
+            wordCount < 8 -> 15
+            wordCount < 15 -> 25
+            wordCount < 30 -> 40
+            wordCount < 50 -> 55
+            else -> 100 // достатньо слів
+        }
+
+        if (maxScore >= 100 || result.overallScore <= maxScore) return result
+
+        Log.d("DiagFlow", "Capping by word count: words=$wordCount, maxScore=$maxScore, original=${result.overallScore}")
+
+        val ratio = maxScore.toFloat() / maxOf(result.overallScore, 1)
+        return result.copy(
+            diction = (result.diction * ratio).toInt().coerceIn(0, maxScore),
+            tempo = (result.tempo * ratio).toInt().coerceIn(0, maxScore),
+            intonation = (result.intonation * ratio).toInt().coerceIn(0, maxScore),
+            volume = (result.volume * ratio).toInt().coerceIn(0, maxScore),
+            confidence = (result.confidence * ratio).toInt().coerceIn(0, maxScore),
+            fillerWords = (result.fillerWords * ratio).toInt().coerceIn(0, maxScore),
+            structure = (result.structure * ratio).toInt().coerceIn(0, maxScore),
+            persuasiveness = (result.persuasiveness * ratio).toInt().coerceIn(0, maxScore),
+            overallScore = maxScore,
+            improvements = listOf(
+                "Сказано лише $wordCount слів — для цієї вправи потрібно більше"
+            ) + result.improvements
+        )
     }
 
     /**
@@ -293,37 +433,38 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
             else -> 100
         }
 
-        if (result.overallScore <= maxScore) return result
-
-        Log.d("DiagFlow", "Capping scores: completion=$completionPercent%, maxScore=$maxScore, original overallScore=${result.overallScore}")
-
-        // Для зовсім невідповідного тексту (< 15%) — обрізаємо і окремі метрики
-        // Щоб не було "diction: 90, overallScore: 10" за рандомні слова
-        val cappedResult = if (completionPercent < 15) {
-            val metricCap = 20
-            result.copy(
-                diction = minOf(result.diction, metricCap),
-                tempo = minOf(result.tempo, metricCap),
-                intonation = minOf(result.intonation, metricCap),
-                volume = minOf(result.volume, metricCap),
-                confidence = minOf(result.confidence, metricCap),
-                fillerWords = minOf(result.fillerWords, metricCap),
-                structure = minOf(result.structure, metricCap),
-                persuasiveness = minOf(result.persuasiveness, metricCap),
-                overallScore = maxScore,
-                improvements = listOf(
-                    "Сказано не той текст — завдання не виконано (збіг з очікуваним текстом: $completionPercent%)"
-                ) + result.improvements
-            )
-        } else {
-            result.copy(
-                overallScore = maxScore,
-                improvements = listOf(
-                    "Текст прочитано не повністю — виконано приблизно $completionPercent%"
-                ) + result.improvements
-            )
+        // Обрізаємо і окремі метрики, щоб юзер бачив узгоджені оцінки
+        // (не було diction: 58, overallScore: 30 — це плутає)
+        val metricCap = when {
+            completionPercent < 15 -> 20
+            completionPercent < 25 -> 25
+            completionPercent < 50 -> 40
+            completionPercent < 75 -> 55
+            completionPercent < 90 -> 70
+            else -> 100 // 90-99%: окремі метрики не обрізаємо
         }
 
-        return cappedResult
+        if (result.overallScore <= maxScore && metricCap >= 100) return result
+
+        Log.d("DiagFlow", "Capping scores: completion=$completionPercent%, maxScore=$maxScore, metricCap=$metricCap, original overallScore=${result.overallScore}")
+
+        val message = if (completionPercent < 15) {
+            "Сказано не той текст — завдання не виконано (збіг з очікуваним текстом: $completionPercent%)"
+        } else {
+            "Текст прочитано не повністю — виконано приблизно $completionPercent%"
+        }
+
+        return result.copy(
+            diction = if (metricCap < 100) minOf(result.diction, metricCap) else result.diction,
+            tempo = if (metricCap < 100) minOf(result.tempo, metricCap) else result.tempo,
+            intonation = if (metricCap < 100) minOf(result.intonation, metricCap) else result.intonation,
+            volume = if (metricCap < 100) minOf(result.volume, metricCap) else result.volume,
+            confidence = if (metricCap < 100) minOf(result.confidence, metricCap) else result.confidence,
+            fillerWords = if (metricCap < 100) minOf(result.fillerWords, metricCap) else result.fillerWords,
+            structure = if (metricCap < 100) minOf(result.structure, metricCap) else result.structure,
+            persuasiveness = if (metricCap < 100) minOf(result.persuasiveness, metricCap) else result.persuasiveness,
+            overallScore = minOf(result.overallScore, maxScore),
+            improvements = listOf(message) + result.improvements
+        )
     }
 }

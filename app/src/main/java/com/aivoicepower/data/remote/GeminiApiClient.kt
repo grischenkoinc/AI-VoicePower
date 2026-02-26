@@ -82,11 +82,12 @@ class GeminiApiClient @Inject constructor(
         product: String,
         customerType: String,
         userPitch: String,
-        interactionStage: SalesStage
+        interactionStage: SalesStage,
+        conversationHistory: List<Pair<String, String>> = emptyList()
     ): Result<String> {
         return try {
             val systemPrompt = AiPrompts.buildSalesSystemPrompt(product, customerType, interactionStage)
-            val userPrompt = "Продавець каже: $userPitch"
+            val userPrompt = AiPrompts.buildSalesUserPrompt(userPitch, conversationHistory, isFinal = interactionStage == SalesStage.HANDLING_OBJECTION)
 
             val response = generativeModel.generateContent(
                 content {
@@ -196,11 +197,14 @@ class GeminiApiClient @Inject constructor(
         userProposal: String,
         roundNumber: Int,
         totalRounds: Int,
-        conversationHistory: List<Pair<String, String>> = emptyList()
+        conversationHistory: List<Pair<String, String>> = emptyList(),
+        scenarioRole: String? = null,
+        scenarioPosition: String? = null,
+        scenarioName: String? = null
     ): Result<String> {
         return try {
             val isFinal = roundNumber > totalRounds
-            val systemPrompt = AiPrompts.buildNegotiationSystemPrompt(roundNumber, totalRounds)
+            val systemPrompt = AiPrompts.buildNegotiationSystemPrompt(roundNumber, totalRounds, scenarioRole, scenarioPosition, scenarioName)
             val userPrompt = AiPrompts.buildNegotiationUserPrompt(userProposal, conversationHistory, isFinal = isFinal)
 
             val response = generativeModel.generateContent(
@@ -475,7 +479,7 @@ class GeminiApiClient @Inject constructor(
             val gson = Gson()
             val parsed = gson.fromJson(jsonText, VoiceAnalysisJsonResponse::class.java)
 
-            VoiceAnalysisResult(
+            val result = VoiceAnalysisResult(
                 diction = parsed.diction ?: 0,
                 tempo = parsed.tempo ?: 0,
                 intonation = parsed.intonation ?: 0,
@@ -485,15 +489,43 @@ class GeminiApiClient @Inject constructor(
                 structure = parsed.structure ?: 0,
                 persuasiveness = parsed.persuasiveness ?: 0,
                 overallScore = parsed.overallScore ?: 0,
-                strengths = parsed.strengths ?: emptyList(),
-                improvements = parsed.improvements ?: listOf("Не вдалося проаналізувати запис"),
+                strengths = (parsed.strengths ?: emptyList()).take(3),
+                improvements = (parsed.improvements ?: listOf("Не вдалося проаналізувати запис")).take(3),
                 tip = parsed.tip ?: "Спробуйте записати ще раз",
                 coachComment = parsed.coachComment ?: ""
             )
+            breakRounding(result)
         } catch (e: Exception) {
-            // Fallback if parsing fails
             VoiceAnalysisResult.default()
         }
+    }
+
+    /**
+     * Ламає округлення до 5/10 — Gemini flash-lite схильний округляти.
+     */
+    private fun breakRounding(result: VoiceAnalysisResult): VoiceAnalysisResult {
+        fun deround(value: Int, salt: Int): Int {
+            if (value <= 0 || value >= 100) return value
+            if (value % 5 != 0) return value
+            val offset = when ((value + salt) % 4) {
+                0 -> -2
+                1 -> -1
+                2 -> 1
+                else -> 2
+            }
+            return (value + offset).coerceIn(1, 99)
+        }
+        return result.copy(
+            diction = deround(result.diction, 1),
+            tempo = deround(result.tempo, 2),
+            intonation = deround(result.intonation, 3),
+            volume = deround(result.volume, 4),
+            confidence = deround(result.confidence, 5),
+            fillerWords = deround(result.fillerWords, 6),
+            structure = deround(result.structure, 7),
+            persuasiveness = deround(result.persuasiveness, 8),
+            overallScore = deround(result.overallScore, 9)
+        )
     }
 
     /**
@@ -511,12 +543,58 @@ class GeminiApiClient @Inject constructor(
                 content { text(prompt) }
             )
             val responseText = response.text ?: return Result.failure(Exception("Пуста відповідь від AI"))
-            val analysisResult = parseVoiceAnalysisResponse(responseText)
+            var analysisResult = parseVoiceAnalysisResponse(responseText)
+
+            // Cap scores based on total user word count across all rounds
+            val totalUserWords = rounds.sumOf { (userText, _) ->
+                userText.split(Regex("\\s+")).count { it.isNotBlank() }
+            }
+            val uniqueUserWords = rounds.flatMap { (userText, _) ->
+                userText.lowercase().split(Regex("\\s+")).filter { it.isNotBlank() }
+            }.toSet().size
+            val roundCount = rounds.size
+
+            // If user basically said the same short thing every round
+            val avgWordsPerRound = if (roundCount > 0) totalUserWords / roundCount else 0
+            val maxScore = when {
+                totalUserWords < 5 -> 5
+                uniqueUserWords < 5 -> 10
+                avgWordsPerRound < 3 -> 10
+                totalUserWords < 15 -> 15
+                avgWordsPerRound < 5 -> 20
+                totalUserWords < 30 -> 30
+                totalUserWords < 50 -> 45
+                else -> 100
+            }
+
+            if (analysisResult.overallScore > maxScore) {
+                Log.w("Gemini", "Improv score capped: ${analysisResult.overallScore} -> $maxScore (totalWords=$totalUserWords, unique=$uniqueUserWords, avgPerRound=$avgWordsPerRound)")
+                analysisResult = capAllScores(analysisResult, maxScore)
+            }
+
             Result.success(analysisResult)
         } catch (e: Exception) {
             Log.e("Gemini", "analyzeImprovisationExercise FAILED: ${e.message}")
             Result.failure(e)
         }
+    }
+
+    private fun capAllScores(result: VoiceAnalysisResult, maxScore: Int): VoiceAnalysisResult {
+        fun cap(value: Int) = value.coerceAtMost(maxScore)
+        return result.copy(
+            diction = cap(result.diction),
+            tempo = cap(result.tempo),
+            intonation = cap(result.intonation),
+            volume = cap(result.volume),
+            confidence = cap(result.confidence),
+            fillerWords = cap(result.fillerWords),
+            structure = cap(result.structure),
+            persuasiveness = cap(result.persuasiveness),
+            overallScore = cap(result.overallScore),
+            improvements = if (maxScore <= 15) {
+                listOf("Відповіді занадто короткі або не за темою — говоріть розгорнуто") + result.improvements.take(2)
+            } else result.improvements
+        )
     }
 
     private fun extractJson(text: String): String {

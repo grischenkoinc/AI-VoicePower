@@ -1,6 +1,7 @@
 package com.aivoicepower.ui.screens.improvisation
 
 sealed class NegotiationEvent {
+    data class ScenarioSelected(val scenario: NegotiationScenario) : NegotiationEvent()
     object StartSimulation : NegotiationEvent()
     object StartRecording : NegotiationEvent()
     object StopRecording : NegotiationEvent()

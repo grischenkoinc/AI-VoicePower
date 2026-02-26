@@ -23,16 +23,16 @@ fun QuickActionChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val chipShape = RoundedCornerShape(20.dp)
+    val chipShape = RoundedCornerShape(16.dp)
 
     Box(
         modifier = modifier
             .clip(chipShape)
-            .background(Color.White.copy(alpha = 0.08f))
-            .border(1.dp, PrimaryColors.light.copy(alpha = 0.3f), chipShape)
+            .background(Color.White.copy(alpha = 0.06f))
+            .border(1.dp, PrimaryColors.light.copy(alpha = 0.20f), chipShape)
             .scaleOnPress(pressedScale = 0.93f)
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 14.dp, vertical = 7.dp)
     ) {
         Text(
             text = text,

@@ -2,6 +2,7 @@ package com.aivoicepower.ui.screens.aicoach
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.view.HapticFeedbackConstants
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.*
@@ -27,7 +28,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import android.view.HapticFeedbackConstants
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.TextStyle
@@ -56,73 +56,54 @@ fun AiCoachScreen(
     val listState = rememberLazyListState()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
-    val view = LocalView.current
     var showMenu by remember { mutableStateOf(false) }
 
     // TTS state
     val isTtsSpeaking by viewModel.ttsManager.isSpeaking.collectAsStateWithLifecycle()
     var speakingMessageId by remember { mutableStateOf<String?>(null) }
 
-    // Clear speakingMessageId when TTS stops
     LaunchedEffect(isTtsSpeaking) {
-        if (!isTtsSpeaking) {
-            speakingMessageId = null
-        }
+        if (!isTtsSpeaking) speakingMessageId = null
     }
 
-    // Stop TTS when navigating away
     DisposableEffect(Unit) {
-        onDispose {
-            viewModel.ttsManager.stop()
-        }
+        onDispose { viewModel.ttsManager.stop() }
     }
 
-    // Permission launcher for microphone
+    // Permission launcher
     val micPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
-        if (isGranted) {
-            viewModel.onEvent(AiCoachEvent.StartVoiceInput)
-        }
+        if (isGranted) viewModel.onEvent(AiCoachEvent.StartVoiceInput)
     }
 
-    // File picker launcher
+    // File picker
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) { uri ->
-        uri?.let {
-            viewModel.onEvent(AiCoachEvent.AudioFileSelected(it))
-        }
+    ) { uri -> uri?.let { viewModel.onEvent(AiCoachEvent.AudioFileSelected(it)) } }
+
+    // Auto-scroll to bottom
+    val totalItems = state.messages.size +
+            (if (state.isSending || state.isUploadingAudio) 1 else 0) +
+            (if (state.quickActions.isNotEmpty() && state.messages.isNotEmpty() && state.activeSimulation == null) 1 else 0)
+    LaunchedEffect(totalItems) {
+        if (totalItems > 0) listState.animateScrollToItem(totalItems - 1)
     }
 
-    // Auto-scroll to bottom when new message
-    LaunchedEffect(state.messages.size) {
-        if (state.messages.isNotEmpty()) {
-            listState.animateScrollToItem(state.messages.size)
-        }
-    }
-
-    // Show error as snackbar
+    // Error snackbar
     LaunchedEffect(state.error) {
         state.error?.let { error ->
-            snackbarHostState.showSnackbar(
-                message = error,
-                duration = SnackbarDuration.Short
-            )
+            snackbarHostState.showSnackbar(message = error, duration = SnackbarDuration.Short)
             viewModel.onEvent(AiCoachEvent.ErrorDismissed)
         }
     }
 
-    // Show scenario dialog
+    // Scenario dialog
     if (state.showScenarioDialog) {
         ScenarioDialog(
             scenarios = viewModel.getSimulationScenarios(),
-            onScenarioSelected = { scenario ->
-                viewModel.onEvent(AiCoachEvent.StartSimulation(scenario))
-            },
-            onDismiss = {
-                viewModel.onEvent(AiCoachEvent.HideScenarioDialog)
-            }
+            onScenarioSelected = { viewModel.onEvent(AiCoachEvent.StartSimulation(it)) },
+            onDismiss = { viewModel.onEvent(AiCoachEvent.HideScenarioDialog) }
         )
     }
 
@@ -132,15 +113,11 @@ fun AiCoachScreen(
             viewModel.onEvent(AiCoachEvent.StopVoiceInput)
         } else {
             when {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.RECORD_AUDIO
-                ) == PackageManager.PERMISSION_GRANTED -> {
+                ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO)
+                        == PackageManager.PERMISSION_GRANTED -> {
                     viewModel.onEvent(AiCoachEvent.StartVoiceInput)
                 }
-                else -> {
-                    micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                }
+                else -> micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
             }
         }
     }
@@ -150,172 +127,65 @@ fun AiCoachScreen(
             Box(modifier = Modifier.fillMaxSize()) {
                 Column(modifier = Modifier.fillMaxSize()) {
                     // ===== TOP BAR =====
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color.Black.copy(alpha = 0.2f))
-                            .border(
-                                width = 1.dp,
-                                color = Color.White.copy(alpha = 0.06f),
-                                shape = RoundedCornerShape(0.dp)
-                            )
-                            .statusBarsPadding()
-                            .padding(horizontal = 4.dp, vertical = 4.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            IconButton(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateBack() }) {
-                                Icon(
-                                    Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Назад",
-                                    tint = Color.White
-                                )
-                            }
+                    CoachTopBar(
+                        activeSimulation = state.activeSimulation,
+                        isPremium = state.isPremium,
+                        messagesRemaining = state.messagesRemaining,
+                        showMenu = showMenu,
+                        onShowMenuChange = { showMenu = it },
+                        onNavigateBack = onNavigateBack,
+                        onExitSimulation = { viewModel.onEvent(AiCoachEvent.ExitSimulation) },
+                        onShowScenarioDialog = { viewModel.onEvent(AiCoachEvent.ShowScenarioDialog) },
+                        onExportConversation = { viewModel.onEvent(AiCoachEvent.ExportConversation) },
+                        onClearConversation = { viewModel.onEvent(AiCoachEvent.ClearConversationClicked) },
+                        hasMessages = state.messages.isNotEmpty()
+                    )
 
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = "AI Тренер",
-                                    style = TextStyle(
-                                        fontSize = 18.sp,
-                                        fontWeight = FontWeight.SemiBold
-                                    ),
-                                    color = Color.White
-                                )
-                                if (state.activeSimulation != null) {
-                                    Text(
-                                        text = "Симуляція: ${state.activeSimulation!!.title}",
-                                        style = TextStyle(fontSize = 12.sp),
-                                        color = PrimaryColors.light
-                                    )
-                                } else if (!state.isPremium) {
-                                    Text(
-                                        text = "Повідомлень: ${state.messagesRemaining}/10",
-                                        style = TextStyle(fontSize = 12.sp),
-                                        color = TextColors.onDarkMuted
-                                    )
-                                }
-                            }
-
-                            if (state.activeSimulation != null) {
-                                IconButton(
-                                    onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); viewModel.onEvent(AiCoachEvent.ExitSimulation) }
-                                ) {
-                                    Icon(
-                                        Icons.Default.Close,
-                                        contentDescription = "Завершити симуляцію",
-                                        tint = Color.White.copy(alpha = 0.7f)
-                                    )
-                                }
-                            }
-
-                            Box {
-                                IconButton(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); showMenu = true }) {
-                                    Icon(
-                                        Icons.Default.MoreVert,
-                                        contentDescription = "Меню",
-                                        tint = Color.White.copy(alpha = 0.7f)
-                                    )
-                                }
-                                DropdownMenu(
-                                    expanded = showMenu,
-                                    onDismissRequest = { showMenu = false }
-                                ) {
-                                    DropdownMenuItem(
-                                        text = { Text("Симуляція") },
-                                        onClick = {
-                                            showMenu = false
-                                            viewModel.onEvent(AiCoachEvent.ShowScenarioDialog)
-                                        },
-                                        leadingIcon = {
-                                            Icon(Icons.Default.PlayArrow, contentDescription = null)
-                                        }
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text("Експортувати") },
-                                        onClick = {
-                                            showMenu = false
-                                            viewModel.onEvent(AiCoachEvent.ExportConversation)
-                                        },
-                                        leadingIcon = {
-                                            Icon(Icons.Default.Share, contentDescription = null)
-                                        },
-                                        enabled = state.messages.isNotEmpty()
-                                    )
-                                    if (state.messages.isNotEmpty()) {
-                                        DropdownMenuItem(
-                                            text = { Text("Очистити") },
-                                            onClick = {
-                                                showMenu = false
-                                                viewModel.onEvent(AiCoachEvent.ClearConversationClicked)
-                                            },
-                                            leadingIcon = {
-                                                Icon(Icons.Default.Delete, contentDescription = null)
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // ===== MESSAGES LIST (scrollable, takes available space) =====
+                    // ===== MESSAGES AREA =====
                     Box(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxWidth()
                     ) {
                         if (state.messages.isEmpty() && !state.isLoading) {
-                            // Empty state with mic prompt
-                            EmptyVoiceState(
+                            CoachEmptyState(
                                 templates = state.templates,
-                                onTemplateClick = { template ->
-                                    viewModel.onEvent(AiCoachEvent.ApplyTemplate(template))
-                                },
-                                onSimulationClick = {
-                                    viewModel.onEvent(AiCoachEvent.ShowScenarioDialog)
-                                }
+                                onTemplateClick = { viewModel.onEvent(AiCoachEvent.ApplyTemplate(it)) }
                             )
                         } else {
                             LazyColumn(
                                 state = listState,
                                 modifier = Modifier.fillMaxSize(),
                                 contentPadding = PaddingValues(
-                                    start = 12.dp,
-                                    end = 12.dp,
-                                    top = 8.dp,
-                                    bottom = 8.dp
+                                    start = 12.dp, end = 12.dp,
+                                    top = 8.dp, bottom = 8.dp
                                 ),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
-                                items(state.messages) { message ->
-                                    val isExpanded = message.id in state.expandedMessageIds
+                                // Simulation progress
+                                if (state.activeSimulation != null) {
+                                    item {
+                                        SimulationProgressBar(
+                                            currentStep = state.simulationStep + 1,
+                                            totalSteps = state.activeSimulation!!.steps.size
+                                        )
+                                    }
+                                }
 
+                                // Messages
+                                items(state.messages) { message ->
                                     when (message.role) {
                                         MessageRole.USER -> {
                                             UserMessageBubble(
                                                 message = message.content,
-                                                timestamp = message.timestamp,
-                                                isExpanded = isExpanded,
-                                                onToggleExpand = {
-                                                    viewModel.onEvent(
-                                                        AiCoachEvent.ToggleMessageExpanded(message.id)
-                                                    )
-                                                }
+                                                timestamp = message.timestamp
                                             )
                                         }
                                         MessageRole.ASSISTANT -> {
                                             AssistantMessageBubble(
                                                 message = message.content,
                                                 timestamp = message.timestamp,
-                                                isExpanded = isExpanded,
                                                 isSpeakingThis = isTtsSpeaking && speakingMessageId == message.id,
-                                                onToggleExpand = {
-                                                    viewModel.onEvent(
-                                                        AiCoachEvent.ToggleMessageExpanded(message.id)
-                                                    )
-                                                },
                                                 onSpeakClick = {
                                                     if (isTtsSpeaking && speakingMessageId == message.id) {
                                                         viewModel.ttsManager.stop()
@@ -327,89 +197,64 @@ fun AiCoachScreen(
                                                 }
                                             )
                                         }
-                                        MessageRole.SYSTEM -> {
-                                            // Skip system messages
-                                        }
+                                        MessageRole.SYSTEM -> { /* skip */ }
                                     }
                                 }
 
                                 // Typing indicator
                                 if (state.isSending || state.isUploadingAudio) {
+                                    item { TypingIndicator() }
+                                }
+
+                                // Quick actions (inside scroll)
+                                if (state.quickActions.isNotEmpty() && state.messages.isNotEmpty() && state.activeSimulation == null) {
                                     item {
-                                        TypingIndicator()
+                                        LazyRow(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                            contentPadding = PaddingValues(vertical = 4.dp)
+                                        ) {
+                                            itemsIndexed(state.quickActions) { index, action ->
+                                                QuickActionChip(
+                                                    text = action,
+                                                    onClick = {
+                                                        viewModel.onEvent(AiCoachEvent.QuickActionClicked(action))
+                                                    },
+                                                    modifier = Modifier.staggeredEntry(
+                                                        index = index,
+                                                        staggerDelay = 60
+                                                    )
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
                     }
 
-                    // ===== SIMULATION PROGRESS =====
-                    if (state.activeSimulation != null) {
-                        SimulationProgressBar(
-                            currentStep = state.simulationStep + 1,
-                            totalSteps = state.activeSimulation!!.steps.size
-                        )
-                    }
-
-                    // ===== QUICK ACTIONS (above mic) =====
-                    if (state.quickActions.isNotEmpty() && state.messages.isNotEmpty() && state.activeSimulation == null) {
-                        LazyRow(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 4.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            itemsIndexed(state.quickActions) { index, action ->
-                                QuickActionChip(
-                                    text = action,
-                                    onClick = {
-                                        viewModel.onEvent(AiCoachEvent.QuickActionClicked(action))
-                                    },
-                                    modifier = Modifier.staggeredEntry(
-                                        index = index,
-                                        staggerDelay = 60
-                                    )
-                                )
-                            }
-                        }
-                    }
-
-                    // ===== FREE TIER WARNING =====
-                    if (!state.isPremium && state.messagesRemaining <= 3 && state.messagesRemaining > 0) {
-                        FreeTierBanner(
+                    // ===== SLIM FREE TIER BANNER =====
+                    if (!state.isPremium && state.messagesRemaining in 1..3) {
+                        SlimFreeTierBanner(
                             messagesRemaining = state.messagesRemaining,
                             onUpgradeClick = onNavigateToPremium
                         )
                     }
 
-                    // ===== VOICE MIC BUTTON (primary action) =====
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        VoiceMicButton(
-                            isListening = state.isListening,
-                            isSending = state.isSending,
-                            audioLevel = state.audioLevel,
-                            onClick = onVoiceClick
-                        )
-                    }
-
-                    // ===== COMPACT TEXT INPUT (secondary) =====
-                    ChatInputField(
+                    // ===== UNIFIED INPUT BAR =====
+                    UnifiedInputBar(
                         text = state.inputText,
                         onTextChange = { viewModel.onEvent(AiCoachEvent.InputChanged(it)) },
                         onSendClick = { viewModel.onEvent(AiCoachEvent.SendMessageClicked) },
-                        onUploadClick = {
-                            filePickerLauncher.launch("audio/*")
-                        },
-                        enabled = state.canSendMessage && !state.isSending && !state.isUploadingAudio && !state.isListening,
-                        isLoading = state.isSending || state.isUploadingAudio
+                        onVoiceClick = onVoiceClick,
+                        onAttachClick = { filePickerLauncher.launch("audio/*") },
+                        isListening = state.isListening,
+                        isSending = state.isSending,
+                        isUploadingAudio = state.isUploadingAudio,
+                        audioLevel = state.audioLevel,
+                        enabled = state.canSendMessage && !state.isSending && !state.isUploadingAudio && !state.isListening
                     )
 
-                    // Bottom nav bar padding
                     Spacer(modifier = Modifier.navigationBarsPadding())
                 }
 
@@ -418,20 +263,160 @@ fun AiCoachScreen(
                     hostState = snackbarHostState,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
-                        .padding(bottom = 120.dp)
+                        .padding(bottom = 80.dp)
                 )
             }
         }
     )
 }
 
+// ===== TOP BAR =====
+
+@Composable
+private fun CoachTopBar(
+    activeSimulation: SimulationScenario?,
+    isPremium: Boolean,
+    messagesRemaining: Int,
+    showMenu: Boolean,
+    onShowMenuChange: (Boolean) -> Unit,
+    onNavigateBack: () -> Unit,
+    onExitSimulation: () -> Unit,
+    onShowScenarioDialog: () -> Unit,
+    onExportConversation: () -> Unit,
+    onClearConversation: () -> Unit,
+    hasMessages: Boolean
+) {
+    val view = LocalView.current
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.Black.copy(alpha = 0.2f))
+            .border(
+                width = 1.dp,
+                color = Color.White.copy(alpha = 0.06f),
+                shape = RoundedCornerShape(0.dp)
+            )
+            .statusBarsPadding()
+            .padding(horizontal = 4.dp, vertical = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = {
+                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                onNavigateBack()
+            }) {
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Назад",
+                    tint = Color.White
+                )
+            }
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "AI Тренер",
+                    style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.SemiBold),
+                    color = Color.White
+                )
+                if (activeSimulation != null) {
+                    Text(
+                        text = "Симуляція: ${activeSimulation.title}",
+                        style = TextStyle(fontSize = 12.sp),
+                        color = PrimaryColors.light
+                    )
+                } else if (!isPremium) {
+                    val dotColor = when {
+                        messagesRemaining > 5 -> Color(0xFF10B981)
+                        messagesRemaining > 2 -> Color(0xFFF59E0B)
+                        else -> Color(0xFFEF4444)
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .clip(CircleShape)
+                                .background(dotColor)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "$messagesRemaining повідомлень",
+                            style = TextStyle(fontSize = 12.sp),
+                            color = TextColors.onDarkMuted
+                        )
+                    }
+                }
+            }
+
+            if (activeSimulation != null) {
+                IconButton(onClick = {
+                    view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                    onExitSimulation()
+                }) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "Завершити симуляцію",
+                        tint = Color.White.copy(alpha = 0.7f)
+                    )
+                }
+            }
+
+            Box {
+                IconButton(onClick = {
+                    view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                    onShowMenuChange(true)
+                }) {
+                    Icon(
+                        Icons.Default.MoreVert,
+                        contentDescription = "Меню",
+                        tint = Color.White.copy(alpha = 0.7f)
+                    )
+                }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { onShowMenuChange(false) }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Симуляція") },
+                        onClick = {
+                            onShowMenuChange(false)
+                            onShowScenarioDialog()
+                        },
+                        leadingIcon = { Icon(Icons.Default.PlayArrow, contentDescription = null) }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Експортувати") },
+                        onClick = {
+                            onShowMenuChange(false)
+                            onExportConversation()
+                        },
+                        leadingIcon = { Icon(Icons.Default.Share, contentDescription = null) },
+                        enabled = hasMessages
+                    )
+                    if (hasMessages) {
+                        DropdownMenuItem(
+                            text = { Text("Очистити") },
+                            onClick = {
+                                onShowMenuChange(false)
+                                onClearConversation()
+                            },
+                            leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 // ===== EMPTY STATE =====
 
 @Composable
-private fun EmptyVoiceState(
+private fun CoachEmptyState(
     templates: List<ConversationTemplate>,
-    onTemplateClick: (ConversationTemplate) -> Unit,
-    onSimulationClick: () -> Unit
+    onTemplateClick: (ConversationTemplate) -> Unit
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "empty_glow")
     val glowAlpha by infiniteTransition.animateFloat(
@@ -444,146 +429,145 @@ private fun EmptyVoiceState(
         label = "glow"
     )
 
-    LazyColumn(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.Center
     ) {
-        item {
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // AI Avatar with glow
-            Box(contentAlignment = Alignment.Center) {
-                Box(
-                    modifier = Modifier
-                        .size(88.dp)
-                        .shadow(20.dp, CircleShape, spotColor = PrimaryColors.glow.copy(alpha = glowAlpha))
-                        .clip(CircleShape)
-                        .background(
-                            brush = Brush.linearGradient(
-                                colors = listOf(Color(0xFF667EEA), Color(0xFF8B5CF6), Color(0xFF764BA2))
-                            )
-                        )
-                        .border(2.dp, Color.White.copy(alpha = 0.2f), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "\uD83E\uDD16", fontSize = 36.sp)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Привіт! Я твій AI-тренер",
-                style = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.Bold),
-                color = Color.White,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-                text = "Натисніть мікрофон, щоб почати розмову",
-                style = TextStyle(fontSize = 14.sp),
-                color = TextColors.onDarkMuted,
-                textAlign = TextAlign.Center
-            )
+        // Small AI avatar
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .shadow(12.dp, CircleShape, spotColor = PrimaryColors.glow.copy(alpha = glowAlpha))
+                .clip(CircleShape)
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(Color(0xFF667EEA), Color(0xFF8B5CF6), Color(0xFF764BA2))
+                    )
+                )
+                .border(1.5.dp, Color.White.copy(alpha = 0.2f), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = "\uD83E\uDD16", fontSize = 24.sp)
         }
 
-        // Simulation button
-        item {
-            val btnShape = RoundedCornerShape(14.dp)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(btnShape)
-                    .background(Color.White.copy(alpha = 0.06f))
-                    .border(1.dp, PrimaryColors.light.copy(alpha = 0.25f), btnShape)
-                    .clickable(onClick = onSimulationClick)
-                    .padding(14.dp),
-                contentAlignment = Alignment.Center
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Чим можу допомогти?",
+            style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.SemiBold),
+            color = Color.White,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // 2x2 suggestion grid
+        val displayTemplates = templates.take(4)
+        if (displayTemplates.isNotEmpty()) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        Icons.Default.PlayArrow,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                        tint = PrimaryColors.light
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Почати симуляцію",
-                        color = Color.White.copy(alpha = 0.8f),
-                        style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                    )
+                for (rowIndex in displayTemplates.indices step 2) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        SuggestionCard(
+                            template = displayTemplates[rowIndex],
+                            onClick = { onTemplateClick(displayTemplates[rowIndex]) },
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (rowIndex + 1 < displayTemplates.size) {
+                            SuggestionCard(
+                                template = displayTemplates[rowIndex + 1],
+                                onClick = { onTemplateClick(displayTemplates[rowIndex + 1]) },
+                                modifier = Modifier.weight(1f)
+                            )
+                        } else {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+                    }
                 }
             }
-        }
-
-        // Templates
-        if (templates.isNotEmpty()) {
-            item {
-                Text(
-                    text = "Шаблони",
-                    style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.SemiBold),
-                    color = Color.White.copy(alpha = 0.6f),
-                    modifier = Modifier.fillMaxWidth().padding(top = 6.dp)
-                )
-            }
-
-            items(templates) { template ->
-                GradientTemplateCard(
-                    template = template,
-                    onClick = { onTemplateClick(template) }
-                )
-            }
-        }
-
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
 
-// ===== TEMPLATE CARD =====
+@Composable
+private fun SuggestionCard(
+    template: ConversationTemplate,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val cardShape = RoundedCornerShape(16.dp)
+
+    Column(
+        modifier = modifier
+            .clip(cardShape)
+            .background(Color.White.copy(alpha = 0.06f), cardShape)
+            .border(1.dp, Color.White.copy(alpha = 0.10f), cardShape)
+            .clickable(onClick = onClick)
+            .padding(12.dp),
+        horizontalAlignment = Alignment.Start
+    ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(PrimaryColors.default.copy(alpha = 0.12f))
+                .border(1.dp, PrimaryColors.light.copy(alpha = 0.15f), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = template.emoji, fontSize = 18.sp)
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = template.title,
+            style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Medium),
+            color = Color.White.copy(alpha = 0.85f),
+            maxLines = 2
+        )
+    }
+}
+
+// ===== SLIM FREE TIER BANNER =====
 
 @Composable
-private fun GradientTemplateCard(
-    template: ConversationTemplate,
-    onClick: () -> Unit
+private fun SlimFreeTierBanner(
+    messagesRemaining: Int,
+    onUpgradeClick: () -> Unit
 ) {
-    val cardShape = RoundedCornerShape(14.dp)
+    val view = LocalView.current
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(cardShape)
-            .background(Color.White.copy(alpha = 0.07f))
-            .border(1.dp, Color.White.copy(alpha = 0.12f), cardShape)
-            .clickable(onClick = onClick)
-            .padding(14.dp),
+            .background(Color(0xFFF59E0B).copy(alpha = 0.08f))
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(PrimaryColors.default.copy(alpha = 0.15f))
-                .border(1.dp, PrimaryColors.light.copy(alpha = 0.2f), CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = template.emoji, fontSize = 20.sp)
-        }
-        Spacer(modifier = Modifier.width(12.dp))
         Text(
-            text = template.title,
-            style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Medium),
-            color = Color.White.copy(alpha = 0.85f)
+            text = "\u26A0\uFE0F",
+            fontSize = 14.sp
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = "Залишилось $messagesRemaining повідомлень",
+            style = TextStyle(fontSize = 12.sp),
+            color = Color.White.copy(alpha = 0.75f)
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        Text(
+            text = "Оновити",
+            style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.SemiBold),
+            color = PrimaryColors.light,
+            modifier = Modifier.clickable {
+                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                onUpgradeClick()
+            }
         )
     }
 }
@@ -598,8 +582,9 @@ private fun SimulationProgressBar(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
             .background(Color.Black.copy(alpha = 0.15f))
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 10.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -616,7 +601,7 @@ private fun SimulationProgressBar(
                 color = PrimaryColors.light
             )
         }
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(6.dp))
         Box(
             modifier = Modifier
                 .fillMaxWidth()

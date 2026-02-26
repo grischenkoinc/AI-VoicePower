@@ -25,8 +25,10 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aivoicepower.data.content.DebateTopicsProvider
 import com.aivoicepower.ui.components.FocusCountdownOverlay
+import com.aivoicepower.ui.components.AnalysisResultsContent
 import com.aivoicepower.ui.screens.improvisation.components.AnalyzingScreen
-import com.aivoicepower.ui.screens.improvisation.components.ImprovisationAnalysisScreen
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import com.aivoicepower.ui.screens.improvisation.components.OrbState
 import com.aivoicepower.ui.screens.improvisation.components.VoiceExerciseScreen
 import com.aivoicepower.ui.theme.AppTypography
@@ -81,11 +83,22 @@ fun DebateScreen(
 
     when {
         state.analysisResult != null -> {
-            ImprovisationAnalysisScreen(
-                result = state.analysisResult!!,
-                exerciseTitle = "Дебати з AI",
-                onDismiss = { viewModel.onEvent(DebateEvent.DismissAnalysis); onNavigateBack() }
-            )
+            Box(modifier = Modifier.fillMaxSize()) {
+                GradientBackground(content = {})
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 20.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    AnalysisResultsContent(
+                        result = state.analysisResult!!,
+                        onDismiss = { viewModel.onEvent(DebateEvent.DismissAnalysis); onNavigateBack() },
+                        dismissButtonText = "Готово"
+                    )
+                }
+            }
         }
 
         state.isAnalyzing -> {
@@ -184,7 +197,7 @@ private fun DebateTopicSelectionScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 130.dp)
+                .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 30.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -272,7 +285,7 @@ private fun DebatePositionScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 130.dp),
+                .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 30.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(text = "Тема:", style = AppTypography.titleMedium, color = TextColors.onDarkPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)

@@ -1,6 +1,5 @@
 package com.aivoicepower.ui.screens.aicoach.components
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -11,8 +10,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,7 +21,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aivoicepower.ui.theme.PrimaryColors
@@ -36,13 +32,10 @@ import java.util.*
 fun AssistantMessageBubble(
     message: String,
     timestamp: Long,
-    isExpanded: Boolean = false,
     isSpeakingThis: Boolean = false,
-    onToggleExpand: () -> Unit = {},
     onSpeakClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
-    // Glow animation for speaker icon
     val infiniteTransition = rememberInfiniteTransition(label = "speaker_glow")
     val glowAlpha by infiniteTransition.animateFloat(
         initialValue = 0.4f,
@@ -56,18 +49,16 @@ fun AssistantMessageBubble(
 
     val bubbleShape = RoundedCornerShape(
         topStart = 4.dp,
-        topEnd = 16.dp,
-        bottomStart = 16.dp,
-        bottomEnd = 16.dp
+        topEnd = 18.dp,
+        bottomStart = 18.dp,
+        bottomEnd = 18.dp
     )
 
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onToggleExpand),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Start
     ) {
-        // AI Avatar — gradient circle
+        // AI Avatar
         Box(
             modifier = Modifier
                 .size(32.dp)
@@ -85,83 +76,35 @@ fun AssistantMessageBubble(
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        // Glass bubble
-        Box(
+        // Bubble — always full text
+        Column(
             modifier = Modifier
-                .weight(1f)
-                .animateContentSize(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessMedium
-                    )
-                )
+                .fillMaxWidth(0.85f)
                 .clip(bubbleShape)
-                .background(Color.White.copy(alpha = 0.10f), bubbleShape)
-                .border(1.dp, Color.White.copy(alpha = 0.15f), bubbleShape)
+                .background(Color.White.copy(alpha = 0.08f), bubbleShape)
+                .border(1.dp, Color.White.copy(alpha = 0.10f), bubbleShape)
                 .padding(12.dp)
         ) {
-            if (isExpanded) {
-                // EXPANDED: full text + controls
-                Column {
-                    Text(
-                        text = message,
-                        color = Color.White.copy(alpha = 0.92f),
-                        style = TextStyle(fontSize = 14.sp, lineHeight = 21.sp)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    // Footer: time + play + collapse
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = formatTimestamp(timestamp),
-                            style = TextStyle(fontSize = 10.sp),
-                            color = TextColors.onDarkMuted
-                        )
-                        if (onSpeakClick != null) {
-                            SpeakerButton(
-                                isSpeaking = isSpeakingThis,
-                                glowAlpha = glowAlpha,
-                                onClick = onSpeakClick
-                            )
-                        }
-                        Spacer(modifier = Modifier.weight(1f))
-                        Icon(
-                            Icons.Default.ExpandLess,
-                            contentDescription = "Згорнути",
-                            tint = Color.White.copy(alpha = 0.4f),
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                }
-            } else {
-                // COLLAPSED: 1 line + play
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = message,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        color = Color.White.copy(alpha = 0.8f),
-                        style = TextStyle(fontSize = 14.sp),
-                        modifier = Modifier.weight(1f)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    if (onSpeakClick != null) {
-                        SpeakerButton(
-                            isSpeaking = isSpeakingThis,
-                            glowAlpha = glowAlpha,
-                            onClick = onSpeakClick
-                        )
-                    }
-                    Icon(
-                        Icons.Default.ExpandMore,
-                        contentDescription = "Розгорнути",
-                        tint = Color.White.copy(alpha = 0.3f),
-                        modifier = Modifier.size(16.dp)
+            Text(
+                text = message,
+                color = Color.White.copy(alpha = 0.92f),
+                style = TextStyle(fontSize = 15.sp, lineHeight = 22.sp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = formatTimestamp(timestamp),
+                    style = TextStyle(fontSize = 10.sp),
+                    color = TextColors.onDarkMuted
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                if (onSpeakClick != null) {
+                    SpeakerButton(
+                        isSpeaking = isSpeakingThis,
+                        glowAlpha = glowAlpha,
+                        onClick = onSpeakClick
                     )
                 }
             }
@@ -177,11 +120,11 @@ private fun SpeakerButton(
 ) {
     Box(
         modifier = Modifier
-            .size(26.dp)
+            .size(28.dp)
             .clip(CircleShape)
             .background(
                 if (isSpeaking) PrimaryColors.default.copy(alpha = 0.2f)
-                else Color.White.copy(alpha = 0.06f)
+                else Color.White.copy(alpha = 0.10f)
             )
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
@@ -192,11 +135,11 @@ private fun SpeakerButton(
             else
                 Icons.AutoMirrored.Filled.VolumeUp,
             contentDescription = if (isSpeaking) "Зупинити" else "Озвучити",
-            modifier = Modifier.size(14.dp),
+            modifier = Modifier.size(15.dp),
             tint = if (isSpeaking)
                 PrimaryColors.light.copy(alpha = glowAlpha)
             else
-                Color.White.copy(alpha = 0.45f)
+                Color.White.copy(alpha = 0.50f)
         )
     }
 }

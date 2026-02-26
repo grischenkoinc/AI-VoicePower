@@ -18,8 +18,6 @@ data class AiCoachState(
     val messagesRemaining: Int = 10,
     val isPremium: Boolean = false,
     val canSendMessage: Boolean = true,
-    // Voice-first
-    val expandedMessageIds: Set<String> = emptySet(),
     val audioLevel: Float = 0f
 )
 

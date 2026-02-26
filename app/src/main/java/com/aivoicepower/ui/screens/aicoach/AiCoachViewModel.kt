@@ -208,22 +208,6 @@ class AiCoachViewModel @Inject constructor(
                 applyTemplate(event.template)
             }
 
-            // Voice-first: toggle message expand/collapse
-            is AiCoachEvent.ToggleMessageExpanded -> {
-                toggleMessageExpanded(event.messageId)
-            }
-        }
-    }
-
-    private fun toggleMessageExpanded(messageId: String) {
-        _state.update { state ->
-            val expanded = state.expandedMessageIds.toMutableSet()
-            if (messageId in expanded) {
-                expanded.remove(messageId)
-            } else {
-                expanded.add(messageId)
-            }
-            state.copy(expandedMessageIds = expanded)
         }
     }
 

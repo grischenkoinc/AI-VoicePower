@@ -1,6 +1,7 @@
 package com.aivoicepower.ui.screens.improvisation
 
 sealed class PresentationEvent {
+    data class TopicSelected(val topic: String) : PresentationEvent()
     object StartSimulation : PresentationEvent()
     object StartRecording : PresentationEvent()
     object StopRecording : PresentationEvent()

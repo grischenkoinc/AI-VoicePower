@@ -123,7 +123,7 @@ fun DailyChallengeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 130.dp)
+                .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = if (state.analysisResult != null || state.isAnalyzing) 20.dp else 130.dp)
         ) {
             // Header with back button
             Row(

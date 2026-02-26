@@ -35,7 +35,7 @@ fun TypingIndicator(
             // AI Avatar — gradient circle (matching AssistantMessageBubble)
             Box(
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(32.dp)
                     .clip(CircleShape)
                     .background(
                         brush = Brush.linearGradient(
@@ -49,7 +49,7 @@ fun TypingIndicator(
             ) {
                 Text(
                     text = "\uD83E\uDD16",
-                    fontSize = 16.sp
+                    fontSize = 14.sp
                 )
             }
 

@@ -3,6 +3,7 @@ package com.aivoicepower.ui.screens.improvisation
 import android.view.HapticFeedbackConstants
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,7 +24,9 @@ import androidx.compose.ui.platform.LocalView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aivoicepower.ui.components.FocusCountdownOverlay
 import com.aivoicepower.ui.screens.improvisation.components.AnalyzingScreen
-import com.aivoicepower.ui.screens.improvisation.components.ImprovisationAnalysisScreen
+import com.aivoicepower.ui.components.AnalysisResultsContent
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import com.aivoicepower.ui.screens.improvisation.components.OrbState
 import com.aivoicepower.ui.screens.improvisation.components.VoiceExerciseScreen
 import com.aivoicepower.ui.theme.AppTypography
@@ -79,11 +82,22 @@ fun PresentationScreen(
 
     when {
         state.analysisResult != null -> {
-            ImprovisationAnalysisScreen(
-                result = state.analysisResult!!,
-                exerciseTitle = "Презентацiя",
-                onDismiss = { viewModel.onEvent(PresentationEvent.DismissAnalysis); onNavigateBack() }
-            )
+            Box(modifier = Modifier.fillMaxSize()) {
+                GradientBackground(content = {})
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 20.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    AnalysisResultsContent(
+                        result = state.analysisResult!!,
+                        onDismiss = { viewModel.onEvent(PresentationEvent.DismissAnalysis); onNavigateBack() },
+                        dismissButtonText = "Готово"
+                    )
+                }
+            }
         }
 
         state.isAnalyzing -> {
@@ -92,6 +106,8 @@ fun PresentationScreen(
 
         !state.isStarted -> {
             PresentationWelcomeScreen(
+                selectedTopic = state.selectedTopic,
+                onTopicSelected = { viewModel.onEvent(PresentationEvent.TopicSelected(it)) },
                 onStart = { viewModel.onEvent(PresentationEvent.StartSimulation) },
                 onNavigateBack = onNavigateBack
             )
@@ -158,8 +174,23 @@ fun PresentationScreen(
     }
 }
 
+private val PRESENTATION_TOPICS = listOf(
+    "Мобільний застосунок для здоров'я",
+    "Стартап з доставки їжі",
+    "Платформа онлайн-навчання",
+    "Екологічний проект переробки",
+    "AI-асистент для бізнесу",
+    "Фітнес-трекер нового покоління",
+    "Сервіс каршерингу для міста",
+    "Маркетплейс для фрілансерів",
+    "Розумний будинок: IoT-рішення",
+    "Соціальна мережа для волонтерів"
+)
+
 @Composable
 private fun PresentationWelcomeScreen(
+    selectedTopic: String?,
+    onTopicSelected: (String) -> Unit,
     onStart: () -> Unit,
     onNavigateBack: () -> Unit
 ) {
@@ -171,7 +202,8 @@ private fun PresentationWelcomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 130.dp),
+                .verticalScroll(rememberScrollState())
+                .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 30.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Header with back button
@@ -201,88 +233,86 @@ private fun PresentationWelcomeScreen(
                     )
                 }
 
-                // Back button
                 Row(
                     modifier = Modifier
-                        .shadow(
-                            elevation = 12.dp,
-                            shape = RoundedCornerShape(16.dp),
-                            spotColor = Color.Black.copy(alpha = 0.2f)
-                        )
+                        .shadow(12.dp, RoundedCornerShape(16.dp), spotColor = Color.Black.copy(alpha = 0.2f))
                         .background(Color.White, RoundedCornerShape(16.dp))
                         .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateBack() }
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "\u2190",
-                        fontSize = 24.sp,
-                        color = Color(0xFF667EEA),
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "\u041D\u0430\u0437\u0430\u0434",
-                        style = AppTypography.bodyMedium,
-                        color = TextColors.onLightPrimary,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text(text = "\u2190", fontSize = 24.sp, color = Color(0xFF667EEA), fontWeight = FontWeight.Bold)
+                    Text(text = "\u041D\u0430\u0437\u0430\u0434", style = AppTypography.bodyMedium, color = TextColors.onLightPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
+            // Topic selection
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .shadow(20.dp, RoundedCornerShape(24.dp), spotColor = Color.Black.copy(alpha = 0.18f))
                     .background(Color.White, RoundedCornerShape(24.dp))
                     .padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "Готовий до виступу?",
+                    text = "Обери тему презентації",
                     style = AppTypography.titleLarge,
                     color = TextColors.onLightPrimary,
-                    fontSize = 22.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.ExtraBold
                 )
 
-                Text(
-                    text = "AI-аудиторія буде слухати твою презентацію, ставити питання та давати зворотний зв'язок. Презентація складається з 4 раундів.",
-                    style = AppTypography.bodyMedium,
-                    color = TextColors.onLightSecondary,
-                    fontSize = 15.sp,
-                    lineHeight = 22.sp
-                )
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color(0xFFF3F4F6), RoundedCornerShape(12.dp))
-                        .padding(16.dp)
-                ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                PRESENTATION_TOPICS.forEach { topic ->
+                    val isSelected = selectedTopic == topic
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                if (isSelected) Color(0xFF667EEA).copy(alpha = 0.1f) else Color(0xFFF3F4F6),
+                                RoundedCornerShape(12.dp)
+                            )
+                            .then(
+                                if (isSelected) Modifier.border(1.5.dp, Color(0xFF667EEA), RoundedCornerShape(12.dp))
+                                else Modifier
+                            )
+                            .clickable { onTopicSelected(topic) }
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                    ) {
                         Text(
-                            text = "\uD83D\uDCCB Структура:",
+                            text = topic,
                             style = AppTypography.bodyMedium,
-                            color = TextColors.onLightPrimary,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "1. Вступ — проблема та актуальність\n2. Рішення — ваша пропозиція\n3. Реалізація — як це працює\n4. Підсумок — висновки та заклик",
-                            style = AppTypography.bodySmall,
-                            color = TextColors.onLightSecondary,
-                            fontSize = 13.sp,
-                            lineHeight = 20.sp
+                            color = if (isSelected) Color(0xFF667EEA) else TextColors.onLightPrimary,
+                            fontSize = 15.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                         )
                     }
                 }
+
+                // "Своя тема" option
+                val isCustom = selectedTopic != null && selectedTopic !in PRESENTATION_TOPICS
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            if (selectedTopic == "" || isCustom) Color(0xFF667EEA).copy(alpha = 0.1f) else Color(0xFFF3F4F6),
+                            RoundedCornerShape(12.dp)
+                        )
+                        .clickable { onTopicSelected("") }
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                ) {
+                    Text(
+                        text = "Без теми / своя тема",
+                        style = AppTypography.bodyMedium,
+                        color = if (selectedTopic == "" || isCustom) Color(0xFF667EEA) else TextColors.onLightSecondary,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(8.dp))
 
             PrimaryButton(
                 text = "\uD83C\uDFA4 Почати презентацію",

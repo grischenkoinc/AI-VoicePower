@@ -66,6 +66,8 @@ class SoundManager @Inject constructor(
         }
     }
 
+    private val activeStreams = mutableListOf<Int>()
+
     fun play(effect: SoundEffect) {
         if (!masterEnabled) return
         val soundId = loadedSounds[effect] ?: return
@@ -78,7 +80,7 @@ class SoundManager @Inject constructor(
 
         if (volume <= 0f) return
 
-        soundPool.play(
+        val streamId = soundPool.play(
             soundId,
             volume,  // left volume
             volume,  // right volume
@@ -86,6 +88,15 @@ class SoundManager @Inject constructor(
             0,       // loop (0 = no loop)
             1.0f     // playback rate
         )
+        if (streamId > 0) {
+            activeStreams.add(streamId)
+            if (activeStreams.size > 10) activeStreams.removeAt(0)
+        }
+    }
+
+    fun stopAll() {
+        activeStreams.forEach { soundPool.stop(it) }
+        activeStreams.clear()
     }
 
     fun play(effect: SoundEffect, pitchRate: Float): Int {

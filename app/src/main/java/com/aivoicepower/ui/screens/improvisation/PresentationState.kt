@@ -4,6 +4,7 @@ import com.aivoicepower.domain.model.VoiceAnalysisResult
 import com.aivoicepower.ui.screens.improvisation.components.OrbState
 
 data class PresentationState(
+    val selectedTopic: String? = null,
     val isStarted: Boolean = false,
     val currentRound: Int = 1,
     val maxRounds: Int = 4,

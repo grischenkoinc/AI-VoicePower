@@ -73,6 +73,9 @@ class NegotiationViewModel @Inject constructor(
 
     fun onEvent(event: NegotiationEvent) {
         when (event) {
+            is NegotiationEvent.ScenarioSelected -> {
+                _state.update { it.copy(selectedScenario = event.scenario) }
+            }
             NegotiationEvent.StartSimulation -> {
                 _state.update { it.copy(isStarted = true) }
             }
@@ -91,13 +94,14 @@ class NegotiationViewModel @Inject constructor(
 
     private fun startNegotiation() {
         viewModelScope.launch {
+            val scenario = _state.value.selectedScenario
             _state.update {
                 it.copy(
                     currentRound = 1,
                     orbState = OrbState.THINKING,
                     isAiThinking = true,
                     aiText = "",
-                    hint = "Партнер готує свою позицію..."
+                    hint = scenario?.let { "${it.aiRole} готує свою позицію..." } ?: "Партнер готує свою позицію..."
                 )
             }
             generateAiResponse("")
@@ -113,12 +117,16 @@ class NegotiationViewModel @Inject constructor(
             try {
                 val round = _state.value.currentRound
                 val history = _state.value.rounds.map { it.userProposal to it.aiResponse }
+                val scenario = _state.value.selectedScenario
 
                 val result = geminiApiClient.generateNegotiationResponse(
                     userProposal = userProposal,
                     roundNumber = round,
                     totalRounds = _state.value.maxRounds,
-                    conversationHistory = history
+                    conversationHistory = history,
+                    scenarioRole = scenario?.aiRole,
+                    scenarioPosition = scenario?.aiPosition,
+                    scenarioName = scenario?.name
                 )
 
                 result.onSuccess { aiResponse ->
@@ -140,9 +148,9 @@ class NegotiationViewModel @Inject constructor(
                             rounds = newRounds,
                             hint = when {
                                 isComplete -> null
-                                round == 1 && userProposal.isBlank() -> "Вислухайте позицію партнера"
+                                round == 1 && userProposal.isBlank() -> scenario?.userGoal ?: "Вислухайте позицію партнера"
                                 round == 2 -> "Висуньте зустрічну пропозицію"
-                                round == 3 -> "Шукайте компроміс"
+                                round == 3 -> "Шукайте компроміс та закрийте угоду"
                                 else -> "Закрийте угоду"
                             }
                         )
@@ -313,7 +321,12 @@ class NegotiationViewModel @Inject constructor(
 
             val currentState = _state.value
             val rounds = currentState.rounds.map { it.userProposal to it.aiResponse }
-            val context = "Бiзнес-перемовини з партнером"
+            val scenario = currentState.selectedScenario
+            val context = if (scenario != null) {
+                "Перемовини: ${scenario.name}. Роль партнера: ${scenario.aiRole}. Позицiя партнера: ${scenario.aiPosition}"
+            } else {
+                "Бiзнес-перемовини з партнером"
+            }
 
             geminiApiClient.analyzeImprovisationExercise(
                 exerciseType = "Перемовини",

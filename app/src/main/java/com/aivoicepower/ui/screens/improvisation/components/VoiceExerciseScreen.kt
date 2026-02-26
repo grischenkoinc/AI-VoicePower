@@ -251,6 +251,16 @@ private fun RoleBadge(emoji: String, name: String) {
 
 @Composable
 private fun AiTextBubble(text: String) {
+    // Видаляємо markdown та структурні мітки з тексту AI
+    val cleanText = text
+        .replace(Regex("\\*\\*(.+?)\\*\\*"), "$1")  // **bold** → bold
+        .replace(Regex("\\*(.+?)\\*"), "$1")          // *italic* → italic
+        .replace(Regex("__(.+?)__"), "$1")             // __underline__ → underline
+        .replace(Regex("^Реакція:?\\s*", RegexOption.MULTILINE), "")
+        .replace(Regex("^Питання:?\\s*", RegexOption.MULTILINE), "")
+        .replace(Regex("^Раунд \\d+ з \\d+\\.?\\s*", RegexOption.MULTILINE), "")
+        .trim()
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -261,7 +271,7 @@ private fun AiTextBubble(text: String) {
             .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
         Text(
-            text = text,
+            text = cleanText,
             style = AppTypography.bodyLarge,
             color = TextColors.onDarkPrimary,
             fontSize = 16.sp,

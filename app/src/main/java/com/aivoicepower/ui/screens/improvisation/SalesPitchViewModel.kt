@@ -134,15 +134,18 @@ class SalesPitchViewModel @Inject constructor(
 
                 val stage = when {
                     isFirstRound -> SalesStage.INITIAL_PITCH
-                    round >= _state.value.maxRounds -> SalesStage.HANDLING_OBJECTION
+                    round > _state.value.maxRounds -> SalesStage.HANDLING_OBJECTION
                     else -> SalesStage.INITIAL_PITCH
                 }
+
+                val history = _state.value.rounds.map { it.userSpeech to it.aiResponse }
 
                 val result = geminiApiClient.generateSalesResponse(
                     product = product,
                     customerType = customerType,
-                    userPitch = if (isFirstRound) "Привіт, я хочу представити вам продукт: $product" else userSpeech,
-                    interactionStage = stage
+                    userPitch = userSpeech,
+                    interactionStage = stage,
+                    conversationHistory = history
                 )
 
                 result.onSuccess { aiResponse ->

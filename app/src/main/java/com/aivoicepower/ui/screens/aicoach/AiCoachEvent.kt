@@ -30,7 +30,4 @@ sealed class AiCoachEvent {
 
     // Templates
     data class ApplyTemplate(val template: ConversationTemplate) : AiCoachEvent()
-
-    // Voice-first: toggle message expand/collapse
-    data class ToggleMessageExpanded(val messageId: String) : AiCoachEvent()
 }

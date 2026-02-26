@@ -200,13 +200,13 @@ class JobInterviewViewModel @Inject constructor(
                 )
 
                 result.onSuccess { aiResponse ->
-                    val newRounds = if (userAnswer.isNotBlank()) {
-                        _state.value.rounds + InterviewRound(
-                            roundNumber = _state.value.currentRound,
-                            userAnswer = userAnswer,
-                            aiResponse = aiResponse
-                        )
-                    } else _state.value.rounds
+                    // Always save AI response to history (even greeting in round 1)
+                    // so next rounds have context and AI won't greet again
+                    val newRounds = _state.value.rounds + InterviewRound(
+                        roundNumber = _state.value.currentRound,
+                        userAnswer = userAnswer,
+                        aiResponse = aiResponse
+                    )
 
                     val isComplete = _state.value.currentRound > _state.value.maxRounds
 
@@ -391,8 +391,11 @@ class JobInterviewViewModel @Inject constructor(
             _state.update { it.copy(isAnalyzing = true, error = null) }
 
             val currentState = _state.value
-            val rounds = currentState.rounds.map { it.userAnswer to it.aiResponse }
-            val context = "Позицiя: ${currentState.selectedProfession}, Компанiя: ${currentState.companyName}"
+            // Filter out the greeting round (empty userAnswer) from analysis
+            val rounds = currentState.rounds
+                .filter { it.userAnswer.isNotBlank() }
+                .map { it.userAnswer to it.aiResponse }
+            val context = "Позицiя: ${currentState.selectedProfession}, Компанiя: ${currentState.companyName}\n\nВАЖЛИВО для tip та coachComment: давай ДІЄВІ поради для покращення проходження співбесіди. Наприклад: метод STAR для ситуаційних питань, як структурувати відповідь 'про себе', як підготувати приклади досягнень, як відповідати на складні питання. Порада повинна бути конкретною та застосовною для професії ${currentState.selectedProfession}."
 
             geminiApiClient.analyzeImprovisationExercise(
                 exerciseType = "Спiвбесiда",

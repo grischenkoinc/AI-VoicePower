@@ -234,7 +234,7 @@ fun AnalysisResultsContent(
             add("Темп" to result.tempo)
             add("Інтонація" to result.intonation)
             add("Гучність" to result.volume)
-            add("Впевненість" to result.confidence)
+            if (result.confidence > 0) add("Впевненість" to result.confidence)
             if (result.fillerWords > 0) add("Без слів-паразитів" to result.fillerWords)
             if (result.structure > 0) add("Структура" to result.structure)
             if (result.persuasiveness > 0) add("Переконливість" to result.persuasiveness)

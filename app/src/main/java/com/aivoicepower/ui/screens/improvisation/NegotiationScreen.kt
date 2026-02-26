@@ -3,9 +3,12 @@ package com.aivoicepower.ui.screens.improvisation
 import android.view.HapticFeedbackConstants
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,7 +26,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aivoicepower.ui.components.FocusCountdownOverlay
 import com.aivoicepower.ui.screens.improvisation.components.AnalyzingScreen
-import com.aivoicepower.ui.screens.improvisation.components.ImprovisationAnalysisScreen
+import com.aivoicepower.ui.components.AnalysisResultsContent
 import com.aivoicepower.ui.screens.improvisation.components.OrbState
 import com.aivoicepower.ui.screens.improvisation.components.VoiceExerciseScreen
 import com.aivoicepower.ui.theme.AppTypography
@@ -79,11 +82,22 @@ fun NegotiationScreen(
 
     when {
         state.analysisResult != null -> {
-            ImprovisationAnalysisScreen(
-                result = state.analysisResult!!,
-                exerciseTitle = "Перемовини",
-                onDismiss = { viewModel.onEvent(NegotiationEvent.DismissAnalysis); onNavigateBack() }
-            )
+            Box(modifier = Modifier.fillMaxSize()) {
+                GradientBackground(content = {})
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 20.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    AnalysisResultsContent(
+                        result = state.analysisResult!!,
+                        onDismiss = { viewModel.onEvent(NegotiationEvent.DismissAnalysis); onNavigateBack() },
+                        dismissButtonText = "Готово"
+                    )
+                }
+            }
         }
 
         state.isAnalyzing -> {
@@ -92,6 +106,8 @@ fun NegotiationScreen(
 
         !state.isStarted -> {
             NegotiationWelcomeScreen(
+                selectedScenario = state.selectedScenario,
+                onScenarioSelected = { viewModel.onEvent(NegotiationEvent.ScenarioSelected(it)) },
                 onStart = { viewModel.onEvent(NegotiationEvent.StartSimulation) },
                 onNavigateBack = onNavigateBack
             )
@@ -109,7 +125,7 @@ fun NegotiationScreen(
                 title = "Перемовини",
                 stepInfo = "Крок ${state.currentRound}/${state.maxRounds}",
                 roleEmoji = "\uD83E\uDD1D",
-                roleName = "Бiзнес-партнер",
+                roleName = state.selectedScenario?.aiRole ?: "Бiзнес-партнер",
                 aiText = state.aiText,
                 hint = state.hint,
                 orbState = state.orbState,
@@ -128,7 +144,7 @@ fun NegotiationScreen(
                 title = "Перемовини",
                 stepInfo = "Завершено",
                 roleEmoji = "\uD83E\uDD1D",
-                roleName = "Бiзнес-партнер",
+                roleName = state.selectedScenario?.aiRole ?: "Бiзнес-партнер",
                 aiText = state.aiText.ifBlank { "Перемовини завершенi. Дякуємо за продуктивну дискусiю!" },
                 hint = null,
                 orbState = state.orbState,
@@ -158,8 +174,73 @@ fun NegotiationScreen(
     }
 }
 
+private val NEGOTIATION_SCENARIOS = listOf(
+    NegotiationScenario(
+        name = "Оренда офісу",
+        aiRole = "Власник приміщення",
+        aiPosition = "Хоче здати офіс за 45 000 грн/міс з мінімальним договором на 2 роки",
+        userGoal = "Домовтеся про нижчу ціну або кращі умови"
+    ),
+    NegotiationScenario(
+        name = "Постачання товарів",
+        aiRole = "Постачальник",
+        aiPosition = "Пропонує партію з 500 одиниць по 120 грн/шт, мінімальне замовлення",
+        userGoal = "Зменшіть ціну або мінімальну партію"
+    ),
+    NegotiationScenario(
+        name = "Підвищення зарплати",
+        aiRole = "Керівник відділу",
+        aiPosition = "Бюджет обмежений, може додати до 10% або нефінансові бонуси",
+        userGoal = "Домовтеся про підвищення зарплати або кращі умови"
+    ),
+    NegotiationScenario(
+        name = "Маркетингова кампанія",
+        aiRole = "Маркетинг-директор",
+        aiPosition = "Має бюджет 200 000 грн, хоче максимум охоплення за мінімальну ціну",
+        userGoal = "Продайте свої послуги з максимальною вигодою"
+    ),
+    NegotiationScenario(
+        name = "IT-аутсорсинг",
+        aiRole = "CTO компанії",
+        aiPosition = "Потребує розробку за 3 місяці, бюджет 500 000 грн, хоче фіксовану ціну",
+        userGoal = "Узгодьте обсяг, строки та оплату"
+    ),
+    NegotiationScenario(
+        name = "Партнерська угода",
+        aiRole = "Директор компанії",
+        aiPosition = "Хоче 60% прибутку та повний контроль над маркетингом",
+        userGoal = "Домовтеся про справедливий розподіл та зони відповідальності"
+    ),
+    NegotiationScenario(
+        name = "Інвестиція в стартап",
+        aiRole = "Інвестор",
+        aiPosition = "Готовий вкласти 2 млн грн, але хоче 40% частки та місце в раді",
+        userGoal = "Отримайте інвестицію зі збереженням контролю"
+    ),
+    NegotiationScenario(
+        name = "Закупівля обладнання",
+        aiRole = "Менеджер з продажу",
+        aiPosition = "Продає обладнання за 800 000 грн, гарантія 1 рік, без доставки",
+        userGoal = "Знизьте ціну або отримайте кращі умови"
+    ),
+    NegotiationScenario(
+        name = "Організація заходу",
+        aiRole = "Менеджер івент-агенції",
+        aiPosition = "Пропонує пакет за 150 000 грн на 100 гостей, базове оформлення",
+        userGoal = "Отримайте більше послуг за вашу ціну"
+    ),
+    NegotiationScenario(
+        name = "Франчайза ресторану",
+        aiRole = "Франчайзер",
+        aiPosition = "Вступний внесок 1 млн грн, роялті 8%, суворі стандарти бренду",
+        userGoal = "Домовтеся про вигідніші умови франчайзи"
+    )
+)
+
 @Composable
 private fun NegotiationWelcomeScreen(
+    selectedScenario: NegotiationScenario?,
+    onScenarioSelected: (NegotiationScenario) -> Unit,
     onStart: () -> Unit,
     onNavigateBack: () -> Unit
 ) {
@@ -171,7 +252,8 @@ private fun NegotiationWelcomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 130.dp),
+                .verticalScroll(rememberScrollState())
+                .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 30.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Header with back button
@@ -201,88 +283,73 @@ private fun NegotiationWelcomeScreen(
                     )
                 }
 
-                // Back button
                 Row(
                     modifier = Modifier
-                        .shadow(
-                            elevation = 12.dp,
-                            shape = RoundedCornerShape(16.dp),
-                            spotColor = Color.Black.copy(alpha = 0.2f)
-                        )
+                        .shadow(12.dp, RoundedCornerShape(16.dp), spotColor = Color.Black.copy(alpha = 0.2f))
                         .background(Color.White, RoundedCornerShape(16.dp))
                         .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateBack() }
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "\u2190",
-                        fontSize = 24.sp,
-                        color = Color(0xFF667EEA),
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "\u041D\u0430\u0437\u0430\u0434",
-                        style = AppTypography.bodyMedium,
-                        color = TextColors.onLightPrimary,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text(text = "\u2190", fontSize = 24.sp, color = Color(0xFF667EEA), fontWeight = FontWeight.Bold)
+                    Text(text = "\u041D\u0430\u0437\u0430\u0434", style = AppTypography.bodyMedium, color = TextColors.onLightPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
+            // Scenario selection
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .shadow(20.dp, RoundedCornerShape(24.dp), spotColor = Color.Black.copy(alpha = 0.18f))
                     .background(Color.White, RoundedCornerShape(24.dp))
                     .padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "Готовий до переговорів?",
+                    text = "Обери сценарій переговорів",
                     style = AppTypography.titleLarge,
                     color = TextColors.onLightPrimary,
-                    fontSize = 22.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.ExtraBold
                 )
 
-                Text(
-                    text = "AI-партнер буде захищати свої інтереси, висувати контраргументи та шукати компроміси. Перемовини складаються з 3 раундів.",
-                    style = AppTypography.bodyMedium,
-                    color = TextColors.onLightSecondary,
-                    fontSize = 15.sp,
-                    lineHeight = 22.sp
-                )
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color(0xFFF3F4F6), RoundedCornerShape(12.dp))
-                        .padding(16.dp)
-                ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                NEGOTIATION_SCENARIOS.forEach { scenario ->
+                    val isSelected = selectedScenario == scenario
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                if (isSelected) Color(0xFF667EEA).copy(alpha = 0.1f) else Color(0xFFF3F4F6),
+                                RoundedCornerShape(12.dp)
+                            )
+                            .then(
+                                if (isSelected) Modifier.border(1.5.dp, Color(0xFF667EEA), RoundedCornerShape(12.dp))
+                                else Modifier
+                            )
+                            .clickable { onScenarioSelected(scenario) }
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
                         Text(
-                            text = "\uD83D\uDCA1 Стратегія:",
+                            text = scenario.name,
                             style = AppTypography.bodyMedium,
-                            color = TextColors.onLightPrimary,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
+                            color = if (isSelected) Color(0xFF667EEA) else TextColors.onLightPrimary,
+                            fontSize = 15.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold
                         )
                         Text(
-                            text = "1. Вислухайте позицію партнера\n2. Висуньте зустрічну пропозицію\n3. Шукайте компроміс та закрийте угоду",
+                            text = "${scenario.aiRole}: ${scenario.aiPosition}",
                             style = AppTypography.bodySmall,
-                            color = TextColors.onLightSecondary,
-                            fontSize = 13.sp,
-                            lineHeight = 20.sp
+                            color = if (isSelected) Color(0xFF667EEA).copy(alpha = 0.7f) else TextColors.onLightSecondary,
+                            fontSize = 12.sp,
+                            lineHeight = 16.sp
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(8.dp))
 
             PrimaryButton(
                 text = "\uD83E\uDD1D Почати переговори",

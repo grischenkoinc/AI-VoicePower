@@ -116,6 +116,7 @@ fun MainScreen(
                         containerColor = Color.White,
                         contentColor = Color(0xFF1F2937),
                         tonalElevation = 0.dp,
+                        windowInsets = WindowInsets(0, 0, 0, 0),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         bottomNavItems.forEach { item ->

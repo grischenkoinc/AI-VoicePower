@@ -21,7 +21,9 @@ fun MiniWaveform(
     barCount: Int = 5,
     barWidth: Dp = 3.dp,
     maxBarHeight: Dp = 18.dp,
-    minBarHeight: Dp = 4.dp
+    minBarHeight: Dp = 4.dp,
+    startColor: Color = PrimaryColors.light,
+    endColor: Color = PrimaryColors.default
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "waveform")
 
@@ -55,10 +57,7 @@ fun MiniWaveform(
                     .clip(RoundedCornerShape(barWidth / 2))
                     .background(
                         brush = Brush.verticalGradient(
-                            colors = listOf(
-                                PrimaryColors.light,
-                                PrimaryColors.default
-                            )
+                            colors = listOf(startColor, endColor)
                         )
                     )
             )

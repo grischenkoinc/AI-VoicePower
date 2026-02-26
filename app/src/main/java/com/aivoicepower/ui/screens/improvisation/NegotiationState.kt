@@ -3,7 +3,15 @@ package com.aivoicepower.ui.screens.improvisation
 import com.aivoicepower.domain.model.VoiceAnalysisResult
 import com.aivoicepower.ui.screens.improvisation.components.OrbState
 
+data class NegotiationScenario(
+    val name: String,
+    val aiRole: String,
+    val aiPosition: String,
+    val userGoal: String
+)
+
 data class NegotiationState(
+    val selectedScenario: NegotiationScenario? = null,
     val isStarted: Boolean = false,
     val currentRound: Int = 1,
     val maxRounds: Int = 3,

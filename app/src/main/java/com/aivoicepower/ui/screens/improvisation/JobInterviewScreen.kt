@@ -33,7 +33,9 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aivoicepower.ui.components.FocusCountdownOverlay
 import com.aivoicepower.ui.screens.improvisation.components.AnalyzingScreen
-import com.aivoicepower.ui.screens.improvisation.components.ImprovisationAnalysisScreen
+import com.aivoicepower.ui.components.AnalysisResultsContent
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import com.aivoicepower.ui.screens.improvisation.components.OrbState
 import com.aivoicepower.ui.screens.improvisation.components.VoiceExerciseScreen
 import com.aivoicepower.ui.theme.AppTypography
@@ -89,11 +91,22 @@ fun JobInterviewScreen(
 
     when {
         state.analysisResult != null -> {
-            ImprovisationAnalysisScreen(
-                result = state.analysisResult!!,
-                exerciseTitle = "Спiвбесiда",
-                onDismiss = { viewModel.onEvent(JobInterviewEvent.DismissAnalysis); onNavigateBack() }
-            )
+            Box(modifier = Modifier.fillMaxSize()) {
+                GradientBackground(content = {})
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 20.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    AnalysisResultsContent(
+                        result = state.analysisResult!!,
+                        onDismiss = { viewModel.onEvent(JobInterviewEvent.DismissAnalysis); onNavigateBack() },
+                        dismissButtonText = "Готово"
+                    )
+                }
+            }
         }
 
         state.isAnalyzing -> {
@@ -196,7 +209,17 @@ private val PROFESSIONS = listOf(
     ProfessionOption("Маркетолог", "\uD83D\uDCE2"),
     ProfessionOption("Менеджер з продажу", "\uD83D\uDCB0"),
     ProfessionOption("Фінансовий аналітик", "\uD83D\uDCC8"),
-    ProfessionOption("HR-менеджер", "\uD83E\uDD1D")
+    ProfessionOption("HR-менеджер", "\uD83E\uDD1D"),
+    ProfessionOption("Вчитель/Викладач", "\uD83D\uDCDA"),
+    ProfessionOption("Лікар/Медик", "\uD83E\uDE7A"),
+    ProfessionOption("Юрист/Адвокат", "\u2696\uFE0F"),
+    ProfessionOption("Журналіст", "\uD83D\uDCF0"),
+    ProfessionOption("Бухгалтер", "\uD83D\uDCCB"),
+    ProfessionOption("Data Scientist", "\uD83E\uDDEE"),
+    ProfessionOption("DevOps Engineer", "\uD83D\uDE80"),
+    ProfessionOption("Логіст", "\uD83D\uDE9A"),
+    ProfessionOption("Архітектор", "\uD83C\uDFD7\uFE0F"),
+    ProfessionOption("Психолог", "\uD83E\uDDE0")
 )
 
 @Composable
@@ -337,6 +360,8 @@ private fun ProfessionSelectionScreen(
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = TextColors.onLightPrimary,
+                        unfocusedTextColor = TextColors.onLightPrimary,
                         focusedBorderColor = Color(0xFF667EEA),
                         unfocusedBorderColor = Color(0xFFE5E7EB),
                         cursorColor = Color(0xFF667EEA),

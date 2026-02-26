@@ -73,6 +73,9 @@ class PresentationViewModel @Inject constructor(
 
     fun onEvent(event: PresentationEvent) {
         when (event) {
+            is PresentationEvent.TopicSelected -> {
+                _state.update { it.copy(selectedTopic = event.topic) }
+            }
             PresentationEvent.StartSimulation -> {
                 _state.update { it.copy(isStarted = true) }
             }
@@ -91,6 +94,7 @@ class PresentationViewModel @Inject constructor(
 
     private fun startPresentation() {
         viewModelScope.launch {
+            val topic = _state.value.selectedTopic
             _state.update {
                 it.copy(
                     currentRound = 1,
@@ -100,7 +104,9 @@ class PresentationViewModel @Inject constructor(
                     hint = "Аудиторія чекає на вашу презентацію..."
                 )
             }
-            generateAiResponse("")
+            // Передаємо тему як контекст для першого раунду
+            val topicContext = if (!topic.isNullOrBlank()) "Тема презентації: $topic" else ""
+            generateAiResponse(topicContext)
         }
     }
 

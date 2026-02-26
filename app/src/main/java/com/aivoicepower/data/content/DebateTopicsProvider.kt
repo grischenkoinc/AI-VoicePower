@@ -16,20 +16,20 @@ class DebateTopicsProvider @Inject constructor() {
     private val topics = listOf(
         DebateTopic(
             id = "debate_001",
-            topic = "Штучний інтелект: загроза чи можливість для людства?",
-            description = "Обговорення впливу AI на майбутнє суспільства",
+            topic = "Штучний інтелект приносить більше користі, ніж шкоди",
+            description = "Вплив AI на майбутнє суспільства",
             difficulty = "Середня"
         ),
         DebateTopic(
             id = "debate_002",
-            topic = "Чи варто колонізувати Марс?",
-            description = "Аргументи за та проти міжпланетної колонізації",
+            topic = "Людство повинно колонізувати Марс",
+            description = "Міжпланетна колонізація як пріоритет",
             difficulty = "Середня"
         ),
         DebateTopic(
             id = "debate_003",
-            topic = "Безумовний базовий дохід: утопія чи необхідність?",
-            description = "Дебати про економічні системи майбутнього",
+            topic = "Безумовний базовий дохід необхідний для суспільства",
+            description = "Економічні системи майбутнього",
             difficulty = "Складна"
         ),
         DebateTopic(
@@ -46,20 +46,20 @@ class DebateTopicsProvider @Inject constructor() {
         ),
         DebateTopic(
             id = "debate_006",
-            topic = "Чи повинні роботи мати права?",
+            topic = "Роботи зі штучним інтелектом повинні мати права",
             description = "Етика штучного інтелекту",
             difficulty = "Складна"
         ),
         DebateTopic(
             id = "debate_007",
-            topic = "Генетична модифікація людей — етично виправдана",
+            topic = "Генетична модифікація людей етично виправдана",
             description = "Межі біотехнологій",
             difficulty = "Складна"
         ),
         DebateTopic(
             id = "debate_008",
-            topic = "4-денний робочий тиждень — це майбутнє",
-            description = "Work-life balance та продуктивність",
+            topic = "4-денний робочий тиждень підвищує продуктивність",
+            description = "Work-life balance та ефективність",
             difficulty = "Легка"
         )
     )

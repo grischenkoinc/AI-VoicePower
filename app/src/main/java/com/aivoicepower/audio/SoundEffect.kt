@@ -21,7 +21,7 @@ enum class SoundEffect(
     ANALYSIS_SUCCESS(R.raw.sound_analysis_success, SoundCategory.FEEDBACK, 0.64f),
     ANALYSIS_ERROR(R.raw.sound_analysis_error, SoundCategory.FEEDBACK, 0.25f),
     LESSON_COMPLETED(R.raw.sound_lesson_completed, SoundCategory.CELEBRATION, 0.09f),
-    CELEBRATION(R.raw.sound_celebration, SoundCategory.CELEBRATION, 0.6f),
+    CELEBRATION(R.raw.sound_celebration, SoundCategory.CELEBRATION, 0.35f),
 
     // Tier 2 — Important feedback
     TIMER_URGENT(R.raw.sound_timer_urgent, SoundCategory.FEEDBACK),
@@ -35,8 +35,8 @@ enum class SoundEffect(
 
     // Tier 3 — Polish
     TAB_SWITCH(R.raw.sound_tab_switch, SoundCategory.UI, 0.04f),
-    BREATH_INHALE(R.raw.sound_breath_inhale, SoundCategory.FEEDBACK, 0.09f),
-    BREATH_EXHALE(R.raw.sound_breath_exhale, SoundCategory.FEEDBACK, 0.05f),
+    BREATH_INHALE(R.raw.sound_breath_inhale, SoundCategory.FEEDBACK, 0.18f),
+    BREATH_EXHALE(R.raw.sound_breath_exhale, SoundCategory.FEEDBACK, 0.10f),
     ONBOARDING_PAGE(R.raw.sound_onboarding_page, SoundCategory.UI),
     SPLASH_BRAND(R.raw.sound_splash_brand, SoundCategory.CELEBRATION, 0.7f),
     PREMIUM_UNLOCKED(R.raw.sound_premium_unlocked, SoundCategory.CELEBRATION),

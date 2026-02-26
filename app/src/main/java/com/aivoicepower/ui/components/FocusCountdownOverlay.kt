@@ -44,20 +44,30 @@ fun FocusCountdownOverlay(
     var showBreathText by remember { mutableStateOf(true) }
     var countdownStarted by remember { mutableStateOf(false) }
 
+    var skipped by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         delay(1200)
+        if (skipped) return@LaunchedEffect
         showBreathText = false
         countdownStarted = true
-        // Play tick file once — it contains all 3 ticks at 0s, 1s, 2s
         soundManager.play(SoundEffect.COUNTDOWN_TICK)
         for (i in countdownSeconds downTo 1) {
+            if (skipped) return@LaunchedEffect
             currentCount = i
             delay(1000)
         }
+        if (skipped) return@LaunchedEffect
         currentCount = 0
         soundManager.play(SoundEffect.COUNTDOWN_GO)
         delay(100)
         onComplete()
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            soundManager.stopAll()
+        }
     }
 
     // Breathing orb
@@ -101,7 +111,7 @@ fun FocusCountdownOverlay(
             .clickable(
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }
-            ) { onComplete() },
+            ) { skipped = true; onComplete() },
         contentAlignment = Alignment.Center
     ) {
         GradientBackground(content = {})

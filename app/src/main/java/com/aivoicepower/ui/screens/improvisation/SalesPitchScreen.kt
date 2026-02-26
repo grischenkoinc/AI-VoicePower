@@ -28,7 +28,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aivoicepower.data.content.SalesProductsProvider
 import com.aivoicepower.ui.components.FocusCountdownOverlay
 import com.aivoicepower.ui.screens.improvisation.components.AnalyzingScreen
-import com.aivoicepower.ui.screens.improvisation.components.ImprovisationAnalysisScreen
+import com.aivoicepower.ui.components.AnalysisResultsContent
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import com.aivoicepower.ui.screens.improvisation.components.OrbState
 import com.aivoicepower.ui.screens.improvisation.components.VoiceExerciseScreen
 import com.aivoicepower.ui.theme.AppTypography
@@ -83,11 +85,22 @@ fun SalesPitchScreen(
 
     when {
         state.analysisResult != null -> {
-            ImprovisationAnalysisScreen(
-                result = state.analysisResult!!,
-                exerciseTitle = "Продай товар",
-                onDismiss = { viewModel.onEvent(SalesPitchEvent.DismissAnalysis); onNavigateBack() }
-            )
+            Box(modifier = Modifier.fillMaxSize()) {
+                GradientBackground(content = {})
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 20.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    AnalysisResultsContent(
+                        result = state.analysisResult!!,
+                        onDismiss = { viewModel.onEvent(SalesPitchEvent.DismissAnalysis); onNavigateBack() },
+                        dismissButtonText = "Готово"
+                    )
+                }
+            }
         }
 
         state.isAnalyzing -> {
@@ -187,7 +200,7 @@ private fun ProductSelectionScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 130.dp)
+                .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 30.dp)
         ) {
             // Header
             Row(
@@ -285,7 +298,7 @@ private fun CustomerProfileScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 130.dp),
+                .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 30.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Product card
