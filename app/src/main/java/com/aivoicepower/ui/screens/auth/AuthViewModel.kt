@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.domain.model.user.AuthUser
 import com.aivoicepower.domain.repository.AuthRepository
+import com.aivoicepower.utils.AnalyticsTracker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +17,8 @@ import javax.inject.Inject
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository,
-    private val userPreferencesDataStore: UserPreferencesDataStore
+    private val userPreferencesDataStore: UserPreferencesDataStore,
+    private val analyticsTracker: AnalyticsTracker
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AuthScreenState())
@@ -76,6 +78,7 @@ class AuthViewModel @Inject constructor(
                 sendResetEmail()
             }
             is AuthEvent.SkipClicked -> {
+                analyticsTracker.logAuthAction("skip", "success")
                 viewModelScope.launch {
                     userPreferencesDataStore.setAuthCompleted(true)
                     _state.update { it.copy(isNavigating = true) }
@@ -95,8 +98,14 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             val result = authRepository.signInWithEmail(currentState.email.trim(), currentState.password)
             result.fold(
-                onSuccess = { user -> onAuthSuccess(user) },
-                onFailure = { e -> _state.update { it.copy(isLoading = false, error = e.message) } }
+                onSuccess = { user ->
+                    analyticsTracker.logAuthAction("email_login", "success")
+                    onAuthSuccess(user)
+                },
+                onFailure = { e ->
+                    analyticsTracker.logAuthAction("email_login", "failure")
+                    _state.update { it.copy(isLoading = false, error = e.message) }
+                }
             )
         }
     }
@@ -113,8 +122,14 @@ class AuthViewModel @Inject constructor(
                 displayName = currentState.displayName.trim()
             )
             result.fold(
-                onSuccess = { user -> onAuthSuccess(user) },
-                onFailure = { e -> _state.update { it.copy(isLoading = false, error = e.message) } }
+                onSuccess = { user ->
+                    analyticsTracker.logAuthAction("email_register", "success")
+                    onAuthSuccess(user)
+                },
+                onFailure = { e ->
+                    analyticsTracker.logAuthAction("email_register", "failure")
+                    _state.update { it.copy(isLoading = false, error = e.message) }
+                }
             )
         }
     }
@@ -124,8 +139,14 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             val result = authRepository.signInWithGoogle(idToken)
             result.fold(
-                onSuccess = { user -> onAuthSuccess(user) },
-                onFailure = { e -> _state.update { it.copy(isGoogleLoading = false, error = e.message) } }
+                onSuccess = { user ->
+                    analyticsTracker.logAuthAction("google", "success")
+                    onAuthSuccess(user)
+                },
+                onFailure = { e ->
+                    analyticsTracker.logAuthAction("google", "failure")
+                    _state.update { it.copy(isGoogleLoading = false, error = e.message) }
+                }
             )
         }
     }
@@ -136,6 +157,10 @@ class AuthViewModel @Inject constructor(
         user.displayName?.let { userPreferencesDataStore.setUserName(it) }
         user.photoUrl?.let { userPreferencesDataStore.setUserPhotoUrl(it) }
         userPreferencesDataStore.setAuthCompleted(true)
+        analyticsTracker.setUserProperties(
+            isPremium = false,
+            accountType = user.providerId
+        )
         _state.update { it.copy(isLoading = false, isGoogleLoading = false, isNavigating = true) }
     }
 

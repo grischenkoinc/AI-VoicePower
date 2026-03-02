@@ -14,6 +14,7 @@ import com.aivoicepower.data.local.database.entity.RecordingEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.domain.model.content.TongueTwister
 import com.aivoicepower.domain.repository.VoiceAnalysisRepository
+import com.aivoicepower.utils.AnalyticsTracker
 import com.aivoicepower.utils.PremiumChecker
 import com.aivoicepower.utils.audio.AudioRecorderUtil
 import com.aivoicepower.utils.constants.FreeTierLimits
@@ -38,7 +39,8 @@ class TongueTwistersViewModel @Inject constructor(
     private val userPreferencesDataStore: UserPreferencesDataStore,
     private val rewardedAdManager: RewardedAdManager,
     private val serverLimitService: ServerLimitService,
-    private val soundManager: SoundManager
+    private val soundManager: SoundManager,
+    private val analyticsTracker: AnalyticsTracker
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(TongueTwistersState())
@@ -168,6 +170,7 @@ class TongueTwistersViewModel @Inject constructor(
     }
 
     private fun startPractice(twister: TongueTwister) {
+        analyticsTracker.logExerciseStarted("tongue_twister", "tongue_twister", _state.value.isPremium)
         _state.update {
             it.copy(
                 isPracticing = true,
@@ -246,6 +249,7 @@ class TongueTwistersViewModel @Inject constructor(
                 recordingTimerJob?.cancel()
                 audioRecorder.stopRecording()
                 soundManager.play(SoundEffect.RECORD_STOP)
+                analyticsTracker.logRecordingCompleted("tongue_twister", _state.value.recordingDurationMs, _state.value.isPremium)
 
                 _state.update { it.copy(isRecording = false) }
 
@@ -257,6 +261,7 @@ class TongueTwistersViewModel @Inject constructor(
 
                 if (!canAnalyze) {
                     soundManager.play(SoundEffect.LIMIT_REACHED)
+                    analyticsTracker.logLimitReached("analysis", false)
                     _state.update { it.copy(showAnalysisLimitSheet = true) }
                     return@launch
                 }
@@ -264,6 +269,7 @@ class TongueTwistersViewModel @Inject constructor(
                 // Server-side limit check for free users
                 if (!prefs.isPremium && !serverLimitService.canAnalyze(isImprov = false)) {
                     soundManager.play(SoundEffect.LIMIT_REACHED)
+                    analyticsTracker.logLimitReached("analysis", false)
                     _state.update { it.copy(showAnalysisLimitSheet = true) }
                     return@launch
                 }

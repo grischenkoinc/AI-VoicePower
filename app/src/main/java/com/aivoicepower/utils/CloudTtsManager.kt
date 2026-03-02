@@ -22,7 +22,8 @@ import javax.inject.Singleton
 
 @Singleton
 class CloudTtsManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val analyticsTracker: AnalyticsTracker
 ) {
     companion object {
         private const val TAG = "CloudTtsManager"
@@ -208,12 +209,27 @@ class CloudTtsManager @Inject constructor(
         return audio
     }
 
+    /** Поточний контекст TTS для аналітики (coach, debate, exercise тощо) */
+    private var currentTtsContext: String = "unknown"
+
+    fun setTtsContext(context: String) {
+        currentTtsContext = context
+    }
+
     private fun synthesize(text: String): ByteArray? {
         // Strip markdown formatting
         val cleanText = text
             .replace(Regex("\\*\\*(.+?)\\*\\*")) { it.groupValues[1] }
             .replace(Regex("__(.+?)__")) { it.groupValues[1] }
             .replace(Regex("\\*(.+?)\\*")) { it.groupValues[1] }
+
+        // Track TTS char count
+        val charCount = cleanText.length
+        analyticsTracker.logTtsSynthesized(
+            charCount = charCount,
+            context = currentTtsContext,
+            isPremium = false // встановлюється через User Property
+        )
 
         val ssml = sentenceToSsml(cleanText)
 

@@ -2,6 +2,9 @@ package com.aivoicepower.ui.screens.aicoach
 
 import android.content.Context
 import android.content.Intent
+import android.media.AudioAttributes
+import android.media.AudioManager
+import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
 import android.speech.RecognitionListener
@@ -17,6 +20,7 @@ import com.aivoicepower.data.chat.MessageRole
 import com.aivoicepower.data.content.SimulationScenariosProvider
 import com.aivoicepower.data.remote.AiPrompts
 import com.aivoicepower.domain.repository.AiCoachRepository
+import com.aivoicepower.utils.AnalyticsTracker
 import com.aivoicepower.utils.CloudTtsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -33,16 +37,22 @@ class AiCoachViewModel @Inject constructor(
     private val aiCoachRepository: AiCoachRepository,
     private val userPreferencesDataStore: UserPreferencesDataStore,
     private val soundManager: SoundManager,
-    val ttsManager: CloudTtsManager
+    val ttsManager: CloudTtsManager,
+    private val analyticsTracker: AnalyticsTracker
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AiCoachState())
     val state: StateFlow<AiCoachState> = _state.asStateFlow()
 
     private var speechRecognizer: SpeechRecognizer? = null
+    private var accumulatedVoiceText = ""
+    private var voiceSilenceJob: kotlinx.coroutines.Job? = null
+    private var stoppingVoice = false
+    private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
     init {
         ttsManager.warmUp()
+        ttsManager.setTtsContext("coach")
         loadMessages()
         loadQuickActions()
         loadTemplates()
@@ -89,10 +99,10 @@ class AiCoachViewModel @Inject constructor(
     private fun loadTemplates() {
         val templates = listOf(
             ConversationTemplate(
-                id = "interview_prep",
-                title = "Підготовка до співбесіди",
-                emoji = "\uD83D\uDCBC",
-                initialMessage = "Допоможи мені підготуватися до співбесіди. Я хочу відпрацювати типові питання та покращити свої відповіді."
+                id = "diction_tips",
+                title = "Покращення дикції",
+                emoji = "\uD83D\uDDE3\uFE0F",
+                initialMessage = "Дай поради, як покращити дикцію. Які вправи допоможуть говорити чіткіше?"
             ),
             ConversationTemplate(
                 id = "last_recording",
@@ -101,10 +111,10 @@ class AiCoachViewModel @Inject constructor(
                 initialMessage = "Проаналізуй мій останній запис. На що мені варто звернути увагу?"
             ),
             ConversationTemplate(
-                id = "presentation_sim",
-                title = "Симуляція презентації",
-                emoji = "\uD83D\uDCCA",
-                initialMessage = "Хочу відпрацювати презентацію. Задавай мені складні питання та давай feedback."
+                id = "voice_training",
+                title = "Робота з голосом",
+                emoji = "\uD83C\uDFB5",
+                initialMessage = "Дай поради щодо роботи з голосом: постановка, тембр, гучність. Які вправи допоможуть зробити голос більш виразним?"
             ),
             ConversationTemplate(
                 id = "confidence_tips",
@@ -214,7 +224,12 @@ class AiCoachViewModel @Inject constructor(
     private fun sendMessage() {
         val text = _state.value.inputText.trim()
         if (text.isBlank()) return
-        if (!_state.value.canSendMessage) return
+        if (!_state.value.canSendMessage) {
+            analyticsTracker.logLimitReached("coach_messages", _state.value.isPremium)
+            return
+        }
+
+        analyticsTracker.logCoachMessageSent(_state.value.isPremium)
 
         viewModelScope.launch {
             _state.update {
@@ -280,7 +295,53 @@ class AiCoachViewModel @Inject constructor(
         }
     }
 
-    // ===== Voice Input =====
+    // ===== Voice Input (continuous mode with 3-sec silence timer) =====
+
+    private fun createRecognizerIntent() = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE, "uk-UA")
+        putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+        putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 3000L)
+        putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 3000L)
+        putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 3000L)
+    }
+
+    // Mute all streams where recognizer beep might play
+    private fun muteRecognizerBeep() {
+        try {
+            audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE, 0)
+            audioManager.adjustStreamVolume(AudioManager.STREAM_NOTIFICATION, AudioManager.ADJUST_MUTE, 0)
+            audioManager.adjustStreamVolume(AudioManager.STREAM_SYSTEM, AudioManager.ADJUST_MUTE, 0)
+        } catch (_: Exception) {}
+    }
+
+    private fun unmuteRecognizerBeep() {
+        try {
+            audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0)
+            audioManager.adjustStreamVolume(AudioManager.STREAM_NOTIFICATION, AudioManager.ADJUST_UNMUTE, 0)
+            audioManager.adjustStreamVolume(AudioManager.STREAM_SYSTEM, AudioManager.ADJUST_UNMUTE, 0)
+        } catch (_: Exception) {}
+    }
+
+    // Play sound through ALARM stream — unaffected by muting other streams
+    private fun playCoachSound(resId: Int, volume: Float = 0.5f) {
+        try {
+            val mp = MediaPlayer()
+            val afd = context.resources.openRawResourceFd(resId) ?: return
+            mp.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+            afd.close()
+            mp.setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ALARM)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build()
+            )
+            mp.setVolume(volume, volume)
+            mp.setOnCompletionListener { it.release() }
+            mp.prepare()
+            mp.start()
+        } catch (_: Exception) {}
+    }
 
     private fun startVoiceInput() {
         if (!SpeechRecognizer.isRecognitionAvailable(context)) {
@@ -288,44 +349,107 @@ class AiCoachViewModel @Inject constructor(
             return
         }
 
+        stoppingVoice = false
+        accumulatedVoiceText = ""
+        voiceSilenceJob?.cancel()
+        _state.update { it.copy(inputText = "") }
+        muteRecognizerBeep()
+        playCoachSound(com.aivoicepower.R.raw.sound_record_start, 0.4f)
+
         if (speechRecognizer == null) {
             speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context)
-        }
-
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "uk-UA")
-            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
         }
 
         speechRecognizer?.setRecognitionListener(object : RecognitionListener {
             override fun onResults(results: Bundle?) {
                 val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 val text = matches?.firstOrNull() ?: ""
-                _state.update { it.copy(inputText = text, isListening = false, audioLevel = 0f) }
-                // Auto-send after voice recognition
+
                 if (text.isNotBlank()) {
-                    sendMessage()
+                    accumulatedVoiceText = if (accumulatedVoiceText.isBlank()) text
+                        else "$accumulatedVoiceText $text"
+                    _state.update { it.copy(inputText = accumulatedVoiceText) }
+                }
+
+                // If we're intentionally stopping — send accumulated text, don't restart
+                if (stoppingVoice) {
+                    playCoachSound(com.aivoicepower.R.raw.sound_record_stop, 0.5f)
+                    unmuteRecognizerBeep()
+                    _state.update { it.copy(isListening = false, audioLevel = 0f) }
+                    if (accumulatedVoiceText.isNotBlank()) {
+                        _state.update { it.copy(inputText = accumulatedVoiceText) }
+                        sendMessage()
+                        accumulatedVoiceText = ""
+                    }
+                    return
+                }
+
+                // Cancel previous silence timer
+                voiceSilenceJob?.cancel()
+
+                // Mute before restart to suppress beep
+                muteRecognizerBeep()
+
+                // Restart recognizer for continuous listening
+                try {
+                    _state.update { it.copy(isListening = true) }
+                    speechRecognizer?.startListening(createRecognizerIntent())
+                } catch (_: Exception) { }
+
+                // Start 3-sec silence timer — if no new results, auto-send
+                voiceSilenceJob = viewModelScope.launch {
+                    kotlinx.coroutines.delay(3000)
+                    stoppingVoice = true
+                    muteRecognizerBeep()
+                    speechRecognizer?.stopListening()
+                    // onResults() will fire with stoppingVoice=true → play RECORD_STOP + unmute + send
                 }
             }
 
             override fun onPartialResults(partialResults: Bundle?) {
                 val matches = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                val text = matches?.firstOrNull() ?: ""
-                _state.update { it.copy(inputText = text) }
+                val partial = matches?.firstOrNull() ?: ""
+                if (partial.isNotBlank()) {
+                    val display = if (accumulatedVoiceText.isBlank()) partial
+                        else "$accumulatedVoiceText $partial"
+                    _state.update { it.copy(inputText = display) }
+                }
             }
 
             override fun onError(error: Int) {
+                // If stopping and got error instead of results — send what we have
+                if (stoppingVoice) {
+                    playCoachSound(com.aivoicepower.R.raw.sound_record_stop, 0.5f)
+                    unmuteRecognizerBeep()
+                    _state.update { it.copy(isListening = false, audioLevel = 0f) }
+                    if (accumulatedVoiceText.isNotBlank()) {
+                        _state.update { it.copy(inputText = accumulatedVoiceText) }
+                        sendMessage()
+                        accumulatedVoiceText = ""
+                    }
+                    return
+                }
+
+                // During continuous mode: silence errors are expected after restart
+                if (error == SpeechRecognizer.ERROR_NO_MATCH ||
+                    error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT) {
+                    if (accumulatedVoiceText.isNotBlank()) return
+                    unmuteRecognizerBeep()
+                    _state.update { it.copy(isListening = false, audioLevel = 0f) }
+                    return
+                }
+
+                if (error == SpeechRecognizer.ERROR_CLIENT) return // Ignore client errors on restart
+
                 val errorMessage = when (error) {
                     SpeechRecognizer.ERROR_AUDIO -> "Помилка аудіо"
-                    SpeechRecognizer.ERROR_CLIENT -> "Помилка клієнта"
                     SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Немає дозволу на мікрофон"
                     SpeechRecognizer.ERROR_NETWORK -> "Помилка мережі"
                     SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "Таймаут мережі"
-                    SpeechRecognizer.ERROR_NO_MATCH -> "Не вдалося розпізнати"
-                    SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "Не почуто мовлення"
                     else -> "Помилка розпізнавання"
                 }
+                voiceSilenceJob?.cancel()
+                unmuteRecognizerBeep()
                 _state.update {
                     it.copy(
                         isListening = false,
@@ -340,12 +464,11 @@ class AiCoachViewModel @Inject constructor(
             }
 
             override fun onEndOfSpeech() {
-                _state.update { it.copy(isListening = false) }
+                // Don't set isListening=false — we'll restart in onResults
             }
 
             override fun onBeginningOfSpeech() {}
             override fun onRmsChanged(rmsdB: Float) {
-                // Normalize rms to 0..1 range (rms typically -2..10)
                 val normalized = ((rmsdB + 2f) / 12f).coerceIn(0f, 1f)
                 _state.update { it.copy(audioLevel = normalized) }
             }
@@ -353,12 +476,16 @@ class AiCoachViewModel @Inject constructor(
             override fun onEvent(eventType: Int, params: Bundle?) {}
         })
 
-        speechRecognizer?.startListening(intent)
+        speechRecognizer?.startListening(createRecognizerIntent())
     }
 
     private fun stopVoiceInput() {
+        stoppingVoice = true
+        voiceSilenceJob?.cancel()
+        muteRecognizerBeep()
+        // stopListening() triggers onResults() with final recognized text
+        // onResults() sees stoppingVoice=true → plays RECORD_STOP via ALARM stream → unmutes → sends
         speechRecognizer?.stopListening()
-        _state.update { it.copy(isListening = false, audioLevel = 0f) }
     }
 
     // ===== Audio Upload =====
@@ -583,8 +710,10 @@ ${scenario.description}
                 val result = aiCoachRepository.sendMessage(template.initialMessage)
 
                 result.fold(
-                    onSuccess = {
+                    onSuccess = { aiMessage ->
                         _state.update { it.copy(isSending = false) }
+                        ttsManager.speak(aiMessage.content)
+                        loadQuickActions()
                     },
                     onFailure = { error ->
                         _state.update {

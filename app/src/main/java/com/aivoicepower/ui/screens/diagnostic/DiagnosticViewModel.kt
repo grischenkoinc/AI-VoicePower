@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.audio.AudioPlayer
 import com.aivoicepower.data.audio.AudioRecorder
 import com.aivoicepower.data.remote.GeminiApiClient
+import com.aivoicepower.utils.AnalyticsTracker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -16,7 +17,8 @@ import javax.inject.Inject
 class DiagnosticViewModel @Inject constructor(
     val audioRecorder: AudioRecorder,
     val audioPlayer: AudioPlayer,
-    private val geminiApiClient: GeminiApiClient
+    private val geminiApiClient: GeminiApiClient,
+    private val analyticsTracker: AnalyticsTracker
 ) : ViewModel() {
 
     fun analyzeDiagnostic(
@@ -27,6 +29,7 @@ class DiagnosticViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             try {
+                analyticsTracker.logExerciseStarted("diagnostic", "diagnostic", false)
                 Log.d("DiagnosticVM", "=== Starting diagnostic analysis ===")
                 Log.d("DiagnosticVM", "Recording paths: $recordingPaths")
 

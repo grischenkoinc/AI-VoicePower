@@ -41,6 +41,12 @@
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-8252075318098641~1739651442" />
 
+        <!-- Resolve AdMob + Firebase Analytics manifest conflict -->
+        <property
+            android:name="android.adservices.AD_SERVICES_CONFIG"
+            android:resource="@xml/gma_ad_services_config"
+            tools:replace="android:resource" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

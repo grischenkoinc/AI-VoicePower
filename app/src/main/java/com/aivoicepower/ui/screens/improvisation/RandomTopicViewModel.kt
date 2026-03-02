@@ -10,6 +10,7 @@ import com.aivoicepower.data.content.ImprovisationTopicsProvider
 import com.aivoicepower.data.firebase.sync.ServerLimitService
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.domain.repository.VoiceAnalysisRepository
+import com.aivoicepower.utils.AnalyticsTracker
 import com.aivoicepower.utils.PremiumChecker
 import com.aivoicepower.utils.audio.AudioRecorderUtil
 import com.aivoicepower.utils.constants.FreeTierLimits
@@ -30,7 +31,8 @@ class RandomTopicViewModel @Inject constructor(
     private val voiceAnalysisRepository: VoiceAnalysisRepository,
     private val rewardedAdManager: RewardedAdManager,
     private val serverLimitService: ServerLimitService,
-    private val soundManager: SoundManager
+    private val soundManager: SoundManager,
+    private val analyticsTracker: AnalyticsTracker
 ) : ViewModel() {
 
     private val audioRecorderUtil = AudioRecorderUtil(context)
@@ -116,6 +118,8 @@ class RandomTopicViewModel @Inject constructor(
         val allTopics = ImprovisationTopicsProvider.getAllTopics()
         val randomTopic = allTopics.random()
 
+        analyticsTracker.logExerciseStarted("random_topic", "improvisation", _state.value.isPremium)
+
         _state.update {
             it.copy(
                 currentTopic = randomTopic,
@@ -189,6 +193,7 @@ class RandomTopicViewModel @Inject constructor(
         viewModelScope.launch {
             audioRecorderUtil.stopRecording()
             soundManager.play(SoundEffect.RECORD_STOP)
+            analyticsTracker.logRecordingCompleted("random_topic", _state.value.recordingDurationMs, _state.value.isPremium)
             _state.update {
                 it.copy(isRecording = false)
             }
@@ -204,6 +209,7 @@ class RandomTopicViewModel @Inject constructor(
 
             if (!canAnalyze) {
                 soundManager.play(SoundEffect.LIMIT_REACHED)
+                analyticsTracker.logLimitReached("analysis", false)
                 _state.update { it.copy(showAnalysisLimitSheet = true) }
                 return@launch
             }
@@ -211,6 +217,7 @@ class RandomTopicViewModel @Inject constructor(
             // Server-side limit check for free users
             if (!prefs.isPremium && !serverLimitService.canAnalyze(isImprov = true)) {
                 soundManager.play(SoundEffect.LIMIT_REACHED)
+                analyticsTracker.logLimitReached("analysis", false)
                 _state.update { it.copy(showAnalysisLimitSheet = true) }
                 return@launch
             }

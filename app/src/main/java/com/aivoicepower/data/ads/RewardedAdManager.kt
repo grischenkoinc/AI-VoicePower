@@ -10,6 +10,7 @@ import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
+import com.aivoicepower.utils.AnalyticsTracker
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,7 +20,8 @@ import javax.inject.Singleton
 
 @Singleton
 class RewardedAdManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val analyticsTracker: AnalyticsTracker
 ) {
     companion object {
         private const val TAG = "RewardedAdManager"
@@ -94,6 +96,7 @@ class RewardedAdManager @Inject constructor(
 
             override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                 Log.e(TAG, "Ad failed to show: ${adError.message}")
+                analyticsTracker.logAdWatched("rewarded", completed = false)
                 rewardedAd = null
                 _isAdLoaded.value = false
                 onFailed("Помилка показу реклами: ${adError.message}")
@@ -107,6 +110,7 @@ class RewardedAdManager @Inject constructor(
 
         ad.show(activity) { rewardItem ->
             Log.d(TAG, "User earned reward: ${rewardItem.amount} ${rewardItem.type}")
+            analyticsTracker.logAdWatched("rewarded", completed = true)
             onRewarded()
         }
     }

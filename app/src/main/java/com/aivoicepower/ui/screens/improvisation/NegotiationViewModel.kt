@@ -10,6 +10,7 @@ import com.aivoicepower.data.remote.GeminiApiClient
 import com.aivoicepower.audio.SoundEffect
 import com.aivoicepower.audio.SoundManager
 import com.aivoicepower.domain.service.SkillUpdateService
+import com.aivoicepower.utils.AnalyticsTracker
 import com.aivoicepower.ui.screens.improvisation.components.OrbState
 import com.aivoicepower.utils.CloudTtsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,7 +30,8 @@ class NegotiationViewModel @Inject constructor(
     private val userPreferencesDataStore: UserPreferencesDataStore,
     private val skillUpdateService: SkillUpdateService,
     private val soundManager: SoundManager,
-    val ttsManager: CloudTtsManager
+    val ttsManager: CloudTtsManager,
+    private val analyticsTracker: AnalyticsTracker
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(NegotiationState())
@@ -41,6 +43,7 @@ class NegotiationViewModel @Inject constructor(
 
     init {
         ttsManager.warmUp()
+        ttsManager.setTtsContext("negotiation")
         observeTts()
     }
 
@@ -94,6 +97,7 @@ class NegotiationViewModel @Inject constructor(
 
     private fun startNegotiation() {
         viewModelScope.launch {
+            analyticsTracker.logExerciseStarted("negotiation", "improvisation", false)
             val scenario = _state.value.selectedScenario
             _state.update {
                 it.copy(
@@ -234,6 +238,7 @@ class NegotiationViewModel @Inject constructor(
         mediaRecorder = null
 
         soundManager.play(SoundEffect.RECORD_STOP)
+        analyticsTracker.logRecordingCompleted("negotiation", _state.value.recordingSeconds * 1000L, false)
 
         _state.update {
             it.copy(

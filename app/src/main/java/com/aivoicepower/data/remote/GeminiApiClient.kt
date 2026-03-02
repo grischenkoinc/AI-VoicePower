@@ -11,6 +11,7 @@ import com.google.ai.client.generativeai.type.content
 import com.google.ai.client.generativeai.type.generationConfig
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
+import com.aivoicepower.utils.AnalyticsTracker
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.delay
 import java.io.File
@@ -25,7 +26,8 @@ import javax.inject.Singleton
  */
 @Singleton
 class GeminiApiClient @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val analyticsTracker: AnalyticsTracker
 ) {
 
     companion object {
@@ -42,6 +44,18 @@ class GeminiApiClient @Inject constructor(
             topK = 40
             topP = 0.95f
             maxOutputTokens = 2000
+        }
+    )
+
+    /** Coach model — short responses (max 75 tokens) */
+    private val coachGenerativeModel = GenerativeModel(
+        modelName = MODEL_NAME,
+        apiKey = API_KEY,
+        generationConfig = generationConfig {
+            temperature = 0.8f
+            topK = 40
+            topP = 0.95f
+            maxOutputTokens = 75
         }
     )
 
@@ -67,6 +81,7 @@ class GeminiApiClient @Inject constructor(
                     text(userPrompt)
                 }
             )
+            trackGenerationTokens(response, "debate")
 
             val aiResponse = response.text ?: "Я не можу відповісти на цей аргумент."
             Result.success(aiResponse)
@@ -95,6 +110,7 @@ class GeminiApiClient @Inject constructor(
                     text(userPrompt)
                 }
             )
+            trackGenerationTokens(response, "sales")
 
             val aiResponse = response.text ?: "Мені потрібно подумати..."
             Result.success(aiResponse)
@@ -115,6 +131,7 @@ class GeminiApiClient @Inject constructor(
             val prompt = AiPrompts.buildDebateEvaluationPrompt(topic, userPosition, rounds)
 
             val response = generativeModel.generateContent(prompt)
+            trackGenerationTokens(response, "debate_evaluation")
 
             val evaluation = response.text ?: "Гарна спроба!"
             Result.success(evaluation)
@@ -154,6 +171,7 @@ class GeminiApiClient @Inject constructor(
                     text(userPrompt)
                 }
             )
+            trackGenerationTokens(response, "interview")
 
             val aiResponse = response.text ?: "Цікаво. Давайте продовжимо."
             Result.success(aiResponse)
@@ -182,6 +200,7 @@ class GeminiApiClient @Inject constructor(
                     text(userPrompt)
                 }
             )
+            trackGenerationTokens(response, "presentation")
 
             val aiResponse = response.text ?: "Цікаво, розкажіть детальніше."
             Result.success(aiResponse)
@@ -213,6 +232,7 @@ class GeminiApiClient @Inject constructor(
                     text(userPrompt)
                 }
             )
+            trackGenerationTokens(response, "negotiation")
 
             val aiResponse = response.text ?: "Цікава пропозиція. Давайте обговоримо."
             Result.success(aiResponse)
@@ -243,11 +263,12 @@ class GeminiApiClient @Inject constructor(
                 append("Користувач: $userMessage\n\nТвоя відповідь:")
             }
 
-            val response = generativeModel.generateContent(
+            val response = coachGenerativeModel.generateContent(
                 content {
                     text(fullPrompt)
                 }
             )
+            trackGenerationTokens(response, "coach")
 
             val aiResponse = response.text
                 ?: "Вибач, я не можу відповісти зараз. Спробуй переформулювати питання."
@@ -272,6 +293,7 @@ class GeminiApiClient @Inject constructor(
                     text(prompt)
                 }
             )
+            trackGenerationTokens(response, "quick_actions")
 
             val suggestions = response.text
                 ?.lines()
@@ -308,6 +330,7 @@ class GeminiApiClient @Inject constructor(
                     text(prompt)
                 }
             )
+            trackAnalysisTokens(response, "text_analysis")
 
             val feedback = response.text
                 ?: "Дякую за запис! Продовжуй практикуватись."
@@ -371,6 +394,7 @@ class GeminiApiClient @Inject constructor(
                     }
                 )
                 Log.d("Gemini", "Gemini response received!")
+                trackAnalysisTokens(response, exerciseType)
 
                 val responseText = response.text
                 if (responseText == null) {
@@ -454,6 +478,7 @@ class GeminiApiClient @Inject constructor(
                     blob(mimeType, audioBytes)
                 }
             )
+            trackAnalysisTokens(response, "transcription")
 
             val text = response.text?.trim().orEmpty()
             Result.success(text)
@@ -542,6 +567,7 @@ class GeminiApiClient @Inject constructor(
             val response = generativeModel.generateContent(
                 content { text(prompt) }
             )
+            trackAnalysisTokens(response, "improv_$exerciseType")
             val responseText = response.text ?: return Result.failure(Exception("Пуста відповідь від AI"))
             var analysisResult = parseVoiceAnalysisResponse(responseText)
 
@@ -613,6 +639,44 @@ class GeminiApiClient @Inject constructor(
         }
 
         return text
+    }
+
+    // ===== Analytics Helpers =====
+
+    private fun trackGenerationTokens(response: com.google.ai.client.generativeai.type.GenerateContentResponse, context: String) {
+        try {
+            val usage = response.usageMetadata
+            val inputTokens = usage?.promptTokenCount ?: 0
+            val outputTokens = usage?.candidatesTokenCount ?: 0
+            Log.d("Gemini", "[$context] tokens: input=$inputTokens, output=$outputTokens")
+            analyticsTracker.logGeminiGeneration(
+                context = context,
+                inputTokens = inputTokens,
+                outputTokens = outputTokens,
+                isPremium = false // буде встановлено через User Property
+            )
+        } catch (e: Exception) {
+            Log.w("Gemini", "Failed to track generation tokens: ${e.message}")
+        }
+    }
+
+    private fun trackAnalysisTokens(response: com.google.ai.client.generativeai.type.GenerateContentResponse, exerciseType: String) {
+        try {
+            val usage = response.usageMetadata
+            val inputTokens = usage?.promptTokenCount ?: 0
+            val outputTokens = usage?.candidatesTokenCount ?: 0
+            Log.d("Gemini", "[$exerciseType] analysis tokens: input=$inputTokens, output=$outputTokens")
+            analyticsTracker.logAiAnalysisCompleted(
+                exerciseType = exerciseType,
+                durationMs = 0, // буде передано з ViewModel
+                inputTokens = inputTokens,
+                outputTokens = outputTokens,
+                latencyMs = 0, // буде передано з ViewModel
+                isPremium = false // буде встановлено через User Property
+            )
+        } catch (e: Exception) {
+            Log.w("Gemini", "Failed to track analysis tokens: ${e.message}")
+        }
     }
 }
 

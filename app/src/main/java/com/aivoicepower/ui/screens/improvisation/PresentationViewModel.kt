@@ -10,6 +10,7 @@ import com.aivoicepower.data.remote.GeminiApiClient
 import com.aivoicepower.audio.SoundEffect
 import com.aivoicepower.audio.SoundManager
 import com.aivoicepower.domain.service.SkillUpdateService
+import com.aivoicepower.utils.AnalyticsTracker
 import com.aivoicepower.ui.screens.improvisation.components.OrbState
 import com.aivoicepower.utils.CloudTtsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,7 +30,8 @@ class PresentationViewModel @Inject constructor(
     private val userPreferencesDataStore: UserPreferencesDataStore,
     private val skillUpdateService: SkillUpdateService,
     private val soundManager: SoundManager,
-    val ttsManager: CloudTtsManager
+    val ttsManager: CloudTtsManager,
+    private val analyticsTracker: AnalyticsTracker
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PresentationState())
@@ -41,6 +43,7 @@ class PresentationViewModel @Inject constructor(
 
     init {
         ttsManager.warmUp()
+        ttsManager.setTtsContext("presentation")
         observeTts()
     }
 
@@ -94,6 +97,7 @@ class PresentationViewModel @Inject constructor(
 
     private fun startPresentation() {
         viewModelScope.launch {
+            analyticsTracker.logExerciseStarted("presentation", "improvisation", false)
             val topic = _state.value.selectedTopic
             _state.update {
                 it.copy(
@@ -232,6 +236,7 @@ class PresentationViewModel @Inject constructor(
         mediaRecorder = null
 
         soundManager.play(SoundEffect.RECORD_STOP)
+        analyticsTracker.logRecordingCompleted("presentation", _state.value.recordingSeconds * 1000L, false)
 
         _state.update {
             it.copy(

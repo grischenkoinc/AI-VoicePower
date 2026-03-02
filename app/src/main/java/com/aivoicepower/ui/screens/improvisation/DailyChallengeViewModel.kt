@@ -10,6 +10,7 @@ import com.aivoicepower.data.local.database.entity.DailyChallengeEntity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.data.provider.DailyChallengeProvider
 import com.aivoicepower.domain.repository.VoiceAnalysisRepository
+import com.aivoicepower.utils.AnalyticsTracker
 import com.aivoicepower.utils.PremiumChecker
 import com.aivoicepower.utils.audio.AudioRecorderUtil
 import com.aivoicepower.utils.constants.FreeTierLimits
@@ -39,7 +40,8 @@ class DailyChallengeViewModel @Inject constructor(
     private val voiceAnalysisRepository: VoiceAnalysisRepository,
     private val rewardedAdManager: RewardedAdManager,
     private val serverLimitService: ServerLimitService,
-    private val soundManager: SoundManager
+    private val soundManager: SoundManager,
+    private val analyticsTracker: AnalyticsTracker
 ) : ViewModel() {
 
     private val audioRecorderUtil = AudioRecorderUtil(context)
@@ -148,6 +150,8 @@ class DailyChallengeViewModel @Inject constructor(
                     difficulty = challengeEntity.difficulty
                 )
 
+                analyticsTracker.logExerciseStarted("daily_challenge", "improvisation", _state.value.isPremium)
+
                 _state.value = _state.value.copy(
                     challenge = challenge,
                     isLoading = false,
@@ -229,6 +233,7 @@ class DailyChallengeViewModel @Inject constructor(
         recordingTimerJob?.cancel()
         audioRecorderUtil.stopRecording()
         soundManager.play(SoundEffect.RECORD_STOP)
+        analyticsTracker.logRecordingCompleted("daily_challenge", _state.value.recordingDurationMs, _state.value.isPremium)
         _state.value = _state.value.copy(
             isRecording = false
         )
@@ -242,12 +247,14 @@ class DailyChallengeViewModel @Inject constructor(
             )
             if (!canAnalyze) {
                 soundManager.play(SoundEffect.LIMIT_REACHED)
+                analyticsTracker.logLimitReached("analysis", false)
                 _state.value = _state.value.copy(showAnalysisLimitSheet = true)
                 return@launch
             }
             // Server-side limit check for free users
             if (!prefs.isPremium && !serverLimitService.canAnalyze(isImprov = true)) {
                 soundManager.play(SoundEffect.LIMIT_REACHED)
+                analyticsTracker.logLimitReached("analysis", false)
                 _state.value = _state.value.copy(showAnalysisLimitSheet = true)
                 return@launch
             }

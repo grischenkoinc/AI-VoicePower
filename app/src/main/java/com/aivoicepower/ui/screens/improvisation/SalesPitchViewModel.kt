@@ -12,6 +12,7 @@ import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.data.remote.GeminiApiClient
 import com.aivoicepower.data.remote.SalesStage
 import com.aivoicepower.domain.service.SkillUpdateService
+import com.aivoicepower.utils.AnalyticsTracker
 import com.aivoicepower.ui.screens.improvisation.components.OrbState
 import com.aivoicepower.utils.CloudTtsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,7 +33,8 @@ class SalesPitchViewModel @Inject constructor(
     private val userPreferencesDataStore: UserPreferencesDataStore,
     private val skillUpdateService: SkillUpdateService,
     private val soundManager: SoundManager,
-    val ttsManager: CloudTtsManager
+    val ttsManager: CloudTtsManager,
+    private val analyticsTracker: AnalyticsTracker
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SalesPitchState())
@@ -44,6 +46,7 @@ class SalesPitchViewModel @Inject constructor(
 
     init {
         ttsManager.warmUp()
+        ttsManager.setTtsContext("sales")
         observeTts()
     }
 
@@ -103,6 +106,7 @@ class SalesPitchViewModel @Inject constructor(
 
     private fun startConversation() {
         viewModelScope.launch {
+            analyticsTracker.logExerciseStarted("sales", "improvisation", false)
             _state.update {
                 it.copy(
                     currentRound = 1,
@@ -251,6 +255,7 @@ class SalesPitchViewModel @Inject constructor(
         mediaRecorder = null
 
         soundManager.play(SoundEffect.RECORD_STOP)
+        analyticsTracker.logRecordingCompleted("sales", _state.value.recordingSeconds * 1000L, false)
         _state.update {
             it.copy(
                 isListening = false,
