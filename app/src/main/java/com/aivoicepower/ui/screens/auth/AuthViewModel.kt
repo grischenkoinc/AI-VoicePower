@@ -2,6 +2,7 @@ package com.aivoicepower.ui.screens.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aivoicepower.data.firebase.sync.CloudSyncRepositoryImpl
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.domain.model.user.AuthUser
 import com.aivoicepower.domain.repository.AuthRepository
@@ -18,7 +19,8 @@ import javax.inject.Inject
 class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val userPreferencesDataStore: UserPreferencesDataStore,
-    private val analyticsTracker: AnalyticsTracker
+    private val analyticsTracker: AnalyticsTracker,
+    private val cloudSyncRepository: CloudSyncRepositoryImpl
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AuthScreenState())
@@ -157,11 +159,30 @@ class AuthViewModel @Inject constructor(
         user.displayName?.let { userPreferencesDataStore.setUserName(it) }
         user.photoUrl?.let { userPreferencesDataStore.setUserPhotoUrl(it) }
         userPreferencesDataStore.setAuthCompleted(true)
+
+        // Always check Firestore for completed diagnostic flag
+        // Returns true only if user previously completed diagnostic
+        val hasCompletedDiagnostic = try {
+            cloudSyncRepository.restoreUserFlags()
+        } catch (_: Exception) { false }
+
+        // Restore all user data (progress, courses, achievements) from Firestore
+        if (hasCompletedDiagnostic) {
+            try {
+                cloudSyncRepository.restoreAllData()
+            } catch (_: Exception) { }
+        }
+
+        // Check premium status (hardcoded emails + Firestore)
+        val isPremium = try {
+            cloudSyncRepository.checkPremiumStatus()
+        } catch (_: Exception) { false }
+
         analyticsTracker.setUserProperties(
-            isPremium = false,
+            isPremium = isPremium,
             accountType = user.providerId
         )
-        _state.update { it.copy(isLoading = false, isGoogleLoading = false, isNavigating = true) }
+        _state.update { it.copy(isLoading = false, isGoogleLoading = false, isNavigating = true, isReturningUser = hasCompletedDiagnostic) }
     }
 
     private fun sendResetEmail() {
@@ -194,10 +215,6 @@ class AuthViewModel @Inject constructor(
 
     private fun validateRegisterFields(state: AuthScreenState): Boolean {
         var valid = true
-        val nameError = when {
-            state.displayName.isBlank() -> { valid = false; "Введіть ваше ім'я" }
-            else -> null
-        }
         val emailError = when {
             state.email.isBlank() -> { valid = false; "Введіть електронну пошту" }
             !isValidEmail(state.email.trim()) -> { valid = false; "Невірний формат пошти" }
@@ -215,7 +232,6 @@ class AuthViewModel @Inject constructor(
         }
         _state.update {
             it.copy(
-                nameError = nameError,
                 emailError = emailError,
                 passwordError = passwordError,
                 confirmPasswordError = confirmPasswordError

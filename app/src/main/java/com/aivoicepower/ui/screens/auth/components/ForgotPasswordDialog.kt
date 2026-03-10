@@ -58,7 +58,7 @@ fun ForgotPasswordDialog(
                             Icon(
                                 Icons.Default.Email,
                                 contentDescription = null,
-                                tint = Color(0xFF9CA3AF)
+                                tint = Color.White.copy(alpha = 0.6f)
                             )
                         },
                         singleLine = true,

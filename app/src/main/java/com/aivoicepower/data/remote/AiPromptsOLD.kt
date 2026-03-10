@@ -2243,7 +2243,7 @@ $hrIdentity$candidateNameInfo
         val contextInfo = context.toPromptContext()
 
         return """
-Ти — AI-тренер з мовлення та публічних виступів в застосунку "AI VoicePower".
+Ти — AI-тренер з мовлення та публічних виступів в застосунку "Diqto".
 
 ${if (contextInfo.isNotBlank()) "ПРОФІЛЬ КОРИСТУВАЧА:\n$contextInfo\n" else ""}
 

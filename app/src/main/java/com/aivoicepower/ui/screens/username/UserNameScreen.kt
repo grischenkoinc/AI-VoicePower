@@ -2,6 +2,7 @@ package com.aivoicepower.ui.screens.username
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -137,7 +138,7 @@ fun UserNameScreen(
 
                 // Title
                 Text(
-                    text = "Як до вас звертатись?",
+                    text = "Як до Вас звертатись?",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
@@ -160,25 +161,32 @@ fun UserNameScreen(
                 OutlinedTextField(
                     value = state.name,
                     onValueChange = { viewModel.onEvent(UserNameEvent.NameChanged(it)) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .shadow(
-                            elevation = 8.dp,
-                            shape = RoundedCornerShape(16.dp),
-                            spotColor = Color.Black.copy(alpha = 0.1f)
-                        ),
+                    modifier = Modifier.fillMaxWidth(),
                     placeholder = {
                         Text(
                             text = "Введіть ваше ім'я",
                             color = Color.White.copy(alpha = 0.4f)
                         )
                     },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = null,
+                            tint = Color.White.copy(alpha = 0.6f)
+                        )
+                    },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = Color.White,
                         unfocusedTextColor = Color.White,
-                        focusedBorderColor = Color.White.copy(alpha = 0.4f),
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
-                        cursorColor = Color.White
+                        focusedBorderColor = Color(0xFF8B5CF6),
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
+                        errorBorderColor = Color(0xFFEF4444),
+                        focusedLabelColor = Color(0xFF8B5CF6),
+                        unfocusedLabelColor = Color.White.copy(alpha = 0.6f),
+                        cursorColor = Color(0xFF8B5CF6),
+                        focusedContainerColor = Color.White.copy(alpha = 0.08f),
+                        unfocusedContainerColor = Color.White.copy(alpha = 0.05f),
+                        errorContainerColor = Color(0xFFEF4444).copy(alpha = 0.05f)
                     ),
                     shape = RoundedCornerShape(16.dp),
                     textStyle = LocalTextStyle.current.copy(
@@ -211,35 +219,39 @@ fun UserNameScreen(
                 Spacer(modifier = Modifier.weight(1.5f))
 
                 // Continue Button
-                Button(
-                    onClick = { viewModel.onEvent(UserNameEvent.Continue) },
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
-                        .shadow(
-                            elevation = 12.dp,
-                            shape = RoundedCornerShape(16.dp),
-                            spotColor = Color(0xFF667EEA).copy(alpha = 0.4f)
+                        .background(
+                            Brush.linearGradient(
+                                colors = if (state.name.isNotBlank() && !state.isLoading)
+                                    listOf(Color(0xFF667EEA), Color(0xFF764BA2))
+                                else
+                                    listOf(Color(0xFF667EEA).copy(alpha = 0.4f), Color(0xFF764BA2).copy(alpha = 0.4f))
+                            ),
+                            RoundedCornerShape(16.dp)
+                        )
+                        .clip(RoundedCornerShape(16.dp))
+                        .then(
+                            if (state.name.isNotBlank() && !state.isLoading)
+                                Modifier.clickable { viewModel.onEvent(UserNameEvent.Continue) }
+                            else Modifier
                         ),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        disabledContainerColor = Color.White.copy(alpha = 0.3f)
-                    ),
-                    shape = RoundedCornerShape(16.dp),
-                    enabled = state.name.isNotBlank() && !state.isLoading
+                    contentAlignment = Alignment.Center
                 ) {
                     if (state.isLoading) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(24.dp),
-                            color = Color(0xFF667EEA),
-                            strokeWidth = 2.5.dp
+                            color = Color.White,
+                            strokeWidth = 2.dp
                         )
                     } else {
                         Text(
                             text = "Продовжити",
                             fontSize = 17.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF667EEA)
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color.White
                         )
                     }
                 }

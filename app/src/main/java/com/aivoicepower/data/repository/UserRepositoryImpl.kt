@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -32,7 +33,8 @@ import javax.inject.Singleton
 class UserRepositoryImpl @Inject constructor(
     private val recordingDao: com.aivoicepower.data.local.database.dao.RecordingDao,
     private val userProgressDao: UserProgressDao,
-    private val skillUpdateService: SkillUpdateService
+    private val skillUpdateService: SkillUpdateService,
+    private val diagnosticResultDao: com.aivoicepower.data.local.database.dao.DiagnosticResultDao
 ) : UserRepository {
 
     private val _userProfile = MutableStateFlow(getMockUserProfile())
@@ -194,7 +196,25 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     override fun getInitialDiagnostic(): Flow<DiagnosticResult?> {
-        return flowOf(null)
+        return diagnosticResultDao.getInitialDiagnostic().map { entity ->
+            entity?.let {
+                DiagnosticResult(
+                    id = it.id,
+                    userId = "default_user",
+                    timestamp = it.timestamp,
+                    diction = it.diction,
+                    tempo = it.tempo,
+                    intonation = it.intonation,
+                    volume = it.volume,
+                    structure = it.structure,
+                    confidence = it.confidence,
+                    fillerWords = it.fillerWords,
+                    recordingIds = emptyList(),
+                    recommendations = it.recommendations.split("||").filter { r -> r.isNotBlank() },
+                    isInitial = it.isInitial
+                )
+            }
+        }
     }
 
     override suspend fun getWeeklyActivity(): List<com.aivoicepower.ui.screens.progress.DailyProgress> {

@@ -11,6 +11,8 @@ import com.aivoicepower.utils.PremiumChecker
 import com.aivoicepower.utils.SkillLevelUtils
 import com.aivoicepower.utils.constants.FreeTierLimits
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -31,11 +33,14 @@ class HomeViewModel @Inject constructor(
     private val _state = MutableStateFlow(HomeState())
     val state: StateFlow<HomeState> = _state.asStateFlow()
 
+    // Cache date formatters (expensive to create)
+    private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    private val dayFormat = SimpleDateFormat("EEE", Locale("uk", "UA"))
+
     init {
         loadHomeData()
         observeSkills()
-        observeCourseProgress()
-        observeDailyPlan()
+        observeCourseAndDailyPlan()
         observeAnalysisLimits()
     }
 
@@ -60,44 +65,42 @@ class HomeViewModel @Inject constructor(
     private fun loadHomeData() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-
             try {
-                // Load user data
-                val preferences = userPreferencesDataStore.userPreferencesFlow.first()
-                val progress = userProgressDao.getUserProgressOnce()
+                // Load base data in parallel
+                coroutineScope {
+                    val preferencesDeferred = async { userPreferencesDataStore.userPreferencesFlow.first() }
+                    val progressDeferred = async { userProgressDao.getUserProgressOnce() }
 
-                // Load personalized plan
-                val todayPlan = generateTodayPlan(preferences, progress)
+                    val preferences = preferencesDeferred.await()
+                    val progress = progressDeferred.await()
 
-                // Load week progress
-                val weekProgress = loadWeekProgress()
+                    // Now load dependent data in parallel
+                    val todayPlanDeferred = async { generateTodayPlan(preferences, progress) }
+                    val weekProgressDeferred = async { loadWeekProgress(preferences) }
+                    val dailyTipDeferred = async { getDailyTip(preferences) }
 
-                // Determine greeting
-                val greeting = getGreetingByTime()
+                    val todayPlan = todayPlanDeferred.await()
+                    val weekProgress = weekProgressDeferred.await()
+                    val dailyTip = dailyTipDeferred.await()
 
-                // Get quick actions
-                val quickActions = getQuickActions()
+                    val greeting = getGreetingByTime()
+                    val quickActions = getQuickActions()
+                    val coachMessage = generateCoachMessage(progress, preferences)
 
-                // Load daily tip
-                val dailyTip = getDailyTip()
-
-                // Don't load currentCourse here - it will be loaded by observeCourseProgress()
-
-                val coachMessage = generateCoachMessage(progress, preferences)
-
-                _state.update {
-                    it.copy(
-                        userName = preferences.userName,
-                        currentStreak = preferences.currentStreak,
-                        greeting = greeting,
-                        todayPlan = todayPlan,
-                        weekProgress = weekProgress,
-                        quickActions = quickActions,
-                        dailyTip = dailyTip,
-                        coachMessage = coachMessage,
-                        isLoading = false,
-                        error = null
-                    )
+                    _state.update {
+                        it.copy(
+                            userName = preferences.userName,
+                            currentStreak = preferences.currentStreak,
+                            greeting = greeting,
+                            todayPlan = todayPlan,
+                            weekProgress = weekProgress,
+                            quickActions = quickActions,
+                            dailyTip = dailyTip,
+                            coachMessage = coachMessage,
+                            isLoading = false,
+                            error = null
+                        )
+                    }
                 }
             } catch (e: Exception) {
                 _state.update {
@@ -155,6 +158,8 @@ class HomeViewModel @Inject constructor(
 
         // Find next incomplete lesson
         val courseProgress = courseProgressDao.getCourseProgress(recommendedCourse).first()
+        // Index by lessonId for O(1) lookup instead of O(n) find per iteration
+        val progressMap = courseProgress.associateBy { it.lessonId }
         var nextLessonNumber = 1
         var nextLessonId = getLessonIdFormat(recommendedCourse, nextLessonNumber)
         var isLessonCompleted = false
@@ -164,14 +169,11 @@ class HomeViewModel @Inject constructor(
 
         for (lessonNumber in 1..21) {
             val lessonId = getLessonIdFormat(recommendedCourse, lessonNumber)
-            val lessonProgress = courseProgress.find { it.lessonId == lessonId }
+            val lessonProgress = progressMap[lessonId]
 
             if (lessonProgress != null && lessonProgress.isCompleted) {
-                // Перевіряємо чи урок був завершений сьогодні
                 val completedToday = lessonProgress.completedAt?.let { completedTime ->
-                    val completedDate = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-                        .format(java.util.Date(completedTime))
-                    completedDate == today
+                    dateFormat.format(java.util.Date(completedTime)) == today
                 } ?: false
 
                 if (completedToday) {
@@ -185,30 +187,24 @@ class HomeViewModel @Inject constructor(
             nextLessonNumber = lastLessonCompletedToday.first
             nextLessonId = lastLessonCompletedToday.second
             isLessonCompleted = true
-            android.util.Log.d("HomeViewModel", "Found lesson completed today: $nextLessonNumber")
         } else {
             // Інакше шукаємо перший незавершений урок, доступний для користувача
             for (lessonNumber in 1..21) {
                 val lessonId = getLessonIdFormat(recommendedCourse, lessonNumber)
-                val lessonProgress = courseProgress.find { it.lessonId == lessonId }
+                val lessonProgress = progressMap[lessonId]
 
-                // Перевіряємо чи урок доступний для Free користувача
-                val lessonIndex = lessonNumber - 1 // 0-based index
+                val lessonIndex = lessonNumber - 1
                 val canAccess = com.aivoicepower.utils.PremiumChecker.canAccessLesson(
                     isPremium = preferences.isPremium,
                     lessonIndex = lessonIndex
                 )
 
-                if (!canAccess) {
-                    android.util.Log.d("HomeViewModel", "Lesson $lessonNumber not accessible for Free user, skipping")
-                    continue
-                }
+                if (!canAccess) continue
 
                 if (lessonProgress == null || !lessonProgress.isCompleted) {
                     nextLessonNumber = lessonNumber
                     nextLessonId = lessonId
                     isLessonCompleted = false
-                    android.util.Log.d("HomeViewModel", "Found next incomplete lesson: $nextLessonNumber")
                     break
                 }
             }
@@ -329,7 +325,9 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private suspend fun loadWeekProgress(): WeekProgress {
+    private suspend fun loadWeekProgress(
+        preferences: com.aivoicepower.data.local.datastore.UserPreferences? = null
+    ): WeekProgress {
         val calendar = Calendar.getInstance()
 
         // Get start of week (Monday)
@@ -337,8 +335,9 @@ class HomeViewModel @Inject constructor(
         calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
 
         val days = mutableListOf<DayProgress>()
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val dayFormat = SimpleDateFormat("EEE", Locale("uk", "UA"))
+        val today = getCurrentDateString()
+        // Load preferences once instead of 7 times in the loop
+        val prefs = preferences ?: userPreferencesDataStore.userPreferencesFlow.first()
 
         for (i in 0..6) {
             val date = calendar.time
@@ -347,12 +346,9 @@ class HomeViewModel @Inject constructor(
                 if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
             }
 
-            // Load activity for this day
-            val prefs = userPreferencesDataStore.userPreferencesFlow.first()
-            val minutes = if (dateString == getCurrentDateString()) {
+            val minutes = if (dateString == today) {
                 prefs.todayMinutes
             } else {
-                // TODO: Load from historical data (not implemented yet)
                 0
             }
 
@@ -465,25 +461,27 @@ class HomeViewModel @Inject constructor(
         return if (growth > 0) "+$growth%" else if (growth < 0) "$growth%" else "0%"
     }
 
-    private suspend fun getDailyTip(): com.aivoicepower.domain.model.home.DailyTip {
-        val preferences = userPreferencesDataStore.userPreferencesFlow.first()
+    private suspend fun getDailyTip(
+        preferences: com.aivoicepower.data.local.datastore.UserPreferences? = null
+    ): com.aivoicepower.domain.model.home.DailyTip {
+        val prefs = preferences ?: userPreferencesDataStore.userPreferencesFlow.first()
         val currentTime = System.currentTimeMillis()
-        val lastUpdateTime = preferences.lastTipUpdateTime
+        val lastUpdateTime = prefs.lastTipUpdateTime
         val fourHoursInMillis = 4 * 60 * 60 * 1000L
 
         val isColdStart = dailyTipsRepository.isColdStart
         val timeExpired = currentTime - lastUpdateTime > fourHoursInMillis
-        val noTipYet = preferences.currentTipId == null
+        val noTipYet = prefs.currentTipId == null
 
         if (isColdStart || timeExpired || noTipYet) {
             dailyTipsRepository.markColdStartHandled()
 
-            val newTip = dailyTipsRepository.getRandomTip(excludeId = preferences.currentTipId)
+            val newTip = dailyTipsRepository.getRandomTip(excludeId = prefs.currentTipId)
             userPreferencesDataStore.updateDailyTip(newTip.id, currentTime)
             return newTip.copy(date = getCurrentDateString())
         } else {
             val allTips = dailyTipsRepository.loadTips()
-            val cachedTip = allTips.find { it.id == preferences.currentTipId }
+            val cachedTip = allTips.find { it.id == prefs.currentTipId }
                 ?: dailyTipsRepository.getRandomTip()
 
             return cachedTip.copy(date = getCurrentDateString())
@@ -491,23 +489,26 @@ class HomeViewModel @Inject constructor(
     }
 
     private suspend fun getCurrentCourse(preferences: com.aivoicepower.data.local.datastore.UserPreferences): CurrentCourse? {
-        // Список всіх курсів по порядку
         val allCourses = listOf("course_1", "course_2", "course_3", "course_4", "course_5", "course_6", "course_7")
 
-        // Знайти курс з найбільш недавньою активністю (останній завершений урок)
+        // Load all course progress in parallel instead of 7 sequential queries
+        val allProgress = coroutineScope {
+            allCourses.map { courseId ->
+                async { courseId to courseProgressDao.getCourseProgress(courseId).first() }
+            }.map { it.await() }
+        }
+
+        // Find course with most recent activity
         var mostRecentCourse: String? = null
         var mostRecentTimestamp = 0L
         var mostRecentLessonId: String? = null
 
-        for (courseId in allCourses) {
-            val progress = courseProgressDao.getCourseProgress(courseId).first()
+        for ((courseId, progress) in allProgress) {
             val completedLessons = progress.filter { it.isCompleted }
 
             if (completedLessons.isNotEmpty()) {
                 val latestLesson = completedLessons.maxByOrNull { it.completedAt ?: 0 }
                 val timestamp = latestLesson?.completedAt ?: 0
-
-                android.util.Log.d("HomeViewModel", "Course $courseId: latest lesson = ${latestLesson?.lessonId}, timestamp = $timestamp")
 
                 if (timestamp > mostRecentTimestamp) {
                     mostRecentTimestamp = timestamp
@@ -517,34 +518,18 @@ class HomeViewModel @Inject constructor(
             }
         }
 
-        android.util.Log.d("HomeViewModel", "Most recent course: $mostRecentCourse, lesson: $mostRecentLessonId")
-
         // Якщо є активний курс - показати наступний урок після останнього виконаного
         if (mostRecentCourse != null && mostRecentLessonId != null) {
-            // Витягнути номер останнього виконаного уроку з різних форматів:
-            // lesson_1, voice_lesson_1, speaker_lesson_1, etc.
             val substringResult = mostRecentLessonId.substringAfterLast("_")
-            android.util.Log.d("HomeViewModel", "Parsing lessonId: '$mostRecentLessonId' -> substring: '$substringResult'")
-
             val lastCompletedNumber = substringResult.toIntOrNull()
-            android.util.Log.d("HomeViewModel", "Last completed number: $lastCompletedNumber")
 
             if (lastCompletedNumber != null) {
                 val nextLessonNumber = lastCompletedNumber + 1
 
-                android.util.Log.d("HomeViewModel", "Next lesson number: $nextLessonNumber")
-
-                // Перевірити, чи не виходить за межі курсу
                 if (nextLessonNumber <= 21) {
-                    // Використовуємо функцію для визначення правильного формату lessonId
                     val nextLessonId = getLessonIdFormat(mostRecentCourse, nextLessonNumber)
-
-                    android.util.Log.d("HomeViewModel", "Next lesson ID: $nextLessonId")
-
-                    // Є незавершений урок - показати його
                     val (courseName, courseColor, courseIcon) = getCourseData(mostRecentCourse)
                     val lessonTitle = getLessonTitle(mostRecentCourse, nextLessonId)
-                    android.util.Log.d("HomeViewModel", "Returning: $mostRecentCourse lesson $nextLessonNumber")
                     return CurrentCourse(
                         courseId = mostRecentCourse,
                         courseName = courseName,
@@ -587,8 +572,6 @@ class HomeViewModel @Inject constructor(
             "BETTER_VOICE" -> "course_2"
             else -> "course_1"
         }
-
-        android.util.Log.d("HomeViewModel", "No recent course, returning recommended: $recommendedCourse")
 
         val firstLessonId = getLessonIdFormat(recommendedCourse, 1)
         val (courseName, courseColor, courseIcon) = getCourseData(recommendedCourse)
@@ -666,34 +649,7 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun getCurrentDateString(): String {
-        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        return sdf.format(Date())
-    }
-
-    private fun observeCourseProgress() {
-        viewModelScope.launch {
-            // Просто підписуємося на preferences і перезавантажуємо currentCourse
-            // при будь-якій зміні (getCurrentCourse() сам завантажить актуальні дані з DAO)
-            userPreferencesDataStore.userPreferencesFlow.collect { preferences ->
-                val updatedCourse = getCurrentCourse(preferences)
-                _state.update { it.copy(currentCourse = updatedCourse) }
-            }
-        }
-
-        // Також створюємо окремі підписки на зміни прогресу кожного курсу
-        viewModelScope.launch {
-            val allCourses = listOf("course_1", "course_2", "course_3", "course_4", "course_5", "course_6", "course_7")
-            allCourses.forEach { courseId ->
-                launch {
-                    courseProgressDao.getCourseProgress(courseId).collect {
-                        // При зміні будь-якого курсу - перезавантажуємо currentCourse
-                        val preferences = userPreferencesDataStore.userPreferencesFlow.first()
-                        val updatedCourse = getCurrentCourse(preferences)
-                        _state.update { it.copy(currentCourse = updatedCourse) }
-                    }
-                }
-            }
-        }
+        return dateFormat.format(Date())
     }
 
     private fun observeAnalysisLimits() {
@@ -727,37 +683,46 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun observeDailyPlan() {
-        viewModelScope.launch {
-            // Підписуємося на зміни в warmup completions
-            warmupCompletionDao.getRecentCompletions(1000).collect {
-                android.util.Log.d("HomeViewModel", "Warmup completions changed, refreshing daily plan")
-                refreshDailyPlan()
-            }
-        }
+    /**
+     * Unified observer for course progress + daily plan.
+     * Replaces separate observeCourseProgress() (8 coroutines) + observeDailyPlan() (9 coroutines)
+     * with just 3 coroutines total, eliminating duplicate subscriptions.
+     */
+    private fun observeCourseAndDailyPlan() {
+        val allCourses = listOf("course_1", "course_2", "course_3", "course_4", "course_5", "course_6", "course_7")
 
+        // 1. Single subscription per course — updates both currentCourse and dailyPlan
         viewModelScope.launch {
-            // Підписуємося на зміни в course progress
-            val allCourses = listOf("course_1", "course_2", "course_3", "course_4", "course_5", "course_6", "course_7")
             allCourses.forEach { courseId ->
                 launch {
                     courseProgressDao.getCourseProgress(courseId).collect {
-                        android.util.Log.d("HomeViewModel", "Course $courseId progress changed, refreshing daily plan")
+                        val preferences = userPreferencesDataStore.userPreferencesFlow.first()
+                        val updatedCourse = getCurrentCourse(preferences)
+                        _state.update { it.copy(currentCourse = updatedCourse) }
                         refreshDailyPlan()
                     }
                 }
             }
         }
 
-        // Також перевіряємо чи новий день при кожній зміні preferences
+        // 2. Preferences changes — update currentCourse + check new day
         viewModelScope.launch {
             userPreferencesDataStore.userPreferencesFlow.collect { preferences ->
+                val updatedCourse = getCurrentCourse(preferences)
+                _state.update { it.copy(currentCourse = updatedCourse) }
+
                 val today = getCurrentDateString()
                 if (preferences.lastDailyPlanDate != today) {
-                    android.util.Log.d("HomeViewModel", "New day detected, updating daily plan")
                     userPreferencesDataStore.updateDailyPlanDate(today)
                     refreshDailyPlan()
                 }
+            }
+        }
+
+        // 3. Warmup completions
+        viewModelScope.launch {
+            warmupCompletionDao.getRecentCompletions(1000).collect {
+                refreshDailyPlan()
             }
         }
     }

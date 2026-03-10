@@ -190,8 +190,6 @@ fun OnboardingPage1(
     )
 
     Box(modifier = Modifier.fillMaxSize()) {
-        GradientBackground(content = {})
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -251,7 +249,7 @@ fun OnboardingPage1(
 
                 // Title - scale-in from large
                 Text(
-                    text = "AI VoicePower",
+                    text = "Diqto",
                     style = AppTypography.displayLarge,
                     color = Color.White,
                     fontSize = 34.sp,
@@ -286,7 +284,6 @@ fun OnboardingPage1(
                         alpha = cardAlpha
                         translationY = cardOffsetY
                     }
-                    .shadow(16.dp, RoundedCornerShape(24.dp))
                     .background(Color.White, RoundedCornerShape(24.dp))
                     .padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)

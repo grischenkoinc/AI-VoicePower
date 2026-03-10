@@ -30,8 +30,6 @@ fun OnboardingPage2(
     onBackClick: () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-        GradientBackground(content = {})
-
         Column(
             modifier = Modifier
                 .fillMaxSize()

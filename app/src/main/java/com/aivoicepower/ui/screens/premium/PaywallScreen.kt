@@ -282,7 +282,7 @@ fun PaywallScreen(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Text(
-                        text = "AI VoicePower PRO",
+                        text = "Diqto PRO",
                         fontSize = 30.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = Color.White,

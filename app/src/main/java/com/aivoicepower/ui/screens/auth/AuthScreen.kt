@@ -37,7 +37,7 @@ import com.aivoicepower.ui.theme.components.GradientBackground
 @Suppress("UNUSED_PARAMETER")
 @Composable
 fun AuthScreen(
-    onAuthSuccess: () -> Unit,
+    onAuthSuccess: (isReturningUser: Boolean) -> Unit,
     onSkip: () -> Unit,
     googleSignInHelper: GoogleSignInHelper,
     showSkipButton: Boolean = true,
@@ -49,7 +49,7 @@ fun AuthScreen(
     // Navigation effect
     LaunchedEffect(state.isNavigating) {
         if (state.isNavigating) {
-            onAuthSuccess()
+            onAuthSuccess(state.isReturningUser)
         }
     }
 
@@ -99,7 +99,7 @@ fun AuthScreen(
             Text(text = "🎤", fontSize = 64.sp)
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "AI VoicePower",
+                text = "Diqto",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
@@ -141,13 +141,14 @@ fun AuthScreen(
                     state.error?.let { error ->
                         Text(
                             text = error,
-                            color = Color(0xFFEF4444),
+                            color = Color(0xFFFCA5A5),
                             fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
                             textAlign = TextAlign.Center,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(
-                                    Color(0xFFEF4444).copy(alpha = 0.1f),
+                                    Color(0xFFEF4444).copy(alpha = 0.2f),
                                     RoundedCornerShape(12.dp)
                                 )
                                 .padding(12.dp)
@@ -210,7 +211,7 @@ fun AuthScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "Забули пароль?",
-                        color = Color(0xFFA78BFA),
+                        color = Color(0xFF60A5FA),
                         fontSize = 14.sp,
                         modifier = Modifier
                             .align(Alignment.End)
@@ -285,21 +286,6 @@ fun AuthScreen(
                     },
                     isLoading = state.isGoogleLoading
                 )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Skip button (only during onboarding, not from settings)
-            if (showSkipButton) {
-                TextButton(
-                    onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); viewModel.onEvent(AuthEvent.SkipClicked) }
-                ) {
-                    Text(
-                        text = "Пропустити",
-                        color = Color.White.copy(alpha = 0.6f),
-                        fontSize = 16.sp
-                    )
-                }
             }
 
             Spacer(modifier = Modifier.height(32.dp))

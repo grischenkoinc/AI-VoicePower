@@ -101,29 +101,6 @@ fun UnifiedInputBar(
             .padding(start = 6.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Attach button (compact)
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .clip(CircleShape)
-                .background(Color.White.copy(alpha = 0.06f))
-                .clickable(
-                    enabled = enabled && !isListening && !isProcessing,
-                    onClick = {
-                        view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                        onAttachClick()
-                    }
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.AttachFile,
-                contentDescription = "Завантажити аудіо",
-                tint = Color.White.copy(alpha = if (enabled && !isListening) 0.40f else 0.20f),
-                modifier = Modifier.size(18.dp)
-            )
-        }
-
         Spacer(modifier = Modifier.width(8.dp))
 
         // Text field

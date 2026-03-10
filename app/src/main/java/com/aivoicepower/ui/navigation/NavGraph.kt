@@ -112,9 +112,14 @@ fun NavGraph(
             val isFromSettings = source == "settings"
 
             AuthScreen(
-                onAuthSuccess = {
+                onAuthSuccess = { isReturningUser ->
                     if (isFromSettings) {
                         navController.popBackStack()
+                    } else if (isReturningUser) {
+                        // Returning user — skip onboarding & diagnostic
+                        navController.navigate(Screen.Main.route) {
+                            popUpTo("auth?source={source}") { inclusive = true }
+                        }
                     } else {
                         navController.navigate(Screen.UserName.route) {
                             popUpTo("auth?source={source}") { inclusive = true }

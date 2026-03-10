@@ -41,6 +41,8 @@ fun getLessonLockReason(
     isUserPremium: Boolean,
     completedIndices: Set<Int>
 ): LockReason = when {
+    // Premium users have access to all lessons without prerequisites
+    isUserPremium -> LockReason.None
     lessonIndex in 0..2 -> LockReason.None
     lessonIndex in 3..4 -> {
         if ((0..2).all { it in completedIndices }) LockReason.None
@@ -50,16 +52,6 @@ fun getLessonLockReason(
         if ((3..4).all { it in completedIndices }) LockReason.None
         else LockReason.PrerequisiteNotMet
     }
-    lessonIndex >= 7 -> when {
-        !isUserPremium -> LockReason.PremiumRequired
-        lessonIndex == 7 -> {
-            if ((0..6).all { it in completedIndices }) LockReason.None
-            else LockReason.PrerequisiteNotMet
-        }
-        else -> {
-            if ((lessonIndex - 1) in completedIndices) LockReason.None
-            else LockReason.PrerequisiteNotMet
-        }
-    }
+    lessonIndex >= 7 -> LockReason.PremiumRequired
     else -> LockReason.None
 }

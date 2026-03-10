@@ -10,7 +10,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -28,7 +27,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.aivoicepower.R
 import com.aivoicepower.ui.theme.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
 @Composable
 fun SplashScreen(
@@ -45,25 +46,30 @@ fun SplashScreen(
     var showDivider by remember { mutableStateOf(false) }
     var showSubtitle by remember { mutableStateOf(false) }
 
+    // Play sound in a separate coroutine — never block the animation sequence
     LaunchedEffect(Unit) {
-        delay(100)
+        withContext(Dispatchers.IO) {
+            try {
+                MediaPlayer.create(context, R.raw.sound_splash_brand)?.apply {
+                    setVolume(0.7f, 0.7f)
+                    playbackParams = playbackParams.setSpeed(1.2f)
+                    setOnCompletionListener { release() }
+                    start()
+                }
+            } catch (_: Exception) {}
+        }
+    }
+
+    // Animation sequence — runs independently, never waits for sound
+    LaunchedEffect(Unit) {
+        delay(50)
         showEmoji = true
-        // Use MediaPlayer for splash brand (SoundPool may not be loaded at app start)
-        try {
-            MediaPlayer.create(context, R.raw.sound_splash_brand)?.apply {
-                setVolume(0.7f, 0.7f)
-                // 20% faster playback
-                playbackParams = playbackParams.setSpeed(1.2f)
-                setOnCompletionListener { release() }
-                start()
-            }
-        } catch (_: Exception) {}
-        delay(800)
+        delay(700)
         showTitle = true
         delay(400)
-        showSubtitle = true
-        delay(350)
         showDivider = true
+        delay(350)
+        showSubtitle = true
     }
 
     // === MICROPHONE: smooth scale with gentle overshoot ===
@@ -76,12 +82,12 @@ fun SplashScreen(
     // === TITLE ===
     val titleAlpha by animateFloatAsState(
         targetValue = if (showTitle) 1f else 0f,
-        animationSpec = tween(900, easing = EaseOut),
+        animationSpec = tween(800, easing = EaseOut),
         label = "titleAlpha"
     )
     val titleScale by animateFloatAsState(
         targetValue = if (showTitle) 1f else 1.08f,
-        animationSpec = tween(1000, easing = EaseOut),
+        animationSpec = tween(900, easing = EaseOut),
         label = "titleScale"
     )
 
@@ -95,64 +101,78 @@ fun SplashScreen(
     // === SUBTITLE ===
     val subtitleAlpha by animateFloatAsState(
         targetValue = if (showSubtitle) 1f else 0f,
-        animationSpec = tween(800, easing = EaseOut),
+        animationSpec = tween(700, easing = EaseOut),
         label = "subtitleAlpha"
     )
     val subtitleOffsetY by animateFloatAsState(
         targetValue = if (showSubtitle) 0f else 10f,
-        animationSpec = tween(800, easing = EaseOut),
+        animationSpec = tween(700, easing = EaseOut),
         label = "subtitleOffset"
     )
 
-    // === CONTINUOUS AMBIENT ANIMATIONS ===
+    // === CONTINUOUS AMBIENT ANIMATIONS (2 only — minimal for smooth performance) ===
     val infiniteTransition = rememberInfiniteTransition(label = "splashAmbient")
 
-    // Breathing glow behind icon
-    val glowScale by infiniteTransition.animateFloat(
-        initialValue = 0.92f, targetValue = 1.12f,
+    // Single animation drives glow (scale+alpha) and float offset
+    val ambientPhase by infiniteTransition.animateFloat(
+        initialValue = 0f, targetValue = 1f,
         animationSpec = infiniteRepeatable(
-            tween(2800, easing = EaseInOut), RepeatMode.Reverse
-        ), label = "glowScale"
+            tween(3000, easing = EaseInOut), RepeatMode.Reverse
+        ), label = "ambientPhase"
     )
-    val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.18f, targetValue = 0.5f,
-        animationSpec = infiniteRepeatable(
-            tween(2800, easing = EaseInOut), RepeatMode.Reverse
-        ), label = "glowAlpha"
-    )
+    val glowScale = 0.92f + ambientPhase * 0.2f
+    val glowAlpha = 0.18f + ambientPhase * 0.32f
+    val floatOffset = ambientPhase * 7f
 
-    // Gentle vertical float for icon
-    val floatOffset by infiniteTransition.animateFloat(
-        initialValue = 0f, targetValue = 7f,
-        animationSpec = infiniteRepeatable(
-            tween(3200, easing = EaseInOut), RepeatMode.Reverse
-        ), label = "floatOffset"
-    )
-
-    // Slow rotating gradient ring
+    // Ring rotation + shimmer from single animation
     val ringRotation by infiniteTransition.animateFloat(
         initialValue = 0f, targetValue = 360f,
         animationSpec = infiniteRepeatable(
-            tween(12000, easing = LinearEasing), RepeatMode.Restart
+            tween(10000, easing = LinearEasing), RepeatMode.Restart
         ), label = "ringRotation"
     )
+    // Fast shimmer: full sweep every ~1.7s (60° of ring rotation)
+    val shimmerX = (ringRotation / 60f) % 3f - 1f
 
-    // Shimmer sweep on the divider
-    val shimmerX by infiniteTransition.animateFloat(
-        initialValue = -1f, targetValue = 2f,
-        animationSpec = infiniteRepeatable(
-            tween(3500, easing = LinearEasing), RepeatMode.Restart
-        ), label = "shimmerX"
-    )
-
-    // Navigate after reveal completes (+0.7s for extended display)
+    // Navigate after reveal completes
     LaunchedEffect(hasCompletedOnboarding) {
-        delay(3700)
+        delay(3500)
         when (hasCompletedOnboarding) {
             true -> onNavigateToHome()
             false -> onNavigateToOnboarding()
             null -> { /* Still loading */ }
         }
+    }
+
+    // Pre-compute gradient brushes once instead of every frame
+    val ringBrush = remember {
+        Brush.sweepGradient(
+            colors = listOf(
+                Color.Transparent,
+                Color(0xFF8B5CF6).copy(alpha = 0.5f),
+                Color.White.copy(alpha = 0.7f),
+                Color(0xFF667EEA).copy(alpha = 0.5f),
+                Color.Transparent
+            )
+        )
+    }
+    val glowOrbBrush = remember {
+        Brush.radialGradient(
+            colors = listOf(
+                Color(0xFF667EEA).copy(alpha = 0.4f),
+                Color(0xFF764BA2).copy(alpha = 0.2f),
+                Color(0xFF8B5CF6).copy(alpha = 0.08f),
+                Color.Transparent
+            )
+        )
+    }
+    val coreGlowBrush = remember {
+        Brush.radialGradient(
+            colors = listOf(
+                Color.White.copy(alpha = 0.3f),
+                Color.Transparent
+            )
+        )
     }
 
     Box(
@@ -183,15 +203,7 @@ fun SplashScreen(
                     val pad = strokeW / 2f
                     rotate(ringRotation) {
                         drawArc(
-                            brush = Brush.sweepGradient(
-                                colors = listOf(
-                                    Color.Transparent,
-                                    Color(0xFF8B5CF6).copy(alpha = 0.5f),
-                                    Color.White.copy(alpha = 0.7f),
-                                    Color(0xFF667EEA).copy(alpha = 0.5f),
-                                    Color.Transparent
-                                )
-                            ),
+                            brush = ringBrush,
                             startAngle = 0f,
                             sweepAngle = 270f,
                             useCenter = false,
@@ -202,7 +214,7 @@ fun SplashScreen(
                     }
                 }
 
-                // Breathing glow orb
+                // Breathing glow orb (no .shadow() — it's very expensive per frame)
                 Box(
                     modifier = Modifier
                         .size(130.dp)
@@ -211,18 +223,7 @@ fun SplashScreen(
                             scaleY = glowScale
                             alpha = glowAlpha * emojiScale
                         }
-                        .shadow(40.dp, CircleShape, spotColor = Color(0xFF667EEA))
-                        .background(
-                            Brush.radialGradient(
-                                colors = listOf(
-                                    Color(0xFF667EEA).copy(alpha = 0.4f),
-                                    Color(0xFF764BA2).copy(alpha = 0.2f),
-                                    Color(0xFF8B5CF6).copy(alpha = 0.08f),
-                                    Color.Transparent
-                                )
-                            ),
-                            CircleShape
-                        )
+                        .background(glowOrbBrush, CircleShape)
                 )
 
                 // Soft white core glow
@@ -230,15 +231,7 @@ fun SplashScreen(
                     modifier = Modifier
                         .size(80.dp)
                         .graphicsLayer { alpha = 0.18f * emojiScale }
-                        .background(
-                            Brush.radialGradient(
-                                colors = listOf(
-                                    Color.White.copy(alpha = 0.3f),
-                                    Color.Transparent
-                                )
-                            ),
-                            CircleShape
-                        )
+                        .background(coreGlowBrush, CircleShape)
                 )
 
                 // Microphone emoji
@@ -257,7 +250,7 @@ fun SplashScreen(
 
             // === TITLE ===
             Text(
-                text = "AI VoicePower",
+                text = "Diqto",
                 style = AppTypography.displayLarge,
                 color = Color.White,
                 fontSize = 40.sp,

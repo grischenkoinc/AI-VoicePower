@@ -67,9 +67,11 @@ fun DiagnosticScreen(
     var showRecordingDialog by remember { mutableStateOf(false) }
     var currentRecordings by remember { mutableStateOf(mutableMapOf<Int, String>()) }
     var recordingTime by remember { mutableIntStateOf(0) }
+    var showTooShortWarning by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
     val maxRecordingTime = 45 // секунд
+    val minRecordingTime = 2 // мінімум 2 секунди
 
     // Permission launcher
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -138,22 +140,22 @@ fun DiagnosticScreen(
         )
     }
 
-    // Timer for free speech
+    // Timer for all tasks (tracks recording duration)
     LaunchedEffect(isRecording, currentTask) {
-        if (isRecording && tasks[currentTask].isFreeSpeech) {
-            while (isRecording && recordingTime < maxRecordingTime) {
+        if (isRecording) {
+            while (isRecording) {
                 delay(1000)
                 recordingTime++
-            }
-            if (recordingTime >= maxRecordingTime) {
-                // Auto stop after 45 seconds
-                val stoppedFilePath = audioRecorder.stopRecording()
-                isRecording = false
-                if (stoppedFilePath != null) {
-                    currentRecordings[currentTask] = stoppedFilePath
-                    showRecordingDialog = true
+                // Auto stop free speech after 45 seconds
+                if (tasks[currentTask].isFreeSpeech && recordingTime >= maxRecordingTime) {
+                    val stoppedFilePath = audioRecorder.stopRecording()
+                    isRecording = false
+                    if (stoppedFilePath != null) {
+                        currentRecordings[currentTask] = stoppedFilePath
+                        showRecordingDialog = true
+                    }
+                    recordingTime = 0
                 }
-                recordingTime = 0
             }
         }
     }
@@ -201,8 +203,17 @@ fun DiagnosticScreen(
                         val filePath = audioRecorder.stopRecording()
                         isRecording = false
                         if (filePath != null) {
-                            currentRecordings[currentTask] = filePath
-                            showRecordingDialog = true
+                            if (recordingTime < minRecordingTime) {
+                                // Too short — show warning, discard recording
+                                showTooShortWarning = true
+                                scope.launch {
+                                    delay(3000)
+                                    showTooShortWarning = false
+                                }
+                            } else {
+                                currentRecordings[currentTask] = filePath
+                                showRecordingDialog = true
+                            }
                         }
                         recordingTime = 0
                     } else {
@@ -234,6 +245,30 @@ fun DiagnosticScreen(
                 )
             } else {
                 Spacer(modifier = Modifier.height(64.dp))
+            }
+        }
+
+        // Too short warning
+        if (showTooShortWarning) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 100.dp, start = 24.dp, end = 24.dp)
+                    .fillMaxWidth()
+                    .background(
+                        Color(0xFFEF4444),
+                        RoundedCornerShape(16.dp)
+                    )
+                    .padding(horizontal = 20.dp, vertical = 14.dp)
+            ) {
+                Text(
+                    text = "⚠️  Запис занадто короткий. Говоріть хоча б 2 секунди та скажіть мінімум 2 слова.",
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
 

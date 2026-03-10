@@ -224,14 +224,17 @@ class AiCoachViewModel @Inject constructor(
     private fun sendMessage() {
         val text = _state.value.inputText.trim()
         if (text.isBlank()) return
-        if (!_state.value.canSendMessage) {
-            analyticsTracker.logLimitReached("coach_messages", _state.value.isPremium)
-            return
-        }
-
-        analyticsTracker.logCoachMessageSent(_state.value.isPremium)
 
         viewModelScope.launch {
+            // Fresh limit check from DB (not stale state)
+            val canSend = aiCoachRepository.canSendMessage()
+            if (!canSend) {
+                updateRemainingMessages()
+                analyticsTracker.logLimitReached("coach_messages", _state.value.isPremium)
+                return@launch
+            }
+
+            analyticsTracker.logCoachMessageSent(_state.value.isPremium)
             _state.update {
                 it.copy(
                     isSending = true,
@@ -245,6 +248,9 @@ class AiCoachViewModel @Inject constructor(
 
                 result.fold(
                     onSuccess = { aiMessage ->
+                        // Update remaining messages count
+                        updateRemainingMessages()
+
                         _state.update { it.copy(isSending = false) }
                         // soundManager.play(SoundEffect.COACH_PING) // Disabled for now
                         ttsManager.speak(aiMessage.content)
@@ -272,6 +278,20 @@ class AiCoachViewModel @Inject constructor(
                         error = e.message ?: "Невідома помилка"
                     )
                 }
+            }
+        }
+    }
+
+    private fun updateRemainingMessages() {
+        viewModelScope.launch {
+            val prefs = userPreferencesDataStore.userPreferencesFlow.first()
+            val todayCount = aiCoachRepository.getTodayMessagesCount()
+            val remaining = if (prefs.isPremium) Int.MAX_VALUE else (10 - todayCount).coerceAtLeast(0)
+            _state.update {
+                it.copy(
+                    messagesRemaining = remaining,
+                    canSendMessage = prefs.isPremium || remaining > 0
+                )
             }
         }
     }
@@ -640,7 +660,7 @@ ${scenario.description}
                 }
 
                 val textContent = buildString {
-                    appendLine("AI VoicePower — Розмова з AI Тренером")
+                    appendLine("Diqto — Розмова з AI Тренером")
                     appendLine("Дата: ${getCurrentDateTimeString()}")
                     appendLine()
                     appendLine("=" .repeat(50))
@@ -665,7 +685,7 @@ ${scenario.description}
 
                     appendLine("=" .repeat(50))
                     appendLine()
-                    appendLine("Експортовано з AI VoicePower")
+                    appendLine("Експортовано з Diqto")
                 }
 
                 // Save to file

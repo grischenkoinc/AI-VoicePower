@@ -23,7 +23,11 @@ class GoogleSignInHelper @Inject constructor(
         GoogleSignIn.getClient(context, gso)
     }
 
-    fun getSignInIntent(): Intent = googleSignInClient.signInIntent
+    fun getSignInIntent(): Intent {
+        // Sign out first to always show the account picker
+        googleSignInClient.signOut()
+        return googleSignInClient.signInIntent
+    }
 
     fun getIdTokenFromIntent(data: Intent?): Result<String> {
         return try {

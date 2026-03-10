@@ -90,7 +90,7 @@ class UserPreferencesDataStore @Inject constructor(
         }
         .map { preferences ->
             UserPreferences(
-                isPremium = preferences[PreferencesKeys.IS_PREMIUM] ?: true, // TODO: change back to false before release
+                isPremium = preferences[PreferencesKeys.IS_PREMIUM] ?: false,
                 currentStreak = preferences[PreferencesKeys.CURRENT_STREAK] ?: 0,
                 todayMinutes = preferences[PreferencesKeys.TODAY_MINUTES] ?: 0,
                 hasCompletedOnboarding = preferences[PreferencesKeys.HAS_COMPLETED_ONBOARDING] ?: false,
@@ -126,7 +126,7 @@ class UserPreferencesDataStore @Inject constructor(
             }
         }
         .map { preferences ->
-            preferences[PreferencesKeys.IS_PREMIUM] ?: true // TODO: change back to false before release
+            preferences[PreferencesKeys.IS_PREMIUM] ?: false
         }
 
     // Direct Flow for hasCompletedOnboarding (used by v2 ViewModels)
@@ -378,6 +378,11 @@ class UserPreferencesDataStore @Inject constructor(
             preferences.remove(PreferencesKeys.USER_PHOTO_URL)
             preferences[PreferencesKeys.HAS_COMPLETED_AUTH] = false
         }
+    }
+
+    /** Clear ALL user data on logout — next login starts as fresh user */
+    suspend fun clearAllUserData() {
+        context.dataStore.edit { it.clear() }
     }
 
     // ===== Sound settings =====

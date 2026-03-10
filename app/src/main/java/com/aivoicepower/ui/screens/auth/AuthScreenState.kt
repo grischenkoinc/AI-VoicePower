@@ -19,5 +19,6 @@ data class AuthScreenState(
     val emailError: String? = null,
     val passwordError: String? = null,
     val confirmPasswordError: String? = null,
-    val nameError: String? = null
+    val nameError: String? = null,
+    val isReturningUser: Boolean = false
 )

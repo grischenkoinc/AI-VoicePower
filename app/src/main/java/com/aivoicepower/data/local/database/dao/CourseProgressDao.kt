@@ -39,7 +39,7 @@ interface CourseProgressDao {
     @Query("""
         SELECT courseId FROM course_progress
         GROUP BY courseId
-        HAVING COUNT(*) = SUM(CASE WHEN isCompleted = 1 THEN 1 ELSE 0 END)
+        HAVING COUNT(*) >= 21 AND COUNT(*) = SUM(CASE WHEN isCompleted = 1 THEN 1 ELSE 0 END)
     """)
     fun getFullyCompletedCourseIds(): Flow<List<String>>
 

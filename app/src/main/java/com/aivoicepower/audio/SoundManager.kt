@@ -20,15 +20,17 @@ class SoundManager @Inject constructor(
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
-    private val soundPool: SoundPool = SoundPool.Builder()
-        .setMaxStreams(6)
-        .setAudioAttributes(
-            AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
-                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                .build()
-        )
-        .build()
+    private val soundPool: SoundPool by lazy {
+        SoundPool.Builder()
+            .setMaxStreams(6)
+            .setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build()
+            )
+            .build()
+    }
 
     private val loadedSounds = mutableMapOf<SoundEffect, Int>()
     private var loadedCount = 0
@@ -41,17 +43,21 @@ class SoundManager @Inject constructor(
     private var celebrationVolume = 1.0f
 
     init {
-        preloadSounds()
         observeSettings()
+        // Defer sound loading — don't block app startup with 21 file loads
+        scope.launch(Dispatchers.IO) {
+            kotlinx.coroutines.delay(500) // let first frame render first
+            preloadSounds()
+        }
     }
 
     private fun preloadSounds() {
+        soundPool.setOnLoadCompleteListener { _, _, status ->
+            if (status == 0) loadedCount++
+        }
         SoundEffect.entries.forEach { effect ->
             val soundId = soundPool.load(context, effect.resId, 1)
             loadedSounds[effect] = soundId
-        }
-        soundPool.setOnLoadCompleteListener { _, _, status ->
-            if (status == 0) loadedCount++
         }
     }
 

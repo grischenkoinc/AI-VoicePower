@@ -181,7 +181,7 @@ fun AiCoachScreen(
                             VoiceOrb(
                                 orbState = orbState,
                                 onClick = onOrbClick,
-                                modifier = Modifier.size(200.dp)
+                                modifier = Modifier.size(250.dp)
                             )
 
                             Spacer(modifier = Modifier.height(20.dp))
@@ -261,7 +261,6 @@ fun AiCoachScreen(
                         text = state.inputText,
                         onTextChange = { viewModel.onEvent(AiCoachEvent.InputChanged(it)) },
                         onSendClick = { viewModel.onEvent(AiCoachEvent.SendMessageClicked) },
-                        onAttachClick = { filePickerLauncher.launch("audio/*") },
                         enabled = state.canSendMessage && !state.isSending
                                 && !state.isUploadingAudio && !state.isListening
                     )
@@ -292,31 +291,31 @@ private fun VoiceOrb(
     val view = LocalView.current
     val infiniteTransition = rememberInfiniteTransition(label = "orb")
 
-    // === Animated colors ===
+    // === Animated colors (light pastel palette) ===
     val color1 by animateColorAsState(
         targetValue = when (orbState) {
-            OrbState.IDLE -> Color(0xFF667EEA)
-            OrbState.LISTENING -> Color(0xFFEF4444)
-            OrbState.PROCESSING -> Color(0xFF8B5CF6)
-            OrbState.SPEAKING -> Color(0xFF10B981)
+            OrbState.IDLE -> Color(0xFFB4C6FC)
+            OrbState.LISTENING -> Color(0xFFFCA5A5)
+            OrbState.PROCESSING -> Color(0xFFC4B5FD)
+            OrbState.SPEAKING -> Color(0xFF86EFAC)
         },
         animationSpec = tween(800), label = "c1"
     )
     val color2 by animateColorAsState(
         targetValue = when (orbState) {
-            OrbState.IDLE -> Color(0xFF8B5CF6)
-            OrbState.LISTENING -> Color(0xFFEC4899)
-            OrbState.PROCESSING -> Color(0xFF06B6D4)
-            OrbState.SPEAKING -> Color(0xFF06B6D4)
+            OrbState.IDLE -> Color(0xFFC4B5FD)
+            OrbState.LISTENING -> Color(0xFFF9A8D4)
+            OrbState.PROCESSING -> Color(0xFF7DD3FC)
+            OrbState.SPEAKING -> Color(0xFF7DD3FC)
         },
         animationSpec = tween(800), label = "c2"
     )
     val color3 by animateColorAsState(
         targetValue = when (orbState) {
-            OrbState.IDLE -> Color(0xFF764BA2)
-            OrbState.LISTENING -> Color(0xFFF97316)
-            OrbState.PROCESSING -> Color(0xFF667EEA)
-            OrbState.SPEAKING -> Color(0xFF3B82F6)
+            OrbState.IDLE -> Color(0xFFD8B4FE)
+            OrbState.LISTENING -> Color(0xFFFDE68A)
+            OrbState.PROCESSING -> Color(0xFFB4C6FC)
+            OrbState.SPEAKING -> Color(0xFF93C5FD)
         },
         animationSpec = tween(800), label = "c3"
     )
@@ -679,7 +678,6 @@ private fun CompactInputRow(
     text: String,
     onTextChange: (String) -> Unit,
     onSendClick: () -> Unit,
-    onAttachClick: () -> Unit,
     enabled: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -693,26 +691,6 @@ private fun CompactInputRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Attach
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .clip(CircleShape)
-                .background(Color.White.copy(alpha = 0.06f))
-                .clickable(enabled = enabled) {
-                    view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                    onAttachClick()
-                },
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                Icons.Default.AttachFile,
-                contentDescription = "Аудіо",
-                tint = Color.White.copy(alpha = 0.35f),
-                modifier = Modifier.size(18.dp)
-            )
-        }
-
         // Text field
         val fieldShape = RoundedCornerShape(20.dp)
         Box(
@@ -880,41 +858,31 @@ private fun CoachTopBar(
                 }
                 DropdownMenu(
                     expanded = showMenu,
-                    onDismissRequest = { onShowMenuChange(false) }
+                    onDismissRequest = { onShowMenuChange(false) },
+                    modifier = Modifier.background(Color.White, RoundedCornerShape(12.dp))
                 ) {
-                    DropdownMenuItem(
-                        text = { Text("Симуляція") },
-                        onClick = {
-                            onShowMenuChange(false)
-                            onShowScenarioDialog()
-                        },
-                        leadingIcon = {
-                            Icon(Icons.Default.PlayArrow, contentDescription = null)
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Експортувати") },
-                        onClick = {
-                            onShowMenuChange(false)
-                            onExportConversation()
-                        },
-                        leadingIcon = {
-                            Icon(Icons.Default.Share, contentDescription = null)
-                        },
-                        enabled = hasMessages
-                    )
                     if (hasMessages) {
                         DropdownMenuItem(
-                            text = { Text("Очистити") },
+                            text = { Text("Очистити", color = Color(0xFF1F2937)) },
                             onClick = {
                                 onShowMenuChange(false)
                                 onClearConversation()
                             },
                             leadingIcon = {
-                                Icon(Icons.Default.Delete, contentDescription = null)
+                                Icon(Icons.Default.Delete, contentDescription = null, tint = Color(0xFF6B7280))
                             }
                         )
                     }
+                    DropdownMenuItem(
+                        text = { Text("Перезапустити", color = Color(0xFF1F2937)) },
+                        onClick = {
+                            onShowMenuChange(false)
+                            onClearConversation()
+                        },
+                        leadingIcon = {
+                            Icon(Icons.Default.Refresh, contentDescription = null, tint = Color(0xFF6B7280))
+                        }
+                    )
                 }
             }
         }

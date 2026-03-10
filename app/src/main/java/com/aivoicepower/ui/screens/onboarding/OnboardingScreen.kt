@@ -13,6 +13,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aivoicepower.audio.LocalSoundManager
 import com.aivoicepower.audio.SoundEffect
 import com.aivoicepower.ui.screens.onboarding.components.*
+import com.aivoicepower.ui.theme.components.GradientBackground
 import kotlin.math.absoluteValue
 import kotlinx.coroutines.launch
 
@@ -59,6 +60,10 @@ fun OnboardingScreen(
             onNavigateToDiagnostic()
         }
     }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+    // Static background — doesn't scroll with pages
+    GradientBackground(content = {})
 
     HorizontalPager(
         state = pagerState,
@@ -137,4 +142,5 @@ fun OnboardingScreen(
             }
         }
     }
+    } // end Box
 }

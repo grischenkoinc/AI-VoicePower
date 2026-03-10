@@ -18,7 +18,11 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,10 +44,28 @@ fun SettingsScreen(
     onNavigateToPremium: () -> Unit = {},
     onNavigateToAuth: () -> Unit = {},
     onNavigateToAbout: () -> Unit = {},
+    onLoggedOut: () -> Unit = {},
+    onDataCleared: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val view = LocalView.current
+    var wasAuthenticated by remember { mutableStateOf(state.isAuthenticated) }
+
+    // Navigate to auth screen after logout/delete
+    LaunchedEffect(state.isAuthenticated) {
+        if (wasAuthenticated && !state.isAuthenticated) {
+            onLoggedOut()
+        }
+        wasAuthenticated = state.isAuthenticated
+    }
+
+    // Navigate to onboarding after data cleared
+    LaunchedEffect(state.navigateToOnboarding) {
+        if (state.navigateToOnboarding) {
+            onDataCleared()
+        }
+    }
 
     // Dialogs
     if (state.showLogoutDialog) {
@@ -60,8 +82,8 @@ fun SettingsScreen(
     if (state.showDeleteAccountDialog) {
         ConfirmationDialog(
             title = "Видалити акаунт",
-            message = "Ви впевнені? Це видалить ваш акаунт та всі дані з хмари. Цю дію не можна скасувати.",
-            confirmText = "Видалити",
+            message = "Це назавжди видалить ваш акаунт, весь прогрес, записи та дані з хмари. Цю дію неможливо відкатити!",
+            confirmText = "Видалити назавжди",
             isDangerous = true,
             onConfirm = { viewModel.onEvent(SettingsEvent.ConfirmDeleteAccount) },
             onDismiss = { viewModel.onEvent(SettingsEvent.DismissDialog) }
@@ -70,9 +92,9 @@ fun SettingsScreen(
 
     if (state.showClearDataDialog) {
         ConfirmationDialog(
-            title = "Очистити дані",
-            message = "Це видалить всі записи та прогрес з цього пристрою. Дані у хмарі залишаться.",
-            confirmText = "Очистити",
+            title = "Очистити всі дані",
+            message = "Це назавжди видалить весь ваш прогрес, записи, результати діагностики та досягнення — і з пристрою, і з хмари. Цю дію неможливо відкатити!",
+            confirmText = "Очистити все",
             isDangerous = true,
             onConfirm = { viewModel.onEvent(SettingsEvent.ConfirmClearData) },
             onDismiss = { viewModel.onEvent(SettingsEvent.DismissDialog) }
@@ -313,7 +335,7 @@ fun SettingsScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "AI VoicePower v1.0.0",
+                    text = "Diqto v1.0.0",
                     fontSize = 12.sp,
                     color = Color.White.copy(alpha = 0.3f),
                     fontWeight = FontWeight.Normal,

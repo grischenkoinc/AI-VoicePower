@@ -54,7 +54,6 @@ fun MainNavGraph(
     onNavigateToAiCoach: () -> Unit,
     onNavigateToPremium: () -> Unit,
     rewardedAdManager: RewardedAdManager? = null,
-    onOpenDrawer: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -104,8 +103,7 @@ fun MainNavGraph(
                 },
                 onNavigateToSettings = {
                     navController.navigate(Screen.Settings.route)
-                },
-                onOpenDrawer = onOpenDrawer
+                }
             )
         }
 
@@ -426,7 +424,17 @@ fun MainNavGraph(
                 onNavigateToAuth = {
                     rootNavController.navigate(Screen.Auth.createRoute("settings"))
                 },
-                onNavigateToAbout = { navController.navigate(Screen.About.route) }
+                onNavigateToAbout = { navController.navigate(Screen.About.route) },
+                onLoggedOut = {
+                    rootNavController.navigate(Screen.Auth.createRoute("logout")) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onDataCleared = {
+                    rootNavController.navigate(Screen.UserName.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
             )
         }
 

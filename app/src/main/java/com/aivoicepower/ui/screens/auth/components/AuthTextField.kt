@@ -47,7 +47,7 @@ fun AuthTextField(
                 Icon(
                     imageVector = leadingIcon,
                     contentDescription = null,
-                    tint = if (error != null) Color(0xFFEF4444) else Color(0xFF9CA3AF)
+                    tint = if (error != null) Color(0xFFEF4444) else Color.White.copy(alpha = 0.6f)
                 )
             },
             trailingIcon = if (isPassword && onTogglePasswordVisibility != null) {
@@ -56,7 +56,7 @@ fun AuthTextField(
                         Icon(
                             imageVector = if (isPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                             contentDescription = if (isPasswordVisible) "Сховати пароль" else "Показати пароль",
-                            tint = Color(0xFF9CA3AF)
+                            tint = Color.White.copy(alpha = 0.6f)
                         )
                     }
                 }
@@ -94,7 +94,7 @@ fun AuthTextField(
         if (error != null) {
             Text(
                 text = error,
-                color = Color(0xFFEF4444),
+                color = Color(0xFFFCA5A5),
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(start = 16.dp, top = 4.dp)
             )

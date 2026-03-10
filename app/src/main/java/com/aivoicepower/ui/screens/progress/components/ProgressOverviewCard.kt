@@ -95,10 +95,9 @@ fun ProgressOverviewCard(
         )
 
         // Main Level Section
-        Row(
+        Box(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            contentAlignment = Alignment.Center
         ) {
             // Circular Progress with Level
             Box(
@@ -144,29 +143,6 @@ fun ProgressOverviewCard(
                     fontSize = 52.sp,
                     fontWeight = FontWeight.Black,
                     letterSpacing = (-2).sp
-                )
-            }
-
-            // Level description
-            Column(
-                modifier = Modifier.weight(1f).padding(start = 20.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = getLevelTitle(overallLevel),
-                    style = AppTypography.titleLarge,
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    lineHeight = 24.sp
-                )
-                Text(
-                    text = getLevelDescription(overallLevel),
-                    style = AppTypography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.9f),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    lineHeight = 20.sp
                 )
             }
         }
@@ -345,22 +321,3 @@ private fun StatBox(
     }
 }
 
-private fun getLevelTitle(level: Int): String {
-    return when {
-        level < 20 -> "🌱 Початківець"
-        level < 40 -> "📚 Практикуючий"
-        level < 60 -> "💡 Досвідчений"
-        level < 80 -> "⭐ Майстер"
-        else -> "👑 Професіонал"
-    }
-}
-
-private fun getLevelDescription(level: Int): String {
-    return when {
-        level < 20 -> "Ти тільки починаєш свій шлях! Продовжуй практикувати."
-        level < 40 -> "Добре просуваєшся! Навички помітно покращуються."
-        level < 60 -> "Чудові результати! Ти вже багато досяг."
-        level < 80 -> "Вражаючий прогрес! Майже на вершині майстерності."
-        else -> "Ти досяг вершини! Продовжуй підтримувати рівень."
-    }
-}

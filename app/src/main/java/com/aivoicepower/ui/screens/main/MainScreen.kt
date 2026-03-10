@@ -30,13 +30,10 @@ import com.aivoicepower.audio.SoundEffect
 import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.ui.navigation.MainNavGraph
 import com.aivoicepower.ui.navigation.Screen
-import com.aivoicepower.ui.screens.main.components.AppDrawerContent
 import com.aivoicepower.ui.screens.progress.CelebrationOverlay
 import com.aivoicepower.ui.screens.progress.CelebrationViewModel
-import kotlinx.coroutines.launch
-
 /**
- * Main screen with Bottom Navigation, Drawer Menu, and FAB for AI Coach
+ * Main screen with Bottom Navigation and FAB for AI Coach
  */
 @Composable
 fun MainScreen(
@@ -57,9 +54,6 @@ fun MainScreen(
     val mainViewModel: MainViewModel = hiltViewModel()
     val mainState by mainViewModel.state.collectAsStateWithLifecycle()
 
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
-
     // Define bottom navigation items
     val bottomNavItems = listOf(
         BottomNavItem.Home,
@@ -72,130 +66,91 @@ fun MainScreen(
     // Check if current screen should show bottom bar
     val shouldShowBottomBar = currentDestination?.route in bottomNavItems.map { it.route }
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        gesturesEnabled = shouldShowBottomBar,
-        drawerContent = {
-            AppDrawerContent(
-                currentRoute = currentDestination?.route,
-                userName = mainState.userName,
-                userEmail = mainState.userEmail,
-                isAuthenticated = mainState.isAuthenticated,
-                isPremium = mainState.isPremium,
-                onNavigate = { route ->
-                    scope.launch { drawerState.close() }
-                    navController.navigate(route) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                },
-                onNavigateToAiCoach = {
-                    scope.launch { drawerState.close() }
-                    onNavigateToAiCoach()
-                },
-                onNavigateToPremium = {
-                    scope.launch { drawerState.close() }
-                    onNavigateToPremium()
-                },
-                onNavigateToSettings = {
-                    scope.launch { drawerState.close() }
-                    navController.navigate(Screen.Settings.route)
-                }
-            )
-        }
-    ) {
-        Scaffold(
-            containerColor = Color.Transparent,
-            contentWindowInsets = WindowInsets(0, 0, 0, 0),
-            bottomBar = {
-                if (shouldShowBottomBar) {
-                    NavigationBar(
-                        containerColor = Color.White,
-                        contentColor = Color(0xFF1F2937),
-                        tonalElevation = 0.dp,
-                        windowInsets = WindowInsets(0, 0, 0, 0),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        bottomNavItems.forEach { item ->
-                            val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
+    Scaffold(
+        containerColor = Color.Transparent,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        bottomBar = {
+            if (shouldShowBottomBar) {
+                NavigationBar(
+                    containerColor = Color.White,
+                    contentColor = Color(0xFF1F2937),
+                    tonalElevation = 0.dp,
+                    windowInsets = WindowInsets(0, 0, 0, 0),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    bottomNavItems.forEach { item ->
+                        val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
 
-                            NavigationBarItem(
-                                icon = {
-                                    Icon(
-                                        imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                        contentDescription = item.label,
-                                        tint = if (selected) item.selectedColor else Color(0xFF9CA3AF)
-                                    )
-                                },
-                                label = {
-                                    Text(
-                                        text = item.label,
-                                        color = if (selected) Color(0xFF1F2937) else Color(0xFF9CA3AF)
-                                    )
-                                },
-                                selected = selected,
-                                colors = NavigationBarItemDefaults.colors(
-                                    selectedIconColor = item.selectedColor,
-                                    unselectedIconColor = Color(0xFF9CA3AF),
-                                    selectedTextColor = Color(0xFF1F2937),
-                                    unselectedTextColor = Color(0xFF9CA3AF),
-                                    indicatorColor = Color.Transparent
-                                ),
-                                onClick = {
-                                    view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                                    if (!selected) {
-                                        soundManager.play(SoundEffect.TAB_SWITCH)
-                                        navController.navigate(item.route) {
-                                            popUpTo(navController.graph.findStartDestination().id) {
-                                                saveState = true
-                                            }
-                                            launchSingleTop = true
-                                            restoreState = true
+                        NavigationBarItem(
+                            icon = {
+                                Icon(
+                                    imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
+                                    contentDescription = item.label,
+                                    tint = if (selected) item.selectedColor else Color(0xFF9CA3AF)
+                                )
+                            },
+                            label = {
+                                Text(
+                                    text = item.label,
+                                    color = if (selected) Color(0xFF1F2937) else Color(0xFF9CA3AF)
+                                )
+                            },
+                            selected = selected,
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = item.selectedColor,
+                                unselectedIconColor = Color(0xFF9CA3AF),
+                                selectedTextColor = Color(0xFF1F2937),
+                                unselectedTextColor = Color(0xFF9CA3AF),
+                                indicatorColor = Color.Transparent
+                            ),
+                            onClick = {
+                                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                if (!selected) {
+                                    soundManager.play(SoundEffect.TAB_SWITCH)
+                                    navController.navigate(item.route) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
                                         }
+                                        launchSingleTop = true
+                                        restoreState = true
                                     }
                                 }
-                            )
-                        }
-                    }
-                }
-            },
-            floatingActionButton = {
-                if (shouldShowBottomBar) {
-                    FloatingActionButton(
-                        onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateToAiCoach() },
-                        containerColor = MaterialTheme.colorScheme.primary
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.AutoAwesome,
-                            contentDescription = "AI Тренер"
+                            }
                         )
                     }
                 }
             }
-        ) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                MainNavGraph(
-                    navController = navController,
-                    rootNavController = rootNavController,
-                    onNavigateToAiCoach = onNavigateToAiCoach,
-                    onNavigateToPremium = onNavigateToPremium,
-                    rewardedAdManager = rewardedAdManager,
-                    onOpenDrawer = {
-                        scope.launch { drawerState.open() }
-                    },
-                    modifier = Modifier
-                )
-
-                // Celebration overlay
-                currentCelebration?.let { achievement ->
-                    CelebrationOverlay(
-                        achievement = achievement,
-                        onDismiss = { celebrationViewModel.dismiss() }
+        },
+        floatingActionButton = {
+            if (shouldShowBottomBar) {
+                FloatingActionButton(
+                    onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onNavigateToAiCoach() },
+                    containerColor = MaterialTheme.colorScheme.primary
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AutoAwesome,
+                        contentDescription = "AI Тренер"
                     )
                 }
+            }
+        }
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            MainNavGraph(
+                navController = navController,
+                rootNavController = rootNavController,
+                onNavigateToAiCoach = onNavigateToAiCoach,
+                onNavigateToPremium = onNavigateToPremium,
+                rewardedAdManager = rewardedAdManager,
+                modifier = Modifier
+            )
+
+            // Celebration overlay
+            currentCelebration?.let { achievement ->
+                CelebrationOverlay(
+                    achievement = achievement,
+                    onDismiss = { celebrationViewModel.dismiss() }
+                )
             }
         }
     }

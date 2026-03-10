@@ -24,4 +24,7 @@ interface DiagnosticResultDao {
 
     @Query("SELECT COUNT(*) FROM diagnostic_results")
     suspend fun getCount(): Int
+
+    @Query("SELECT * FROM diagnostic_results ORDER BY timestamp DESC")
+    suspend fun getAllResultsOnce(): List<DiagnosticResultEntity>
 }

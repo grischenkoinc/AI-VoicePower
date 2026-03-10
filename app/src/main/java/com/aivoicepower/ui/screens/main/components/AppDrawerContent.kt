@@ -179,7 +179,7 @@ fun AppDrawerContent(
 
             // Version
             Text(
-                text = "AI VoicePower v1.0.0",
+                text = "Diqto v1.0.0",
                 fontSize = 12.sp,
                 color = Color.White.copy(alpha = 0.3f),
                 modifier = Modifier

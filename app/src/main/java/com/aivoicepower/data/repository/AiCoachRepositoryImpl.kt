@@ -57,8 +57,10 @@ class AiCoachRepositoryImpl @Inject constructor(
             )
             messageDao.insertMessage(userMessage.toEntity())
 
-            // Get conversation history
-            val conversationHistory = messageDao.getMessagesFlow().first().map { it.toMessage() }
+            // Get conversation history (exclude the message we just added — it's passed separately)
+            val conversationHistory = messageDao.getMessagesFlow().first()
+                .map { it.toMessage() }
+                .dropLast(1)
 
             // Get user context
             val userContext = getUserContext()

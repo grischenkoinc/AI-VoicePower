@@ -34,13 +34,17 @@ class VoicePowerApp : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
-        rewardedAdManager.initialize()
         NotificationHelper.createNotificationChannel(this)
+        // Defer ad SDK init — run on main thread but after first frame
+        appScope.launch {
+            kotlinx.coroutines.delay(1000)
+            rewardedAdManager.initialize()
+        }
         initAnalyticsUserProperties()
     }
 
     private fun initAnalyticsUserProperties() {
-        appScope.launch {
+        appScope.launch(Dispatchers.IO) {
             try {
                 val prefs = userPreferencesDataStore.userPreferencesFlow.first()
                 val uid = userPreferencesDataStore.firebaseUid.first()

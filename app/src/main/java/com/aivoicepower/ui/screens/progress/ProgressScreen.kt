@@ -111,12 +111,6 @@ private fun ProgressContent(
             modifier = Modifier.staggeredEntry(index = 1)
         )
 
-        // Journey Section
-        JourneySection(
-            overallLevel = state.overallLevel,
-            modifier = Modifier.staggeredEntry(index = 2)
-        )
-
         // Skill Levels
         Text(
             text = "Навички",
@@ -125,12 +119,12 @@ private fun ProgressContent(
             fontSize = 20.sp,
             fontWeight = FontWeight.ExtraBold,
             letterSpacing = (-0.5).sp,
-            modifier = Modifier.staggeredEntry(index = 3)
+            modifier = Modifier.staggeredEntry(index = 2)
         )
 
         Column(
             modifier = Modifier
-                .staggeredEntry(index = 4)
+                .staggeredEntry(index = 3)
                 .fillMaxWidth()
                 .shadow(
                     elevation = 20.dp,
@@ -182,7 +176,7 @@ private fun ProgressContent(
         if (state.recentAchievements.isNotEmpty()) {
             Column(
                 modifier = Modifier
-                    .staggeredEntry(index = 5)
+                    .staggeredEntry(index = 4)
                     .fillMaxWidth()
                     .shadow(
                         elevation = 20.dp,

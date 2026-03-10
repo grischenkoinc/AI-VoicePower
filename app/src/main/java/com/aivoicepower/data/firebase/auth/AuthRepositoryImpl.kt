@@ -34,7 +34,8 @@ class AuthRepositoryImpl @Inject constructor(
             val credential = GoogleAuthProvider.getCredential(idToken, null)
             val result = firebaseAuth.signInWithCredential(credential).await()
             val user = result.user ?: return Result.failure(Exception("Не вдалося увійти через Google"))
-            Result.success(user.toAuthUser())
+            val isNew = result.additionalUserInfo?.isNewUser ?: false
+            Result.success(user.toAuthUser().copy(isNewUser = isNew))
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -44,7 +45,7 @@ class AuthRepositoryImpl @Inject constructor(
         return try {
             val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
             val user = result.user ?: return Result.failure(Exception("Не вдалося увійти"))
-            Result.success(user.toAuthUser())
+            Result.success(user.toAuthUser().copy(isNewUser = false))
         } catch (e: Exception) {
             Result.failure(mapFirebaseException(e))
         }
@@ -65,7 +66,7 @@ class AuthRepositoryImpl @Inject constructor(
             }
             user.updateProfile(profileUpdates).await()
 
-            Result.success(user.toAuthUser().copy(displayName = displayName))
+            Result.success(user.toAuthUser().copy(displayName = displayName, isNewUser = true))
         } catch (e: Exception) {
             Result.failure(mapFirebaseException(e))
         }
@@ -110,24 +111,38 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     private fun mapFirebaseException(e: Exception): Exception {
+        val msg = e.message?.uppercase() ?: ""
         val message = when {
-            e.message?.contains("INVALID_LOGIN_CREDENTIALS") == true ||
-            e.message?.contains("INVALID_EMAIL") == true ->
+            "INVALID_LOGIN_CREDENTIALS" in msg ||
+            "INVALID_EMAIL" in msg ||
+            "WRONG_PASSWORD" in msg ||
+            "INVALID_CREDENTIAL" in msg ->
                 "Невірна електронна пошта або пароль"
-            e.message?.contains("USER_NOT_FOUND") == true ->
+            "USER_NOT_FOUND" in msg ->
                 "Користувача з такою поштою не знайдено"
-            e.message?.contains("EMAIL_EXISTS") == true ||
-            e.message?.contains("ALREADY_EXISTS") == true ->
+            "EMAIL_ALREADY_IN_USE" in msg ||
+            "EMAIL_EXISTS" in msg ||
+            "ALREADY_EXISTS" in msg ->
                 "Акаунт з такою поштою вже існує"
-            e.message?.contains("WEAK_PASSWORD") == true ->
+            "WEAK_PASSWORD" in msg ->
                 "Пароль занадто слабкий (мінімум 6 символів)"
-            e.message?.contains("TOO_MANY_ATTEMPTS") == true ->
+            "TOO_MANY_ATTEMPTS" in msg ||
+            "TOO_MANY_REQUESTS" in msg ->
                 "Забагато спроб. Спробуйте пізніше"
-            e.message?.contains("NETWORK") == true ->
+            "NETWORK" in msg ->
                 "Помилка мережі. Перевірте підключення"
-            e.message?.contains("REQUIRES_RECENT_LOGIN") == true ->
+            "REQUIRES_RECENT_LOGIN" in msg ->
                 "Потрібно увійти знову для цієї дії"
-            else -> e.message ?: "Невідома помилка"
+            "USER_DISABLED" in msg ->
+                "Цей акаунт заблоковано"
+            "OPERATION_NOT_ALLOWED" in msg ->
+                "Цей метод входу не підтримується"
+            "CREDENTIAL_ALREADY_IN_USE" in msg ->
+                "Ці облікові дані вже використовуються іншим акаунтом"
+            "MISSING_PASSWORD" in msg ||
+            "MISSING_EMAIL" in msg ->
+                "Будь ласка, заповніть усі поля"
+            else -> "Невірні дані. Перевірте пошту та пароль"
         }
         return Exception(message)
     }

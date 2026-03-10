@@ -356,7 +356,7 @@ fun Modifier.glowPulse(
 fun Modifier.staggeredEntry(
     index: Int,
     staggerDelay: Int = 80,
-    slideDistance: Dp = 30.dp,
+    slideDistance: Float = 30f,
     animDuration: Int = 350
 ): Modifier = composed {
     var visible by remember { mutableStateOf(false) }
@@ -372,18 +372,15 @@ fun Modifier.staggeredEntry(
         label = "staggerAlpha_$index"
     )
 
-    val offsetY by animateDpAsState(
-        targetValue = if (visible) 0.dp else slideDistance,
+    val offsetY by animateFloatAsState(
+        targetValue = if (visible) 0f else slideDistance,
         animationSpec = tween(animDuration, easing = FastOutSlowInEasing),
         label = "staggerOffset_$index"
     )
 
-    this
-        .graphicsLayer { this.alpha = alpha }
-        .layout { measurable, constraints ->
-            val placeable = measurable.measure(constraints)
-            layout(placeable.width, placeable.height) {
-                placeable.place(0, offsetY.roundToPx())
-            }
-        }
+    // Use graphicsLayer for both alpha and translation — avoids layout recalculation
+    this.graphicsLayer {
+        this.alpha = alpha
+        this.translationY = offsetY
+    }
 }

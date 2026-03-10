@@ -7,6 +7,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -23,11 +24,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontStyle
@@ -59,7 +62,6 @@ fun HomeScreen(
     onNavigateToRecord: () -> Unit,
     onNavigateToAnalytics: () -> Unit,
     onNavigateToSettings: () -> Unit,
-    onOpenDrawer: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val scrollState = rememberScrollState()
@@ -90,7 +92,7 @@ fun HomeScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         GradientBackground(content = {})
 
-        // Show loading spinner while data loads, then stagger content in
+        // Show spinner while data loads, then all content appears together with stagger
         if (state.isLoading) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -118,7 +120,6 @@ fun HomeScreen(
                     userName = state.userName,
                     greeting = state.greeting,
                     onSettings = onNavigateToSettings,
-                    onMenu = onOpenDrawer,
                     modifier = Modifier.staggeredEntry(index = 0, staggerDelay = 60)
                 )
 
@@ -218,7 +219,6 @@ private fun HomeHeader(
     userName: String?,
     greeting: String,
     onSettings: () -> Unit,
-    onMenu: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val view = LocalView.current
@@ -227,25 +227,8 @@ private fun HomeHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Menu button + text
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(
-                        Color.White.copy(alpha = 0.15f),
-                        CircleShape
-                    )
-                    .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onMenu() },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "☰", fontSize = 18.sp, color = Color.White)
-            }
-
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        // Greeting text
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
                     text = greeting,
                     style = AppTypography.labelMedium,
@@ -262,22 +245,51 @@ private fun HomeHeader(
                     letterSpacing = (-0.8).sp
                 )
             }
-        }
 
-        // Settings button з gradient
+        // Settings button
+        var settingsPressed by remember { mutableStateOf(false) }
+        val settingsScale by androidx.compose.animation.core.animateFloatAsState(
+            targetValue = if (settingsPressed) 0.78f else 1f,
+            animationSpec = androidx.compose.animation.core.spring(
+                dampingRatio = 0.35f,
+                stiffness = 300f
+            ),
+            label = "settingsScale"
+        )
+        val settingsRotation by androidx.compose.animation.core.animateFloatAsState(
+            targetValue = if (settingsPressed) 45f else 0f,
+            animationSpec = androidx.compose.animation.core.spring(
+                dampingRatio = 0.35f,
+                stiffness = 300f
+            ),
+            label = "settingsRotation"
+        )
         Box(
             modifier = Modifier
                 .size(40.dp)
+                .graphicsLayer {
+                    scaleX = settingsScale
+                    scaleY = settingsScale
+                    rotationZ = settingsRotation
+                }
                 .background(
-                    Brush.linearGradient(
-                        colors = listOf(Color(0xFFFBBF24), Color(0xFFF59E0B))
-                    ),
+                    Color.White.copy(alpha = 0.15f),
                     CircleShape
                 )
-                .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onSettings() },
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onPress = {
+                            settingsPressed = true
+                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                            tryAwaitRelease()
+                            settingsPressed = false
+                            onSettings()
+                        }
+                    )
+                },
             contentAlignment = Alignment.Center
         ) {
-            Text(text = "⚙️", fontSize = 20.sp)
+            Text(text = "⚙️", fontSize = 18.sp)
         }
     }
 }
@@ -360,8 +372,10 @@ private fun StreakCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)
             ) {
-                val calendar = Calendar.getInstance()
-                val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(calendar.time)
+                val today = remember {
+                    java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                        .format(Calendar.getInstance().time)
+                }
 
                 weekProgress.days.forEach { day ->
                     DayCircle(
@@ -864,9 +878,11 @@ private fun SkillCard(
     modifier: Modifier = Modifier
 ) {
     val view = LocalView.current
-    // Конвертуємо hex кольори в Color об'єкти
-    val gradientColors = skill.gradientColors.map { hexColor ->
-        Color(android.graphics.Color.parseColor(hexColor))
+    // Cache parsed colors — avoid re-parsing hex on every recomposition
+    val gradientColors = remember(skill.gradientColors) {
+        skill.gradientColors.map { hexColor ->
+            Color(android.graphics.Color.parseColor(hexColor))
+        }
     }
 
     Column(

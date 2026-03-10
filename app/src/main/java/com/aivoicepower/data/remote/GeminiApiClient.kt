@@ -47,7 +47,7 @@ class GeminiApiClient @Inject constructor(
         }
     )
 
-    /** Coach model — short responses (max 75 tokens) */
+    /** Coach model — concise complete responses, strict 170 token limit */
     private val coachGenerativeModel = GenerativeModel(
         modelName = MODEL_NAME,
         apiKey = API_KEY,
@@ -55,7 +55,7 @@ class GeminiApiClient @Inject constructor(
             temperature = 0.8f
             topK = 40
             topP = 0.95f
-            maxOutputTokens = 75
+            maxOutputTokens = 170
         }
     )
 
@@ -263,11 +263,18 @@ class GeminiApiClient @Inject constructor(
                 append("Користувач: $userMessage\n\nТвоя відповідь:")
             }
 
-            val response = coachGenerativeModel.generateContent(
-                content {
-                    text(fullPrompt)
-                }
-            )
+            val response = try {
+                coachGenerativeModel.generateContent(
+                    content { text(fullPrompt) }
+                )
+            } catch (e: com.google.ai.client.generativeai.type.ResponseStoppedException) {
+                // MAX_TOKENS hit — retry with explicit length constraint
+                coachGenerativeModel.generateContent(
+                    content {
+                        text(fullPrompt + "\n\n⚠️ УВАГА: Попередня відповідь була занадто довгою! Відповідай МАКСИМУМ 2 реченнями. Будь лаконічним.")
+                    }
+                )
+            }
             trackGenerationTokens(response, "coach")
 
             val aiResponse = response.text

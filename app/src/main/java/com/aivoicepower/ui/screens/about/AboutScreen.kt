@@ -114,7 +114,7 @@ fun AboutScreen(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Text(
-                    text = "AI VoicePower",
+                    text = "Diqto",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color.White
@@ -134,7 +134,7 @@ fun AboutScreen(
             // Description Card
             InfoCard(
                 title = "Про застосунок",
-                description = "AI VoicePower — це інноваційний застосунок для розвитку " +
+                description = "Diqto — це інноваційний застосунок для розвитку " +
                         "навичок публічних виступів та комунікації з використанням " +
                         "штучного інтелекту. Ми допомагаємо вам стати впевненішими " +
                         "ораторами через персоналізовані тренування та AI-аналіз."
@@ -188,11 +188,11 @@ fun AboutScreen(
                 content = {
                     ContactItem(
                         icon = Icons.Default.Email,
-                        text = "support@aivoicepower.com"
+                        text = "support@diqto.com"
                     )
                     ContactItem(
                         icon = Icons.Default.Language,
-                        text = "www.aivoicepower.com",
+                        text = "www.diqto.com",
                         showDivider = false
                     )
                 }
@@ -202,7 +202,7 @@ fun AboutScreen(
 
             // Copyright
             Text(
-                text = "© 2026 AI VoicePower\nВсі права захищені",
+                text = "© 2026 Diqto\nВсі права захищені",
                 fontSize = 13.sp,
                 color = Color.White.copy(alpha = 0.5f),
                 textAlign = TextAlign.Center,
