@@ -1,5 +1,7 @@
 package com.aivoicepower.ui.screens.onboarding.components
 
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,6 +23,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -33,6 +36,19 @@ import com.aivoicepower.ui.theme.modifiers.pulseAnimation
 fun OnboardingPage1(
     onNextClick: () -> Unit
 ) {
+    // Double-back-to-exit
+    val context = LocalContext.current
+    var lastBackPressTime by remember { mutableStateOf(0L) }
+    BackHandler {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastBackPressTime < 2000) {
+            (context as? android.app.Activity)?.finish()
+        } else {
+            lastBackPressTime = currentTime
+            Toast.makeText(context, "Натисніть ще раз для виходу", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     // Trigger all animations
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { visible = true }
@@ -387,6 +403,7 @@ fun OnboardingPage1(
                 PageIndicator(currentPage = 0, totalPages = 4)
             }
         }
+
     }
 }
 

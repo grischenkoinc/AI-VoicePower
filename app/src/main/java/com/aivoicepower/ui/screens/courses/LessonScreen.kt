@@ -2,6 +2,7 @@ package com.aivoicepower.ui.screens.courses
 
 import android.Manifest
 import android.app.Activity
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -12,9 +13,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -45,7 +43,6 @@ import com.aivoicepower.ui.theme.TextColors
 import com.aivoicepower.ui.theme.components.GradientBackground
 import com.aivoicepower.utils.constants.FreeTierLimits
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @Suppress("UNUSED_PARAMETER")
 @Composable
@@ -59,8 +56,6 @@ fun LessonScreen(
     onNavigateToPremium: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val activity = context as? Activity
 
@@ -81,17 +76,10 @@ fun LessonScreen(
     BackHandler {
         val currentTime = System.currentTimeMillis()
         if (currentTime - backPressedTime < 2000) {
-            // Actually go back
             onNavigateBack()
         } else {
-            // Show toast
             backPressedTime = currentTime
-            scope.launch {
-                snackbarHostState.showSnackbar(
-                    message = "Для виходу натисніть Назад ще раз",
-                    duration = androidx.compose.material3.SnackbarDuration.Short
-                )
-            }
+            Toast.makeText(context, "Натисніть ще раз, щоб повернутись", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -111,13 +99,8 @@ fun LessonScreen(
     // Show toast message
     LaunchedEffect(state.toastMessage) {
         state.toastMessage?.let { message ->
-            scope.launch {
-                snackbarHostState.showSnackbar(
-                    message = message,
-                    duration = androidx.compose.material3.SnackbarDuration.Long
-                )
-                viewModel.clearToastMessage()
-            }
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            viewModel.clearToastMessage()
         }
     }
 
@@ -139,9 +122,7 @@ fun LessonScreen(
                             viewModel.proceedWithAnalysisAfterAd()
                         },
                         onFailed = { error ->
-                            scope.launch {
-                                snackbarHostState.showSnackbar(error)
-                            }
+                            Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
                         }
                     )
                 }
@@ -249,21 +230,6 @@ fun LessonScreen(
                     }
                 }
 
-                // Snackbar
-                SnackbarHost(
-                    hostState = snackbarHostState,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(horizontal = 24.dp)
-                        .padding(bottom = 100.dp)
-                ) { data ->
-                    Snackbar(
-                        snackbarData = data,
-                        containerColor = Color(0xFF667EEA),
-                        contentColor = Color.White,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
             }
         }
     }

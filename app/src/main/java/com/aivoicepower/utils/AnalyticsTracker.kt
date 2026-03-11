@@ -149,6 +149,15 @@ class AnalyticsTracker @Inject constructor() {
         })
     }
 
+    // ===== AI Content Reporting =====
+
+    fun logAiContentReported(contentType: String, reason: String) {
+        analytics.logEvent("ai_content_reported", Bundle().apply {
+            putString("content_type", contentType)
+            putString("reason", reason)
+        })
+    }
+
     // ===== Screen Tracking =====
 
     fun logScreenView(screenName: String) {

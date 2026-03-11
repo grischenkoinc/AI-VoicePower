@@ -1,6 +1,7 @@
 package com.aivoicepower.ui.screens.improvisation
 
 import android.view.HapticFeedbackConstants
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -33,7 +34,6 @@ import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
 import com.aivoicepower.ui.theme.components.GradientBackground
 import com.aivoicepower.ui.theme.components.PrimaryButton
-import kotlinx.coroutines.launch
 
 @Composable
 fun PresentationScreen(
@@ -42,8 +42,7 @@ fun PresentationScreen(
     onNavigateToResults: (recordingId: String) -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
+    val context = androidx.compose.ui.platform.LocalContext.current
     var backPressedTime by remember { mutableStateOf(0L) }
     var showFocus by remember { mutableStateOf(false) }
     var focusDone by remember { mutableStateOf(false) }
@@ -71,12 +70,7 @@ fun PresentationScreen(
             onNavigateBack()
         } else {
             backPressedTime = currentTime
-            scope.launch {
-                snackbarHostState.showSnackbar(
-                    message = "Для виходу натисніть Назад ще раз",
-                    duration = SnackbarDuration.Short
-                )
-            }
+            Toast.makeText(context, "Натисніть ще раз, щоб повернутись", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -157,21 +151,6 @@ fun PresentationScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(horizontal = 24.dp)
-                .padding(bottom = 100.dp)
-        ) { data ->
-            Snackbar(
-                snackbarData = data,
-                containerColor = Color(0xFF667EEA),
-                contentColor = Color.White
-            )
-        }
-    }
 }
 
 private val PRESENTATION_TOPICS = listOf(

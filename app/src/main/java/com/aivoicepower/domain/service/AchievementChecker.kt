@@ -39,6 +39,9 @@ class AchievementChecker @Inject constructor(
         val newlyUnlocked = mutableListOf<Achievement>()
 
         for (def in AchievementDefinitions.all) {
+            // Skip first_diagnostic — checked separately on HomeScreen open
+            if (def.id == "first_diagnostic") continue
+
             val existing = achievementDao.getById(def.id)
             if (existing?.unlockedAt != null) continue
 
@@ -239,6 +242,32 @@ class AchievementChecker @Inject constructor(
     private suspend fun checkCourseCompletion(courseId: String): Boolean {
         val completedCourseIds = courseProgressDao.getFullyCompletedCourseIds().first()
         return courseId in completedCourseIds
+    }
+
+    /**
+     * Check and unlock the first_diagnostic achievement separately.
+     * Called from HomeScreen on first open after diagnostic.
+     */
+    suspend fun checkAndUnlockDiagnostic(): Achievement? {
+        val def = AchievementDefinitions.getById("first_diagnostic") ?: return null
+        val existing = achievementDao.getById("first_diagnostic")
+        if (existing?.unlockedAt != null) return null
+
+        if (checkDiagnostic()) {
+            achievementDao.unlock("first_diagnostic")
+            val updated = achievementDao.getById("first_diagnostic")
+            return Achievement(
+                id = def.id,
+                category = def.category,
+                title = def.title,
+                description = def.description,
+                icon = def.icon,
+                unlockedAt = updated?.unlockedAt,
+                progress = def.target,
+                target = def.target
+            )
+        }
+        return null
     }
 
     // Helper to get current progress for a specific achievement (for progress bars)

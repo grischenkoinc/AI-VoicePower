@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.audio.AudioPlayer
 import com.aivoicepower.data.audio.AudioRecorder
+import com.aivoicepower.data.remote.AiPrompts
 import com.aivoicepower.data.remote.GeminiApiClient
 import com.aivoicepower.utils.AnalyticsTracker
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -50,7 +51,7 @@ class DiagnosticViewModel @Inject constructor(
                             audioFilePath = path,
                             expectedText = expectedTexts.getOrNull(index),
                             exerciseType = exerciseTypes[index],
-                            additionalContext = "Діагностичне завдання: ${tasks[index]}"
+                            additionalContext = AiPrompts.buildDiagnosticContext(tasks[index])
                         )
                     }
                 }.awaitAll()

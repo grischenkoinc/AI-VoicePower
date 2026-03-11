@@ -1,6 +1,8 @@
 package com.aivoicepower.ui.screens.onboarding
 
 import android.media.MediaPlayer
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -39,6 +41,18 @@ fun SplashScreen(
 ) {
     val hasCompletedOnboarding by viewModel.hasCompletedOnboarding.collectAsState(initial = null)
     val context = LocalContext.current
+
+    // Double-back-to-exit
+    var lastBackPressTime by remember { mutableStateOf(0L) }
+    BackHandler {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastBackPressTime < 2000) {
+            (context as? android.app.Activity)?.finish()
+        } else {
+            lastBackPressTime = currentTime
+            Toast.makeText(context, "Натисніть ще раз для виходу", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     // Sequenced phase triggers — start quickly since gradient bg is already visible
     var showEmoji by remember { mutableStateOf(false) }

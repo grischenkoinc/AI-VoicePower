@@ -8,6 +8,7 @@ interface AchievementRepository {
     fun getAllAchievements(): Flow<List<Achievement>>
     fun getUnlockedAchievements(): Flow<List<Achievement>>
     suspend fun checkAndUnlock(): List<Achievement>
+    suspend fun checkDiagnosticAchievement(): Achievement?
     val pendingCelebrations: SharedFlow<Achievement>
     suspend fun dismissCelebration()
 }

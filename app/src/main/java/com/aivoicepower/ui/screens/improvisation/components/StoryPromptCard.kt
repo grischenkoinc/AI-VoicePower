@@ -1,16 +1,21 @@
 package com.aivoicepower.ui.screens.improvisation.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.aivoicepower.R
 import com.aivoicepower.domain.model.exercise.StoryFormat
 import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
@@ -42,6 +47,18 @@ fun StoryPromptCard(
         )
 
         HorizontalDivider(color = Color(0xFFE5E7EB), thickness = 1.dp)
+
+        // Show image for FROM_IMAGE format
+        if (format == StoryFormat.FROM_IMAGE) {
+            Image(
+                painter = painterResource(id = R.drawable.story_picture_1),
+                contentDescription = "Картинка для історії",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp)),
+                contentScale = ContentScale.FillWidth
+            )
+        }
 
         Text(
             text = prompt,

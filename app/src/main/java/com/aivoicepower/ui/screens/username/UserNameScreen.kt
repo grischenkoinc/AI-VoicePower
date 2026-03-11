@@ -1,5 +1,7 @@
 package com.aivoicepower.ui.screens.username
 
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,6 +21,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -36,6 +39,19 @@ fun UserNameScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
+
+    // Double-back-to-exit
+    var lastBackPressTime by remember { mutableStateOf(0L) }
+    BackHandler {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastBackPressTime < 2000) {
+            (context as? android.app.Activity)?.finish()
+        } else {
+            lastBackPressTime = currentTime
+            Toast.makeText(context, "Натисніть ще раз для виходу", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     LaunchedEffect(state.isNavigating) {
         if (state.isNavigating) {
@@ -258,6 +274,7 @@ fun UserNameScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
             }
+
         }
     })
 }

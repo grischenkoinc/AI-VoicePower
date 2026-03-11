@@ -18,7 +18,9 @@ import androidx.navigation.compose.rememberNavController
 import com.aivoicepower.audio.LocalSoundManager
 import com.aivoicepower.audio.SoundManager
 import com.aivoicepower.data.ads.RewardedAdManager
+import com.aivoicepower.data.audio.AudioPlayer
 import com.aivoicepower.data.firebase.auth.GoogleSignInHelper
+import com.aivoicepower.utils.CloudTtsManager
 import com.aivoicepower.ui.navigation.NavGraph
 import com.aivoicepower.ui.theme.AIVoicePowerTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -35,6 +37,12 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var soundManager: SoundManager
+
+    @Inject
+    lateinit var cloudTtsManager: CloudTtsManager
+
+    @Inject
+    lateinit var audioPlayer: AudioPlayer
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -90,5 +98,13 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Stop all audio when app goes to background
+        soundManager.stopAll()
+        cloudTtsManager.stop()
+        audioPlayer.stop()
     }
 }

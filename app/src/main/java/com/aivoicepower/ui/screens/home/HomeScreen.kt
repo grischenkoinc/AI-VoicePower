@@ -2,6 +2,7 @@ package com.aivoicepower.ui.screens.home
 
 import android.app.Activity
 import android.view.HapticFeedbackConstants
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -67,25 +68,16 @@ fun HomeScreen(
     val scrollState = rememberScrollState()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
     var backPressedTime by remember { mutableStateOf(0L) }
 
     // Double-back to exit app
     BackHandler {
         val currentTime = System.currentTimeMillis()
         if (currentTime - backPressedTime < 2000) {
-            // Exit app
             (context as? Activity)?.finish()
         } else {
-            // Show toast
             backPressedTime = currentTime
-            scope.launch {
-                snackbarHostState.showSnackbar(
-                    message = "Для виходу натисніть Назад ще раз",
-                    duration = SnackbarDuration.Short
-                )
-            }
+            Toast.makeText(context, "Натисніть ще раз для виходу", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -195,21 +187,6 @@ fun HomeScreen(
                 )
 
             Spacer(modifier = Modifier.height(24.dp))
-        }
-        // Snackbar
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(horizontal = 24.dp)
-                .padding(bottom = 140.dp)
-        ) { data ->
-            Snackbar(
-                snackbarData = data,
-                containerColor = Color(0xFF667EEA),
-                contentColor = Color.White,
-                modifier = Modifier.fillMaxWidth()
-            )
         }
     }
 }

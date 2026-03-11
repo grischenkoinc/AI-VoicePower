@@ -82,7 +82,7 @@ fun SettingsScreen(
     if (state.showDeleteAccountDialog) {
         ConfirmationDialog(
             title = "Видалити акаунт",
-            message = "Це назавжди видалить ваш акаунт, весь прогрес, записи та дані з хмари. Цю дію неможливо відкатити!",
+            message = "Це назавжди видалить ваш акаунт, весь прогрес, записи та дані з хмари. Цю дію буде неможливо відмінити!",
             confirmText = "Видалити назавжди",
             isDangerous = true,
             onConfirm = { viewModel.onEvent(SettingsEvent.ConfirmDeleteAccount) },
@@ -93,7 +93,7 @@ fun SettingsScreen(
     if (state.showClearDataDialog) {
         ConfirmationDialog(
             title = "Очистити всі дані",
-            message = "Це назавжди видалить весь ваш прогрес, записи, результати діагностики та досягнення — і з пристрою, і з хмари. Цю дію неможливо відкатити!",
+            message = "Це назавжди видалить весь ваш прогрес, записи, результати діагностики та досягнення — і з пристрою, і з хмари. Цю дію буде неможливо відмінити!",
             confirmText = "Очистити все",
             isDangerous = true,
             onConfirm = { viewModel.onEvent(SettingsEvent.ConfirmClearData) },

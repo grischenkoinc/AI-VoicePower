@@ -2,6 +2,7 @@ package com.aivoicepower.ui.screens.improvisation
 
 import android.app.Activity
 import android.view.HapticFeedbackConstants
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -40,7 +41,6 @@ import com.aivoicepower.ui.theme.components.GradientBackground
 import com.aivoicepower.ui.theme.components.PrimaryButton
 import com.aivoicepower.ui.theme.components.SecondaryButton
 import com.aivoicepower.utils.constants.FreeTierLimits
-import kotlinx.coroutines.launch
 
 @Composable
 fun StorytellingScreen(
@@ -51,8 +51,6 @@ fun StorytellingScreen(
     onNavigateToPremium: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val activity = context as? Activity
     var backPressedTime by remember { mutableStateOf(0L) }
@@ -74,7 +72,7 @@ fun StorytellingScreen(
                         activity = activity,
                         onRewarded = { viewModel.proceedWithAnalysisAfterAd() },
                         onFailed = { error ->
-                            scope.launch { snackbarHostState.showSnackbar(error) }
+                            Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
                         }
                     )
                 }
@@ -99,12 +97,7 @@ fun StorytellingScreen(
             onNavigateBack()
         } else {
             backPressedTime = currentTime
-            scope.launch {
-                snackbarHostState.showSnackbar(
-                    message = "Для виходу натисніть Назад ще раз",
-                    duration = SnackbarDuration.Short
-                )
-            }
+            Toast.makeText(context, "Натисніть ще раз, щоб повернутись", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -345,22 +338,6 @@ fun StorytellingScreen(
                     )
                 }
             }
-        }
-
-        // Snackbar
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(horizontal = 24.dp)
-                .padding(bottom = 100.dp)
-        ) { data ->
-            Snackbar(
-                snackbarData = data,
-                containerColor = Color(0xFF667EEA),
-                contentColor = Color.White,
-                modifier = Modifier.fillMaxWidth()
-            )
         }
 
         // Focus countdown overlay

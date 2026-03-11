@@ -84,6 +84,14 @@ class AchievementRepositoryImpl @Inject constructor(
         return newlyUnlocked
     }
 
+    override suspend fun checkDiagnosticAchievement(): Achievement? {
+        val achievement = achievementChecker.checkAndUnlockDiagnostic()
+        if (achievement != null) {
+            _pendingCelebrations.emit(achievement)
+        }
+        return achievement
+    }
+
     override suspend fun dismissCelebration() {
         // No-op — SharedFlow handles backpressure automatically
     }

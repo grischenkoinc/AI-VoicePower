@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.aivoicepower.domain.model.VoiceAnalysisResult
 import com.aivoicepower.ui.theme.AppTypography
 import com.aivoicepower.ui.theme.TextColors
+import com.aivoicepower.utils.AnalyticsTracker
 
 @Composable
 fun AnalyzingContent() {
@@ -136,6 +137,17 @@ fun AnalysisResultsContent(
     onRetry: (() -> Unit)? = null
 ) {
     val view = LocalView.current
+    var showReportDialog by remember { mutableStateOf(false) }
+
+    if (showReportDialog) {
+        ReportAiContentDialog(
+            onDismiss = { showReportDialog = false },
+            onReport = { reason ->
+                AnalyticsTracker().logAiContentReported("analysis_result", reason)
+                showReportDialog = false
+            }
+        )
+    }
     // === REVEAL ORCHESTRATION ===
     var showScore by remember { mutableStateOf(false) }
     var showSections by remember { mutableStateOf(false) }
@@ -472,6 +484,22 @@ fun AnalysisResultsContent(
                     fontWeight = FontWeight.Bold
                 )
             }
+        }
+
+        // Report AI content link
+        AnimatedVisibility(
+            visible = showButtons,
+            enter = fadeIn(tween(300, delayMillis = 200))
+        ) {
+            Text(
+                text = "Поскаржитись на AI-відповідь",
+                style = AppTypography.bodySmall,
+                color = TextColors.onLightSecondary.copy(alpha = 0.5f),
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .clickable { showReportDialog = true }
+                    .padding(vertical = 4.dp)
+            )
         }
     }
 }

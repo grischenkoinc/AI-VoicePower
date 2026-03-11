@@ -10,10 +10,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,8 +23,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.aivoicepower.ui.components.ReportAiContentDialog
 import com.aivoicepower.ui.theme.PrimaryColors
 import com.aivoicepower.ui.theme.TextColors
+import com.aivoicepower.utils.AnalyticsTracker
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -36,6 +38,18 @@ fun AssistantMessageBubble(
     onSpeakClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
+    var showReportDialog by remember { mutableStateOf(false) }
+
+    if (showReportDialog) {
+        ReportAiContentDialog(
+            onDismiss = { showReportDialog = false },
+            onReport = { reason ->
+                AnalyticsTracker().logAiContentReported("coach_message", reason)
+                showReportDialog = false
+            }
+        )
+    }
+
     val infiniteTransition = rememberInfiniteTransition(label = "speaker_glow")
     val glowAlpha by infiniteTransition.animateFloat(
         initialValue = 0.4f,
@@ -100,7 +114,24 @@ fun AssistantMessageBubble(
                     color = TextColors.onDarkMuted
                 )
                 Spacer(modifier = Modifier.weight(1f))
+                // Report button
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.05f))
+                        .clickable { showReportDialog = true },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Flag,
+                        contentDescription = "Поскаржитись",
+                        modifier = Modifier.size(13.dp),
+                        tint = Color.White.copy(alpha = 0.25f)
+                    )
+                }
                 if (onSpeakClick != null) {
+                    Spacer(modifier = Modifier.width(4.dp))
                     SpeakerButton(
                         isSpeaking = isSpeakingThis,
                         glowAlpha = glowAlpha,

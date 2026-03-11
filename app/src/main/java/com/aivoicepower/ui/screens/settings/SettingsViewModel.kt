@@ -11,9 +11,11 @@ import com.aivoicepower.utils.NotificationHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 
 @HiltViewModel
@@ -116,18 +118,24 @@ class SettingsViewModel @Inject constructor(
             }
             is SettingsEvent.ConfirmLogout -> {
                 viewModelScope.launch {
-                    // Save all data to cloud before clearing local
+                    _state.update { it.copy(showLogoutDialog = false) }
+                    // Best-effort sync with 10s timeout — don't block logout
                     try {
-                        withContext(Dispatchers.IO) {
-                            cloudSyncRepository.fullSync()
-                            cloudSyncRepository.saveUserFlags()
+                        withTimeoutOrNull(10_000L) {
+                            withContext(Dispatchers.IO) {
+                                cloudSyncRepository.fullSync()
+                                cloudSyncRepository.saveUserFlags()
+                            }
                         }
                     } catch (_: Exception) { }
                     authRepository.signOut()
-                    _state.update { it.copy(showLogoutDialog = false, isAuthenticated = false) }
-                    userPreferencesDataStore.clearAllUserData()
-                    withContext(Dispatchers.IO) {
-                        database.clearAllTables()
+                    // Use NonCancellable so cleanup completes even if navigation destroys VM
+                    withContext(NonCancellable) {
+                        _state.update { it.copy(isAuthenticated = false) }
+                        userPreferencesDataStore.clearAllUserData()
+                        withContext(Dispatchers.IO) {
+                            database.clearAllTables()
+                        }
                     }
                 }
             }
@@ -136,17 +144,22 @@ class SettingsViewModel @Inject constructor(
             }
             is SettingsEvent.ConfirmDeleteAccount -> {
                 viewModelScope.launch {
-                    // Delete all data from cloud AND local
+                    _state.update { it.copy(showDeleteAccountDialog = false) }
+                    // Best-effort cloud delete with 10s timeout
                     try {
-                        withContext(Dispatchers.IO) {
-                            cloudSyncRepository.deleteAllCloudData()
+                        withTimeoutOrNull(10_000L) {
+                            withContext(Dispatchers.IO) {
+                                cloudSyncRepository.deleteAllCloudData()
+                            }
                         }
                     } catch (_: Exception) { }
                     authRepository.deleteAccount()
-                    _state.update { it.copy(showDeleteAccountDialog = false, isAuthenticated = false) }
-                    userPreferencesDataStore.clearAllUserData()
-                    withContext(Dispatchers.IO) {
-                        database.clearAllTables()
+                    withContext(NonCancellable) {
+                        _state.update { it.copy(isAuthenticated = false) }
+                        userPreferencesDataStore.clearAllUserData()
+                        withContext(Dispatchers.IO) {
+                            database.clearAllTables()
+                        }
                     }
                 }
             }
@@ -155,10 +168,13 @@ class SettingsViewModel @Inject constructor(
             }
             is SettingsEvent.ConfirmClearData -> {
                 viewModelScope.launch {
-                    // Delete all data from cloud AND local, but keep account
+                    _state.update { it.copy(showClearDataDialog = false) }
+                    // Best-effort cloud delete with 10s timeout
                     try {
-                        withContext(Dispatchers.IO) {
-                            cloudSyncRepository.deleteAllCloudData()
+                        withTimeoutOrNull(10_000L) {
+                            withContext(Dispatchers.IO) {
+                                cloudSyncRepository.deleteAllCloudData()
+                            }
                         }
                     } catch (_: Exception) { }
                     withContext(Dispatchers.IO) { database.clearAllTables() }
@@ -168,7 +184,7 @@ class SettingsViewModel @Inject constructor(
                     val user = authRepository.getCurrentUser()
                     user?.uid?.let { userPreferencesDataStore.setFirebaseUid(it) }
                     user?.email?.let { userPreferencesDataStore.setUserEmail(it) }
-                    _state.update { it.copy(showClearDataDialog = false, navigateToOnboarding = true) }
+                    _state.update { it.copy(navigateToOnboarding = true) }
                 }
             }
             is SettingsEvent.DismissDialog -> {

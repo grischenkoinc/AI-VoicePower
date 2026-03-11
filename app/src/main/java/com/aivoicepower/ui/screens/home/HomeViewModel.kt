@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.aivoicepower.data.local.database.dao.*
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.domain.model.home.*
+import com.aivoicepower.domain.repository.AchievementRepository
 import com.aivoicepower.domain.repository.CourseRepository
 import com.aivoicepower.ui.navigation.Screen
 import com.aivoicepower.utils.PremiumChecker
@@ -27,7 +28,8 @@ class HomeViewModel @Inject constructor(
     private val warmupCompletionDao: WarmupCompletionDao,
     private val courseProgressDao: CourseProgressDao,
     private val courseRepository: CourseRepository,
-    private val dailyTipsRepository: com.aivoicepower.data.repository.DailyTipsRepository
+    private val dailyTipsRepository: com.aivoicepower.data.repository.DailyTipsRepository,
+    private val achievementRepository: AchievementRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeState())
@@ -42,6 +44,15 @@ class HomeViewModel @Inject constructor(
         observeSkills()
         observeCourseAndDailyPlan()
         observeAnalysisLimits()
+        checkDiagnosticAchievement()
+    }
+
+    private fun checkDiagnosticAchievement() {
+        viewModelScope.launch {
+            try {
+                achievementRepository.checkDiagnosticAchievement()
+            } catch (_: Exception) { }
+        }
     }
 
     fun onEvent(event: HomeEvent) {
