@@ -8,6 +8,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -23,9 +24,11 @@ class GoogleSignInHelper @Inject constructor(
         GoogleSignIn.getClient(context, gso)
     }
 
-    fun getSignInIntent(): Intent {
+    suspend fun getSignInIntent(): Intent {
         // Sign out first to always show the account picker
-        googleSignInClient.signOut()
+        try {
+            googleSignInClient.signOut().await()
+        } catch (_: Exception) { }
         return googleSignInClient.signInIntent
     }
 

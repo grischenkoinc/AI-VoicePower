@@ -73,7 +73,8 @@ fun LessonScreen(
     }
 
     // Double-back to exit protection
-    BackHandler {
+    // Skip back press if bottom sheet is showing (Xiaomi/MIUI can propagate dismiss as back)
+    BackHandler(enabled = !state.showAnalysisLimitSheet) {
         val currentTime = System.currentTimeMillis()
         if (currentTime - backPressedTime < 2000) {
             onNavigateBack()

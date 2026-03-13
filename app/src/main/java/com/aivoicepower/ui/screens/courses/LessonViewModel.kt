@@ -179,9 +179,11 @@ class LessonViewModel @Inject constructor(
             }
         }
 
+        // Skip intermediate NoAnalysisResultCard — go directly to next exercise
         updateCurrentExerciseState {
             it.copy(status = ExerciseStatus.CompletedWithoutAnalysis)
         }
+        proceedAfterExercise()
     }
 
     fun continueAfterNoAnalysis() {

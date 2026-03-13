@@ -90,7 +90,7 @@ fun RandomTopicScreen(
     }
 
     // Double-back to exit protection
-    BackHandler {
+    BackHandler(enabled = !state.showAnalysisLimitSheet) {
         val currentTime = System.currentTimeMillis()
         if (currentTime - backPressedTime < 2000) {
             onNavigateBack()

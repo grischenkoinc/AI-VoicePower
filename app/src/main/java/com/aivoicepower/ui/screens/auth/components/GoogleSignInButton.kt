@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 fun GoogleSignInButton(
     onClick: () -> Unit,
     isLoading: Boolean = false,
+    isLogin: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -58,7 +59,7 @@ fun GoogleSignInButton(
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = "Увійти через Google",
+                    text = if (isLogin) "Увійти через Google" else "Реєстрація через Google",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color(0xFF374151)

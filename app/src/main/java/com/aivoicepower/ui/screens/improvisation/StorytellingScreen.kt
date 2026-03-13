@@ -91,7 +91,7 @@ fun StorytellingScreen(
     }
 
     // Double-back to exit protection (only when NOT on format selection)
-    BackHandler(enabled = state.selectedFormat != null) {
+    BackHandler(enabled = state.selectedFormat != null && !state.showAnalysisLimitSheet) {
         val currentTime = System.currentTimeMillis()
         if (currentTime - backPressedTime < 2000) {
             onNavigateBack()

@@ -11,9 +11,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.compose.rememberNavController
 import com.aivoicepower.audio.LocalSoundManager
 import com.aivoicepower.audio.SoundManager
@@ -57,29 +54,6 @@ class MainActivity : ComponentActivity() {
                 darkScrim = android.graphics.Color.TRANSPARENT
             )
         )
-
-        // Налаштування для малювання під системними барами
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-
-        // Ensure system bar backgrounds are drawn (no deprecated translucent flags)
-        window.addFlags(android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-
-        // Явно встановити прозорі кольори
-        window.statusBarColor = android.graphics.Color.TRANSPARENT
-        window.navigationBarColor = android.graphics.Color.TRANSPARENT
-
-        // Встановити світлі іконки (білі) для темного фону
-        WindowCompat.getInsetsController(window, window.decorView).apply {
-            isAppearanceLightStatusBars = false
-            isAppearanceLightNavigationBars = false
-        }
-
-        // Hide navigation bar, show on swipe up
-        val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
-        windowInsetsController.apply {
-            hide(WindowInsetsCompat.Type.navigationBars())
-            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        }
 
         setContent {
             CompositionLocalProvider(LocalSoundManager provides soundManager) {

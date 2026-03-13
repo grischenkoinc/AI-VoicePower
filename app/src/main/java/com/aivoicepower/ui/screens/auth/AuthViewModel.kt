@@ -65,7 +65,12 @@ class AuthViewModel @Inject constructor(
                 signInWithGoogle(event.idToken)
             }
             is AuthEvent.GoogleSignInFailed -> {
-                _state.update { it.copy(isGoogleLoading = false, error = "Не вдалося увійти через Google") }
+                val errorMsg = if (event.error != null) {
+                    "Google Sign-In: ${event.error}"
+                } else {
+                    "Не вдалося увійти через Google"
+                }
+                _state.update { it.copy(isGoogleLoading = false, error = errorMsg) }
             }
             is AuthEvent.ForgotPasswordClicked -> {
                 _state.update { it.copy(showForgotPasswordDialog = true, forgotPasswordEmail = it.email, forgotPasswordSent = false) }

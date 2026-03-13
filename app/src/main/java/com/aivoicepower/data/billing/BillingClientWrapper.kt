@@ -40,7 +40,12 @@ class BillingClientWrapper @Inject constructor(
 
         billingClient = BillingClient.newBuilder(context)
             .setListener(this)
-            .enablePendingPurchases()
+            .enablePendingPurchases(
+                PendingPurchasesParams.newBuilder()
+                    .enableOneTimeProducts()
+                    .enablePrepaidPlans()
+                    .build()
+            )
             .build()
 
         billingClient?.startConnection(object : BillingClientStateListener {

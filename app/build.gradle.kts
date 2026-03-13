@@ -19,7 +19,7 @@ if (localPropertiesFile.exists()) {
 
 android {
     namespace = "com.aivoicepower"
-    compileSdk = 34
+    compileSdk = 35
 
     signingConfigs {
         create("release") {
@@ -36,9 +36,9 @@ android {
     defaultConfig {
         applicationId = "com.aivoicepower"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
+        targetSdk = 35
+        versionCode = 6
+        versionName = "1.0.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -93,7 +93,7 @@ dependencies {
     // Core Android
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
-    implementation("androidx.activity:activity-compose:1.8.1")
+    implementation("androidx.activity:activity-compose:1.9.3")
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
 
@@ -106,9 +106,6 @@ dependencies {
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
-
-    // Accompanist для керування system UI
-    implementation("com.google.accompanist:accompanist-systemuicontroller:0.34.0")
 
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.7.5")
@@ -150,7 +147,7 @@ dependencies {
     kapt("androidx.room:room-compiler:$roomVersion")
 
     // Google Play Billing
-    implementation("com.android.billingclient:billing-ktx:6.1.0")
+    implementation("com.android.billingclient:billing-ktx:7.1.1")
 
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
@@ -160,8 +157,11 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("com.google.firebase:firebase-crashlytics-ktx")
 
+    // Force reCAPTCHA Enterprise to patched version (Google Play requirement >= 18.4.0)
+    implementation("com.google.android.recaptcha:recaptcha:18.6.1")
+
     // Google Sign-In
-    implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("com.google.android.gms:play-services-auth:21.3.0")
 
     // Google AdMob
     implementation("com.google.android.gms:play-services-ads:23.1.0")

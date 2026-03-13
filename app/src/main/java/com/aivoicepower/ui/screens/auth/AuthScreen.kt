@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.sp
 import android.view.HapticFeedbackConstants
+import kotlinx.coroutines.launch
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aivoicepower.data.firebase.auth.GoogleSignInHelper
@@ -45,6 +47,7 @@ fun AuthScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val view = LocalView.current
+    val scope = rememberCoroutineScope()
 
     // Navigation effect
     LaunchedEffect(state.isNavigating) {
@@ -63,12 +66,21 @@ fun AuthScreen(
                 onSuccess = { idToken ->
                     viewModel.onEvent(AuthEvent.GoogleSignInResult(idToken))
                 },
-                onFailure = {
-                    viewModel.onEvent(AuthEvent.GoogleSignInFailed)
+                onFailure = { e ->
+                    viewModel.onEvent(AuthEvent.GoogleSignInFailed(e.message))
                 }
             )
         } else {
-            viewModel.onEvent(AuthEvent.GoogleSignInFailed)
+            // Try to extract error even from non-OK result
+            val errorDetail = try {
+                val tokenResult = googleSignInHelper.getIdTokenFromIntent(result.data)
+                tokenResult.exceptionOrNull()?.message
+            } catch (e: Exception) {
+                e.message
+            }
+            viewModel.onEvent(AuthEvent.GoogleSignInFailed(
+                errorDetail ?: "resultCode=${result.resultCode}"
+            ))
         }
     }
 
@@ -282,9 +294,12 @@ fun AuthScreen(
                 // Google Sign-In button
                 GoogleSignInButton(
                     onClick = {
-                        googleSignInLauncher.launch(googleSignInHelper.getSignInIntent())
+                        scope.launch {
+                            googleSignInLauncher.launch(googleSignInHelper.getSignInIntent())
+                        }
                     },
-                    isLoading = state.isGoogleLoading
+                    isLoading = state.isGoogleLoading,
+                    isLogin = state.isLogin
                 )
             }
 

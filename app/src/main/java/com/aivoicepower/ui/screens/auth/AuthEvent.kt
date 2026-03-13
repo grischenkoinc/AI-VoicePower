@@ -10,7 +10,7 @@ sealed class AuthEvent {
     object ToggleConfirmPasswordVisibility : AuthEvent()
     object SubmitClicked : AuthEvent()
     data class GoogleSignInResult(val idToken: String) : AuthEvent()
-    object GoogleSignInFailed : AuthEvent()
+    data class GoogleSignInFailed(val error: String? = null) : AuthEvent()
     object ForgotPasswordClicked : AuthEvent()
     object DismissForgotPassword : AuthEvent()
     data class ForgotPasswordEmailChanged(val email: String) : AuthEvent()

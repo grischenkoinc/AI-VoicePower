@@ -4,9 +4,6 @@
         <!-- Gradient window background matching app gradient — seamless cold start -->
         <item name="android:windowBackground">@drawable/splash_background</item>
         <item name="android:colorBackground">#FF667EEA</item>
-        <!-- Transparent system bars -->
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
         <!-- Light icons for dark background -->
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowLightNavigationBar">false</item>
