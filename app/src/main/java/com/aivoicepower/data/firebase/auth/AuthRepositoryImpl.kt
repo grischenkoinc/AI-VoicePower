@@ -5,7 +5,7 @@ import com.aivoicepower.domain.repository.AuthRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.userProfileChangeRequest
+import com.google.firebase.auth.UserProfileChangeRequest
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -61,9 +61,9 @@ class AuthRepositoryImpl @Inject constructor(
             val user = result.user ?: return Result.failure(Exception("Не вдалося створити акаунт"))
 
             // Update display name
-            val profileUpdates = userProfileChangeRequest {
-                this.displayName = displayName
-            }
+            val profileUpdates = UserProfileChangeRequest.Builder()
+                .setDisplayName(displayName)
+                .build()
             user.updateProfile(profileUpdates).await()
 
             Result.success(user.toAuthUser().copy(displayName = displayName, isNewUser = true))

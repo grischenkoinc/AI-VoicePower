@@ -150,15 +150,12 @@ dependencies {
     implementation("com.android.billingclient:billing-ktx:7.1.1")
 
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
-    implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-firestore-ktx")
-    implementation("com.google.firebase:firebase-storage-ktx")
-    implementation("com.google.firebase:firebase-analytics-ktx")
-    implementation("com.google.firebase:firebase-crashlytics-ktx")
-
-    // Force reCAPTCHA Enterprise to patched version (Google Play requirement >= 18.4.0)
-    implementation("com.google.android.recaptcha:recaptcha:18.6.1")
+    implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-storage")
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-crashlytics")
 
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:21.3.0")

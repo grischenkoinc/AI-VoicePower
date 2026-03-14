@@ -11,6 +11,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.compose.rememberNavController
 import com.aivoicepower.audio.LocalSoundManager
 import com.aivoicepower.audio.SoundManager
@@ -54,6 +57,12 @@ class MainActivity : ComponentActivity() {
                 darkScrim = android.graphics.Color.TRANSPARENT
             )
         )
+
+        // Hide navigation bar, show on swipe up
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            hide(WindowInsetsCompat.Type.navigationBars())
+            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
 
         setContent {
             CompositionLocalProvider(LocalSoundManager provides soundManager) {

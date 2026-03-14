@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import android.view.HapticFeedbackConstants
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -137,13 +138,14 @@ fun AnalysisResultsContent(
     onRetry: (() -> Unit)? = null
 ) {
     val view = LocalView.current
+    val context = LocalContext.current
     var showReportDialog by remember { mutableStateOf(false) }
 
     if (showReportDialog) {
         ReportAiContentDialog(
             onDismiss = { showReportDialog = false },
             onReport = { reason ->
-                AnalyticsTracker().logAiContentReported("analysis_result", reason)
+                AnalyticsTracker(context.applicationContext).logAiContentReported("analysis_result", reason)
                 showReportDialog = false
             }
         )

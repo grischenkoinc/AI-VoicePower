@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aivoicepower.ui.components.ReportAiContentDialog
@@ -38,13 +39,14 @@ fun AssistantMessageBubble(
     onSpeakClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     var showReportDialog by remember { mutableStateOf(false) }
 
     if (showReportDialog) {
         ReportAiContentDialog(
             onDismiss = { showReportDialog = false },
             onReport = { reason ->
-                AnalyticsTracker().logAiContentReported("coach_message", reason)
+                AnalyticsTracker(context.applicationContext).logAiContentReported("coach_message", reason)
                 showReportDialog = false
             }
         )

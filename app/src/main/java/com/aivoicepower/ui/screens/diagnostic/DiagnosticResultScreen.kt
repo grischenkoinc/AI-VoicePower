@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.aivoicepower.ui.components.ReportAiContentDialog
@@ -167,13 +168,14 @@ private fun SuccessContent(
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
     var showReportDialog by remember { mutableStateOf(false) }
 
     if (showReportDialog) {
         ReportAiContentDialog(
             onDismiss = { showReportDialog = false },
             onReport = { reason ->
-                AnalyticsTracker().logAiContentReported("diagnostic_result", reason)
+                AnalyticsTracker(context.applicationContext).logAiContentReported("diagnostic_result", reason)
                 showReportDialog = false
             }
         )
