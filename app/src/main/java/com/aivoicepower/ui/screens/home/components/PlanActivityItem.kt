@@ -76,7 +76,7 @@ fun PlanActivityItem(
             }
 
             Text(
-                text = "~${activity.estimatedMinutes} хв",
+                text = activity.metaText ?: "~${activity.estimatedMinutes} хв",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

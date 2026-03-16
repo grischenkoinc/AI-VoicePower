@@ -260,6 +260,9 @@ class RandomTopicViewModel @Inject constructor(
                     serverLimitService.incrementAnalysis(isImprov = true)
                 }
                 userPreferencesDataStore.incrementFreeImprovisations()
+                // Track training minutes for daily goal
+                val recordedMinutes = (_state.value.recordingDurationMs / 60000).toInt().coerceAtLeast(1)
+                userPreferencesDataStore.addMinutes(recordedMinutes)
 
                 if (result != null) {
                     if (result.overallScore > 0) {
@@ -306,6 +309,9 @@ class RandomTopicViewModel @Inject constructor(
         viewModelScope.launch {
             // Just increment improvisation counter, no analysis
             userPreferencesDataStore.incrementFreeImprovisations()
+            // Track training minutes for daily goal
+            val recordedMinutes = (_state.value.recordingDurationMs / 60000).toInt().coerceAtLeast(1)
+            userPreferencesDataStore.addMinutes(recordedMinutes)
         }
     }
 

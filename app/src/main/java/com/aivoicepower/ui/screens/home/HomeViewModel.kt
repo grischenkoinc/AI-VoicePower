@@ -96,7 +96,7 @@ class HomeViewModel @Inject constructor(
 
                     val greeting = getGreetingByTime()
                     val quickActions = getQuickActions()
-                    val coachMessage = generateCoachMessage(progress, preferences)
+                    val coachMessage = generateCoachMessage(progress, preferences, todayPlan)
 
                     _state.update {
                         it.copy(
@@ -242,15 +242,17 @@ class HomeViewModel @Inject constructor(
 
         // 3. Improvisation or AI Coach
         // Suggest improvisation practice
+        val improvCompleted = preferences.freeImprovisationsToday > 0
         activities.add(
             PlanActivity(
                 id = "improvisation",
                 type = ActivityType.IMPROVISATION,
                 title = "Імпровізація",
-                subtitle = "Спонтанне мовлення",
-                estimatedMinutes = 5,
-                isCompleted = false,
-                navigationRoute = Screen.RandomTopic.route
+                subtitle = if (improvCompleted) "Виконано сьогодні" else "Спонтанне мовлення",
+                estimatedMinutes = 1,
+                isCompleted = improvCompleted,
+                navigationRoute = Screen.RandomTopic.route,
+                metaText = "1 вправа"
             )
         )
 
@@ -290,8 +292,14 @@ class HomeViewModel @Inject constructor(
 
     private fun generateCoachMessage(
         progress: com.aivoicepower.data.local.database.entity.UserProgressEntity?,
-        preferences: com.aivoicepower.data.local.datastore.UserPreferences
+        preferences: com.aivoicepower.data.local.datastore.UserPreferences,
+        todayPlan: TodayPlan? = null
     ): String {
+        // All daily goals completed — congratulate!
+        if (todayPlan != null && todayPlan.activities.isNotEmpty() && todayPlan.activities.all { it.isCompleted }) {
+            return "Всі цілі на сьогодні виконано! Чудова робота! Відпочинь або спробуй додаткові вправи для ще кращого результату."
+        }
+
         // First time — coach introduces himself
         if (progress == null || progress.totalExercises == 0) {
             val name = if (preferences.userName != null) "${preferences.userName}, привіт" else "Привіт"

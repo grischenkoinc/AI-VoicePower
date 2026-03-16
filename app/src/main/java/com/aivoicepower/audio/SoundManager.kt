@@ -42,20 +42,36 @@ class SoundManager @Inject constructor(
     private var feedbackVolume = 0.9f
     private var celebrationVolume = 1.0f
 
+    private val criticalEffects = setOf(
+        SoundEffect.CELEBRATION,
+        SoundEffect.LESSON_COMPLETED,
+        SoundEffect.COURSE_COMPLETED,
+        SoundEffect.SPLASH_BRAND
+    )
+
     init {
         observeSettings()
-        // Defer sound loading — don't block app startup with 21 file loads
-        scope.launch(Dispatchers.IO) {
-            kotlinx.coroutines.delay(500) // let first frame render first
-            preloadSounds()
-        }
-    }
-
-    private fun preloadSounds() {
         soundPool.setOnLoadCompleteListener { _, _, status ->
             if (status == 0) loadedCount++
         }
-        SoundEffect.entries.forEach { effect ->
+        // Load critical celebration sounds immediately (needed right after diagnostics)
+        preloadCriticalSounds()
+        // Defer remaining sounds — don't block app startup
+        scope.launch(Dispatchers.IO) {
+            kotlinx.coroutines.delay(500)
+            preloadRemainingSounds()
+        }
+    }
+
+    private fun preloadCriticalSounds() {
+        criticalEffects.forEach { effect ->
+            val soundId = soundPool.load(context, effect.resId, 1)
+            loadedSounds[effect] = soundId
+        }
+    }
+
+    private fun preloadRemainingSounds() {
+        SoundEffect.entries.filter { it !in criticalEffects }.forEach { effect ->
             val soundId = soundPool.load(context, effect.resId, 1)
             loadedSounds[effect] = soundId
         }

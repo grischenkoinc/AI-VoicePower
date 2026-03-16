@@ -1,6 +1,9 @@
 package com.aivoicepower
 
+import android.content.Context
+import android.content.res.Configuration
 import android.os.Bundle
+import android.util.DisplayMetrics
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -19,6 +22,7 @@ import com.aivoicepower.audio.LocalSoundManager
 import com.aivoicepower.audio.SoundManager
 import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.data.audio.AudioPlayer
+import com.aivoicepower.data.billing.BillingClientWrapper
 import com.aivoicepower.data.firebase.auth.GoogleSignInHelper
 import com.aivoicepower.utils.CloudTtsManager
 import com.aivoicepower.ui.navigation.NavGraph
@@ -43,18 +47,29 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var audioPlayer: AudioPlayer
+
+    @Inject
+    lateinit var billingClientWrapper: BillingClientWrapper
+
+    override fun attachBaseContext(newBase: Context) {
+        // Reset font scale and display size to device defaults
+        // Ignores user's "Font size" and "Display size" settings
+        val config = Configuration(newBase.resources.configuration)
+        config.fontScale = 1f
+        config.densityDpi = DisplayMetrics.DENSITY_DEVICE_STABLE
+        super.attachBaseContext(newBase.createConfigurationContext(config))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // Enable edge-to-edge display with transparent system bars
         enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.auto(
-                lightScrim = android.graphics.Color.TRANSPARENT,
-                darkScrim = android.graphics.Color.TRANSPARENT
+            statusBarStyle = SystemBarStyle.dark(
+                scrim = android.graphics.Color.TRANSPARENT
             ),
-            navigationBarStyle = SystemBarStyle.auto(
-                lightScrim = android.graphics.Color.TRANSPARENT,
-                darkScrim = android.graphics.Color.TRANSPARENT
+            navigationBarStyle = SystemBarStyle.dark(
+                scrim = android.graphics.Color.TRANSPARENT
             )
         )
 
@@ -81,6 +96,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // Reconnect billing client after app restore (prevents Google Play error on Redmi/MIUI)
+        billingClientWrapper.reconnect()
     }
 
     override fun onStop() {

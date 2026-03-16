@@ -16,6 +16,8 @@ class BillingClientWrapper @Inject constructor(
 ) : PurchasesUpdatedListener {
 
     private var billingClient: BillingClient? = null
+    private var reconnectAttempts = 0
+    private val maxReconnectAttempts = 3
 
     private val _billingState = MutableStateFlow<BillingState>(BillingState.Idle)
     val billingState: StateFlow<BillingState> = _billingState.asStateFlow()
@@ -38,35 +40,50 @@ class BillingClientWrapper @Inject constructor(
 
         _billingState.value = BillingState.Connecting
 
-        billingClient = BillingClient.newBuilder(context)
-            .setListener(this)
-            .enablePendingPurchases(
-                PendingPurchasesParams.newBuilder()
-                    .enableOneTimeProducts()
-                    .enablePrepaidPlans()
-                    .build()
-            )
-            .build()
+        try {
+            billingClient = BillingClient.newBuilder(context)
+                .setListener(this)
+                .enablePendingPurchases(
+                    PendingPurchasesParams.newBuilder()
+                        .enableOneTimeProducts()
+                        .enablePrepaidPlans()
+                        .build()
+                )
+                .build()
 
-        billingClient?.startConnection(object : BillingClientStateListener {
-            override fun onBillingSetupFinished(billingResult: BillingResult) {
-                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                    _billingState.value = BillingState.Connected
-                    queryProducts()
-                    queryPurchases()
-                } else {
-                    _billingState.value = BillingState.Error(
-                        "Billing setup failed: ${billingResult.debugMessage}"
-                    )
+            billingClient?.startConnection(object : BillingClientStateListener {
+                override fun onBillingSetupFinished(billingResult: BillingResult) {
+                    if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                        reconnectAttempts = 0
+                        _billingState.value = BillingState.Connected
+                        queryProducts()
+                        queryPurchases()
+                    } else {
+                        _billingState.value = BillingState.Error(
+                            "Billing setup failed: ${billingResult.debugMessage}"
+                        )
+                    }
                 }
-            }
 
-            override fun onBillingServiceDisconnected() {
-                _billingState.value = BillingState.Error("Billing service disconnected")
-                // Try to reconnect
-                startConnection()
-            }
-        })
+                override fun onBillingServiceDisconnected() {
+                    _billingState.value = BillingState.Error("Billing service disconnected")
+                    // Retry with limit to prevent infinite loop on Redmi/MIUI
+                    if (reconnectAttempts < maxReconnectAttempts) {
+                        reconnectAttempts++
+                        startConnection()
+                    }
+                }
+            })
+        } catch (e: Exception) {
+            _billingState.value = BillingState.Error("Billing init failed: ${e.message}")
+        }
+    }
+
+    fun reconnect() {
+        reconnectAttempts = 0
+        if (billingClient?.isReady != true) {
+            startConnection()
+        }
     }
 
     private fun queryProducts() {

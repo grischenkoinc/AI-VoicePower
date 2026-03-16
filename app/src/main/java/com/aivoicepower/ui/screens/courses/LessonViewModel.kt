@@ -530,6 +530,11 @@ class LessonViewModel @Inject constructor(
             }
             // Save progress and check course completion
             viewModelScope.launch {
+                // Track training minutes for daily goal
+                val totalRecordedMs = updatedStates.sumOf { it.recordingDurationMs.toLong() }
+                val recordedMinutes = (totalRecordedMs / 60000).toInt().coerceAtLeast(1)
+                userPreferencesDataStore.addMinutes(recordedMinutes)
+
                 saveLessonProgress()
                 handleCourseCompletion()
             }

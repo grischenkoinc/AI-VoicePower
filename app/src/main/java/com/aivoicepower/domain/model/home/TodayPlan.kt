@@ -12,7 +12,8 @@ data class PlanActivity(
     val subtitle: String?,
     val estimatedMinutes: Int,
     val isCompleted: Boolean,
-    val navigationRoute: String
+    val navigationRoute: String,
+    val metaText: String? = null // Custom meta text (e.g. "1 вправа" instead of "X хв")
 )
 
 enum class ActivityType {

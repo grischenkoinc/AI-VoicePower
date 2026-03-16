@@ -308,6 +308,9 @@ class DailyChallengeViewModel @Inject constructor(
                     serverLimitService.incrementAnalysis(isImprov = true)
                 }
                 userPreferencesDataStore.incrementFreeImprovisations()
+                // Track training minutes for daily goal
+                val recordedMinutes = (_state.value.recordingDurationMs / 60000).toInt().coerceAtLeast(1)
+                userPreferencesDataStore.addMinutes(recordedMinutes)
 
                 if (analysisResult != null) {
                     if (analysisResult.overallScore > 0) {
@@ -365,6 +368,9 @@ class DailyChallengeViewModel @Inject constructor(
                 }
 
                 userPreferencesDataStore.incrementFreeImprovisations()
+                // Track training minutes for daily goal
+                val recordedMinutes = (_state.value.recordingDurationMs / 60000).toInt().coerceAtLeast(1)
+                userPreferencesDataStore.addMinutes(recordedMinutes)
 
                 _state.value = _state.value.copy(
                     isCompleted = true,

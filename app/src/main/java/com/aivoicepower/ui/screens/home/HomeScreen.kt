@@ -631,9 +631,9 @@ private fun DailyGoalCard(
                 TaskRow(
                     title = activity.title,
                     meta = buildString {
-                        append("${activity.estimatedMinutes} хв")
+                        append(activity.metaText ?: "${activity.estimatedMinutes} хв")
                         activity.subtitle?.let { append(" • $it") }
-                        if (activity.isCompleted) append(" • Завершено")
+                        if (activity.isCompleted && activity.subtitle != "Виконано сьогодні") append(" • Завершено")
                     },
                     completed = activity.isCompleted
                 )
