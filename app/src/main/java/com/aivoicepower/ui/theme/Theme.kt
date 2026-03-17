@@ -97,9 +97,6 @@ fun AIVoicePowerTheme(
 ) {
     val colorScheme = DarkColorScheme
 
-    // Статус бари налаштовуються тільки в MainActivity.kt
-    // Не перезаписуємо тут, щоб уникнути конфліктів
-
     MaterialTheme(
         colorScheme = colorScheme,
         typography = AppTypography,
