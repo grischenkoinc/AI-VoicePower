@@ -541,7 +541,7 @@ private fun ProFeatureBottomSheet(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Все без обмежень \u2022 від \$9.99/міс",
+                            text = "Все без обмежень \u2022 від \$8.33/міс",
                             color = Color.White.copy(alpha = 0.85f),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium

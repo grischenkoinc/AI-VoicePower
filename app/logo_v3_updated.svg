@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#667EEA"/>
+      <stop offset="100%" stop-color="#764BA2"/>
+    </linearGradient>
+    
+    <linearGradient id="goldAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+    
+    <filter id="mainShadow">
+      <feDropShadow dx="0" dy="8" stdDeviation="20" flood-color="#3D266A" flood-opacity="0.5"/>
+    </filter>
+    
+    <filter id="goldGlow3">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+    
+    <clipPath id="clip3">
+      <rect x="16" y="16" width="480" height="480" rx="108"/>
+    </clipPath>
+  </defs>
+  
+  <!-- Background -->
+  <rect x="16" y="16" width="480" height="480" rx="108" fill="url(#bg3)"/>
+  
+  <!-- Subtle pattern -->
+  <g clip-path="url(#clip3)" opacity="0.05">
+    <circle cx="400" cy="80" r="200" fill="white"/>
+    <circle cx="120" cy="460" r="180" fill="white"/>
+  </g>
+  
+  <!-- Concentric rings (voice broadcast symbol) -->
+  <g opacity="0.12">
+    <circle cx="256" cy="220" r="190" fill="none" stroke="white" stroke-width="1.5"/>
+    <circle cx="256" cy="220" r="160" fill="none" stroke="white" stroke-width="1"/>
+    <circle cx="256" cy="220" r="130" fill="none" stroke="white" stroke-width="0.8"/>
+  </g>
+  
+  <!-- Sound waves (left side) -->
+  <g fill="none" stroke="white" stroke-linecap="round" stroke-width="4">
+    <path d="M 148 165 Q 118 225 148 285" opacity="0.5"/>
+    <path d="M 123 140 Q 83 225 123 310" opacity="0.35"/>
+    <path d="M 100 120 Q 50 225 100 330" opacity="0.2"/>
+  </g>
+  
+  <!-- Sound waves (right side) -->
+  <g fill="none" stroke="white" stroke-linecap="round" stroke-width="4">
+    <path d="M 364 165 Q 394 225 364 285" opacity="0.5"/>
+    <path d="M 389 140 Q 429 225 389 310" opacity="0.35"/>
+    <path d="M 412 120 Q 462 225 412 330" opacity="0.2"/>
+  </g>
+  
+  <!-- Microphone from V1 style (centered, larger) -->
+  <g filter="url(#mainShadow)">
+    <!-- Mic head (capsule) -->
+    <rect x="218" y="100" width="76" height="126" rx="38" ry="38" fill="white" opacity="0.95"/>
+    
+    <!-- Mic grille lines -->
+    <g stroke="#E5E7EB" stroke-width="1.5" opacity="0.5">
+      <line x1="232" y1="132" x2="280" y2="132"/>
+      <line x1="232" y1="147" x2="280" y2="147"/>
+      <line x1="232" y1="162" x2="280" y2="162"/>
+      <line x1="232" y1="177" x2="280" y2="177"/>
+      <line x1="232" y1="192" x2="280" y2="192"/>
+    </g>
+    
+    <!-- Mic indicator dot (gold) -->
+    <circle cx="256" cy="117" r="5.5" fill="url(#goldAccent)"/>
+    
+    <!-- Mic holder arc -->
+    <path d="M 195 210 Q 195 290 256 290 Q 317 290 317 210" 
+          fill="none" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    
+    <!-- Mic stand -->
+    <line x1="256" y1="290" x2="256" y2="355" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+    
+    <!-- Mic base -->
+    <line x1="218" y1="355" x2="294" y2="355" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+  </g>
+  
+  <!-- AI badge (gold pill) -->
+  <g transform="translate(256, 400)">
+    <g filter="url(#goldGlow3)" opacity="0.5">
+      <rect x="-30" y="-14" width="60" height="28" rx="14" fill="#FBBF24"/>
+    </g>
+    <rect x="-30" y="-14" width="60" height="28" rx="14" fill="url(#goldAccent)"/>
+    <text x="0" y="6" text-anchor="middle" 
+          font-family="'SF Pro Display', 'Helvetica Neue', Arial, sans-serif" 
+          font-size="16" font-weight="800" fill="#1F2937" letter-spacing="2">AI</text>
+  </g>
+  
+  <!-- Sparkle accents -->
+  <path d="M 370 100 L 373 108 L 381 111 L 373 114 L 370 122 L 367 114 L 359 111 L 367 108 Z" 
+        fill="#FBBF24" opacity="0.8"/>
+  <path d="M 393 132 L 395 137 L 400 139 L 395 141 L 393 146 L 391 141 L 386 139 L 391 137 Z" 
+        fill="#FBBF24" opacity="0.5"/>
+  
+  <!-- Power dot at base -->
+  <circle cx="256" cy="362" r="4" fill="url(#goldAccent)" opacity="0.9"/>
+</svg>

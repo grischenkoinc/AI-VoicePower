@@ -142,9 +142,9 @@ private fun PricingPlanRow(
                 ) {
                     Text(
                         text = when (plan) {
-                            PricingPlan.MONTHLY -> "Місяць"
-                            PricingPlan.YEARLY -> "Рік"
-                            PricingPlan.LIFETIME -> "Назавжди"
+                            PricingPlan.MONTHLY -> "1 місяць"
+                            PricingPlan.QUARTERLY -> "3 місяці"
+                            PricingPlan.YEARLY -> "1 рік"
                         },
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Bold,
@@ -209,9 +209,9 @@ private fun PricingPlanRow(
                     fontWeight = FontWeight.ExtraBold,
                     color = if (isSelected) Color(0xFF764BA2) else Color(0xFF1A1A2E)
                 )
-                if (plan == PricingPlan.YEARLY) {
+                plan.perMonth?.let { perMonth ->
                     Text(
-                        text = "(\$4.99/мiс)",
+                        text = "($perMonth)",
                         fontSize = 11.sp,
                         color = Color(0xFF9CA3AF)
                     )

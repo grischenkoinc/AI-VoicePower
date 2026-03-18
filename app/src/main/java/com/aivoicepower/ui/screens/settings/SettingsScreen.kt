@@ -271,7 +271,7 @@ fun SettingsScreen(
                 SettingsItemRow(
                     icon = Icons.Default.Info,
                     title = "Про застосунок",
-                    subtitle = "Версія 1.0.0",
+                    subtitle = "Версія 1.0.8",
                     onClick = onNavigateToAbout
                 )
                 SettingsItemRow(

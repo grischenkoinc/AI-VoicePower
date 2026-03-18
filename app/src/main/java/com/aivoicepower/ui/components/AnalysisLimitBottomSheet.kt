@@ -177,7 +177,7 @@ fun AnalysisLimitBottomSheet(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Детальний AI фідбек для кожної вправи \u2022 від \$9.99/міс",
+                            text = "Детальний AI фідбек для кожної вправи \u2022 від \$8.33/міс",
                             color = Color.White.copy(alpha = 0.85f),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium

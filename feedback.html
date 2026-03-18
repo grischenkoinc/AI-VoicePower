@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diqto — Bug Report</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #1F2937;
+            background: #F0F2F5;
+            padding: 16px;
+            min-height: 100vh;
+        }
+        .container { max-width: 520px; margin: 0 auto; }
+
+        .header {
+            text-align: center;
+            padding: 20px 16px;
+            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+            border-radius: 14px;
+            color: #fff;
+            margin-bottom: 16px;
+        }
+        .header h1 { font-size: 20px; margin-bottom: 4px; }
+        .header p { font-size: 13px; opacity: 0.85; }
+        .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Report card */
+        .report-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        /* Type selector */
+        .type-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .type-btn {
+            flex: 1;
+            padding: 10px 8px;
+            border: 2px solid #E5E7EB;
+            border-radius: 10px;
+            background: #fff;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.15s;
+            font-size: 13px;
+            font-weight: 600;
+            color: #6B7280;
+        }
+        .type-btn.active {
+            border-color: #667EEA;
+            background: #EEF2FF;
+            color: #667EEA;
+        }
+        .type-btn:hover { border-color: #667EEA; }
+        .type-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+
+        /* Name field */
+        .name-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background: #F9FAFB;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #6B7280;
+        }
+        .name-row input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            font-family: inherit;
+            color: #1F2937;
+            outline: none;
+        }
+
+        /* Text area */
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #D1D5DB;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: inherit;
+            color: #1F2937;
+            background: #FAFAFA;
+            resize: vertical;
+            min-height: 80px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #667EEA;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+            background: #fff;
+        }
+
+        /* File upload */
+        .upload-area {
+            margin-top: 12px;
+            border: 2px dashed #D1D5DB;
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            position: relative;
+        }
+        .upload-area:hover, .upload-area.drag-over {
+            border-color: #667EEA;
+            background: #F5F7FF;
+        }
+        .upload-area input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .upload-icon { font-size: 24px; margin-bottom: 4px; }
+        .upload-text { font-size: 13px; color: #9CA3AF; }
+        .upload-text b { color: #667EEA; }
+
+        /* Previews */
+        .previews {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .preview-item {
+            position: relative;
+            width: 72px;
+            height: 72px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #E5E7EB;
+        }
+        .preview-item img,
+        .preview-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .preview-item .video-badge {
+            position: absolute;
+            bottom: 4px;
+            left: 4px;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            font-size: 10px;
+            padding: 1px 5px;
+            border-radius: 4px;
+        }
+        .preview-item .file-icon {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #F3F4F6;
+            font-size: 11px;
+            color: #6B7280;
+            text-align: center;
+            padding: 4px;
+            word-break: break-all;
+        }
+        .preview-remove {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 20px;
+            height: 20px;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        /* Submit */
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            margin-top: 14px;
+        }
+        .submit-btn:hover { opacity: 0.92; }
+        .submit-btn:active { transform: scale(0.98); }
+        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #065F46;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+            z-index: 100;
+            white-space: nowrap;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* History */
+        .history-toggle {
+            text-align: center;
+            margin-top: 8px;
+        }
+        .history-toggle button {
+            background: none;
+            border: none;
+            color: #9CA3AF;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 8px;
+            font-family: inherit;
+        }
+        .history-toggle button:hover { color: #667EEA; }
+
+        .history { display: none; margin-top: 12px; }
+        .history.open { display: block; }
+
+        .history-item {
+            background: #fff;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+            border-left: 3px solid #D1D5DB;
+        }
+        .history-item.type-bug { border-left-color: #EF4444; }
+        .history-item.type-idea { border-left-color: #F59E0B; }
+        .history-item.type-feedback { border-left-color: #667EEA; }
+        .history-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #9CA3AF;
+            margin-bottom: 6px;
+        }
+        .history-type {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.3px;
+        }
+        .history-text {
+            font-size: 14px;
+            color: #374151;
+            white-space: pre-wrap;
+        }
+        .history-images {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        .history-images img {
+            width: 56px;
+            height: 56px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #E5E7EB;
+            cursor: pointer;
+        }
+        .history-empty {
+            text-align: center;
+            color: #9CA3AF;
+            font-size: 13px;
+            padding: 20px;
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .lightbox.open { display: flex; }
+        .lightbox img {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 8px;
+        }
+        .lightbox-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .counter {
+            text-align: center;
+            font-size: 12px;
+            color: #9CA3AF;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 400px) {
+            body { padding: 10px; }
+            .type-btn { padding: 8px 4px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="badge">BETA TEST</div>
+        <h1>Diqto</h1>
+        <p>Знайшли баг? Є ідея? Просто думка? Кидайте сюди!</p>
+    </div>
+
+    <form id="reportForm" class="report-card">
+        <!-- Ім'я та пристрій (запам'ятовуються) -->
+        <div class="name-row">
+            <span>&#128100;</span>
+            <input type="text" id="authorName" placeholder="Ваше ім'я (запам'ятається)" autocomplete="off">
+        </div>
+        <div class="name-row">
+            <span>&#128241;</span>
+            <input type="text" id="deviceModel" placeholder="Модель телефону, напр. Samsung S23, Android 14" autocomplete="off">
+        </div>
+
+        <!-- Тип -->
+        <div class="type-row">
+            <button type="button" class="type-btn active" data-type="bug">
+                <span class="type-icon">&#128027;</span>
+                Баг
+            </button>
+            <button type="button" class="type-btn" data-type="idea">
+                <span class="type-icon">&#128161;</span>
+                Ідея
+            </button>
+            <button type="button" class="type-btn" data-type="feedback">
+                <span class="type-icon">&#128172;</span>
+                Думка
+            </button>
+        </div>
+
+        <!-- Текст -->
+        <textarea id="reportText" placeholder="Опишіть що трапилось, де і коли..." required></textarea>
+
+        <!-- Файли -->
+        <div class="upload-area" id="uploadArea">
+            <input type="file" id="fileInput" multiple accept="image/*,video/*,.mp4,.mov,.webm">
+            <div class="upload-icon">&#128247; &#127909;</div>
+            <div class="upload-text">Скріншоти або відео екрану — <b>натисніть</b> або перетягніть</div>
+        </div>
+        <div class="previews" id="previews"></div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">Надіслати</button>
+    </form>
+
+    <div class="counter" id="counter"></div>
+
+    <!-- Історія відправлених -->
+    <div class="history-toggle">
+        <button id="historyBtn">&#9660; Мої відгуки</button>
+    </div>
+    <div class="history" id="history"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+
+<script>
+    // ============================================================
+    // TELEGRAM
+    // ============================================================
+    const TG_TOKEN = '';    // ← токен від @BotFather
+    const TG_CHAT_ID = '-1003859031354';
+    // ============================================================
+
+    let selectedType = 'bug';
+    let attachedFiles = [];
+
+    const nameInput = document.getElementById('authorName');
+    nameInput.value = localStorage.getItem('diqto_tester_name') || '';
+    nameInput.addEventListener('input', () => localStorage.setItem('diqto_tester_name', nameInput.value));
+
+    const deviceInput = document.getElementById('deviceModel');
+    deviceInput.value = localStorage.getItem('diqto_tester_device') || '';
+    deviceInput.addEventListener('input', () => localStorage.setItem('diqto_tester_device', deviceInput.value));
+
+    // Тип
+    document.querySelectorAll('.type-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedType = btn.dataset.type;
+            const ph = { bug: 'Опишіть що трапилось, де і коли...', idea: 'Яку фічу хотіли б бачити?', feedback: 'Ваші враження, думки, коментарі...' };
+            document.getElementById('reportText').placeholder = ph[selectedType];
+        });
+    });
+
+    // Drag & drop
+    const uploadArea = document.getElementById('uploadArea');
+    uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('drag-over'); });
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag-over'));
+    uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
+
+    document.getElementById('fileInput').addEventListener('change', e => { handleFiles(e.target.files); e.target.value = ''; });
+
+    function handleFiles(fileList) {
+        for (const file of fileList) {
+            if (attachedFiles.length >= 5) break;
+            if (file.size > 50 * 1024 * 1024) { showToast('Файл завеликий (макс. 50 МБ)'); continue; }
+            attachedFiles.push(file);
+        }
+        renderPreviews();
+    }
+
+    function renderPreviews() {
+        const container = document.getElementById('previews');
+        container.innerHTML = '';
+        attachedFiles.forEach((file, i) => {
+            const item = document.createElement('div');
+            item.className = 'preview-item';
+            if (file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                item.appendChild(img);
+            } else if (file.type.startsWith('video/')) {
+                const video = document.createElement('video');
+                video.src = URL.createObjectURL(file);
+                video.muted = true;
+                item.appendChild(video);
+                const badge = document.createElement('span');
+                badge.className = 'video-badge';
+                badge.textContent = '\u25b6 ' + formatFileSize(file.size);
+                item.appendChild(badge);
+            } else {
+                const div = document.createElement('div');
+                div.className = 'file-icon';
+                div.textContent = file.name;
+                item.appendChild(div);
+            }
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'preview-remove';
+            removeBtn.innerHTML = '&#10005;';
+            removeBtn.onclick = () => { attachedFiles.splice(i, 1); renderPreviews(); };
+            item.appendChild(removeBtn);
+            container.appendChild(item);
+        });
+    }
+
+    // Telegram API helpers
+    async function tgSend(method, body) {
+        const res = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/${method}`, {
+            method: 'POST',
+            ...body
+        });
+        const json = await res.json();
+        if (!json.ok) console.error('TG error:', json);
+        return json;
+    }
+
+    function buildCaption(report) {
+        const icons = { bug: '\ud83d\udc1b', idea: '\ud83d\udca1', feedback: '\ud83d\udcac' };
+        const labels = { bug: 'БАГ', idea: 'ІДЕЯ', feedback: 'ДУМКА' };
+        const icon = icons[report.type] || '\ud83d\udcac';
+        const label = labels[report.type] || report.type;
+
+        return [
+            icon + ' ' + label,
+            '',
+            report.text,
+            '',
+            '\ud83d\udc64 ' + report.author,
+            report.device ? '\ud83d\udcf1 ' + report.device : '',
+            '\ud83d\udd50 ' + new Date().toLocaleString('uk-UA')
+        ].filter(Boolean).join('\n');
+    }
+
+    // Submit
+    document.getElementById('reportForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const text = document.getElementById('reportText').value.trim();
+        if (!text) return;
+
+        const btn = document.getElementById('submitBtn');
+        btn.textContent = 'Надсилаю...';
+        btn.disabled = true;
+
+        const report = {
+            timestamp: new Date().toISOString(),
+            author: nameInput.value.trim() || 'Anonymous',
+            device: deviceInput.value.trim() || '',
+            type: selectedType,
+            text: text
+        };
+
+        const caption = buildCaption(report);
+        let sent = false;
+
+        if (TG_TOKEN && TG_CHAT_ID) {
+            try {
+                const mediaFiles = attachedFiles.filter(f => f.type.startsWith('image/') || f.type.startsWith('video/'));
+
+                if (mediaFiles.length === 0) {
+                    // Тільки текст
+                    await tgSend('sendMessage', {
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            chat_id: TG_CHAT_ID,
+                            text: caption,
+                        })
+                    });
+                } else if (mediaFiles.length === 1) {
+                    // Одне фото/відео з підписом
+                    const file = mediaFiles[0];
+                    const fd = new FormData();
+                    fd.append('chat_id', TG_CHAT_ID);
+                    fd.append('caption', caption);
+                    if (file.type.startsWith('video/')) {
+                        fd.append('video', file);
+                        await tgSend('sendVideo', { body: fd });
+                    } else {
+                        fd.append('photo', file);
+                        await tgSend('sendPhoto', { body: fd });
+                    }
+                } else {
+                    // Кілька файлів — sendMediaGroup
+                    const fd = new FormData();
+                    fd.append('chat_id', TG_CHAT_ID);
+                    const media = [];
+                    mediaFiles.forEach((file, i) => {
+                        const key = `file${i}`;
+                        fd.append(key, file);
+                        const type = file.type.startsWith('video/') ? 'video' : 'photo';
+                        const item = { type, media: `attach://${key}` };
+                        if (i === 0) {
+                            item.caption = caption;
+                        }
+                        media.push(item);
+                    });
+                    fd.append('media', JSON.stringify(media));
+                    await tgSend('sendMediaGroup', { body: fd });
+                }
+                sent = true;
+            } catch (err) {
+                console.error('Telegram send failed:', err);
+            }
+        }
+
+        // Зберігаємо локально (без base64 — тільки метадані)
+        const localReport = { ...report, fileCount: attachedFiles.length };
+        saveLocally(localReport);
+
+        // Очистити форму
+        document.getElementById('reportText').value = '';
+        attachedFiles = [];
+        renderPreviews();
+        btn.textContent = 'Надіслати';
+        btn.disabled = false;
+        showToast(sent ? 'Надіслано в Telegram!' : 'Помилка відправки');
+        updateCounter();
+        renderHistory();
+    });
+
+    function saveLocally(report) {
+        const saved = JSON.parse(localStorage.getItem('diqto_reports') || '[]');
+        saved.unshift(report);
+        // Обмежуємо до 50 записів щоб не забити localStorage
+        if (saved.length > 50) saved.length = 50;
+        localStorage.setItem('diqto_reports', JSON.stringify(saved));
+    }
+
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    function updateCounter() {
+        const saved = JSON.parse(localStorage.getItem('diqto_reports') || '[]');
+        const el = document.getElementById('counter');
+        if (saved.length > 0) el.textContent = '\u041d\u0430\u0434\u0456\u0441\u043b\u0430\u043d\u043e \u0440\u0435\u043f\u043e\u0440\u0442\u0456\u0432: ' + saved.length;
+    }
+
+    // History
+    document.getElementById('historyBtn').addEventListener('click', () => {
+        const hist = document.getElementById('history');
+        hist.classList.toggle('open');
+        document.getElementById('historyBtn').innerHTML =
+            hist.classList.contains('open') ? '&#9650; Сховати відгуки' : '&#9660; Мої відгуки';
+        renderHistory();
+    });
+
+    function renderHistory() {
+        const container = document.getElementById('history');
+        const saved = JSON.parse(localStorage.getItem('diqto_reports') || '[]');
+        if (saved.length === 0) { container.innerHTML = '<div class="history-empty">Поки що порожньо</div>'; return; }
+        const typeLabels = { bug: 'Баг', idea: 'Ідея', feedback: 'Думка' };
+        container.innerHTML = saved.map(r => {
+            const date = new Date(r.timestamp);
+            const dateStr = date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+            const filesNote = r.fileCount ? `<div style="font-size:12px;color:#9CA3AF;margin-top:4px">\ud83d\udcce ${r.fileCount} \u0444\u0430\u0439\u043b(\u0456\u0432)</div>` : '';
+            return `
+                <div class="history-item type-${r.type}">
+                    <div class="history-meta">
+                        <span class="history-type">${typeLabels[r.type] || r.type}${r.device ? ' \u00b7 ' + escapeHtml(r.device) : ''}</span>
+                        <span>${dateStr}</span>
+                    </div>
+                    <div class="history-text">${escapeHtml(r.text)}</div>
+                    ${filesNote}
+                </div>`;
+        }).join('');
+    }
+
+    function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+
+    function formatFileSize(bytes) {
+        if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    // Init
+    updateCounter();
+</script>
+
+</body>
+</html>

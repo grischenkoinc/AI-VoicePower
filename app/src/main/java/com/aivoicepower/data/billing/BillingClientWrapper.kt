@@ -93,12 +93,12 @@ class BillingClientWrapper @Inject constructor(
                 .setProductType(BillingClient.ProductType.SUBS)
                 .build(),
             QueryProductDetailsParams.Product.newBuilder()
-                .setProductId("premium_yearly")
+                .setProductId("premium_quarterly")
                 .setProductType(BillingClient.ProductType.SUBS)
                 .build(),
             QueryProductDetailsParams.Product.newBuilder()
-                .setProductId("premium_lifetime")
-                .setProductType(BillingClient.ProductType.INAPP)
+                .setProductId("premium_yearly")
+                .setProductType(BillingClient.ProductType.SUBS)
                 .build()
         )
 
@@ -200,7 +200,7 @@ class BillingClientWrapper @Inject constructor(
             }
         }
 
-        // Also check in-app purchases (lifetime)
+        // Also check in-app purchases (legacy lifetime)
         billingClient?.queryPurchasesAsync(
             QueryPurchasesParams.newBuilder()
                 .setProductType(BillingClient.ProductType.INAPP)

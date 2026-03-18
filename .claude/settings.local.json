@@ -74,7 +74,23 @@
       "Bash(ren Exercise.kt LessonExercise.kt)",
       "Bash(git mv:*)",
       "Bash(.gradlew.bat assembleDebug:*)",
-      "Bash(gradlew.bat installDebug:*)"
+      "Bash(gradlew.bat installDebug:*)",
+      "Bash(pip install:*)",
+      "Bash(py:*)",
+      "WebSearch",
+      "Bash(keytool:*)",
+      "Bash(jar tf:*)",
+      "Bash(unzip:*)",
+      "WebFetch(domain:play.google.com)",
+      "WebFetch(domain:support.google.com)",
+      "Bash(gh auth:*)",
+      "WebFetch(domain:firebase.google.com)",
+      "WebFetch(domain:developers.google.com)",
+      "WebFetch(domain:play.google)",
+      "WebFetch(domain:mvnrepository.com)",
+      "Bash(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 \"D:\\\\AIDevelop\\\\AI VoicePower\\\\app\\\\src\\\\main\\\\res\\\\raw\\\\sound_celebration.wav\")",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:dl.google.com)"
     ]
   }
 }
