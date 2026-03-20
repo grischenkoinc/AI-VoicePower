@@ -119,24 +119,18 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.ConfirmLogout -> {
                 viewModelScope.launch {
                     _state.update { it.copy(showLogoutDialog = false) }
-                    // Sign out and navigate immediately — don't wait for sync
                     authRepository.signOut()
                     _state.update { it.copy(isAuthenticated = false) }
-                    // Cleanup in background with NonCancellable
-                    withContext(NonCancellable) {
-                        // Best-effort sync — fire and forget
-                        launch(Dispatchers.IO) {
-                            try {
-                                withTimeoutOrNull(10_000L) {
-                                    cloudSyncRepository.fullSync()
-                                    cloudSyncRepository.saveUserFlags()
-                                }
-                            } catch (_: Exception) { }
-                        }
-                        userPreferencesDataStore.clearAllUserData()
-                        withContext(Dispatchers.IO) {
-                            database.clearAllTables()
-                        }
+                    // Cleanup in background — fire and forget, doesn't block navigation
+                    launch(NonCancellable + Dispatchers.IO) {
+                        try {
+                            withTimeoutOrNull(10_000L) {
+                                cloudSyncRepository.fullSync()
+                                cloudSyncRepository.saveUserFlags()
+                            }
+                        } catch (_: Exception) { }
+                        try { userPreferencesDataStore.clearAllUserData() } catch (_: Exception) { }
+                        try { database.clearAllTables() } catch (_: Exception) { }
                     }
                 }
             }

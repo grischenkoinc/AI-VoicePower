@@ -502,7 +502,6 @@ private fun CourseCardItem(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 12.dp)
-                        .border(1.dp, Color(0xFFE5E5EA), RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp))
                         .padding(top = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(20.dp)
                 ) {

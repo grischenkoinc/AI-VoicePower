@@ -231,6 +231,9 @@ fun QuickWarmupScreen(
                                 onSkip = {
                                     viewModel.onEvent(QuickWarmupEvent.SkipExercise)
                                 },
+                                onGoBack = {
+                                    viewModel.onEvent(QuickWarmupEvent.GoToPreviousExercise)
+                                },
                                 currentExerciseNumber = state.currentExerciseIndex + 1,
                                 totalExercises = state.exercises.size,
                                 completedExercises = state.completedExercises.size
@@ -260,6 +263,9 @@ fun QuickWarmupScreen(
                                 },
                                 onSkip = {
                                     viewModel.onEvent(QuickWarmupEvent.SkipExercise)
+                                },
+                                onGoBack = {
+                                    viewModel.onEvent(QuickWarmupEvent.GoToPreviousExercise)
                                 },
                                 onHideInstructions = { /* No instructions in quick warmup */ },
                                 currentExerciseNumber = state.currentExerciseIndex + 1,
@@ -291,6 +297,9 @@ fun QuickWarmupScreen(
                                 },
                                 onSkip = {
                                     viewModel.onEvent(QuickWarmupEvent.SkipExercise)
+                                },
+                                onGoBack = {
+                                    viewModel.onEvent(QuickWarmupEvent.GoToPreviousExercise)
                                 },
                                 currentExerciseNumber = state.currentExerciseIndex + 1,
                                 totalExercises = state.exercises.size,

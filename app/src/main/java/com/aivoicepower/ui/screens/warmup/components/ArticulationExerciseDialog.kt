@@ -44,6 +44,7 @@ fun ArticulationExerciseDialog(
     onPauseTimer: () -> Unit,
     onMarkCompleted: () -> Unit,
     onSkip: () -> Unit,
+    onGoBack: () -> Unit = {},
     currentExerciseNumber: Int = 0,
     totalExercises: Int = 0,
     completedExercises: Int = 0
@@ -228,37 +229,69 @@ fun ArticulationExerciseDialog(
                     }
 
                     // Action buttons
+                    val isQuickWarmup = totalExercises > 0
+                    val isFirstExercise = currentExerciseNumber == 1
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // Skip button
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .shadow(
-                                    elevation = 8.dp,
-                                    shape = RoundedCornerShape(16.dp),
-                                    spotColor = Color.Black.copy(alpha = 0.15f)
+                        // Left button: Skip (standalone) / Back (quick warmup 2+) / hidden (quick warmup 1st)
+                        if (!isQuickWarmup) {
+                            // Standalone mode — Skip button
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .shadow(
+                                        elevation = 8.dp,
+                                        shape = RoundedCornerShape(16.dp),
+                                        spotColor = Color.Black.copy(alpha = 0.15f)
+                                    )
+                                    .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(16.dp))
+                                    .clickable { performHaptic(view); onSkip() }
+                                    .padding(vertical = 14.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Пропустити",
+                                    style = AppTypography.labelLarge,
+                                    color = Color.White,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold
                                 )
-                                .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(16.dp))
-                                .clickable { performHaptic(view); onSkip() }
-                                .padding(vertical = 14.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Пропустити",
-                                style = AppTypography.labelLarge,
-                                color = Color.White,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                            }
+                        } else if (!isFirstExercise) {
+                            // Quick Warmup, 2nd+ exercise — Back button
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .shadow(
+                                        elevation = 8.dp,
+                                        shape = RoundedCornerShape(16.dp),
+                                        spotColor = Color.Black.copy(alpha = 0.15f)
+                                    )
+                                    .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(16.dp))
+                                    .clickable { performHaptic(view); onGoBack() }
+                                    .padding(vertical = 14.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Назад",
+                                    style = AppTypography.labelLarge,
+                                    color = Color.White,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                         }
 
                         // Complete button
                         Box(
                             modifier = Modifier
-                                .weight(1f)
+                                .then(
+                                    if (isQuickWarmup && isFirstExercise) Modifier.fillMaxWidth()
+                                    else Modifier.weight(1f)
+                                )
                                 .shadow(
                                     elevation = 8.dp,
                                     shape = RoundedCornerShape(16.dp),

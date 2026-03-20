@@ -99,6 +99,27 @@ class QuickWarmupViewModel @Inject constructor(
                 }
             }
 
+            QuickWarmupEvent.GoToPreviousExercise -> {
+                stopTimer()
+                stopBreathing()
+                val prevIndex = _state.value.currentExerciseIndex - 1
+                if (prevIndex >= 0) {
+                    // Видаляємо попередню вправу з завершених, щоб можна було переробити
+                    val prevExerciseId = _state.value.exercises.getOrNull(prevIndex)?.id
+                    _state.update {
+                        it.copy(
+                            currentExerciseIndex = prevIndex,
+                            completedExercises = if (prevExerciseId != null) {
+                                it.completedExercises - prevExerciseId
+                            } else {
+                                it.completedExercises
+                            }
+                        )
+                    }
+                    initializeCurrentExerciseTimer()
+                }
+            }
+
             QuickWarmupEvent.StartBreathing -> {
                 startBreathing()
             }

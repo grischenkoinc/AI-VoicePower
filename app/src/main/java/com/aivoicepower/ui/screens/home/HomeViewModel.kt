@@ -430,6 +430,8 @@ class HomeViewModel @Inject constructor(
         val dictionLevel = progress?.dictionLevel?.toInt() ?: 1
         val tempoLevel = progress?.tempoLevel?.toInt() ?: 1
         val intonationLevel = progress?.intonationLevel?.toInt() ?: 1
+        val structureLevel = progress?.structureLevel?.toInt() ?: 1
+        val confidenceLevel = progress?.confidenceLevel?.toInt() ?: 1
 
         return listOf(
             com.aivoicepower.domain.model.home.Skill(
@@ -438,8 +440,17 @@ class HomeViewModel @Inject constructor(
                 emoji = "📢",
                 percentage = dictionLevel,
                 growth = calculateGrowth(dictionLevel, progress?.lastDictionLevel?.toInt()),
-                gradientColors = listOf("#6366F1", "#8B5CF6"),
+                gradientColors = listOf("#667EEA", "#764BA2"),
                 statusLabel = SkillLevelUtils.getSkillLabel(dictionLevel)
+            ),
+            com.aivoicepower.domain.model.home.Skill(
+                id = "intonation",
+                name = "Інтонація",
+                emoji = "🎵",
+                percentage = intonationLevel,
+                growth = calculateGrowth(intonationLevel, progress?.lastIntonationLevel?.toInt()),
+                gradientColors = listOf("#F59E0B", "#F97316"),
+                statusLabel = SkillLevelUtils.getSkillLabel(intonationLevel)
             ),
             com.aivoicepower.domain.model.home.Skill(
                 id = "tempo",
@@ -447,17 +458,26 @@ class HomeViewModel @Inject constructor(
                 emoji = "⚡",
                 percentage = tempoLevel,
                 growth = calculateGrowth(tempoLevel, progress?.lastTempoLevel?.toInt()),
-                gradientColors = listOf("#EC4899", "#F43F5E"),
+                gradientColors = listOf("#06B6D4", "#0891B2"),
                 statusLabel = SkillLevelUtils.getSkillLabel(tempoLevel)
             ),
             com.aivoicepower.domain.model.home.Skill(
-                id = "intonation",
+                id = "emotion",
                 name = "Емоції",
                 emoji = "🎭",
-                percentage = intonationLevel,
-                growth = calculateGrowth(intonationLevel, progress?.lastIntonationLevel?.toInt()),
-                gradientColors = listOf("#F59E0B", "#F97316"),
-                statusLabel = SkillLevelUtils.getSkillLabel(intonationLevel)
+                percentage = structureLevel,
+                growth = calculateGrowth(structureLevel, progress?.lastStructureLevel?.toInt()),
+                gradientColors = listOf("#EC4899", "#DB2777"),
+                statusLabel = SkillLevelUtils.getSkillLabel(structureLevel)
+            ),
+            com.aivoicepower.domain.model.home.Skill(
+                id = "clarity",
+                name = "Чіткість",
+                emoji = "✨",
+                percentage = confidenceLevel,
+                growth = calculateGrowth(confidenceLevel, progress?.lastConfidenceLevel?.toInt()),
+                gradientColors = listOf("#22C55E", "#16A34A"),
+                statusLabel = SkillLevelUtils.getSkillLabel(confidenceLevel)
             )
         )
     }
@@ -724,7 +744,7 @@ class HomeViewModel @Inject constructor(
             }
         }
 
-        // 2. Preferences changes — update currentCourse + check new day
+        // 2. Preferences changes — update currentCourse + refresh daily plan
         viewModelScope.launch {
             userPreferencesDataStore.userPreferencesFlow.collect { preferences ->
                 val updatedCourse = getCurrentCourse(preferences)
@@ -733,8 +753,9 @@ class HomeViewModel @Inject constructor(
                 val today = getCurrentDateString()
                 if (preferences.lastDailyPlanDate != today) {
                     userPreferencesDataStore.updateDailyPlanDate(today)
-                    refreshDailyPlan()
                 }
+                // Always refresh to pick up completion changes (improv, warmup, etc.)
+                refreshDailyPlan()
             }
         }
 

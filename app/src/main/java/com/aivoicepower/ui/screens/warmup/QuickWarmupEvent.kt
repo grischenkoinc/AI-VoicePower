@@ -10,6 +10,7 @@ sealed class QuickWarmupEvent {
     object PauseTimer : QuickWarmupEvent()
     data class TimerTick(val secondsRemaining: Int) : QuickWarmupEvent()
     object SkipExercise : QuickWarmupEvent()
+    object GoToPreviousExercise : QuickWarmupEvent()
     // Breathing events
     object StartBreathing : QuickWarmupEvent()
     object PauseBreathing : QuickWarmupEvent()

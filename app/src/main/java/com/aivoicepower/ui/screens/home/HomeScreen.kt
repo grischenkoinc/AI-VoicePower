@@ -9,45 +9,50 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.aivoicepower.domain.model.home.ActivityType
 import com.aivoicepower.domain.model.home.CurrentCourse
+import com.aivoicepower.domain.model.home.DailyTip
+import com.aivoicepower.domain.model.home.PlanActivity
 import com.aivoicepower.domain.model.home.QuickAction
+import com.aivoicepower.domain.model.home.Skill
+import com.aivoicepower.domain.model.home.TodayPlan
 import com.aivoicepower.ui.theme.*
 import com.aivoicepower.ui.theme.components.*
 import com.aivoicepower.ui.theme.modifiers.*
-import java.util.Calendar
-import kotlinx.coroutines.launch
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 
 @Composable
 fun HomeScreen(
@@ -84,7 +89,6 @@ fun HomeScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         GradientBackground(content = {})
 
-        // Show spinner while data loads, then all content appears together with stagger
         if (state.isLoading) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -99,7 +103,6 @@ fun HomeScreen(
             return@Box
         }
 
-        // Scrollable Content
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -107,94 +110,105 @@ fun HomeScreen(
                 .padding(start = 20.dp, top = 60.dp, end = 20.dp, bottom = 130.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-                // Header
-                HomeHeader(
-                    userName = state.userName,
-                    greeting = state.greeting,
-                    onSettings = onNavigateToSettings,
-                    modifier = Modifier.staggeredEntry(index = 0, staggerDelay = 60)
-                )
+            // 1. Header
+            HomeHeader(
+                userName = state.userName,
+                greeting = state.greeting,
+                currentStreak = state.currentStreak,
+                onSettings = onNavigateToSettings,
+                modifier = Modifier.staggeredEntry(index = 0, staggerDelay = 60)
+            )
 
-                // Streak Card
-                StreakCard(
-                    currentStreak = state.currentStreak,
-                    weekProgress = state.weekProgress,
-                    modifier = Modifier.staggeredEntry(index = 1, staggerDelay = 60)
-                )
-
-                // Motivation Card
-                state.dailyTip?.let { tip ->
-                    MotivationCard(
-                        tip = tip,
-                        modifier = Modifier.staggeredEntry(index = 2, staggerDelay = 60)
-                    )
-                }
-
-                // Daily Limits Card (for free users)
-                if (!state.isPremium) {
-                    com.aivoicepower.ui.screens.home.components.DailyLimitsCard(
-                        remainingAnalyses = state.remainingAnalyses,
-                        maxAnalyses = state.maxFreeAnalyses,
-                        remainingImprovAnalyses = state.remainingImprovAnalyses,
-                        maxImprovAnalyses = state.maxFreeImprovAnalyses,
-                        modifier = Modifier.staggeredEntry(index = 3, staggerDelay = 60)
-                    )
-                }
-
-                // Daily Goal + Coach message
-                state.todayPlan?.let { plan ->
-                    DailyGoalCard(
-                        plan = plan,
-                        coachMessage = state.coachMessage,
-                        onCoachClick = onNavigateToAICoach,
-                        modifier = Modifier.staggeredEntry(index = 4, staggerDelay = 60)
-                    )
-                }
-
-                // Skills Section
-                SkillsSection(
-                    skills = state.skills,
-                    modifier = Modifier.staggeredEntry(index = 5, staggerDelay = 60)
-                )
-
-                // Continue Course
-                state.currentCourse?.let { course ->
-                    ContinueCourseSection(
-                        course = course,
-                        onCourseClick = {
-                            onNavigateToLesson(
-                                course.courseId,
-                                course.nextLessonId
-                            )
-                        },
-                        modifier = Modifier.staggeredEntry(index = 6, staggerDelay = 60)
-                    )
-                }
-
-                // Quick Actions
-                QuickActionsSection(
-                    actions = state.quickActions,
-                    onActionClick = { action ->
-                        when (action.id) {
-                            "tongue_twisters" -> onNavigateToTongueTwisters()
-                            "weakest_skill" -> onNavigateToWeakestSkill()
-                            "quick_warmup" -> onNavigateToQuickWarmup()
-                            "recording_history" -> onNavigateToRecordingHistory()
+            // 2. Daily Goal
+            state.todayPlan?.let { plan ->
+                DailyGoalCard(
+                    plan = plan,
+                    coachMessage = state.coachMessage,
+                    onCoachClick = onNavigateToAICoach,
+                    onActivityClick = { activity ->
+                        when (activity.type) {
+                            ActivityType.WARMUP -> onNavigateToQuickWarmup()
+                            ActivityType.LESSON -> {
+                                // Route: "course/{courseId}/lesson/{lessonId}"
+                                val parts = activity.navigationRoute.split("/")
+                                if (parts.size >= 4) {
+                                    onNavigateToLesson(parts[1], parts[3])
+                                }
+                            }
+                            ActivityType.IMPROVISATION -> onNavigateToImprovisation()
                             else -> {}
                         }
                     },
-                    modifier = Modifier.staggeredEntry(index = 7, staggerDelay = 60)
+                    modifier = Modifier.staggeredEntry(index = 1, staggerDelay = 60)
                 )
+            }
+
+            // 3. Tip of the Day
+            state.dailyTip?.let { tip ->
+                MotivationCard(
+                    tip = tip,
+                    modifier = Modifier.staggeredEntry(index = 2, staggerDelay = 60)
+                )
+            }
+
+            // 4. Daily Limits (free users only)
+            if (!state.isPremium) {
+                com.aivoicepower.ui.screens.home.components.DailyLimitsCard(
+                    remainingAnalyses = state.remainingAnalyses,
+                    maxAnalyses = state.maxFreeAnalyses,
+                    remainingImprovAnalyses = state.remainingImprovAnalyses,
+                    maxImprovAnalyses = state.maxFreeImprovAnalyses,
+                    remainingAiMessages = state.remainingAiMessages,
+                    maxAiMessages = state.maxFreeAiMessages,
+                    modifier = Modifier.staggeredEntry(index = 3, staggerDelay = 60)
+                )
+            }
+
+            // 5. Continue Course (unchanged)
+            state.currentCourse?.let { course ->
+                ContinueCourseSection(
+                    course = course,
+                    onCourseClick = {
+                        onNavigateToLesson(course.courseId, course.nextLessonId)
+                    },
+                    modifier = Modifier.staggeredEntry(index = 4, staggerDelay = 60)
+                )
+            }
+
+            // 6. Skills
+            SkillsSection(
+                skills = state.skills,
+                onDetailClick = onNavigateToAnalytics,
+                modifier = Modifier.staggeredEntry(index = 5, staggerDelay = 60)
+            )
+
+            // 7. Quick Actions (unchanged)
+            QuickActionsSection(
+                actions = state.quickActions,
+                onActionClick = { action ->
+                    when (action.id) {
+                        "tongue_twisters" -> onNavigateToTongueTwisters()
+                        "weakest_skill" -> onNavigateToWeakestSkill()
+                        "quick_warmup" -> onNavigateToQuickWarmup()
+                        "recording_history" -> onNavigateToRecordingHistory()
+                        else -> {}
+                    }
+                },
+                modifier = Modifier.staggeredEntry(index = 6, staggerDelay = 60)
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
 
+// ======================== 1. HEADER ========================
+
 @Composable
 private fun HomeHeader(
     userName: String?,
     greeting: String,
+    currentStreak: Int,
     onSettings: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -204,337 +218,119 @@ private fun HomeHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Greeting text
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(
-                    text = greeting,
-                    style = AppTypography.labelMedium,
-                    color = TextColors.onDarkSecondary,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = userName ?: "Користувач",
-                    style = AppTypography.displayLarge,
-                    color = TextColors.onDarkPrimary,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = (-0.8).sp
-                )
-            }
-
-        // Settings button
-        var settingsPressed by remember { mutableStateOf(false) }
-        val settingsScale by androidx.compose.animation.core.animateFloatAsState(
-            targetValue = if (settingsPressed) 0.78f else 1f,
-            animationSpec = androidx.compose.animation.core.spring(
-                dampingRatio = 0.35f,
-                stiffness = 300f
-            ),
-            label = "settingsScale"
-        )
-        val settingsRotation by androidx.compose.animation.core.animateFloatAsState(
-            targetValue = if (settingsPressed) 45f else 0f,
-            animationSpec = androidx.compose.animation.core.spring(
-                dampingRatio = 0.35f,
-                stiffness = 300f
-            ),
-            label = "settingsRotation"
-        )
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .graphicsLayer {
-                    scaleX = settingsScale
-                    scaleY = settingsScale
-                    rotationZ = settingsRotation
-                }
-                .background(
-                    Color.White.copy(alpha = 0.15f),
-                    CircleShape
-                )
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onPress = {
-                            settingsPressed = true
-                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                            tryAwaitRelease()
-                            settingsPressed = false
-                            onSettings()
-                        }
-                    )
-                },
-            contentAlignment = Alignment.Center
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+            modifier = Modifier.weight(1f)
         ) {
-            Text(text = "⚙️", fontSize = 18.sp)
+            Text(
+                text = greeting,
+                color = Color.White,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = userName ?: "Користувач",
+                color = Color.White,
+                fontSize = 26.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = (-0.8).sp
+            )
         }
-    }
-}
 
-@Composable
-private fun StreakCard(
-    currentStreak: Int,
-    weekProgress: com.aivoicepower.domain.model.home.WeekProgress?,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .shadow(
-                elevation = 16.dp,
-                shape = RoundedCornerShape(20.dp),
-                spotColor = Color(0xFF667EEA).copy(alpha = 0.3f),
-                ambientColor = Color.Black.copy(alpha = 0.1f)
-            )
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(
-                        Color(0x73667EEA), // 45% opacity
-                        Color(0x59764BA2)  // 35% opacity
-                    )
-                ),
-                RoundedCornerShape(20.dp)
-            )
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Top row
         Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Fire icon box
+            // Streak badge
             Box(
                 modifier = Modifier
-                    .size(52.dp)
-                    .shadow(
-                        elevation = 8.dp,
-                        shape = RoundedCornerShape(14.dp),
-                        spotColor = Color(0xFFFBBF24).copy(alpha = 0.5f)
-                    )
                     .background(
-                        Brush.linearGradient(
-                            colors = listOf(Color(0xFFFBBF24), Color(0xFFF59E0B))
-                        ),
-                        RoundedCornerShape(14.dp)
-                    ),
-                contentAlignment = Alignment.Center
+                        Brush.linearGradient(listOf(Color(0xFFFF6B35).copy(alpha = 0.18f), Color(0xFFFF4500).copy(alpha = 0.12f))),
+                        RoundedCornerShape(10.dp)
+                    )
+                    .border(1.dp, Color(0xFFFF6B35).copy(alpha = 0.20f), RoundedCornerShape(10.dp))
+                    .padding(horizontal = 10.dp, vertical = 5.dp)
             ) {
-                Text(text = "🔥", fontSize = 28.sp)
-            }
-
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(
-                    text = "STREAK",
-                    style = AppTypography.labelSmall,
-                    color = TextColors.onDarkSecondary,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.5.sp
-                )
-                Text(
-                    text = if (currentStreak == 0) "Перший день" else "$currentStreak ${getDaysWord(currentStreak)}",
-                    style = AppTypography.displayLarge,
-                    color = TextColors.onDarkPrimary,
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = (-1).sp
-                )
-            }
-        }
-
-        // Week circles
-        if (weekProgress != null && weekProgress.days.isNotEmpty()) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)
-            ) {
-                val today = remember {
-                    java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-                        .format(Calendar.getInstance().time)
-                }
-
-                weekProgress.days.forEach { day ->
-                    DayCircle(
-                        label = day.dayName,
-                        filled = day.isCompleted,
-                        isToday = day.date == today
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("🔥", fontSize = 14.sp)
+                    Text(
+                        text = "$currentStreak",
+                        color = Color(0xFFFBBF24),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.ExtraBold
                     )
                 }
             }
-        }
-    }
-}
 
-private fun getDaysWord(count: Int): String {
-    return when {
-        count % 10 == 1 && count % 100 != 11 -> "день"
-        count % 10 in 2..4 && (count % 100 < 10 || count % 100 >= 20) -> "дні"
-        else -> "днів"
-    }
-}
-
-@Composable
-private fun DayCircle(
-    label: String,
-    filled: Boolean,
-    isToday: Boolean = false,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .size(40.dp)
-            .shadow(
-                elevation = if (isToday) 10.dp else 6.dp,
-                shape = CircleShape,
-                spotColor = when {
-                    isToday -> Color(0xFFFBBF24).copy(alpha = 0.6f)
-                    filled -> Color(0xFF22C55E).copy(alpha = 0.5f)
-                    else -> Color.Black.copy(alpha = 0.15f)
-                }
-            )
-            .background(
-                when {
-                    isToday -> Brush.linearGradient(
-                        colors = listOf(Color(0xFFFBBF24), Color(0xFFF59E0B)),
-                        start = Offset(0f, 0f),
-                        end = Offset(100f, 100f)
-                    )
-                    filled -> Brush.linearGradient(
-                        colors = listOf(Color(0xFF22C55E), Color(0xFF16A34A)),
-                        start = Offset(0f, 0f),
-                        end = Offset(100f, 100f)
-                    )
-                    else -> Brush.linearGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.25f),
-                            Color.White.copy(alpha = 0.15f)
-                        ),
-                        start = Offset(0f, 0f),
-                        end = Offset(100f, 100f)
-                    )
-                },
-                CircleShape
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = label,
-            style = AppTypography.labelSmall,
-            color = when {
-                isToday -> Color(0xFF1A1A1A)
-                filled -> Color.White
-                else -> TextColors.onDarkSecondary
-            },
-            fontSize = 9.sp,
-            fontWeight = if (isToday) FontWeight.Black else FontWeight.ExtraBold,
-            letterSpacing = 0.3.sp
-        )
-    }
-}
-
-@Composable
-private fun MotivationCard(
-    tip: com.aivoicepower.domain.model.home.DailyTip,
-    modifier: Modifier = Modifier
-) {
-    val isAuthorQuote = tip.title != "Порада дня"
-
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .shadow(
-                elevation = 12.dp,
-                shape = RoundedCornerShape(20.dp),
-                spotColor = Color.Black.copy(alpha = 0.12f)
-            )
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(
-                        Color(0xFFFFFBEB), // Світло-жовтий
-                        Color(0xFFFEF3C7)  // Золотистий
-                    )
+            // Settings button with 3D effect
+            var settingsPressed by remember { mutableStateOf(false) }
+            val settingsScale by androidx.compose.animation.core.animateFloatAsState(
+                targetValue = if (settingsPressed) 0.82f else 1f,
+                animationSpec = androidx.compose.animation.core.spring(
+                    dampingRatio = 0.35f,
+                    stiffness = 300f
                 ),
-                RoundedCornerShape(20.dp)
+                label = "settingsScale"
             )
-            .padding(20.dp)
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Icon
+            val settingsRotation by androidx.compose.animation.core.animateFloatAsState(
+                targetValue = if (settingsPressed) 90f else 0f,
+                animationSpec = androidx.compose.animation.core.spring(
+                    dampingRatio = 0.4f,
+                    stiffness = 200f
+                ),
+                label = "settingsRotation"
+            )
             Box(
                 modifier = Modifier
-                    .size(56.dp)
-                    .shadow(
-                        elevation = 6.dp,
-                        shape = RoundedCornerShape(16.dp),
-                        spotColor = Color(0xFFFBBF24).copy(alpha = 0.4f)
-                    )
+                    .size(40.dp)
+                    .graphicsLayer {
+                        scaleX = settingsScale
+                        scaleY = settingsScale
+                        rotationZ = settingsRotation
+                    }
                     .background(
-                        Brush.linearGradient(
-                            colors = listOf(Color(0xFFFBBF24), Color(0xFFF59E0B))
-                        ),
-                        RoundedCornerShape(16.dp)
-                    ),
+                        Color.White.copy(alpha = 0.15f),
+                        RoundedCornerShape(12.dp)
+                    )
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onPress = {
+                                settingsPressed = true
+                                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                tryAwaitRelease()
+                                settingsPressed = false
+                                onSettings()
+                            }
+                        )
+                    },
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = if (isAuthorQuote) "\uD83D\uDCAC" else "\uD83D\uDCA1",
-                    fontSize = 32.sp
-                )
-            }
-
-            // Content
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                if (!isAuthorQuote) {
-                    Text(
-                        text = "ПОРАДА ДНЯ",
-                        style = AppTypography.labelMedium,
-                        color = Color(0xFFD97706),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        letterSpacing = 0.5.sp
-                    )
-                }
-                Text(
-                    text = if (isAuthorQuote) "\u00AB${tip.content}\u00BB" else tip.content,
-                    style = AppTypography.bodyMedium,
-                    color = Color(0xFF92400E),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    lineHeight = 19.sp
-                )
-                if (isAuthorQuote) {
-                    Text(
-                        text = "— ${tip.title}",
-                        style = AppTypography.bodySmall,
-                        color = Color(0xFFB45309),
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium,
-                        fontStyle = FontStyle.Italic
-                    )
-                }
+                Text(text = "⚙️", fontSize = 22.sp)
             }
         }
     }
 }
+
+// ======================== 2. DAILY GOAL CARD ========================
+
+private enum class TaskStatus { DONE, ACTIVE, PENDING }
 
 @Composable
 private fun DailyGoalCard(
-    plan: com.aivoicepower.domain.model.home.TodayPlan,
-    coachMessage: String? = null,
-    onCoachClick: () -> Unit = {},
+    plan: TodayPlan,
+    coachMessage: String?,
+    onCoachClick: () -> Unit,
+    onActivityClick: (PlanActivity) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val view = LocalView.current
     val completedTasks = plan.activities.count { it.isCompleted }
     val totalTasks = plan.activities.size
     val remainingMinutes = plan.activities.filter { !it.isCompleted }.sumOf { it.estimatedMinutes }
+    val activeIndex = plan.activities.indexOfFirst { !it.isCompleted }
 
     Column(
         modifier = modifier
@@ -542,136 +338,311 @@ private fun DailyGoalCard(
             .shadow(
                 elevation = 20.dp,
                 shape = RoundedCornerShape(20.dp),
-                spotColor = Color.Black.copy(alpha = 0.18f),
-                ambientColor = Color.Black.copy(alpha = 0.08f)
+                spotColor = Color.Black.copy(alpha = 0.18f)
             )
-            .drawBehind {
-                // Top highlight для 3D ефекту
-                drawRect(
-                    color = Color.White.copy(alpha = 0.4f),
-                    topLeft = Offset(0f, 0f),
-                    size = androidx.compose.ui.geometry.Size(size.width, 3f)
-                )
-            }
-            .background(Color.White, RoundedCornerShape(20.dp))
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .clip(RoundedCornerShape(20.dp))
     ) {
-        // Header БЕЗ процента
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Денна ціль",
-                style = AppTypography.titleLarge,
-                color = TextColors.onLightPrimary,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.ExtraBold
-            )
-        }
-
-        // Progress ring + stats
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Progress Ring з реальними даними
-            ProgressRingSegmented(
-                completedTasks = completedTasks,
-                totalTasks = totalTasks
-            )
-
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "Завершено",
-                        style = AppTypography.bodySmall,
-                        color = TextColors.onLightMuted,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = "$completedTasks з $totalTasks",
-                        style = AppTypography.bodyMedium,
-                        color = TextColors.onLightPrimary,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "Залишилось",
-                        style = AppTypography.bodySmall,
-                        color = TextColors.onLightMuted,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = "~$remainingMinutes хв",
-                        style = AppTypography.bodyMedium,
-                        color = TextColors.onLightPrimary,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
-
-        // Tasks list
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            plan.activities.forEach { activity ->
-                TaskRow(
-                    title = activity.title,
-                    meta = buildString {
-                        append(activity.metaText ?: "${activity.estimatedMinutes} хв")
-                        activity.subtitle?.let { append(" • $it") }
-                        if (activity.isCompleted && activity.subtitle != "Виконано сьогодні") append(" • Завершено")
-                    },
-                    completed = activity.isCompleted
+        // ---- Gradient Header ----
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.linearGradient(listOf(Color(0xFF667EEA), Color(0xFF764BA2)))
                 )
-            }
-        }
-
-        // Coach message
-        coachMessage?.let { message ->
+                .padding(20.dp)
+        ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Brush.horizontalGradient(
-                            colors = listOf(
-                                Color(0xFF8B5CF6).copy(alpha = 0.15f),
-                                Color(0xFF6366F1).copy(alpha = 0.12f)
-                            )
-                        ),
-                        RoundedCornerShape(14.dp)
-                    )
-                    .border(
-                        width = 1.dp,
-                        color = Color(0xFF8B5CF6).copy(alpha = 0.25f),
-                        shape = RoundedCornerShape(14.dp)
-                    )
-                    .clickable(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onCoachClick() })
-                    .padding(12.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "\uD83C\uDFCB\uFE0F", fontSize = 18.sp)
-                Text(
-                    text = message,
-                    color = Color(0xFF5B21B6),
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp,
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = "ПЛАН НА СЬОГОДНІ",
+                        color = Color.White.copy(alpha = 0.5f),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
+                    Text(
+                        text = "Денна ціль",
+                        color = Color.White,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                    Text(
+                        text = "$completedTasks з $totalTasks виконано · ~$remainingMinutes хв залишилось",
+                        color = Color.White.copy(alpha = 0.5f),
+                        fontSize = 13.sp
+                    )
+                }
+
+                ProgressRingSegmented(
+                    completedTasks = completedTasks,
+                    totalTasks = totalTasks,
+                    ringSize = 52,
+                    completedColor = Color(0xFF22C55E),
+                    emptyColor = Color.White.copy(alpha = 0.2f),
+                    textColor = Color.White
                 )
+            }
+        }
+
+        // ---- White Body (Timeline + Coach) ----
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(20.dp)
+        ) {
+            // Timeline tasks
+            plan.activities.forEachIndexed { index, activity ->
+                val status = when {
+                    activity.isCompleted -> TaskStatus.DONE
+                    index == activeIndex -> TaskStatus.ACTIVE
+                    else -> TaskStatus.PENDING
+                }
+                TimelineTaskRow(
+                    activity = activity,
+                    status = status,
+                    isLast = index == plan.activities.lastIndex,
+                    onActionClick = { onActivityClick(activity) }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // AI Coach
+            coachMessage?.let { message ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xFFFAFAFC))
+                        .drawBehind {
+                            drawRect(
+                                color = Color(0xFF8B5CF6),
+                                topLeft = Offset(0f, 0f),
+                                size = Size(4.dp.toPx(), size.height)
+                            )
+                        }
+                        .clickable {
+                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                            onCoachClick()
+                        }
+                        .padding(14.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(38.dp)
+                            .shadow(
+                                elevation = 4.dp,
+                                shape = RoundedCornerShape(12.dp),
+                                spotColor = Color(0xFF8B5CF6).copy(alpha = 0.3f)
+                            )
+                            .background(
+                                Brush.linearGradient(listOf(Color(0xFF8B5CF6), Color(0xFF6D28D9))),
+                                RoundedCornerShape(12.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("✨", fontSize = 18.sp)
+                    }
+
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Text(
+                            text = "AI-КОУЧ",
+                            color = Color(0xFF8B5CF6),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = message,
+                            color = Color(0xFF4B5563),
+                            fontSize = 13.sp,
+                            lineHeight = 18.sp,
+                            maxLines = 4
+                        )
+                    }
+
+                    Text(
+                        text = "›",
+                        color = Color(0xFFC4B5FD),
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TimelineTaskRow(
+    activity: PlanActivity,
+    status: TaskStatus,
+    isLast: Boolean,
+    onActionClick: () -> Unit
+) {
+    val view = LocalView.current
+
+    val lineColor = when (status) {
+        TaskStatus.DONE -> Color(0xFF22C55E)
+        TaskStatus.ACTIVE -> Color(0xFF667EEA)
+        TaskStatus.PENDING -> Color(0xFFE5E7EB)
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+    ) {
+        // Left: icon + vertical line
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(36.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .shadow(
+                        elevation = 4.dp,
+                        shape = RoundedCornerShape(12.dp),
+                        spotColor = when (status) {
+                            TaskStatus.DONE -> Color(0xFF22C55E).copy(alpha = 0.4f)
+                            TaskStatus.ACTIVE -> Color(0xFF667EEA).copy(alpha = 0.4f)
+                            TaskStatus.PENDING -> Color.Black.copy(alpha = 0.05f)
+                        }
+                    )
+                    .background(
+                        when (status) {
+                            TaskStatus.DONE -> Brush.linearGradient(listOf(Color(0xFF22C55E), Color(0xFF16A34A)))
+                            TaskStatus.ACTIVE -> Brush.linearGradient(listOf(Color(0xFF667EEA), Color(0xFF764BA2)))
+                            TaskStatus.PENDING -> Brush.linearGradient(listOf(Color(0xFFF1F3F5), Color(0xFFF1F3F5)))
+                        },
+                        RoundedCornerShape(12.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                when (status) {
+                    TaskStatus.DONE -> Text("✓", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    TaskStatus.ACTIVE -> Text(
+                        when (activity.type) {
+                            ActivityType.WARMUP -> "🏃"
+                            ActivityType.LESSON -> "📖"
+                            ActivityType.IMPROVISATION -> "🎭"
+                            else -> "📖"
+                        },
+                        fontSize = 16.sp
+                    )
+                    TaskStatus.PENDING -> Text("🕐", fontSize = 14.sp)
+                }
+            }
+
+            if (!isLast) {
+                Box(
+                    modifier = Modifier
+                        .width(2.5.dp)
+                        .weight(1f)
+                        .background(lineColor)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.width(14.dp))
+
+        // Right: content
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(bottom = if (!isLast) 20.dp else 0.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = activity.title,
+                color = when (status) {
+                    TaskStatus.DONE -> Color(0xFFB0B7C3)
+                    TaskStatus.ACTIVE -> Color(0xFF111827)
+                    TaskStatus.PENDING -> Color(0xFFB0B7C3)
+                },
+                fontSize = 15.sp,
+                fontWeight = if (status == TaskStatus.ACTIVE) FontWeight.Bold else FontWeight.SemiBold,
+                textDecoration = if (status == TaskStatus.DONE) TextDecoration.LineThrough else TextDecoration.None
+            )
+
+            Text(
+                text = when (status) {
+                    TaskStatus.DONE -> "${activity.estimatedMinutes} хв · Завершено"
+                    TaskStatus.ACTIVE -> "${activity.estimatedMinutes} хв · ${activity.subtitle ?: ""}"
+                    TaskStatus.PENDING -> "${activity.estimatedMinutes} хв · ${activity.subtitle ?: ""}"
+                },
+                color = when (status) {
+                    TaskStatus.DONE -> Color(0xFFD1D5DB)
+                    TaskStatus.ACTIVE -> Color(0xFF667EEA)
+                    TaskStatus.PENDING -> Color(0xFFD4D9E1)
+                },
+                fontSize = 12.sp,
+                fontWeight = if (status == TaskStatus.ACTIVE) FontWeight.SemiBold else FontWeight.Medium
+            )
+
+            // "Розпочати" button (only on active task)
+            if (status == TaskStatus.ACTIVE) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Box(
+                    modifier = Modifier
+                        .shadow(
+                            elevation = 8.dp,
+                            shape = RoundedCornerShape(14.dp),
+                            spotColor = Color(0xFF667EEA).copy(alpha = 0.4f)
+                        )
+                        .background(
+                            Brush.linearGradient(listOf(Color(0xFF667EEA), Color(0xFF764BA2))),
+                            RoundedCornerShape(14.dp)
+                        )
+                        .clickable {
+                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                            onActionClick()
+                        }
+                        .padding(horizontal = 22.dp, vertical = 10.dp)
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Розпочати",
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .background(Color.White.copy(alpha = 0.25f), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Canvas(modifier = Modifier.size(8.dp, 10.dp)) {
+                                val path = Path().apply {
+                                    moveTo(0f, 0f)
+                                    lineTo(size.width, size.height / 2)
+                                    lineTo(0f, size.height)
+                                    close()
+                                }
+                                drawPath(path, color = Color.White)
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -681,138 +652,168 @@ private fun DailyGoalCard(
 private fun ProgressRingSegmented(
     completedTasks: Int,
     totalTasks: Int,
+    ringSize: Int = 80,
+    completedColor: Color = Color(0xFF667EEA),
+    emptyColor: Color = Color(0xFFE5E5EA),
+    textColor: Color = Color(0xFF667EEA),
     modifier: Modifier = Modifier
 ) {
+    val sizeDp = ringSize.dp
     Box(
-        modifier = modifier.size(80.dp),
+        modifier = modifier.size(sizeDp),
         contentAlignment = Alignment.Center
     ) {
-        Canvas(modifier = Modifier.size(80.dp)) {
-            val strokeWidth = 8.dp.toPx()
+        Canvas(modifier = Modifier.size(sizeDp)) {
+            val strokeWidth = (ringSize * 0.1f).dp.toPx()
             val radius = (size.minDimension - strokeWidth) / 2
             val center = Offset(size.width / 2, size.height / 2)
 
-            // Background circle
             drawCircle(
-                color = Color(0xFFE5E5EA),
+                color = emptyColor,
                 radius = radius,
                 center = center,
                 style = Stroke(strokeWidth)
             )
 
-            // Segments
-            val segmentAngle = 360f / totalTasks
-            val gapAngle = 8f // Проміжок між сегментами
+            if (totalTasks > 0) {
+                val segmentAngle = 360f / totalTasks
+                val gapAngle = 8f
 
-            for (i in 0 until totalTasks) {
-                val startAngle = -90f + i * segmentAngle + gapAngle / 2
-                val sweepAngle = segmentAngle - gapAngle
+                for (i in 0 until totalTasks) {
+                    val startAngle = -90f + i * segmentAngle + gapAngle / 2
+                    val sweepAngle = segmentAngle - gapAngle
+                    val segmentColor = if (i < completedTasks) completedColor else emptyColor
 
-                val segmentColor = if (i < completedTasks) {
-                    Color(0xFF667EEA) // Заповнений - синій
-                } else {
-                    Color(0xFFE5E5EA) // Порожній
-                }
-
-                drawArc(
-                    color = segmentColor,
-                    startAngle = startAngle,
-                    sweepAngle = sweepAngle,
-                    useCenter = false,
-                    topLeft = Offset(
-                        center.x - radius,
-                        center.y - radius
-                    ),
-                    size = androidx.compose.ui.geometry.Size(radius * 2, radius * 2),
-                    style = Stroke(
-                        width = strokeWidth,
-                        cap = StrokeCap.Round
+                    drawArc(
+                        color = segmentColor,
+                        startAngle = startAngle,
+                        sweepAngle = sweepAngle,
+                        useCenter = false,
+                        topLeft = Offset(center.x - radius, center.y - radius),
+                        size = Size(radius * 2, radius * 2),
+                        style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
                     )
-                )
+                }
             }
         }
 
-        // Center text
         Text(
             text = "$completedTasks/$totalTasks",
-            style = AppTypography.titleLarge,
-            color = Color(0xFF667EEA), // Синій
-            fontSize = 18.sp,
+            color = textColor,
+            fontSize = (ringSize * 0.225f).sp,
             fontWeight = FontWeight.Black
         )
     }
 }
 
+// ======================== 3. MOTIVATION CARD ========================
+
 @Composable
-private fun TaskRow(
-    title: String,
-    meta: String,
-    completed: Boolean,
+private fun MotivationCard(
+    tip: DailyTip,
     modifier: Modifier = Modifier
 ) {
-    val view = LocalView.current
+    val isAuthorQuote = tip.title != "Порада дня"
+
     Row(
         modifier = modifier
             .fillMaxWidth()
             .background(
-                if (completed) Color(0xFFF5F5F7).copy(alpha = 0.5f)
-                else Color(0xFFF5F5F7),
-                RoundedCornerShape(12.dp)
+                Brush.linearGradient(
+                    listOf(Color(0xFF8B5CF6).copy(alpha = 0.10f), Color(0xFF6366F1).copy(alpha = 0.06f))
+                ),
+                RoundedCornerShape(16.dp)
             )
-            .scaleOnPress(pressedScale = 0.98f)
-            .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY) }
-            .padding(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+            .border(1.dp, Color(0xFF8B5CF6).copy(alpha = 0.12f), RoundedCornerShape(16.dp))
+            .padding(horizontal = 18.dp, vertical = 14.dp),
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .size(24.dp)
-                .background(
-                    if (completed) Color(0xFF34C759)
-                    else Color.Transparent,
-                    CircleShape
+                .size(38.dp)
+                .shadow(
+                    elevation = 4.dp,
+                    shape = RoundedCornerShape(12.dp),
+                    spotColor = Color(0xFFFBBF24).copy(alpha = 0.3f)
                 )
-                .border(
-                    2.5.dp,
-                    if (completed) Color(0xFF34C759)
-                    else Color(0xFFD1D1D6),
-                    CircleShape
+                .background(
+                    Brush.linearGradient(listOf(Color(0xFFFBBF24), Color(0xFFF59E0B))),
+                    RoundedCornerShape(12.dp)
                 ),
             contentAlignment = Alignment.Center
         ) {
-            if (completed) {
-                Text(text = "✓", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-            }
+            Text(
+                text = if (isAuthorQuote) "💬" else "💡",
+                fontSize = 20.sp
+            )
         }
 
-        Column(modifier = Modifier.weight(1f)) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
             Text(
-                text = title,
-                style = AppTypography.bodyMedium,
-                color = TextColors.onLightPrimary,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.SemiBold
+                text = if (isAuthorQuote) "ЦИТАТА" else "ПОРАДА ДНЯ",
+                color = Color(0xFFFBBF24),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 0.8.sp
             )
             Text(
-                text = meta,
-                style = AppTypography.bodySmall,
-                color = TextColors.onLightMuted,
+                text = if (isAuthorQuote) "«${tip.content}»" else tip.content,
+                color = Color.White,
                 fontSize = 13.sp,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
+                lineHeight = 18.sp
             )
+            if (isAuthorQuote) {
+                Text(
+                    text = "— ${tip.title}",
+                    color = Color.White.copy(alpha = 0.8f),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    fontStyle = FontStyle.Italic
+                )
+            }
         }
     }
 }
 
+// ======================== 6. SKILLS SECTION ========================
+
+private val skillDotColors = listOf(
+    Color(0xFF667EEA),
+    Color(0xFF06B6D4),
+    Color(0xFFEC4899),
+    Color(0xFFF59E0B),
+    Color(0xFF22C55E)
+)
+
 @Composable
 private fun SkillsSection(
-    skills: List<com.aivoicepower.domain.model.home.Skill>,
+    skills: List<Skill>,
+    onDetailClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
     Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 12.dp,
+                shape = RoundedCornerShape(20.dp),
+                spotColor = Color(0xFF667EEA).copy(alpha = 0.2f)
+            )
+            .background(
+                Brush.linearGradient(
+                    listOf(Color(0xFF1E1B4B).copy(alpha = 0.85f), Color(0xFF312E81).copy(alpha = 0.75f))
+                ),
+                RoundedCornerShape(20.dp)
+            )
+            .border(1.dp, Color(0xFF667EEA).copy(alpha = 0.25f), RoundedCornerShape(20.dp))
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -821,133 +822,195 @@ private fun SkillsSection(
         ) {
             Text(
                 text = "Навички",
-                style = AppTypography.titleLarge,
-                color = TextColors.onDarkPrimary,
+                color = Color.White,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.ExtraBold,
                 letterSpacing = (-0.5).sp
             )
+            var detailPressed by remember { mutableStateOf(false) }
+            val detailScale by androidx.compose.animation.core.animateFloatAsState(
+                targetValue = if (detailPressed) 0.88f else 1f,
+                animationSpec = androidx.compose.animation.core.spring(
+                    dampingRatio = 0.4f,
+                    stiffness = 400f
+                ),
+                label = "detailScale"
+            )
             Text(
-                text = "Всі →",
-                style = AppTypography.bodyMedium,
-                color = TextColors.onDarkSecondary,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.SemiBold
+                text = "Детальніше →",
+                color = Color.White.copy(alpha = if (detailPressed) 0.8f else 0.5f),
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier
+                    .graphicsLayer {
+                        scaleX = detailScale
+                        scaleY = detailScale
+                    }
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onPress = {
+                                detailPressed = true
+                                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                tryAwaitRelease()
+                                detailPressed = false
+                                onDetailClick()
+                            }
+                        )
+                    }
             )
         }
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            skills.forEach { skill ->
-                SkillCard(skill = skill)
+        if (skills.isNotEmpty()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadarChart(
+                    skills = skills,
+                    modifier = Modifier.size(140.dp, 130.dp)
+                )
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    skills.forEachIndexed { index, skill ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .background(
+                                        skillDotColors.getOrElse(index) { Color.White },
+                                        CircleShape
+                                    )
+                            )
+                            Text(
+                                text = skill.name,
+                                color = Color.White,
+                                fontSize = 12.sp,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                text = "${skill.percentage}%",
+                                color = Color.White,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = skill.growth,
+                                color = Color(0xFF22C55E),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-private fun SkillCard(
-    skill: com.aivoicepower.domain.model.home.Skill,
+private fun RadarChart(
+    skills: List<Skill>,
     modifier: Modifier = Modifier
 ) {
-    val view = LocalView.current
-    // Cache parsed colors — avoid re-parsing hex on every recomposition
-    val gradientColors = remember(skill.gradientColors) {
-        skill.gradientColors.map { hexColor ->
-            Color(android.graphics.Color.parseColor(hexColor))
-        }
-    }
+    val n = skills.size
+    if (n < 3) return
 
-    Column(
-        modifier = modifier
-            .width(160.dp)
-            .glassBackground(
-                shape = RoundedCornerShape(20.dp),
-                backgroundColor = GlassColors.background,
-                borderColor = GlassColors.borderLight
-            )
-            .multiLayerShadow(
-                elevation = 8.dp,
-                spotColor = Color.Black.copy(alpha = 0.15f)
-            )
-            .clickable { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY) }
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(56.dp)
-                .background(
-                    Brush.linearGradient(gradientColors),
-                    RoundedCornerShape(16.dp)
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = skill.emoji, fontSize = 28.sp)
+    Canvas(modifier = modifier) {
+        val cx = size.width / 2
+        val cy = size.height / 2
+        val maxRadius = minOf(cx, cy) - 12.dp.toPx()
+
+        val angles = (0 until n).map { i ->
+            -PI / 2 + 2 * PI * i / n
         }
 
-        Text(
-            text = skill.name,
-            style = AppTypography.bodyMedium,
-            color = TextColors.onDarkPrimary,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Bold
-        )
+        // Grid levels (3)
+        for (level in 1..3) {
+            val r = maxRadius * level / 3
+            val gridPath = Path()
+            for (i in 0 until n) {
+                val x = cx + (r * cos(angles[i])).toFloat()
+                val y = cy + (r * sin(angles[i])).toFloat()
+                if (i == 0) gridPath.moveTo(x, y) else gridPath.lineTo(x, y)
+            }
+            gridPath.close()
+            drawPath(
+                gridPath,
+                color = Color.White.copy(alpha = 0.04f + 0.02f * level),
+                style = Stroke(1.dp.toPx())
+            )
+        }
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(13.5.dp)
-                .background(
-                    Color.White.copy(alpha = 0.75f),
-                    RoundedCornerShape(6.75.dp)
+        // Axes
+        for (i in 0 until n) {
+            val x = cx + (maxRadius * cos(angles[i])).toFloat()
+            val y = cy + (maxRadius * sin(angles[i])).toFloat()
+            drawLine(
+                color = Color.White.copy(alpha = 0.06f),
+                start = Offset(cx, cy),
+                end = Offset(x, y),
+                strokeWidth = 1.dp.toPx()
+            )
+        }
+
+        // Data polygon
+        val dataPoints = skills.mapIndexed { i, skill ->
+            val r = maxRadius * (skill.percentage / 100f).coerceIn(0.05f, 1f)
+            Offset(
+                cx + (r * cos(angles[i])).toFloat(),
+                cy + (r * sin(angles[i])).toFloat()
+            )
+        }
+        val dataPath = Path()
+        dataPoints.forEachIndexed { i, point ->
+            if (i == 0) dataPath.moveTo(point.x, point.y) else dataPath.lineTo(point.x, point.y)
+        }
+        dataPath.close()
+
+        drawPath(
+            dataPath,
+            brush = Brush.linearGradient(
+                listOf(
+                    Color(0xFF667EEA).copy(alpha = 0.3f),
+                    Color(0xFF764BA2).copy(alpha = 0.12f)
                 )
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(skill.percentage / 100f)
-                    .fillMaxHeight()
-                    .background(
-                        Brush.linearGradient(
-                            colors = listOf(Color(0xFF22C55E), Color(0xFF16A34A))
-                        ),
-                        RoundedCornerShape(6.75.dp)
-                    )
-                    .shadow(
-                        elevation = 4.dp,
-                        shape = RoundedCornerShape(6.75.dp),
-                        spotColor = Color(0xFF22C55E).copy(alpha = 0.5f)
-                    )
             )
-        }
-
-        Text(
-            text = "${skill.percentage}% • ↗ ${skill.growth}",
-            style = AppTypography.bodySmall,
-            color = TextColors.onDarkSecondary,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold
+        )
+        drawPath(
+            dataPath,
+            color = Color(0xFF667EEA),
+            style = Stroke(1.5.dp.toPx())
         )
 
-        if (skill.statusLabel.isNotEmpty()) {
-            Text(
-                text = skill.statusLabel,
-                style = AppTypography.labelSmall,
-                color = com.aivoicepower.utils.SkillLevelUtils.getSkillLabelColor(skill.percentage),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.ExtraBold
-            )
+        // Data points
+        val colors = listOf(
+            Color(0xFF667EEA),
+            Color(0xFF06B6D4),
+            Color(0xFFEC4899),
+            Color(0xFFF59E0B),
+            Color(0xFF22C55E)
+        )
+        dataPoints.forEachIndexed { i, point ->
+            val dotColor = colors.getOrElse(i) { Color.White }
+            drawCircle(Color.White, radius = 4.5.dp.toPx(), center = point)
+            drawCircle(dotColor, radius = 3.dp.toPx(), center = point)
         }
     }
 }
 
+// ======================== 5. CONTINUE COURSE (UNCHANGED) ========================
+
 @Composable
 private fun ContinueCourseSection(
-    course: com.aivoicepower.domain.model.home.CurrentCourse,
+    course: CurrentCourse,
     onCourseClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -974,7 +1037,6 @@ private fun ContinueCourseSection(
                 .clickable(onClick = { view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); onCourseClick() })
                 .padding(0.dp)
         ) {
-            // Header з градієнтом курсу
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -989,7 +1051,6 @@ private fun ContinueCourseSection(
                         RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
                     )
             ) {
-                // Легкий темний градієнт зверху
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1005,7 +1066,6 @@ private fun ContinueCourseSection(
                         )
                 )
 
-                // Іконка курсу внизу справа
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -1019,14 +1079,37 @@ private fun ContinueCourseSection(
                     )
                 }
 
-                // Назва курсу у верхньому лівому куті з 3D ефектом
+                // Play button overlay (below course name)
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = 16.dp),
+                    contentAlignment = Alignment.BottomCenter
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(64.dp)
+                            .background(Color.White.copy(alpha = 0.25f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Canvas(modifier = Modifier.size(22.dp, 26.dp)) {
+                            val path = Path().apply {
+                                moveTo(0f, 0f)
+                                lineTo(size.width, size.height / 2)
+                                lineTo(0f, size.height)
+                                close()
+                            }
+                            drawPath(path, color = Color.White.copy(alpha = 0.9f))
+                        }
+                    }
+                }
+
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(20.dp),
                     contentAlignment = Alignment.TopStart
                 ) {
-                    // Глибока тінь для 3D ефекту (темний шар знизу)
                     Text(
                         text = course.courseName,
                         style = AppTypography.titleLarge,
@@ -1037,8 +1120,6 @@ private fun ContinueCourseSection(
                         lineHeight = 38.sp,
                         modifier = Modifier.offset(x = 3.dp, y = 3.dp)
                     )
-
-                    // Середній шар для глибини (світліша тінь)
                     Text(
                         text = course.courseName,
                         style = AppTypography.titleLarge,
@@ -1049,8 +1130,6 @@ private fun ContinueCourseSection(
                         lineHeight = 38.sp,
                         modifier = Modifier.offset(x = 2.dp, y = 2.dp)
                     )
-
-                    // Основний текст з легким відтінком кольору курсу
                     Text(
                         text = course.courseName,
                         style = AppTypography.titleLarge,
@@ -1060,8 +1139,6 @@ private fun ContinueCourseSection(
                         letterSpacing = (-0.5).sp,
                         lineHeight = 38.sp
                     )
-
-                    // Кольоровий відтінок поверх основного тексту
                     Text(
                         text = course.courseName,
                         style = AppTypography.titleLarge,
@@ -1071,8 +1148,6 @@ private fun ContinueCourseSection(
                         letterSpacing = (-0.5).sp,
                         lineHeight = 38.sp
                     )
-
-                    // Світловий highlight зверху для 3D глибини
                     Text(
                         text = course.courseName,
                         style = AppTypography.titleLarge,
@@ -1086,14 +1161,12 @@ private fun ContinueCourseSection(
                 }
             }
 
-            // Content
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Урок N • N/NN
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -1105,13 +1178,11 @@ private fun ContinueCourseSection(
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
-
                     Text(
                         text = "•",
                         color = TextColors.onLightSecondary,
                         fontSize = 16.sp
                     )
-
                     Text(
                         text = "${course.nextLessonNumber}/${course.totalLessons}",
                         style = AppTypography.bodyMedium,
@@ -1121,7 +1192,6 @@ private fun ContinueCourseSection(
                     )
                 }
 
-                // Назва уроку (велика, до 2 рядків)
                 Text(
                     text = course.nextLessonTitle,
                     style = AppTypography.titleLarge,
@@ -1133,7 +1203,6 @@ private fun ContinueCourseSection(
                     letterSpacing = (-0.5).sp
                 )
 
-                // Progress bar
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1154,6 +1223,8 @@ private fun ContinueCourseSection(
         }
     }
 }
+
+// ======================== 7. QUICK ACTIONS (UNCHANGED) ========================
 
 @Composable
 private fun QuickActionsSection(
@@ -1211,19 +1282,18 @@ private fun QuickActionCard(
     modifier: Modifier = Modifier
 ) {
     val view = LocalView.current
-    // Map action IDs to gradient colors
     val gradientColors = when (action.id) {
-        "tongue_twisters" -> listOf(Color(0xFFC0C0C0), Color(0xFFE8E8E8)) // Сріблястий градієнт
-        "weakest_skill" -> listOf(Color(0xFF8B5CF6), Color(0xFFA855F7)) // Фіолетовий градієнт
-        "quick_warmup" -> listOf(Color(0xFF06B6D4), Color(0xFF0891B2)) // Бірюзово-синій градієнт
-        "recording_history" -> listOf(Color(0xFF10B981), Color(0xFF14B8A6)) // Зелено-блакитний
+        "tongue_twisters" -> listOf(Color(0xFFC0C0C0), Color(0xFFE8E8E8))
+        "weakest_skill" -> listOf(Color(0xFF8B5CF6), Color(0xFFA855F7))
+        "quick_warmup" -> listOf(Color(0xFF06B6D4), Color(0xFF0891B2))
+        "recording_history" -> listOf(Color(0xFF10B981), Color(0xFF14B8A6))
         else -> listOf(Color(0xFF6366F1), Color(0xFF8B5CF6))
     }
 
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .height(145.dp) // Збільшена висота для повного відображення назв
+            .height(145.dp)
             .shadow(
                 elevation = 8.dp,
                 shape = RoundedCornerShape(20.dp),

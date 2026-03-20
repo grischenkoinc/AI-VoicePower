@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -77,7 +78,13 @@ fun MainNavGraph(
                     navController.navigate(Screen.Lesson.createRoute(courseId, lessonId))
                 },
                 onNavigateToImprovisation = {
-                    navController.navigate(Screen.Improvisation.route)
+                    navController.navigate(Screen.Improvisation.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 },
                 onNavigateToAICoach = onNavigateToAiCoach,
                 onNavigateToWarmup = {
@@ -99,7 +106,13 @@ fun MainNavGraph(
                     // TODO: Navigate to record screen
                 },
                 onNavigateToAnalytics = {
-                    navController.navigate(Screen.Progress.route)
+                    navController.navigate(Screen.Progress.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 },
                 onNavigateToSettings = {
                     navController.navigate(Screen.Settings.route)
