@@ -17,7 +17,9 @@ data class VoiceAnalysisResult(
     val strengths: List<String>,     // Сильні сторони
     val improvements: List<String>,  // Зони для покращення
     val tip: String,            // Конкретна порада
-    val coachComment: String = "" // Мотиваційний коментар тренера
+    val coachComment: String = "", // Мотиваційний коментар тренера
+    val divergences: String? = null, // Розбіжності з очікуваним текстом
+    val reasoning: String? = null    // Внутрішнє міркування AI (chain-of-thought)
 ) {
     companion object {
         /**
@@ -36,7 +38,9 @@ data class VoiceAnalysisResult(
             strengths = emptyList(),
             improvements = listOf("Не вдалося проаналізувати запис"),
             tip = "Спробуйте записати ще раз, переконайтесь що мікрофон працює",
-            coachComment = ""
+            coachComment = "",
+            divergences = null,
+            reasoning = null
         )
     }
 }

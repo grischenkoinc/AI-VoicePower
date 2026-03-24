@@ -34,8 +34,10 @@ class GeminiApiClient @Inject constructor(
         // API Key loaded from local.properties via BuildConfig
         private val API_KEY = BuildConfig.GEMINI_API_KEY
         private const val MODEL_NAME = "gemini-2.5-flash-lite"
+        private const val PHONETICS_MODEL_NAME = "gemini-2.5-flash"
     }
 
+    /** Creative model — for debate/sales/coach responses where variety is desired */
     private val generativeModel = GenerativeModel(
         modelName = MODEL_NAME,
         apiKey = API_KEY,
@@ -44,6 +46,30 @@ class GeminiApiClient @Inject constructor(
             topK = 40
             topP = 0.95f
             maxOutputTokens = 2000
+        }
+    )
+
+    /** Analysis model — deterministic scoring with minimal randomness */
+    private val analysisGenerativeModel = GenerativeModel(
+        modelName = MODEL_NAME,
+        apiKey = API_KEY,
+        generationConfig = generationConfig {
+            temperature = 0.15f
+            topK = 10
+            topP = 0.5f
+            maxOutputTokens = 2000
+        }
+    )
+
+    /** Phonetics model — high-quality audio perception for minimal pairs / phoneme discrimination */
+    private val phoneticsGenerativeModel = GenerativeModel(
+        modelName = PHONETICS_MODEL_NAME,
+        apiKey = API_KEY,
+        generationConfig = generationConfig {
+            temperature = 0.1f
+            topK = 5
+            topP = 0.3f
+            maxOutputTokens = 8192
         }
     )
 
@@ -386,6 +412,13 @@ class GeminiApiClient @Inject constructor(
 
         val prompt = AiPrompts.buildVoiceAnalysisPrompt(expectedText, exerciseType, additionalContext)
 
+        val activeModel = if (exerciseType.lowercase().contains("minimal_pairs") ||
+                              exerciseType.lowercase().contains("minimalpairs")) {
+            phoneticsGenerativeModel
+        } else {
+            analysisGenerativeModel
+        }
+
         var lastException: Exception? = null
         val maxAttempts = 3
 
@@ -394,7 +427,7 @@ class GeminiApiClient @Inject constructor(
                 Log.d("DiagFlow", ">>> GEMINI API CALL - Attempt ${attempt + 1} of $maxAttempts <<<")
                 Log.d("Gemini", "Attempt ${attempt + 1} of $maxAttempts - Sending audio to Gemini API...")
 
-                val response = generativeModel.generateContent(
+                val response = activeModel.generateContent(
                     content {
                         text(prompt)
                         blob(mimeType, audioBytes)
@@ -458,6 +491,26 @@ class GeminiApiClient @Inject constructor(
             }
         }
 
+        // Fallback: якщо phonetics model впала — пробуємо flash-lite один раз
+        if (activeModel === phoneticsGenerativeModel) {
+            Log.w("Gemini", "Phonetics model failed, falling back to analysisGenerativeModel")
+            try {
+                val response = analysisGenerativeModel.generateContent(
+                    content {
+                        text(prompt)
+                        blob(mimeType, audioBytes)
+                    }
+                )
+                val responseText = response.text
+                if (responseText != null) {
+                    Log.d("Gemini", "Fallback succeeded")
+                    return Result.success(parseVoiceAnalysisResponse(responseText))
+                }
+            } catch (e: Exception) {
+                Log.e("Gemini", "Fallback also failed: ${e.message}")
+            }
+        }
+
         // Всі спроби невдалі
         Log.e("Gemini", "=== analyzeVoiceRecording FAILED after $maxAttempts attempts ===")
         Log.e("Gemini", "Last error: ${lastException?.message}")
@@ -479,7 +532,7 @@ class GeminiApiClient @Inject constructor(
                 return Result.failure(Exception("Запис занадто короткий"))
             }
 
-            val response = generativeModel.generateContent(
+            val response = analysisGenerativeModel.generateContent(
                 content {
                     text("Транскрибуй це аудіо українською мовою. Поверни ТІЛЬКИ текст того що сказано, без пояснень, без лапок, без додаткових коментарів. Якщо нічого не сказано — поверни порожній рядок.")
                     blob(mimeType, audioBytes)
@@ -524,40 +577,14 @@ class GeminiApiClient @Inject constructor(
                 strengths = (parsed.strengths ?: emptyList()).take(3),
                 improvements = (parsed.improvements ?: listOf("Не вдалося проаналізувати запис")).take(3),
                 tip = parsed.tip ?: "Спробуйте записати ще раз",
-                coachComment = parsed.coachComment ?: ""
+                coachComment = parsed.coachComment ?: "",
+                divergences = parsed.divergences,
+                reasoning = parsed.reasoning
             )
-            breakRounding(result)
+            result
         } catch (e: Exception) {
             VoiceAnalysisResult.default()
         }
-    }
-
-    /**
-     * Ламає округлення до 5/10 — Gemini flash-lite схильний округляти.
-     */
-    private fun breakRounding(result: VoiceAnalysisResult): VoiceAnalysisResult {
-        fun deround(value: Int, salt: Int): Int {
-            if (value <= 0 || value >= 100) return value
-            if (value % 5 != 0) return value
-            val offset = when ((value + salt) % 4) {
-                0 -> -2
-                1 -> -1
-                2 -> 1
-                else -> 2
-            }
-            return (value + offset).coerceIn(1, 99)
-        }
-        return result.copy(
-            diction = deround(result.diction, 1),
-            tempo = deround(result.tempo, 2),
-            intonation = deround(result.intonation, 3),
-            volume = deround(result.volume, 4),
-            confidence = deround(result.confidence, 5),
-            fillerWords = deround(result.fillerWords, 6),
-            structure = deround(result.structure, 7),
-            persuasiveness = deround(result.persuasiveness, 8),
-            overallScore = deround(result.overallScore, 9)
-        )
     }
 
     /**
@@ -571,7 +598,7 @@ class GeminiApiClient @Inject constructor(
     ): Result<VoiceAnalysisResult> {
         return try {
             val prompt = AiPrompts.buildImprovisationAnalysisPrompt(exerciseType, rounds, exerciseContext)
-            val response = generativeModel.generateContent(
+            val response = analysisGenerativeModel.generateContent(
                 content { text(prompt) }
             )
             trackAnalysisTokens(response, "improv_$exerciseType")
@@ -708,5 +735,7 @@ private data class VoiceAnalysisJsonResponse(
     @SerializedName("strengths") val strengths: List<String>?,
     @SerializedName("improvements") val improvements: List<String>?,
     @SerializedName("tip") val tip: String?,
-    @SerializedName("coachComment") val coachComment: String?
+    @SerializedName("coachComment") val coachComment: String?,
+    @SerializedName("divergences") val divergences: String?,
+    @SerializedName("reasoning") val reasoning: String?
 )

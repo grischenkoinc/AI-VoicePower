@@ -1,6 +1,9 @@
 package com.aivoicepower.data.repository
 
 import android.util.Log
+import com.aivoicepower.data.local.database.dao.AnalysisResultDao
+import com.aivoicepower.data.local.database.dao.DiagnosticResultDao
+import com.aivoicepower.data.local.database.entity.AnalysisResultEntity
 import com.aivoicepower.data.remote.AiPrompts
 import com.aivoicepower.data.remote.GeminiApiClient
 import com.aivoicepower.domain.model.VoiceAnalysis
@@ -15,6 +18,7 @@ import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.UUID
 import javax.inject.Inject
 
 // Data class для парсингу JSON від Gemini
@@ -34,7 +38,9 @@ private data class GeminiAnalysisResponse(
 class VoiceAnalysisRepositoryImpl @Inject constructor(
     private val geminiModel: GenerativeModel,
     private val geminiApiClient: GeminiApiClient,
-    private val skillUpdateService: SkillUpdateService
+    private val skillUpdateService: SkillUpdateService,
+    private val analysisResultDao: AnalysisResultDao,
+    private val diagnosticResultDao: DiagnosticResultDao
 ) : VoiceAnalysisRepository {
 
     private val gson = Gson()
@@ -166,7 +172,8 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
         audioFilePath: String,
         expectedText: String?,
         exerciseType: String,
-        context: String?
+        context: String?,
+        exerciseId: String?
     ): Result<VoiceAnalysisResult> = withContext(Dispatchers.IO) {
         Log.d("DiagFlow", "=== VoiceAnalysisRepository.analyzeRecording() CALLED ===")
         Log.d("DiagFlow", "audioFilePath: $audioFilePath")
@@ -196,7 +203,45 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
             Log.w("DiagFlow", "Transcription failed: ${transcribeResult.exceptionOrNull()?.message}, proceeding without it")
         }
 
-        // --- Крок 2: Збагачуємо контекст транскрипцією ---
+        // --- Крок 2: Підтягуємо історію попередніх спроб + рівень юзера ---
+        val normalizedType = normalizeExerciseType(exerciseType)
+
+        var previousAttempts: List<AnalysisResultEntity> = emptyList()
+        try {
+            if (exerciseId != null) {
+                previousAttempts = analysisResultDao.getByExerciseId(exerciseId, limit = 3)
+            }
+            if (previousAttempts.size < 3) {
+                val remaining = 3 - previousAttempts.size
+                val byType = analysisResultDao.getByExerciseType(normalizedType, limit = remaining + 3)
+                    .filter { it.id !in previousAttempts.map { prev -> prev.id } }
+                    .take(remaining)
+                previousAttempts = previousAttempts + byType
+            }
+        } catch (e: Exception) {
+            Log.w("DiagFlow", "Failed to load previous attempts: ${e.message}")
+        }
+
+        var userLevelContext: String? = null
+        try {
+            val latestDiagnostic = diagnosticResultDao.getAllResultsOnce().firstOrNull()
+            if (latestDiagnostic != null) {
+                val avgScore = (latestDiagnostic.diction + latestDiagnostic.tempo +
+                    latestDiagnostic.intonation + latestDiagnostic.volume +
+                    latestDiagnostic.structure + latestDiagnostic.confidence +
+                    latestDiagnostic.fillerWords) / 7
+                val level = when {
+                    avgScore >= 70 -> "просунутий"
+                    avgScore >= 45 -> "середній"
+                    else -> "початківець"
+                }
+                userLevelContext = "РІВЕНЬ КОРИСТУВАЧА: $level (діагностика: $avgScore/100)"
+            }
+        } catch (e: Exception) {
+            Log.w("DiagFlow", "Failed to load user level: ${e.message}")
+        }
+
+        // --- Крок 3: Збагачуємо контекст транскрипцією + історією + рівнем ---
         val enrichedContext = if (transcription != null) {
             buildString {
                 append(context ?: "")
@@ -225,6 +270,19 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
                     if (wordCount != null && wordCount < 15) {
                         append("\nУВАГА: Людина сказала ДУЖЕ МАЛО слів ($wordCount). Для цієї вправи це НЕДОСТАТНЬО — оцінки мають бути НИЗЬКИМИ!")
                     }
+                }
+
+                // Додаємо попередні спроби
+                if (previousAttempts.isNotEmpty()) {
+                    append("\n\nПОПЕРЕДНІ СПРОБИ (від новіших до старіших):")
+                    previousAttempts.forEachIndexed { index, prev ->
+                        append("\nСпроба ${index + 1}: overallScore=${prev.overallScore}, diction=${prev.diction}, tempo=${prev.tempo}, tip=\"${prev.tip}\"")
+                    }
+                }
+
+                // Додаємо рівень юзера
+                if (userLevelContext != null) {
+                    append("\n\n$userLevelContext")
                 }
             }
         } else {
@@ -295,7 +353,62 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
             }
         }
 
+        // --- Крок 6: Зберігаємо результат аналізу в історію ---
+        try {
+            val entity = AnalysisResultEntity(
+                id = UUID.randomUUID().toString(),
+                exerciseId = exerciseId,
+                exerciseType = normalizedType,
+                overallScore = finalResult.overallScore,
+                diction = finalResult.diction,
+                tempo = finalResult.tempo,
+                intonation = finalResult.intonation,
+                volume = finalResult.volume,
+                confidence = finalResult.confidence,
+                fillerWords = finalResult.fillerWords,
+                structure = finalResult.structure,
+                persuasiveness = finalResult.persuasiveness,
+                tip = finalResult.tip,
+                strengths = gson.toJson(finalResult.strengths),
+                improvements = gson.toJson(finalResult.improvements),
+                divergences = finalResult.divergences
+            )
+            analysisResultDao.insert(entity)
+            Log.d("DiagFlow", "Analysis result saved: exerciseId=$exerciseId, type=$normalizedType, score=${finalResult.overallScore}")
+        } catch (e: Exception) {
+            Log.w("DiagFlow", "Failed to save analysis result: ${e.message}")
+        }
+
         Result.success(finalResult)
+    }
+
+    /** Нормалізує тип вправи до базового формату для збереження та пошуку */
+    private fun normalizeExerciseType(rawType: String): String {
+        val type = rawType.lowercase().let {
+            if (it.startsWith("daily_challenge_")) it.removePrefix("daily_challenge_") else it
+        }
+        return when {
+            type.contains("tongue_twister") || type.contains("tonguetwister") || type == "task_2" || type == "diction" -> "tongue_twister"
+            type.contains("slow_motion") || type.contains("slowmotion") -> "slow_motion"
+            type.contains("minimal_pairs") || type.contains("minimalpairs") || type.contains("contrast_sounds") -> "minimal_pairs"
+            type.contains("emotion_reading") || type.contains("emotionreading") || type == "task_3" -> "emotional_reading"
+            type.contains("dialogue") -> "dialogue"
+            type.contains("reading") || type == "task_1" -> "reading"
+            type.contains("retelling") -> "retelling"
+            type.contains("storytelling") || type.contains("story") -> "storytelling"
+            type.contains("debate") || type.contains("opposite_day") -> "debate"
+            type.contains("sales") || type.contains("pitch") -> "sales"
+            type.contains("interview") || type.contains("qa") -> "job_interview"
+            type.contains("presentation") -> "presentation"
+            type.contains("negotiation") -> "negotiation"
+            type.contains("no_hesitation") || type.contains("nohesitation") -> "no_hesitation"
+            type.contains("metaphor") -> "metaphor_master"
+            type.contains("emotion_switch") || type.contains("emotionswitch") -> "emotion_switch"
+            type.contains("speed_round") || type.contains("speedround") -> "speed_round"
+            type.contains("character") -> "character_voice"
+            type.contains("free_speech") || type.contains("freespeech") || type.contains("spontaneous") || type == "task_4" || type.contains("random_topic") -> "free_speech"
+            else -> type
+        }
     }
 
     /** Нормалізує текст: lowercase, тільки літери, розбиває на слова */
@@ -303,7 +416,7 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
         text.lowercase()
             .replace(Regex("[^а-яіїєґa-z'\\s]"), " ")
             .split(Regex("\\s+"))
-            .filter { it.length > 1 }
+            .filter { it.isNotEmpty() }
 
     /**
      * Нечітке порівняння двох слів. Толерантне до:
@@ -314,9 +427,20 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
     private fun fuzzyMatch(spoken: String, expected: String): Boolean {
         if (spoken == expected) return true
 
+        // Фонетичні еквіваленти для українських помилок транскрипції
+        val spokenNorm = phoneticNormalize(spoken)
+        val expectedNorm = phoneticNormalize(expected)
+        if (spokenNorm == expectedNorm) return true
+
         // Префікс: перші 3 літери збігаються (для слів >= 3 символи)
         if (spoken.length >= 3 && expected.length >= 3 &&
             (spoken.startsWith(expected.take(3)) || expected.startsWith(spoken.take(3)))) {
+            return true
+        }
+
+        // Те саме з нормалізованими
+        if (spokenNorm.length >= 3 && expectedNorm.length >= 3 &&
+            (spokenNorm.startsWith(expectedNorm.take(3)) || expectedNorm.startsWith(spokenNorm.take(3)))) {
             return true
         }
 
@@ -326,13 +450,39 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
             return true
         }
 
-        // Відстань Леvenштейна <= 1 для слів однакової довжини (біб/біп, бик/бій)
+        // Відстань Левенштейна <= 1 для слів однакової довжини (біб/біп, бик/бій)
         if (spoken.length == expected.length && spoken.length >= 2) {
             val diff = spoken.zip(expected).count { (a, b) -> a != b }
             if (diff <= 1) return true
         }
 
+        // Відстань Левенштейна <= 1 для слів різної довжини ±1 символ
+        if (kotlin.math.abs(spoken.length - expected.length) <= 1 && spoken.length >= 3) {
+            if (levenshteinDistance(spoken, expected) <= 1) return true
+        }
+
         return false
+    }
+
+    /** Нормалізує типові фонетичні варіації українських літер */
+    private fun phoneticNormalize(word: String): String =
+        word.replace('ґ', 'г')
+            .replace('ї', 'і')
+            .replace('є', 'е')
+            .replace("щ", "шч")
+
+    /** Обчислює відстань Левенштейна між двома рядками */
+    private fun levenshteinDistance(a: String, b: String): Int {
+        val dp = Array(a.length + 1) { IntArray(b.length + 1) }
+        for (i in 0..a.length) dp[i][0] = i
+        for (j in 0..b.length) dp[0][j] = j
+        for (i in 1..a.length) {
+            for (j in 1..b.length) {
+                val cost = if (a[i - 1] == b[j - 1]) 0 else 1
+                dp[i][j] = minOf(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost)
+            }
+        }
+        return dp[a.length][b.length]
     }
 
     /**
@@ -349,7 +499,17 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
             spokenWords.any { spoken -> fuzzyMatch(spoken, expected) }
         }
 
-        return ((matchedCount.toFloat() / expectedWords.size) * 100).toInt().coerceIn(0, 100)
+        val rawPercent = ((matchedCount.toFloat() / expectedWords.size) * 100).toInt().coerceIn(0, 100)
+
+        // Якщо пропущено лише 1 слово і raw completion ≥ 80% — вважаємо помилкою
+        // транскрипції Gemini Flash Lite, а не реальним пропуском юзера.
+        // Це покриває: скоромовки (5 слів), мінімальні пари (12+ слів), читання тощо.
+        val missedWords = expectedWords.size - matchedCount
+        if (missedWords == 1 && rawPercent >= 80) {
+            return maxOf(rawPercent, 95)
+        }
+
+        return rawPercent
     }
 
     /**
@@ -429,8 +589,8 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
             completionPercent < 50 -> 30
             completionPercent < 75 -> 45
             completionPercent < 90 -> 65
-            completionPercent < 100 -> 80
-            else -> 100
+            completionPercent < 95 -> 80
+            else -> 100 // 95-100%: не обмежуємо (1 пропущене слово = похибка транскрипції)
         }
 
         // Обрізаємо і окремі метрики, щоб юзер бачив узгоджені оцінки
@@ -441,7 +601,7 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
             completionPercent < 50 -> 40
             completionPercent < 75 -> 55
             completionPercent < 90 -> 70
-            else -> 100 // 90-99%: окремі метрики не обрізаємо
+            else -> 100 // 90%+: окремі метрики не обрізаємо
         }
 
         if (result.overallScore <= maxScore && metricCap >= 100) return result

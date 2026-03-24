@@ -95,15 +95,6 @@ class CompareViewModel @Inject constructor(
                         )
                     ),
                     SkillComparison(
-                        skillName = "Гучнiсть",
-                        initialValue = diagnostic.volume,
-                        currentValue = progress.skillLevels[com.aivoicepower.domain.model.user.SkillType.VOLUME] ?: 0,
-                        improvement = calculateImprovement(
-                            diagnostic.volume,
-                            progress.skillLevels[com.aivoicepower.domain.model.user.SkillType.VOLUME] ?: 0
-                        )
-                    ),
-                    SkillComparison(
                         skillName = "Структура",
                         initialValue = diagnostic.structure,
                         currentValue = progress.skillLevels[com.aivoicepower.domain.model.user.SkillType.STRUCTURE] ?: 0,

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.aivoicepower.data.local.database.AppDatabase
 import com.aivoicepower.data.local.database.dao.AchievementDao
+import com.aivoicepower.data.local.database.dao.AnalysisResultDao
 import com.aivoicepower.data.local.database.dao.CourseProgressDao
 import com.aivoicepower.data.local.database.dao.DailyChallengeDao
 import com.aivoicepower.data.local.database.dao.DiagnosticResultDao
@@ -89,5 +90,11 @@ object DatabaseModule {
     @Singleton
     fun provideAchievementDao(database: AppDatabase): AchievementDao {
         return database.achievementDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAnalysisResultDao(database: AppDatabase): AnalysisResultDao {
+        return database.analysisResultDao()
     }
 }

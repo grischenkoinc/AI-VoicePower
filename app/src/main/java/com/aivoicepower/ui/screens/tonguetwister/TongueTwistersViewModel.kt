@@ -294,7 +294,8 @@ class TongueTwistersViewModel @Inject constructor(
                 audioFilePath = path,
                 expectedText = twister?.text,
                 exerciseType = "tongue_twister",
-                context = "Скоромовка: ${twister?.text ?: ""}, цільові звуки: ${twister?.targetSounds?.joinToString() ?: ""}"
+                context = "Скоромовка: ${twister?.text ?: ""}, цільові звуки: ${twister?.targetSounds?.joinToString() ?: ""}",
+                exerciseId = twister?.id
             )
 
             val analysisResult = result.getOrNull()

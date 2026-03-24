@@ -36,7 +36,6 @@ fun SkillRadarChart(
         RadarMetric("Дикція", skillLevels[SkillType.DICTION] ?: 0),
         RadarMetric("Темп", skillLevels[SkillType.TEMPO] ?: 0),
         RadarMetric("Інтонація", skillLevels[SkillType.INTONATION] ?: 0),
-        RadarMetric("Гучність", skillLevels[SkillType.VOLUME] ?: 0),
         RadarMetric("Структура", skillLevels[SkillType.STRUCTURE] ?: 0),
         RadarMetric("Впевненість", skillLevels[SkillType.CONFIDENCE] ?: 0),
         RadarMetric("Без паразитів", skillLevels[SkillType.FILLER_WORDS] ?: 0)

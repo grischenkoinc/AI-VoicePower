@@ -285,7 +285,8 @@ class DailyChallengeViewModel @Inject constructor(
                     audioFilePath = recordingPath,
                     expectedText = null,
                     exerciseType = "daily_challenge_${challenge.type.name.lowercase()}",
-                    context = "Щоденний виклик: ${challenge.title}"
+                    context = "Щоденний виклик: ${challenge.title}",
+                    exerciseId = challenge.id
                 )
                 val analysisResult = apiResult.getOrNull()
 

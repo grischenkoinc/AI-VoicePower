@@ -161,7 +161,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-auth:21.3.0")
 
     // Google AdMob
-    implementation("com.google.android.gms:play-services-ads:23.1.0")
+    implementation("com.google.android.gms:play-services-ads:23.6.0")
 
     // Testing
     testImplementation("junit:junit:4.13.2")

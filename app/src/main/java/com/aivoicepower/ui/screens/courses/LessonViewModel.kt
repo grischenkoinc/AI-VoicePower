@@ -443,7 +443,8 @@ class LessonViewModel @Inject constructor(
                     audioFilePath = currentExerciseState.recordingPath!!,
                     expectedText = expectedText,
                     exerciseType = currentExerciseState.exercise.type.name,
-                    context = "Урок: ${lesson.title}, вправа: ${currentExerciseState.exercise.title}"
+                    context = "Урок: ${lesson.title}, вправа: ${currentExerciseState.exercise.title}",
+                    exerciseId = currentExerciseState.exercise.id
                 )
 
                 val result = analysisResult.getOrNull()
