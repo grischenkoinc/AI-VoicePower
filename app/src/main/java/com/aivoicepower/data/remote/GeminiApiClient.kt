@@ -443,7 +443,7 @@ class GeminiApiClient @Inject constructor(
                     continue
                 }
 
-                Log.d("Gemini", "Gemini response (first 300 chars): ${responseText.take(300)}")
+                Log.d("Gemini", "Gemini response (first 2000 chars): ${responseText.take(2000)}")
 
                 // Парсимо JSON відповідь
                 val analysisResult = parseVoiceAnalysisResponse(responseText)
@@ -565,15 +565,15 @@ class GeminiApiClient @Inject constructor(
             val parsed = gson.fromJson(jsonText, VoiceAnalysisJsonResponse::class.java)
 
             val result = VoiceAnalysisResult(
-                diction = parsed.diction ?: 0,
-                tempo = parsed.tempo ?: 0,
-                intonation = parsed.intonation ?: 0,
-                volume = parsed.volume ?: 0,
-                confidence = parsed.confidence ?: 0,
-                fillerWords = parsed.fillerWords ?: 0,
-                structure = parsed.structure ?: 0,
-                persuasiveness = parsed.persuasiveness ?: 0,
-                overallScore = parsed.overallScore ?: 0,
+                diction = parsed.diction?.toInt() ?: 0,
+                tempo = parsed.tempo?.toInt() ?: 0,
+                intonation = parsed.intonation?.toInt() ?: 0,
+                volume = parsed.volume?.toInt() ?: 0,
+                confidence = parsed.confidence?.toInt() ?: 0,
+                fillerWords = parsed.fillerWords?.toInt() ?: 0,
+                structure = parsed.structure?.toInt() ?: 0,
+                persuasiveness = parsed.persuasiveness?.toInt() ?: 0,
+                overallScore = parsed.overallScore?.toInt() ?: 0,
                 strengths = (parsed.strengths ?: emptyList()).take(3),
                 improvements = (parsed.improvements ?: listOf("Не вдалося проаналізувати запис")).take(3),
                 tip = parsed.tip ?: "Спробуйте записати ще раз",
@@ -723,15 +723,15 @@ enum class SalesStage {
  * Data class для парсингу JSON відповіді від Gemini
  */
 private data class VoiceAnalysisJsonResponse(
-    @SerializedName("diction") val diction: Int?,
-    @SerializedName("tempo") val tempo: Int?,
-    @SerializedName("intonation") val intonation: Int?,
-    @SerializedName("volume") val volume: Int?,
-    @SerializedName("confidence") val confidence: Int?,
-    @SerializedName("fillerWords") val fillerWords: Int?,
-    @SerializedName("structure") val structure: Int?,
-    @SerializedName("persuasiveness") val persuasiveness: Int?,
-    @SerializedName("overallScore") val overallScore: Int?,
+    @SerializedName("diction") val diction: Double?,
+    @SerializedName("tempo") val tempo: Double?,
+    @SerializedName("intonation") val intonation: Double?,
+    @SerializedName("volume") val volume: Double?,
+    @SerializedName("confidence") val confidence: Double?,
+    @SerializedName("fillerWords") val fillerWords: Double?,
+    @SerializedName("structure") val structure: Double?,
+    @SerializedName("persuasiveness") val persuasiveness: Double?,
+    @SerializedName("overallScore") val overallScore: Double?,
     @SerializedName("strengths") val strengths: List<String>?,
     @SerializedName("improvements") val improvements: List<String>?,
     @SerializedName("tip") val tip: String?,

@@ -337,10 +337,22 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
             finalResult = capScoreByWordCount(finalResult, wordCount)
         }
 
-        // 4d: Мінімальний поріг — якщо < 5, вважаємо порожнім записом
-        if (finalResult.overallScore < 5) {
-            Log.d("DiagFlow", "overallScore=${finalResult.overallScore} < 5, treating as empty recording")
+        // 4d: Мінімальний поріг — тільки справді порожній/дефолтний результат відкидаємо
+        // Перевіряємо ВСІ метрики: якщо хоч одна ненульова — це реальний результат
+        val allCoreMetricsZero = finalResult.diction == 0 && finalResult.tempo == 0 && finalResult.intonation == 0
+        if (allCoreMetricsZero && finalResult.overallScore == 0) {
+            Log.d("DiagFlow", "All core metrics=0, treating as empty/failed recording")
             return@withContext Result.success(VoiceAnalysisResult.default())
+        }
+        // Якщо overallScore=0 але метрики ненульові — рахуємо overallScore з метрик
+        if (finalResult.overallScore == 0 && !allCoreMetricsZero) {
+            Log.w("DiagFlow", "overallScore=0 but metrics non-zero — calculating from metrics")
+            val nonZeroMetrics = listOf(finalResult.diction, finalResult.tempo, finalResult.intonation,
+                finalResult.confidence, finalResult.structure, finalResult.persuasiveness)
+                .filter { it > 0 }
+            val calculatedScore = if (nonZeroMetrics.isNotEmpty()) nonZeroMetrics.average().toInt() else 0
+            Log.d("DiagFlow", "Calculated overallScore=$calculatedScore from metrics")
+            finalResult = finalResult.copy(overallScore = calculatedScore)
         }
 
         // --- Крок 5: Оновлення навичок ---
