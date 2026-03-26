@@ -21,7 +21,7 @@ enum class SoundEffect(
     ANALYSIS_SUCCESS(R.raw.sound_analysis_success, SoundCategory.FEEDBACK, 0.64f),
     ANALYSIS_ERROR(R.raw.sound_analysis_error, SoundCategory.FEEDBACK, 0.25f),
     LESSON_COMPLETED(R.raw.sound_lesson_completed, SoundCategory.CELEBRATION, 0.09f),
-    CELEBRATION(R.raw.sound_celebration, SoundCategory.CELEBRATION, 0.35f),
+    CELEBRATION(R.raw.sound_celebration, SoundCategory.CELEBRATION, 0.175f),
 
     // Tier 2 — Important feedback
     TIMER_URGENT(R.raw.sound_timer_urgent, SoundCategory.FEEDBACK),

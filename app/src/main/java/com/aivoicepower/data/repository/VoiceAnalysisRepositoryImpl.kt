@@ -198,6 +198,24 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
                 completionPercent = calculateCompletionPercent(transcription, expectedText)
                 orderPercent = calculateOrderPercent(transcription, expectedText)
                 Log.d("DiagFlow", "Completion: $completionPercent%, order: $orderPercent%")
+
+                // Якщо completion низький — друга спроба транскрипції (захист від нестабільності моделі)
+                if (completionPercent!! < 85) {
+                    Log.d("DiagFlow", "Low completion ($completionPercent%) — retrying transcription...")
+                    val transcribeResult2 = geminiApiClient.transcribeAudio(audioFilePath)
+                    if (transcribeResult2.isSuccess) {
+                        val transcription2 = transcribeResult2.getOrNull().orEmpty()
+                        val completion2 = calculateCompletionPercent(transcription2, expectedText)
+                        Log.d("DiagFlow", "Transcription2: '${transcription2.take(100)}', completion2=$completion2%")
+                        if (completion2 > completionPercent!!) {
+                            Log.d("DiagFlow", "Using transcription2 ($completion2% > $completionPercent%)")
+                            transcription = transcription2
+                            wordCount = normalizeToWords(transcription).size
+                            completionPercent = completion2
+                            orderPercent = calculateOrderPercent(transcription, expectedText)
+                        }
+                    }
+                }
             }
         } else {
             Log.w("DiagFlow", "Transcription failed: ${transcribeResult.exceptionOrNull()?.message}, proceeding without it")
@@ -242,16 +260,25 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
         }
 
         // --- Крок 3: Збагачуємо контекст транскрипцією + історією + рівнем ---
+        val isTongueTwister = exerciseType.contains("tongue_twister", ignoreCase = true)
+        val transcriptionUnreliable = isTongueTwister && completionPercent != null && completionPercent < 85
         val enrichedContext = if (transcription != null) {
             buildString {
                 append(context ?: "")
-                append("\n\nТРАНСКРИПЦІЯ АУДІО (зроблена окремим кроком, це ФАКТ — довіряй цьому): ")
-                append(transcription.ifBlank { "(порожній запис — тиша)" })
+                if (transcriptionUnreliable) {
+                    // Транскрипція ненадійна (скоромовка + швидке мовлення) — не передаємо її
+                    append("\n\nІНСТРУКЦІЯ АНАЛІЗУ: Юзер намагався сказати ОЧІКУВАНИЙ ТЕКСТ вище.")
+                    append("\nАналізуй АУДІО БЕЗПОСЕРЕДНЬО — слухай запис і оцінюй дикцію, темп, інтонацію.")
+                    append("\nНЕ вигадуй фонетичних помилок. Якщо в аудіо чути чітку вимову — ставь високі бали.")
+                } else {
+                    append("\n\nТРАНСКРИПЦІЯ АУДІО (зроблена окремим кроком, це ФАКТ — довіряй цьому): ")
+                    append(transcription.ifBlank { "(порожній запис — тиша)" })
+                }
 
                 if (transcription.isBlank()) {
                     append("\nУВАГА: Запис ПОРОЖНІЙ — тиша або нерозбірливе. Постав overallScore = 0!")
-                } else if (completionPercent != null) {
-                    // Вправи з очікуваним текстом
+                } else if (!transcriptionUnreliable && completionPercent != null) {
+                    // Вправи з очікуваним текстом (надійна транскрипція)
                     append("\nВІДСОТОК ВИКОНАННЯ ТЕКСТУ: $completionPercent%")
                     if (orderPercent != null && orderPercent < 80) {
                         append("\nПОРЯДОК СЛІВ: $orderPercent% (слова ПЕРЕПЛУТАНІ місцями! Знижуй оцінку дикції та загальну)")
@@ -264,7 +291,7 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
                         append("\nЗАБОРОНЕНО: згадувати, коментувати чи оцінювати БУДЬ-ЯКІ слова яких НЕМАЄ в транскрипції!")
                         append("\nstrengths/improvements — ТІЛЬКИ про слова з транскрипції, НЕ вигадуй інших!")
                     }
-                } else {
+                } else if (completionPercent == null) {
                     // Імпровізація (без очікуваного тексту) — повідомляємо кількість слів
                     append("\nКількість слів: ${wordCount ?: 0}")
                     if (wordCount != null && wordCount < 15) {
@@ -308,7 +335,9 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
         var finalResult = result.getOrNull() ?: return@withContext result
 
         // 4a: Cap overallScore за відсотком виконання тексту
-        if (completionPercent != null) {
+        // Для скоромовок completion% ненадійний при швидкому мовленні — STT не встигає розпізнати.
+        // Модель сама оцінює якість аудіо безпосередньо, тому cap не потрібен.
+        if (completionPercent != null && !isTongueTwister) {
             finalResult = capScoreByCompletion(finalResult, completionPercent)
         }
 
