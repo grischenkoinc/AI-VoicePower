@@ -50,7 +50,7 @@ private fun getBreathingExercises(): List<BreathingExercise> {
         BreathingExercise(
             id = 1,
             title = "Діафрагмальне дихання",
-            durationSeconds = calculateActualDuration(60, 8), // 4+4=8, 7 циклів = 56 сек
+            durationSeconds = calculateActualDuration(40, 8), // 4+4=8, 5 циклів = 40 сек
             pattern = BreathingPattern(
                 inhaleSeconds = 4,
                 exhaleSeconds = 4
@@ -97,7 +97,7 @@ private fun getBreathingExercises(): List<BreathingExercise> {
         BreathingExercise(
             id = 5,
             title = "Енергійне дихання",
-            durationSeconds = calculateActualDuration(30, 4), // 2+2=4, 7 циклів = 28 сек
+            durationSeconds = calculateActualDuration(20, 4), // 2+2=4, 5 циклів = 20 сек
             pattern = BreathingPattern(
                 inhaleSeconds = 2,
                 exhaleSeconds = 2

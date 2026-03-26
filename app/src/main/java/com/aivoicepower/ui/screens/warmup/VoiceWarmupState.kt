@@ -45,7 +45,7 @@ private fun getVoiceExercises(): List<VoiceExercise> {
         VoiceExercise(
             id = 4,
             title = "Розспівка \"Ма-ме-мі-мо-му\"",
-            durationSeconds = 30,
+            durationSeconds = 24,
             instruction = "Співайте склади \"Ма-ме-мі-мо-му\" на одній ноті, потім підвищуйте. Чітко артикулюйте кожен склад.",
             audioExampleUrl = null
         ),

@@ -3,6 +3,8 @@ package com.aivoicepower.data.billing
 import android.app.Activity
 import android.content.Context
 import com.android.billingclient.api.*
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,6 +39,15 @@ class BillingClientWrapper @Inject constructor(
 
     fun startConnection() {
         if (billingClient?.isReady == true) return
+
+        // Check Play Services availability first to prevent Google's "Something went wrong"
+        // dialog from appearing on MIUI/Redmi devices where Play Services may be restricted
+        val playServicesStatus = GoogleApiAvailability.getInstance()
+            .isGooglePlayServicesAvailable(context)
+        if (playServicesStatus != ConnectionResult.SUCCESS) {
+            _billingState.value = BillingState.Error("Google Play Services unavailable ($playServicesStatus)")
+            return
+        }
 
         _billingState.value = BillingState.Connecting
 

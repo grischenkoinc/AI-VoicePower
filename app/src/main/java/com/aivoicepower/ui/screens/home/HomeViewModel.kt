@@ -132,7 +132,7 @@ class HomeViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             userName = preferences.userName,
-                            currentStreak = preferences.currentStreak,
+                            currentStreak = progress?.currentStreak ?: 0,
                             greeting = greeting,
                             todayPlan = todayPlan,
                             weekProgress = weekProgress,

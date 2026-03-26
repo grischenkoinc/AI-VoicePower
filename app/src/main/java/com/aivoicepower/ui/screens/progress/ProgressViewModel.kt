@@ -11,6 +11,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -50,7 +51,7 @@ class ProgressViewModel @Inject constructor(
             try {
                 // Load user progress
                 Log.d("ProgressViewModel", "Getting user progress from repository")
-                val progress = userRepository.getUserProgress().first()
+                val progress = userRepository.getUserProgress().filterNotNull().first()
                 Log.d("ProgressViewModel", "Got user progress: $progress")
 
                 if (progress != null) {
@@ -94,7 +95,6 @@ class ProgressViewModel @Inject constructor(
                         SkillType.DICTION to progress.dictionLevel.toInt(),
                         SkillType.TEMPO to progress.tempoLevel.toInt(),
                         SkillType.INTONATION to progress.intonationLevel.toInt(),
-                        SkillType.VOLUME to progress.volumeLevel.toInt(),
                         SkillType.STRUCTURE to progress.structureLevel.toInt(),
                         SkillType.CONFIDENCE to progress.confidenceLevel.toInt(),
                         SkillType.FILLER_WORDS to progress.fillerWordsLevel.toInt()

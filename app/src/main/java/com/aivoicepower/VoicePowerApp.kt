@@ -7,6 +7,8 @@ import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.utils.AnalyticsTracker
 import com.aivoicepower.utils.NotificationHelper
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,9 +38,14 @@ class VoicePowerApp : Application(), Configuration.Provider {
         super.onCreate()
         NotificationHelper.createNotificationChannel(this)
         // Defer ad SDK init — run on main thread but after first frame
+        // Also check Play Services availability to prevent "Something went wrong" dialog on MIUI
         appScope.launch {
             kotlinx.coroutines.delay(1000)
-            rewardedAdManager.initialize()
+            val playServicesStatus = GoogleApiAvailability.getInstance()
+                .isGooglePlayServicesAvailable(this@VoicePowerApp)
+            if (playServicesStatus == ConnectionResult.SUCCESS) {
+                rewardedAdManager.initialize()
+            }
         }
         initAnalyticsUserProperties()
     }

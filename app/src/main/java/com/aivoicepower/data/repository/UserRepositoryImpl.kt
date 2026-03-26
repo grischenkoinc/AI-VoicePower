@@ -95,6 +95,13 @@ class UserRepositoryImpl @Inject constructor(
         // Get last activity date
         val lastActivityDate = allRecordings.maxOfOrNull { it.createdAt } ?: System.currentTimeMillis()
 
+        // Persist calculated streak to DB so HomeViewModel can read it
+        if (currentStreak > 0 || longestStreak > 0) {
+            try {
+                userProgressDao.updateStreak(streak = currentStreak, date = lastActivityDate)
+            } catch (_: Exception) { }
+        }
+
         // Get real skill levels from DB
         val dbProgress = userProgressDao.getProgress()
         val skillLevels = if (dbProgress != null) {

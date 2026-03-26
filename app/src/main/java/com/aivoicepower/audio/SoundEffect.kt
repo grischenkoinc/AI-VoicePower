@@ -35,8 +35,8 @@ enum class SoundEffect(
 
     // Tier 3 — Polish
     TAB_SWITCH(R.raw.sound_tab_switch, SoundCategory.UI, 0.04f),
-    BREATH_INHALE(R.raw.sound_breath_inhale, SoundCategory.FEEDBACK, 0.18f),
-    BREATH_EXHALE(R.raw.sound_breath_exhale, SoundCategory.FEEDBACK, 0.10f),
+    BREATH_INHALE(R.raw.sound_breath_inhale, SoundCategory.FEEDBACK, 0.6f),
+    BREATH_EXHALE(R.raw.sound_breath_exhale, SoundCategory.FEEDBACK, 0.4f),
     ONBOARDING_PAGE(R.raw.sound_onboarding_page, SoundCategory.UI),
     SPLASH_BRAND(R.raw.sound_splash_brand, SoundCategory.CELEBRATION, 0.7f),
     PREMIUM_UNLOCKED(R.raw.sound_premium_unlocked, SoundCategory.CELEBRATION),
