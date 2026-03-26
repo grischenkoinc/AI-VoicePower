@@ -2,10 +2,13 @@ package com.aivoicepower.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.util.Log
+import com.aivoicepower.data.firebase.sync.CloudSyncRepositoryImpl
 import com.aivoicepower.data.local.database.dao.*
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.domain.model.home.*
 import com.aivoicepower.domain.repository.AchievementRepository
+import com.aivoicepower.domain.repository.AuthRepository
 import com.aivoicepower.domain.repository.CourseRepository
 import com.aivoicepower.ui.navigation.Screen
 import com.aivoicepower.utils.PremiumChecker
@@ -29,7 +32,9 @@ class HomeViewModel @Inject constructor(
     private val courseProgressDao: CourseProgressDao,
     private val courseRepository: CourseRepository,
     private val dailyTipsRepository: com.aivoicepower.data.repository.DailyTipsRepository,
-    private val achievementRepository: AchievementRepository
+    private val achievementRepository: AchievementRepository,
+    private val authRepository: AuthRepository,
+    private val cloudSyncRepository: CloudSyncRepositoryImpl
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeState())
@@ -40,11 +45,37 @@ class HomeViewModel @Inject constructor(
     private val dayFormat = SimpleDateFormat("EEE", Locale("uk", "UA"))
 
     init {
+        autoRestoreIfNeeded()
         loadHomeData()
         observeSkills()
         observeCourseAndDailyPlan()
         observeAnalysisLimits()
         checkDiagnosticAchievement()
+    }
+
+    /**
+     * Після оновлення застосунку Room DB може бути знищена destructive migration.
+     * Якщо юзер залогінений і мав діагностику, але локальний прогрес порожній — відновлюємо з Firestore.
+     */
+    private fun autoRestoreIfNeeded() {
+        viewModelScope.launch {
+            try {
+                val currentUser = authRepository.currentUser.first()
+                if (currentUser == null) return@launch
+
+                val prefs = userPreferencesDataStore.userPreferencesFlow.first()
+                if (!prefs.hasCompletedDiagnostic) return@launch
+
+                val localProgress = userProgressDao.getProgress()
+                if (localProgress == null) {
+                    Log.w("HomeVM", "User logged in + diagnostic done, but local DB empty — restoring from Firestore")
+                    cloudSyncRepository.restoreAllData()
+                    Log.d("HomeVM", "Auto-restore from Firestore completed")
+                }
+            } catch (e: Exception) {
+                Log.e("HomeVM", "Auto-restore failed: ${e.message}")
+            }
+        }
     }
 
     private fun checkDiagnosticAchievement() {
