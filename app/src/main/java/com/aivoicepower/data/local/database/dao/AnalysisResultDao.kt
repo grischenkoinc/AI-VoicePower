@@ -18,6 +18,9 @@ interface AnalysisResultDao {
     @Query("SELECT * FROM analysis_results WHERE exerciseType = :type ORDER BY timestamp DESC LIMIT :limit")
     suspend fun getByExerciseType(type: String, limit: Int = 3): List<AnalysisResultEntity>
 
+    @Query("SELECT COUNT(*) FROM analysis_results")
+    suspend fun countAll(): Int
+
     @Query("DELETE FROM analysis_results WHERE timestamp < :beforeTimestamp")
     suspend fun deleteOlderThan(beforeTimestamp: Long)
 }

@@ -9,6 +9,7 @@ import com.aivoicepower.data.remote.GeminiApiClient
 import com.aivoicepower.domain.model.VoiceAnalysis
 import com.aivoicepower.domain.model.VoiceAnalysisResult
 import com.aivoicepower.domain.model.VoiceMetrics
+import com.aivoicepower.domain.repository.CloudSyncRepository
 import com.aivoicepower.domain.repository.VoiceAnalysisRepository
 import com.aivoicepower.domain.service.SkillUpdateService
 import com.google.ai.client.generativeai.GenerativeModel
@@ -16,7 +17,10 @@ import com.google.ai.client.generativeai.type.content
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
@@ -40,10 +44,12 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
     private val geminiApiClient: GeminiApiClient,
     private val skillUpdateService: SkillUpdateService,
     private val analysisResultDao: AnalysisResultDao,
-    private val diagnosticResultDao: DiagnosticResultDao
+    private val diagnosticResultDao: DiagnosticResultDao,
+    private val cloudSyncRepository: CloudSyncRepository
 ) : VoiceAnalysisRepository {
 
     private val gson = Gson()
+    private val syncScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override suspend fun analyzeVoice(
         audioFile: File,
@@ -384,7 +390,37 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
             finalResult = finalResult.copy(overallScore = calculatedScore)
         }
 
-        // --- Крок 5: Оновлення навичок ---
+        // --- Крок 5: Зберігаємо результат аналізу в історію (ДО оновлення навичок!) ---
+        // ВАЖЛИВО: збереження відбувається ДО skillUpdateService, щоб AchievementChecker
+        // міг знайти запис в analysis_results і правильно видати "Перший запис" після 1-го запису.
+        if (finalResult.overallScore > 0) {
+            try {
+                val entity = AnalysisResultEntity(
+                    id = UUID.randomUUID().toString(),
+                    exerciseId = exerciseId,
+                    exerciseType = normalizedType,
+                    overallScore = finalResult.overallScore,
+                    diction = finalResult.diction,
+                    tempo = finalResult.tempo,
+                    intonation = finalResult.intonation,
+                    volume = finalResult.volume,
+                    confidence = finalResult.confidence,
+                    fillerWords = finalResult.fillerWords,
+                    structure = finalResult.structure,
+                    persuasiveness = finalResult.persuasiveness,
+                    tip = finalResult.tip,
+                    strengths = gson.toJson(finalResult.strengths),
+                    improvements = gson.toJson(finalResult.improvements),
+                    divergences = finalResult.divergences
+                )
+                analysisResultDao.insert(entity)
+                Log.d("DiagFlow", "Analysis result saved: exerciseId=$exerciseId, type=$normalizedType, score=${finalResult.overallScore}")
+            } catch (e: Exception) {
+                Log.w("DiagFlow", "Failed to save analysis result: ${e.message}")
+            }
+        }
+
+        // --- Крок 6: Оновлення навичок + авто-синхронізація ---
         if (finalResult.overallScore > 0) {
             try {
                 skillUpdateService.updateFromAnalysis(finalResult, exerciseType)
@@ -392,32 +428,17 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
             } catch (e: Exception) {
                 Log.e("DiagFlow", "Failed to update skill levels: ${e.message}")
             }
-        }
 
-        // --- Крок 6: Зберігаємо результат аналізу в історію ---
-        try {
-            val entity = AnalysisResultEntity(
-                id = UUID.randomUUID().toString(),
-                exerciseId = exerciseId,
-                exerciseType = normalizedType,
-                overallScore = finalResult.overallScore,
-                diction = finalResult.diction,
-                tempo = finalResult.tempo,
-                intonation = finalResult.intonation,
-                volume = finalResult.volume,
-                confidence = finalResult.confidence,
-                fillerWords = finalResult.fillerWords,
-                structure = finalResult.structure,
-                persuasiveness = finalResult.persuasiveness,
-                tip = finalResult.tip,
-                strengths = gson.toJson(finalResult.strengths),
-                improvements = gson.toJson(finalResult.improvements),
-                divergences = finalResult.divergences
-            )
-            analysisResultDao.insert(entity)
-            Log.d("DiagFlow", "Analysis result saved: exerciseId=$exerciseId, type=$normalizedType, score=${finalResult.overallScore}")
-        } catch (e: Exception) {
-            Log.w("DiagFlow", "Failed to save analysis result: ${e.message}")
+            // Fire-and-forget: sync progress + achievements to Firestore after each analysis
+            syncScope.launch {
+                try {
+                    cloudSyncRepository.syncUserProgress()
+                    cloudSyncRepository.syncAchievements()
+                    Log.d("DiagFlow", "Auto-sync: progress + achievements synced to Firestore")
+                } catch (e: Exception) {
+                    Log.w("DiagFlow", "Auto-sync failed (non-critical): ${e.message}")
+                }
+            }
         }
 
         Result.success(finalResult)

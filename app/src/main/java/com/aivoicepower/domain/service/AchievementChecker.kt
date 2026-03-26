@@ -2,6 +2,7 @@ package com.aivoicepower.domain.service
 
 import android.util.Log
 import com.aivoicepower.data.local.database.dao.AchievementDao
+import com.aivoicepower.data.local.database.dao.AnalysisResultDao
 import com.aivoicepower.data.local.database.dao.CourseProgressDao
 import com.aivoicepower.data.local.database.dao.DiagnosticResultDao
 import com.aivoicepower.data.local.database.dao.RecordingDao
@@ -22,6 +23,7 @@ class AchievementChecker @Inject constructor(
     private val achievementDao: AchievementDao,
     private val userProgressDao: UserProgressDao,
     private val recordingDao: RecordingDao,
+    private val analysisResultDao: AnalysisResultDao,
     private val diagnosticResultDao: DiagnosticResultDao,
     private val skillSnapshotDao: SkillSnapshotDao,
     private val courseProgressDao: CourseProgressDao
@@ -42,13 +44,26 @@ class AchievementChecker @Inject constructor(
             // Skip first_diagnostic — checked separately on HomeScreen open
             if (def.id == "first_diagnostic") continue
 
-            val existing = achievementDao.getById(def.id)
+            var existing = achievementDao.getById(def.id)
+
+            // If record doesn't exist (seed race condition or fresh install), insert it now
+            // so that unlock() UPDATE has a row to modify.
+            if (existing == null) {
+                achievementDao.insertAll(listOf(AchievementEntity(id = def.id)))
+                existing = achievementDao.getById(def.id)
+            }
+
             if (existing?.unlockedAt != null) continue
 
             val isConditionMet = checkCondition(def.id)
             if (isConditionMet) {
                 achievementDao.unlock(def.id)
                 val updated = achievementDao.getById(def.id)
+                // Only emit if unlock actually persisted (unlockedAt was set)
+                if (updated?.unlockedAt == null) {
+                    Log.w(TAG, "Achievement unlock failed to persist for ${def.id} — skipping emit")
+                    continue
+                }
                 newlyUnlocked.add(
                     Achievement(
                         id = def.id,
@@ -56,7 +71,7 @@ class AchievementChecker @Inject constructor(
                         title = def.title,
                         description = def.description,
                         icon = def.icon,
-                        unlockedAt = updated?.unlockedAt,
+                        unlockedAt = updated.unlockedAt,
                         progress = def.target,
                         target = def.target
                     )
@@ -143,8 +158,12 @@ class AchievementChecker @Inject constructor(
     }
 
     private suspend fun checkRecordingCount(required: Int): Boolean {
-        val recordings = getValidRecordings()
-        return recordings.size >= required
+        // Use max of: analyzed RecordingEntity count OR AnalysisResultEntity count.
+        // AnalysisResultEntity is saved BEFORE achievement check in VoiceAnalysisRepositoryImpl,
+        // so it correctly counts the current recording even before the ViewModel saves RecordingEntity.
+        val recordingCount = getValidRecordings().size
+        val analysisCount = try { analysisResultDao.countAll() } catch (e: Exception) { 0 }
+        return maxOf(recordingCount, analysisCount) >= required
     }
 
     private suspend fun checkDiagnostic(): Boolean {
@@ -283,8 +302,9 @@ class AchievementChecker @Inject constructor(
                     (recordings.sumOf { it.durationMs } / 60000).toInt()
                 }
                 achievementId.startsWith("rec_") -> {
-                    val recordings = getValidRecordings()
-                    recordings.size
+                    val recordingCount = getValidRecordings().size
+                    val analysisCount = try { analysisResultDao.countAll() } catch (e: Exception) { 0 }
+                    maxOf(recordingCount, analysisCount)
                 }
                 else -> null
             }
