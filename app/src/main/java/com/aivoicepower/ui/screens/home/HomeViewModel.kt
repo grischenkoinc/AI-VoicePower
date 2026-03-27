@@ -450,7 +450,10 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             userProgressDao.getProgressFlow().collect { progress ->
                 val skills = buildSkillsList(progress)
-                _state.update { it.copy(skills = skills) }
+                _state.update { it.copy(
+                    skills = skills,
+                    currentStreak = progress?.currentStreak ?: 0
+                ) }
             }
         }
     }
