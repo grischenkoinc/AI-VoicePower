@@ -294,19 +294,14 @@ private fun DifficultyFilters(
     onDifficultySelect: (Int?) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
+    val items = listOf(null) + (1..5).map { it }
+    LazyRow(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        FilterChip(
-            label = "Всі",
-            isSelected = selectedDifficulty == null,
-            onClick = { onDifficultySelect(null) }
-        )
-
-        (1..5).forEach { difficulty ->
+        items(items) { difficulty ->
             FilterChip(
-                label = "⭐".repeat(difficulty),
+                label = if (difficulty == null) "Всі" else "⭐".repeat(difficulty),
                 isSelected = selectedDifficulty == difficulty,
                 onClick = { onDifficultySelect(difficulty) }
             )

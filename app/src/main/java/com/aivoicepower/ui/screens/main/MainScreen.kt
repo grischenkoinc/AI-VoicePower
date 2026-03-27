@@ -15,7 +15,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -92,7 +94,11 @@ fun MainScreen(
                             label = {
                                 Text(
                                     text = item.label,
-                                    color = if (selected) Color(0xFF1F2937) else Color(0xFF9CA3AF)
+                                    color = if (selected) Color(0xFF1F2937) else Color(0xFF9CA3AF),
+                                    fontSize = 10.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Clip,
+                                    softWrap = false
                                 )
                             },
                             selected = selected,
