@@ -179,7 +179,8 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
         expectedText: String?,
         exerciseType: String,
         context: String?,
-        exerciseId: String?
+        exerciseId: String?,
+        recordingDurationMs: Long
     ): Result<VoiceAnalysisResult> = withContext(Dispatchers.IO) {
         Log.d("DiagFlow", "=== VoiceAnalysisRepository.analyzeRecording() CALLED ===")
         Log.d("DiagFlow", "audioFilePath: $audioFilePath")
@@ -274,8 +275,9 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
                 if (transcriptionUnreliable) {
                     // Транскрипція ненадійна (скоромовка + швидке мовлення) — не передаємо її
                     append("\n\nІНСТРУКЦІЯ АНАЛІЗУ: Юзер намагався сказати ОЧІКУВАНИЙ ТЕКСТ вище.")
-                    append("\nАналізуй АУДІО БЕЗПОСЕРЕДНЬО — слухай запис і оцінюй дикцію, темп, інтонацію.")
-                    append("\nНЕ вигадуй фонетичних помилок. Якщо в аудіо чути чітку вимову — ставь високі бали.")
+                    append("\nАналізуй АУДІО БЕЗПОСЕРЕДНЬО — слухай запис і оцінюй кожну метрику незалежно.")
+                    append("\nDICTION: якщо вимова чітка — ставь high. TEMPO: оцінюй ТІЛЬКИ за реальною швидкістю — якщо є паузи між словами або загальний темп повільний, tempo ОБОВ'ЯЗКОВО низький (< 35), НЕ залежно від дикції!")
+                    append("\nНЕ вигадуй фонетичних помилок яких не чуєш в аудіо.")
                 } else {
                     append("\n\nТРАНСКРИПЦІЯ АУДІО (зроблена окремим кроком, це ФАКТ — довіряй цьому): ")
                     append(transcription.ifBlank { "(порожній запис — тиша)" })
@@ -347,8 +349,34 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
             finalResult = capScoreByCompletion(finalResult, completionPercent)
         }
 
-        // 4b: Cap за порядком слів (переплутані слова = штраф)
-        if (orderPercent != null && orderPercent < 80) {
+        // 4a2: Cap tempo для скоромовок за реальною швидкістю мовлення
+        // Якщо юзер говорив повільно (паузи, розтягнуто) — tempo не може бути високим.
+        if (isTongueTwister && recordingDurationMs > 0 && !expectedText.isNullOrBlank()) {
+            val expectedWordCount = normalizeToWords(expectedText).size
+            if (expectedWordCount > 0) {
+                val wordsPerSecond = expectedWordCount.toFloat() / (recordingDurationMs / 1000f)
+                val tempoCap = when {
+                    wordsPerSecond >= 2.5f -> 100  // швидко — не обмежуємо
+                    wordsPerSecond >= 1.5f -> 75   // помірно — м'яке обмеження
+                    wordsPerSecond >= 1.0f -> 50   // повільно
+                    wordsPerSecond >= 0.5f -> 35   // дуже повільно
+                    else -> 20                      // критично повільно (явні паузи між словами)
+                }
+                if (tempoCap < 100 && finalResult.tempo > tempoCap) {
+                    Log.d("DiagFlow", "TongueTwister tempo cap: wps=$wordsPerSecond, tempoCap=$tempoCap, original=${finalResult.tempo}")
+                    val scoreDelta = finalResult.overallScore - finalResult.tempo
+                    val newTempo = tempoCap
+                    val newOverall = (newTempo * 0.35f + finalResult.diction * 0.50f + finalResult.intonation * 0.15f).toInt()
+                    finalResult = finalResult.copy(tempo = newTempo, overallScore = newOverall)
+                }
+            }
+        }
+
+        // 4b: Cap за порядком слів — ТІЛЬКИ якщо completion >= 85%
+        // При низькому completion% STT пропускає слова → sequential matching дає хибно-низький
+        // orderPercent навіть коли юзер насправді не переплутував слова.
+        val orderPercentReliable = completionPercent != null && completionPercent >= 85
+        if (orderPercent != null && orderPercent < 80 && orderPercentReliable) {
             val orderCap = when {
                 orderPercent < 30 -> 35
                 orderPercent < 50 -> 45
@@ -365,6 +393,8 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
                     ) + finalResult.improvements
                 )
             }
+        } else if (orderPercent != null && orderPercent < 80 && !orderPercentReliable) {
+            Log.d("DiagFlow", "Skipping word order cap: orderPercent=$orderPercent% but completion=$completionPercent% (unreliable STT)")
         }
 
         // 4c: Cap за кількістю слів (для імпровізації — без очікуваного тексту)
@@ -389,6 +419,10 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
             Log.d("DiagFlow", "Calculated overallScore=$calculatedScore from metrics")
             finalResult = finalResult.copy(overallScore = calculatedScore)
         }
+
+        // 4e: Видаляємо strengths що суперечать низьким оцінкам (< 70)
+        // ШІ часто пише "Висока чіткість вимови" при diction=55 — це вводить в оману
+        finalResult = filterInconsistentStrengths(finalResult)
 
         // --- Крок 5: Зберігаємо результат аналізу в історію (ДО оновлення навичок!) ---
         // ВАЖЛИВО: збереження відбувається ДО skillUpdateService, щоб AchievementChecker
@@ -688,5 +722,33 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
             overallScore = minOf(result.overallScore, maxScore),
             improvements = listOf(message) + result.improvements
         )
+    }
+
+    /**
+     * Видаляє strengths, які суперечать реальним оцінкам метрик.
+     * Поріг 70: якщо метрика < 70 — хвалити її некоректно.
+     * Наприклад: "Висока чіткість вимови" при diction=55 — вводить юзера в оману.
+     */
+    private fun filterInconsistentStrengths(result: VoiceAnalysisResult): VoiceAnalysisResult {
+        val threshold = 70
+        val filtered = result.strengths.filter { strength ->
+            val s = strength.lowercase()
+            // Дикція / вимова / чіткість / артикуляція / звуки
+            val isDictionPraise = s.contains("вимов") || s.contains("дикц") || s.contains("чіткіст") ||
+                s.contains("артикул") || s.contains("приголосн") || s.contains("голосн")
+            if (isDictionPraise && result.diction in 1 until threshold) return@filter false
+            // Темп / ритм / швидкість
+            val isTempoPraise = s.contains("темп") || s.contains("ритм")
+            if (isTempoPraise && result.tempo in 1 until threshold) return@filter false
+            // Інтонація / мелодика
+            val isIntonationPraise = s.contains("інтонац") || s.contains("мелодик")
+            if (isIntonationPraise && result.intonation in 1 until threshold) return@filter false
+            true
+        }
+        if (filtered.size < result.strengths.size) {
+            Log.d("DiagFlow", "Filtered ${result.strengths.size - filtered.size} inconsistent strengths")
+            return result.copy(strengths = filtered)
+        }
+        return result
     }
 }

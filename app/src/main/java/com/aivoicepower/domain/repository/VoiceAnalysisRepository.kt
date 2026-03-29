@@ -15,6 +15,7 @@ interface VoiceAnalysisRepository {
         expectedText: String? = null,
         exerciseType: String,
         context: String? = null,
-        exerciseId: String? = null
+        exerciseId: String? = null,
+        recordingDurationMs: Long = 0
     ): Result<VoiceAnalysisResult>
 }

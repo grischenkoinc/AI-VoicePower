@@ -295,7 +295,8 @@ class TongueTwistersViewModel @Inject constructor(
                 expectedText = twister?.text,
                 exerciseType = "tongue_twister",
                 context = "Скоромовка: ${twister?.text ?: ""}, цільові звуки: ${twister?.targetSounds?.joinToString() ?: ""}",
-                exerciseId = twister?.id
+                exerciseId = twister?.id,
+                recordingDurationMs = _state.value.recordingDurationMs
             )
 
             val analysisResult = result.getOrNull()
