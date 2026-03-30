@@ -268,37 +268,33 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
 
         // --- Крок 3: Збагачуємо контекст транскрипцією + історією + рівнем ---
         val isTongueTwister = exerciseType.contains("tongue_twister", ignoreCase = true)
-        val transcriptionUnreliable = isTongueTwister && completionPercent != null && completionPercent < 85
         val enrichedContext = if (transcription != null) {
             buildString {
                 append(context ?: "")
-                if (transcriptionUnreliable) {
-                    // Транскрипція ненадійна (скоромовка + швидке мовлення) — не передаємо її
-                    append("\n\nІНСТРУКЦІЯ АНАЛІЗУ: Юзер намагався сказати ОЧІКУВАНИЙ ТЕКСТ вище.")
-                    append("\nАналізуй АУДІО БЕЗПОСЕРЕДНЬО — слухай запис і оцінюй кожну метрику незалежно.")
-                    append("\nDICTION: якщо вимова чітка — ставь high. TEMPO: оцінюй ТІЛЬКИ за реальною швидкістю — якщо є паузи між словами або загальний темп повільний, tempo ОБОВ'ЯЗКОВО низький (< 35), НЕ залежно від дикції!")
-                    append("\nНЕ вигадуй фонетичних помилок яких не чуєш в аудіо.")
+                // Завжди передаємо транскрипцію — для скоромовок з застереженням про ненадійність STT
+                if (isTongueTwister) {
+                    append("\n\nТРАНСКРИПЦІЯ АУДІО (STT для скоромовок може пропускати слова — якщо транскрипція і очікуваний текст розходяться, перевіряй аудіо перш ніж робити висновки): ")
                 } else {
                     append("\n\nТРАНСКРИПЦІЯ АУДІО (зроблена окремим кроком, це ФАКТ — довіряй цьому): ")
-                    append(transcription.ifBlank { "(порожній запис — тиша)" })
                 }
+                append(transcription.ifBlank { "(порожній запис — тиша)" })
 
                 if (transcription.isBlank()) {
                     append("\nУВАГА: Запис ПОРОЖНІЙ — тиша або нерозбірливе. Постав overallScore = 0!")
-                } else if (!transcriptionUnreliable && completionPercent != null) {
-                    // Вправи з очікуваним текстом (надійна транскрипція)
-                    append("\nВІДСОТОК ВИКОНАННЯ ТЕКСТУ: $completionPercent%")
-                    if (orderPercent != null && orderPercent < 80) {
-                        append("\nПОРЯДОК СЛІВ: $orderPercent% (слова ПЕРЕПЛУТАНІ місцями! Знижуй оцінку дикції та загальну)")
+                } else if (completionPercent != null) {
+                    // Вправи з очікуваним текстом — не передаємо числові метрики, AI сам порівнює тексти
+                    if (!isTongueTwister) {
+                        // Для не-скоромовок completionPercent надійний — передаємо тільки критичні випадки
+                        if (completionPercent < 15) {
+                            append("\nУВАГА: Людина сказала ЗОВСІМ ІНШІ СЛОВА — НЕ ті, що в завданні! Це означає що завдання НЕ ВИКОНАНО. Оцінка має бути ДУЖЕ НИЗЬКОЮ (overallScore максимум 10), незалежно від якості вимови.")
+                        } else if (completionPercent < 100) {
+                            append("\nУВАГА: текст виконано НЕ ПОВНІСТЮ.")
+                            append("\nЛюдина сказала ТІЛЬКИ те, що є в транскрипції вище.")
+                            append("\nЗАБОРОНЕНО: згадувати, коментувати чи оцінювати БУДЬ-ЯКІ слова яких НЕМАЄ в транскрипції!")
+                            append("\nstrengths/improvements — ТІЛЬКИ про слова з транскрипції, НЕ вигадуй інших!")
+                        }
                     }
-                    if (completionPercent < 15) {
-                        append("\nУВАГА: Людина сказала ЗОВСІМ ІНШІ СЛОВА — НЕ ті, що в завданні! Виконання тексту = $completionPercent%. Це означає що завдання НЕ ВИКОНАНО. Оцінка має бути ДУЖЕ НИЗЬКОЮ (overallScore максимум 10), незалежно від якості вимови.")
-                    } else if (completionPercent < 100) {
-                        append("\nУВАГА: текст виконано НЕ ПОВНІСТЮ ($completionPercent%).")
-                        append("\nЛюдина сказала ТІЛЬКИ те, що є в транскрипції вище.")
-                        append("\nЗАБОРОНЕНО: згадувати, коментувати чи оцінювати БУДЬ-ЯКІ слова яких НЕМАЄ в транскрипції!")
-                        append("\nstrengths/improvements — ТІЛЬКИ про слова з транскрипції, НЕ вигадуй інших!")
-                    }
+                    // Для скоромовок: AI сам порівнює очікуваний текст і транскрипцію з аудіо
                 } else if (completionPercent == null) {
                     // Імпровізація (без очікуваного тексту) — повідомляємо кількість слів
                     append("\nКількість слів: ${wordCount ?: 0}")
