@@ -123,7 +123,7 @@ fun AboutScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Версія 1.1.2",
+                    text = "Версія 1.2.1",
                     fontSize = 14.sp,
                     color = Color.White.copy(alpha = 0.6f)
                 )
