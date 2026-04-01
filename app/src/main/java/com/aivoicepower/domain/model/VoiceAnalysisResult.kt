@@ -17,6 +17,7 @@ data class VoiceAnalysisResult(
     val strengths: List<String>,     // Сильні сторони
     val improvements: List<String>,  // Зони для покращення
     val tip: String,            // Конкретна порада
+    val emotionality: Int? = null,   // Емоційність (0-100), null якщо не оцінювалась
     val coachComment: String = "", // Мотиваційний коментар тренера
     val divergences: String? = null, // Розбіжності з очікуваним текстом
     val reasoning: String? = null    // Внутрішнє міркування AI (chain-of-thought)

@@ -18,8 +18,9 @@ sealed class Screen(val route: String) {
     object CourseDetail : Screen("course/{courseId}") {
         fun createRoute(courseId: String) = "course/$courseId"
     }
-    object Lesson : Screen("course/{courseId}/lesson/{lessonId}") {
-        fun createRoute(courseId: String, lessonId: String) = "course/$courseId/lesson/$lessonId"
+    object Lesson : Screen("course/{courseId}/lesson/{lessonId}?startExerciseIndex={startExerciseIndex}") {
+        fun createRoute(courseId: String, lessonId: String, startExerciseIndex: Int = 0) =
+            "course/$courseId/lesson/$lessonId?startExerciseIndex=$startExerciseIndex"
     }
     object Results : Screen("results/{lessonId}/{exerciseId}") {
         fun createRoute(lessonId: String, exerciseId: String) = "results/$lessonId/$exerciseId"
@@ -64,6 +65,9 @@ sealed class Screen(val route: String) {
     object Premium : Screen("premium")
     object Settings : Screen("settings")
     object About : Screen("about")
+
+    // Debug (BuildConfig.DEBUG only)
+    object PromptIteration : Screen("debug/prompt-iteration")
 
     // Progress sub-screens
     object Achievements : Screen("progress/achievements")

@@ -15,5 +15,6 @@ data class SkillSnapshotEntity(
     val structure: Float,
     val confidence: Float,
     val fillerWords: Float,
+    val emotionality: Float = 0f,
     val createdAt: Long = System.currentTimeMillis()
 )

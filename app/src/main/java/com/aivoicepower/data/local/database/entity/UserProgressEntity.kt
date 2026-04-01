@@ -22,6 +22,7 @@ data class UserProgressEntity(
     val structureLevel: Float = 1f,
     val confidenceLevel: Float = 1f,
     val fillerWordsLevel: Float = 1f,
+    val emotionalityLevel: Float = 1f,
 
     // Previous levels for progression arrows (↑/↓)
     val lastDictionLevel: Float? = null,
@@ -31,6 +32,7 @@ data class UserProgressEntity(
     val lastStructureLevel: Float? = null,
     val lastConfidenceLevel: Float? = null,
     val lastFillerWordsLevel: Float? = null,
+    val lastEmotionalityLevel: Float? = null,
 
     // Peak levels for decay floor (skill can't drop below 50% of peak)
     val peakDictionLevel: Float = 1f,
@@ -40,6 +42,7 @@ data class UserProgressEntity(
     val peakStructureLevel: Float = 1f,
     val peakConfidenceLevel: Float = 1f,
     val peakFillerWordsLevel: Float = 1f,
+    val peakEmotionalityLevel: Float = 1f,
 
     // Daily change tracking for ±5 cap enforcement
     val dailyChangeDiction: Float = 0f,
@@ -49,6 +52,7 @@ data class UserProgressEntity(
     val dailyChangeStructure: Float = 0f,
     val dailyChangeConfidence: Float = 0f,
     val dailyChangeFillerWords: Float = 0f,
+    val dailyChangeEmotionality: Float = 0f,
     val lastDailyResetDate: String? = null,
 
     val updatedAt: Long = System.currentTimeMillis()

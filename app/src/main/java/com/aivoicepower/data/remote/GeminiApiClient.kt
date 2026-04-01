@@ -573,6 +573,7 @@ class GeminiApiClient @Inject constructor(
                 fillerWords = parsed.fillerWords?.toInt() ?: 0,
                 structure = parsed.structure?.toInt() ?: 0,
                 persuasiveness = parsed.persuasiveness?.toInt() ?: 0,
+                emotionality = parsed.emotionality?.toInt(),
                 overallScore = parsed.overallScore?.toInt() ?: 0,
                 strengths = (parsed.strengths ?: emptyList()).take(3),
                 improvements = (parsed.improvements ?: listOf("Не вдалося проаналізувати запис")).take(3),
@@ -650,6 +651,7 @@ class GeminiApiClient @Inject constructor(
             fillerWords = cap(result.fillerWords),
             structure = cap(result.structure),
             persuasiveness = cap(result.persuasiveness),
+            emotionality = result.emotionality?.let { cap(it) },
             overallScore = cap(result.overallScore),
             improvements = if (maxScore <= 15) {
                 listOf("Відповіді занадто короткі або не за темою — говоріть розгорнуто") + result.improvements.take(2)
@@ -731,6 +733,7 @@ private data class VoiceAnalysisJsonResponse(
     @SerializedName("fillerWords") val fillerWords: Double?,
     @SerializedName("structure") val structure: Double?,
     @SerializedName("persuasiveness") val persuasiveness: Double?,
+    @SerializedName("emotionality") val emotionality: Double?,
     @SerializedName("overallScore") val overallScore: Double?,
     @SerializedName("strengths") val strengths: List<String>?,
     @SerializedName("improvements") val improvements: List<String>?,

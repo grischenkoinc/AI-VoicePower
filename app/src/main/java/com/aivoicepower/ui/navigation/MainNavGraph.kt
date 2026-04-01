@@ -43,7 +43,9 @@ import com.aivoicepower.ui.screens.results.ResultsScreen
 import com.aivoicepower.ui.screens.premium.PaywallScreen
 import com.aivoicepower.ui.screens.settings.SettingsScreen
 import com.aivoicepower.ui.screens.about.AboutScreen
+import com.aivoicepower.ui.screens.debug.PromptIterationScreen
 import com.aivoicepower.ui.screens.warmup.*
+import com.aivoicepower.BuildConfig
 
 /**
  * Navigation graph for Main screen (inside bottom navigation)
@@ -116,7 +118,10 @@ fun MainNavGraph(
                 },
                 onNavigateToSettings = {
                     navController.navigate(Screen.Settings.route)
-                }
+                },
+                onNavigateToPromptIteration = if (BuildConfig.DEBUG) {
+                    { navController.navigate(Screen.PromptIteration.route) }
+                } else null
             )
         }
 
@@ -215,7 +220,8 @@ fun MainNavGraph(
             route = Screen.Lesson.route,
             arguments = listOf(
                 navArgument("courseId") { type = NavType.StringType },
-                navArgument("lessonId") { type = NavType.StringType }
+                navArgument("lessonId") { type = NavType.StringType },
+                navArgument("startExerciseIndex") { type = NavType.IntType; defaultValue = 0 }
             )
         ) { backStackEntry ->
             val courseId = backStackEntry.arguments?.getString("courseId") ?: ""
@@ -455,6 +461,19 @@ fun MainNavGraph(
             AboutScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
+        }
+
+        // ===== DEBUG (only accessible in debug builds) =====
+
+        if (BuildConfig.DEBUG) {
+            composable(route = Screen.PromptIteration.route) {
+                PromptIterationScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onLaunchExercise = { courseId, lessonId, exerciseIndex ->
+                        navController.navigate(Screen.Lesson.createRoute(courseId, lessonId, exerciseIndex))
+                    }
+                )
+            }
         }
 
         // ===== PREMIUM (modal slide-up) =====

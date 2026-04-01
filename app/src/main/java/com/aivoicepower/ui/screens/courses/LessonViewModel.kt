@@ -20,6 +20,7 @@ import com.aivoicepower.domain.model.user.Achievement
 import com.aivoicepower.domain.model.user.AchievementCategory
 import com.aivoicepower.domain.model.user.AchievementDefinitions
 import com.aivoicepower.domain.repository.AchievementRepository
+import com.aivoicepower.domain.repository.CloudSyncRepository
 import com.aivoicepower.domain.repository.CourseRepository
 import com.aivoicepower.domain.repository.VoiceAnalysisRepository
 import com.aivoicepower.domain.service.SkillUpdateService
@@ -50,11 +51,13 @@ class LessonViewModel @Inject constructor(
     private val userPreferencesDataStore: UserPreferencesDataStore,
     private val rewardedAdManager: RewardedAdManager,
     private val serverLimitService: ServerLimitService,
-    private val soundManager: SoundManager
+    private val soundManager: SoundManager,
+    private val cloudSyncRepository: CloudSyncRepository
 ) : ViewModel() {
 
     private val courseId: String = savedStateHandle["courseId"] ?: ""
     private val lessonId: String = savedStateHandle["lessonId"] ?: ""
+    private val startExerciseIndex: Int = savedStateHandle["startExerciseIndex"] ?: 0
 
     private val _state = MutableStateFlow(LessonState())
     val state: StateFlow<LessonState> = _state.asStateFlow()
@@ -225,15 +228,19 @@ class LessonViewModel @Inject constructor(
                         val isLastLesson = course != null && lesson.dayNumber == course.lessons.size
                         val courseName = course?.title ?: ""
 
+                        val targetIndex = startExerciseIndex.coerceIn(0, exerciseStates.size - 1)
                         _state.update {
                             it.copy(
                                 lesson = lesson,
                                 nextLesson = nextLesson,
-                                currentPhase = if (lesson.theory != null) {
+                                currentPhase = if (startExerciseIndex > 0) {
+                                    LessonPhase.Exercise
+                                } else if (lesson.theory != null) {
                                     LessonPhase.Theory
                                 } else {
                                     LessonPhase.Exercise
                                 },
+                                currentExerciseIndex = targetIndex,
                                 exerciseStates = exerciseStates,
                                 isLoading = false,
                                 error = null,
@@ -444,7 +451,8 @@ class LessonViewModel @Inject constructor(
                     expectedText = expectedText,
                     exerciseType = currentExerciseState.exercise.type.name,
                     context = "Урок: ${lesson.title}, вправа: ${currentExerciseState.exercise.title}",
-                    exerciseId = currentExerciseState.exercise.id
+                    exerciseId = currentExerciseState.exercise.id,
+                    recordingDurationMs = currentExerciseState.recordingDurationMs
                 )
 
                 val result = analysisResult.getOrNull()
@@ -562,6 +570,11 @@ class LessonViewModel @Inject constructor(
                 lastAttemptAt = System.currentTimeMillis()
             )
             courseProgressDao.insertOrUpdate(progressEntity)
+            try {
+                cloudSyncRepository.syncCourseProgress()
+            } catch (e: Exception) {
+                Log.w("LessonVM", "Course progress sync failed: ${e.message}")
+            }
         } catch (e: Exception) {
             Log.e("LessonVM", "Save progress error: ${e.message}", e)
         }

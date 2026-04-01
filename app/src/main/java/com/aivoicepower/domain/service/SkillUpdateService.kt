@@ -50,7 +50,7 @@ class SkillUpdateService @Inject constructor(
     }
 
     // Skill indices for mapping
-    enum class Skill { DICTION, TEMPO, INTONATION, VOLUME, CONFIDENCE, FILLER_WORDS, STRUCTURE }
+    enum class Skill { DICTION, TEMPO, INTONATION, VOLUME, CONFIDENCE, FILLER_WORDS, STRUCTURE, EMOTIONALITY }
 
     // Exercise → skill weight mapping
     val exerciseSkillMap: Map<String, Map<Skill, Float>> = mapOf(
@@ -72,8 +72,8 @@ class SkillUpdateService @Inject constructor(
         ),
         "emotion_reading" to mapOf(
             Skill.DICTION to SECONDARY, Skill.TEMPO to SECONDARY,
-            Skill.INTONATION to PRIMARY, Skill.VOLUME to PRIMARY,
-            Skill.CONFIDENCE to PRIMARY
+            Skill.INTONATION to PRIMARY, Skill.VOLUME to SECONDARY,
+            Skill.CONFIDENCE to SECONDARY, Skill.EMOTIONALITY to PRIMARY
         ),
         "free_speech" to mapOf(
             Skill.DICTION to SECONDARY, Skill.TEMPO to PRIMARY,
@@ -141,8 +141,8 @@ class SkillUpdateService @Inject constructor(
         ),
         "emotion_switch" to mapOf(
             Skill.DICTION to SECONDARY, Skill.TEMPO to SECONDARY,
-            Skill.INTONATION to PRIMARY, Skill.VOLUME to PRIMARY,
-            Skill.CONFIDENCE to PRIMARY
+            Skill.INTONATION to PRIMARY, Skill.VOLUME to SECONDARY,
+            Skill.CONFIDENCE to SECONDARY, Skill.EMOTIONALITY to PRIMARY
         ),
         "speed_round" to mapOf(
             Skill.DICTION to PRIMARY, Skill.TEMPO to PRIMARY,
@@ -151,8 +151,8 @@ class SkillUpdateService @Inject constructor(
         ),
         "character_voice" to mapOf(
             Skill.DICTION to PRIMARY, Skill.TEMPO to SECONDARY,
-            Skill.INTONATION to PRIMARY, Skill.VOLUME to PRIMARY,
-            Skill.CONFIDENCE to PRIMARY
+            Skill.INTONATION to PRIMARY, Skill.VOLUME to SECONDARY,
+            Skill.CONFIDENCE to SECONDARY, Skill.EMOTIONALITY to PRIMARY
         ),
         "diagnostic" to mapOf(
             Skill.DICTION to PRIMARY, Skill.TEMPO to PRIMARY,
@@ -190,7 +190,8 @@ class SkillUpdateService @Inject constructor(
             Skill.VOLUME to result.volume.toFloat(),
             Skill.CONFIDENCE to result.confidence.toFloat(),
             Skill.FILLER_WORDS to result.fillerWords.toFloat(),
-            Skill.STRUCTURE to result.structure.toFloat()
+            Skill.STRUCTURE to result.structure.toFloat(),
+            Skill.EMOTIONALITY to (result.emotionality?.toFloat() ?: 0f)
         )
 
         var updated = resetProgress
@@ -218,6 +219,7 @@ class SkillUpdateService @Inject constructor(
             lastStructureLevel = resetProgress.structureLevel,
             lastConfidenceLevel = resetProgress.confidenceLevel,
             lastFillerWordsLevel = resetProgress.fillerWordsLevel,
+            lastEmotionalityLevel = resetProgress.emotionalityLevel,
             updatedAt = System.currentTimeMillis()
         )
 
@@ -228,7 +230,7 @@ class SkillUpdateService @Inject constructor(
                 "D=${updated.dictionLevel.fmt()} T=${updated.tempoLevel.fmt()} " +
                 "I=${updated.intonationLevel.fmt()} V=${updated.volumeLevel.fmt()} " +
                 "C=${updated.confidenceLevel.fmt()} F=${updated.fillerWordsLevel.fmt()} " +
-                "S=${updated.structureLevel.fmt()}")
+                "S=${updated.structureLevel.fmt()} E=${updated.emotionalityLevel.fmt()}")
 
         try { achievementRepository.checkAndUnlock() } catch (e: Exception) {
             Log.e(TAG, "Achievement check failed: ${e.message}")
@@ -339,7 +341,8 @@ class SkillUpdateService @Inject constructor(
             volume = p.volumeLevel,
             structure = p.structureLevel,
             confidence = p.confidenceLevel,
-            fillerWords = p.fillerWordsLevel
+            fillerWords = p.fillerWordsLevel,
+            emotionality = p.emotionalityLevel
         )
         skillSnapshotDao.insert(snapshot)
     }
@@ -364,6 +367,7 @@ class SkillUpdateService @Inject constructor(
             dailyChangeStructure = 0f,
             dailyChangeConfidence = 0f,
             dailyChangeFillerWords = 0f,
+            dailyChangeEmotionality = 0f,
             lastDailyResetDate = today
         )
     }
@@ -416,6 +420,7 @@ class SkillUpdateService @Inject constructor(
         Skill.CONFIDENCE -> p.confidenceLevel
         Skill.FILLER_WORDS -> p.fillerWordsLevel
         Skill.STRUCTURE -> p.structureLevel
+        Skill.EMOTIONALITY -> p.emotionalityLevel
     }
 
     private fun setSkillLevel(p: UserProgressEntity, skill: Skill, value: Float): UserProgressEntity = when (skill) {
@@ -426,6 +431,7 @@ class SkillUpdateService @Inject constructor(
         Skill.CONFIDENCE -> p.copy(confidenceLevel = value)
         Skill.FILLER_WORDS -> p.copy(fillerWordsLevel = value)
         Skill.STRUCTURE -> p.copy(structureLevel = value)
+        Skill.EMOTIONALITY -> p.copy(emotionalityLevel = value)
     }
 
     private fun getDailyChange(p: UserProgressEntity, skill: Skill): Float = when (skill) {
@@ -436,6 +442,7 @@ class SkillUpdateService @Inject constructor(
         Skill.CONFIDENCE -> p.dailyChangeConfidence
         Skill.FILLER_WORDS -> p.dailyChangeFillerWords
         Skill.STRUCTURE -> p.dailyChangeStructure
+        Skill.EMOTIONALITY -> p.dailyChangeEmotionality
     }
 
     private fun setDailyChange(p: UserProgressEntity, skill: Skill, value: Float): UserProgressEntity = when (skill) {
@@ -446,6 +453,7 @@ class SkillUpdateService @Inject constructor(
         Skill.CONFIDENCE -> p.copy(dailyChangeConfidence = value)
         Skill.FILLER_WORDS -> p.copy(dailyChangeFillerWords = value)
         Skill.STRUCTURE -> p.copy(dailyChangeStructure = value)
+        Skill.EMOTIONALITY -> p.copy(dailyChangeEmotionality = value)
     }
 
     private fun getPeakLevel(p: UserProgressEntity, skill: Skill): Float = when (skill) {
@@ -456,6 +464,7 @@ class SkillUpdateService @Inject constructor(
         Skill.CONFIDENCE -> p.peakConfidenceLevel
         Skill.FILLER_WORDS -> p.peakFillerWordsLevel
         Skill.STRUCTURE -> p.peakStructureLevel
+        Skill.EMOTIONALITY -> p.peakEmotionalityLevel
     }
 
     private fun updatePeakIfNeeded(p: UserProgressEntity, skill: Skill, newLevel: Float): UserProgressEntity {
@@ -469,6 +478,7 @@ class SkillUpdateService @Inject constructor(
             Skill.CONFIDENCE -> p.copy(peakConfidenceLevel = newLevel)
             Skill.FILLER_WORDS -> p.copy(peakFillerWordsLevel = newLevel)
             Skill.STRUCTURE -> p.copy(peakStructureLevel = newLevel)
+            Skill.EMOTIONALITY -> p.copy(peakEmotionalityLevel = newLevel)
         }
     }
 

@@ -36,6 +36,7 @@ fun SkillRadarChart(
         RadarMetric("Дикція", skillLevels[SkillType.DICTION] ?: 0),
         RadarMetric("Темп", skillLevels[SkillType.TEMPO] ?: 0),
         RadarMetric("Інтонація", skillLevels[SkillType.INTONATION] ?: 0),
+        RadarMetric("Емоційність", skillLevels[SkillType.EMOTIONALITY] ?: 0),
         RadarMetric("Структура", skillLevels[SkillType.STRUCTURE] ?: 0),
         RadarMetric("Впевненість", skillLevels[SkillType.CONFIDENCE] ?: 0),
         RadarMetric("Без паразитів", skillLevels[SkillType.FILLER_WORDS] ?: 0)
@@ -125,7 +126,7 @@ fun SkillRadarChart(
             RadarLabel(
                 label = metric.label,
                 value = metric.value,
-                isLong = metric.label == "Без паразитів",
+                isLong = metric.label == "Без паразитів" || metric.label == "Емоційність",
                 modifier = Modifier
                     .align(Alignment.Center)
                     .offset(x = offsetX, y = offsetY)

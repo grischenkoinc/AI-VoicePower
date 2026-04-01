@@ -36,7 +36,7 @@ import com.aivoicepower.data.local.database.entity.WarmupCompletionEntity
         AchievementEntity::class,
         AnalysisResultEntity::class
     ],
-    version = 12,
+    version = 13,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {

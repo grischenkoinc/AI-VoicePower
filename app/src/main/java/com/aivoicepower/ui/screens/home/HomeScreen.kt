@@ -50,6 +50,7 @@ import com.aivoicepower.domain.model.home.TodayPlan
 import com.aivoicepower.ui.theme.*
 import com.aivoicepower.ui.theme.components.*
 import com.aivoicepower.ui.theme.modifiers.*
+import com.aivoicepower.BuildConfig
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -68,6 +69,7 @@ fun HomeScreen(
     onNavigateToRecord: () -> Unit,
     onNavigateToAnalytics: () -> Unit,
     onNavigateToSettings: () -> Unit,
+    onNavigateToPromptIteration: (() -> Unit)? = null,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val scrollState = rememberScrollState()
@@ -118,6 +120,22 @@ fun HomeScreen(
                 onSettings = onNavigateToSettings,
                 modifier = Modifier.staggeredEntry(index = 0, staggerDelay = 60)
             )
+
+            // DEBUG: Prompt iteration button (debug builds only)
+            if (BuildConfig.DEBUG && onNavigateToPromptIteration != null) {
+                androidx.compose.material3.Button(
+                    onClick = onNavigateToPromptIteration,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(36.dp),
+                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFD32F2F)
+                    ),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("🔧 Ітерація промптів", fontSize = 13.sp, color = Color.White)
+                }
+            }
 
             // 2. Daily Goal
             state.todayPlan?.let { plan ->

@@ -97,7 +97,8 @@ class ProgressViewModel @Inject constructor(
                         SkillType.INTONATION to progress.intonationLevel.toInt(),
                         SkillType.STRUCTURE to progress.structureLevel.toInt(),
                         SkillType.CONFIDENCE to progress.confidenceLevel.toInt(),
-                        SkillType.FILLER_WORDS to progress.fillerWordsLevel.toInt()
+                        SkillType.FILLER_WORDS to progress.fillerWordsLevel.toInt(),
+                        SkillType.EMOTIONALITY to progress.emotionalityLevel.toInt()
                     )
                     val overallLevel = skillLevels.values.average().toInt()
                     _state.update {

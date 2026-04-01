@@ -267,7 +267,8 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
         }
 
         // --- Крок 3: Збагачуємо контекст транскрипцією + історією + рівнем ---
-        val isTongueTwister = exerciseType.contains("tongue_twister", ignoreCase = true)
+        val isTongueTwisterBattle = exerciseType.contains("tongue_twister_battle", ignoreCase = true)
+        val isTongueTwister = exerciseType.contains("tongue_twister", ignoreCase = true) && !isTongueTwisterBattle
         val enrichedContext = if (transcription != null) {
             buildString {
                 append(context ?: "")
@@ -340,14 +341,14 @@ class VoiceAnalysisRepositoryImpl @Inject constructor(
 
         // 4a: Cap overallScore за відсотком виконання тексту
         // Для скоромовок completion% ненадійний при швидкому мовленні — STT не встигає розпізнати.
-        // Модель сама оцінює якість аудіо безпосередньо, тому cap не потрібен.
-        if (completionPercent != null && !isTongueTwister) {
+        // Для батлу (3 скоромовки) — completion% надійний: якщо сказав 1/3, STT це покаже.
+        if (completionPercent != null && (!isTongueTwister || isTongueTwisterBattle)) {
             finalResult = capScoreByCompletion(finalResult, completionPercent)
         }
 
-        // 4a2: Cap tempo для скоромовок за реальною швидкістю мовлення
+        // 4a2: Cap tempo для скоромовок та батлу за реальною швидкістю мовлення
         // Якщо юзер говорив повільно (паузи, розтягнуто) — tempo не може бути високим.
-        if (isTongueTwister && recordingDurationMs > 0 && !expectedText.isNullOrBlank()) {
+        if ((isTongueTwister || isTongueTwisterBattle) && recordingDurationMs > 0 && !expectedText.isNullOrBlank()) {
             val expectedWordCount = normalizeToWords(expectedText).size
             if (expectedWordCount > 0) {
                 val wordsPerSecond = expectedWordCount.toFloat() / (recordingDurationMs / 1000f)

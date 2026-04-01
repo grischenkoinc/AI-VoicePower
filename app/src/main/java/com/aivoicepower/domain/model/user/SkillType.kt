@@ -13,7 +13,8 @@ enum class SkillType {
     BREATHING,      // Дихання
     VOICE_QUALITY,  // Якість голосу
     PROJECTION,     // Проекція голосу
-    RESONANCE       // Резонанс
+    RESONANCE,      // Резонанс
+    EMOTIONALITY    // Емоційність
 }
 
 fun SkillType.toDisplayString(): String {
@@ -29,5 +30,6 @@ fun SkillType.toDisplayString(): String {
         SkillType.VOICE_QUALITY -> "Якість голосу"
         SkillType.PROJECTION -> "Проекція"
         SkillType.RESONANCE -> "Резонанс"
+        SkillType.EMOTIONALITY -> "Емоційність"
     }
 }

@@ -99,6 +99,7 @@ class SkillDetailViewModel @Inject constructor(
                         SkillType.STRUCTURE -> diagnostic.structure
                         SkillType.CONFIDENCE -> diagnostic.confidence
                         SkillType.FILLER_WORDS -> diagnostic.fillerWords
+                        SkillType.EMOTIONALITY -> 0 // Not measured in initial diagnostic
                         else -> 0
                     }
                 } else 0
@@ -257,6 +258,7 @@ class SkillDetailViewModel @Inject constructor(
         SkillType.CONFIDENCE -> SkillUpdateService.Skill.CONFIDENCE
         SkillType.FILLER_WORDS -> SkillUpdateService.Skill.FILLER_WORDS
         SkillType.STRUCTURE -> SkillUpdateService.Skill.STRUCTURE
+        SkillType.EMOTIONALITY -> SkillUpdateService.Skill.EMOTIONALITY
         else -> null
     }
 
@@ -270,6 +272,7 @@ class SkillDetailViewModel @Inject constructor(
         SkillType.STRUCTURE -> progress.structureLevel.toInt()
         SkillType.CONFIDENCE -> progress.confidenceLevel.toInt()
         SkillType.FILLER_WORDS -> progress.fillerWordsLevel.toInt()
+        SkillType.EMOTIONALITY -> progress.emotionalityLevel.toInt()
         else -> 0
     }
 
@@ -283,6 +286,7 @@ class SkillDetailViewModel @Inject constructor(
         SkillType.STRUCTURE -> snapshot.structure.toInt()
         SkillType.CONFIDENCE -> snapshot.confidence.toInt()
         SkillType.FILLER_WORDS -> snapshot.fillerWords.toInt()
+        SkillType.EMOTIONALITY -> snapshot.emotionality.toInt()
         else -> 0
     }
 }
