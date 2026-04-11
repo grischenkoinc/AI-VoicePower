@@ -2,20 +2,27 @@ package com.aivoicepower.data.billing
 
 import android.app.Activity
 import android.content.Context
+import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.android.billingclient.api.*
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class BillingClientWrapper @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val userPreferencesDataStore: UserPreferencesDataStore
 ) : PurchasesUpdatedListener {
+
+    private val scope = CoroutineScope(Dispatchers.IO)
 
     private var billingClient: BillingClient? = null
     private var reconnectAttempts = 0
@@ -171,7 +178,7 @@ class BillingClientWrapper @Inject constructor(
             if (!purchase.isAcknowledged) {
                 acknowledgePurchase(purchase)
             } else {
-                _isPremium.value = true
+                grantPremium()
                 _purchaseResult.value = PurchaseResult.Success
             }
         }
@@ -184,7 +191,7 @@ class BillingClientWrapper @Inject constructor(
 
         billingClient?.acknowledgePurchase(acknowledgePurchaseParams) { billingResult ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                _isPremium.value = true
+                grantPremium()
                 _purchaseResult.value = PurchaseResult.Success
             } else {
                 _purchaseResult.value = PurchaseResult.Error(
@@ -204,8 +211,13 @@ class BillingClientWrapper @Inject constructor(
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
                 purchasesList.forEach { purchase ->
                     if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
-                        _isPremium.value = true
-                        handlePurchase(purchase)
+                        if (purchase.isAcknowledged) {
+                            // Already acknowledged — silently restore premium, no UI notification
+                            grantPremium()
+                        } else {
+                            // Unacknowledged (edge case) — acknowledge and notify
+                            handlePurchase(purchase)
+                        }
                     }
                 }
             }
@@ -220,11 +232,21 @@ class BillingClientWrapper @Inject constructor(
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
                 purchasesList.forEach { purchase ->
                     if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
-                        _isPremium.value = true
-                        handlePurchase(purchase)
+                        if (purchase.isAcknowledged) {
+                            grantPremium()
+                        } else {
+                            handlePurchase(purchase)
+                        }
                     }
                 }
             }
+        }
+    }
+
+    private fun grantPremium() {
+        _isPremium.value = true
+        scope.launch {
+            userPreferencesDataStore.updatePremiumStatus(true)
         }
     }
 

@@ -4,6 +4,7 @@ import android.content.Context
 import com.aivoicepower.data.billing.BillingClientWrapper
 import com.aivoicepower.data.billing.BillingRepository
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
+import com.aivoicepower.domain.repository.CloudSyncRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,17 +19,19 @@ object BillingModule {
     @Provides
     @Singleton
     fun provideBillingClientWrapper(
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
+        userPreferencesDataStore: UserPreferencesDataStore
     ): BillingClientWrapper {
-        return BillingClientWrapper(context)
+        return BillingClientWrapper(context, userPreferencesDataStore)
     }
 
     @Provides
     @Singleton
     fun provideBillingRepository(
         billingClient: BillingClientWrapper,
-        userPreferencesDataStore: UserPreferencesDataStore
+        userPreferencesDataStore: UserPreferencesDataStore,
+        cloudSyncRepository: CloudSyncRepository
     ): BillingRepository {
-        return BillingRepository(billingClient, userPreferencesDataStore)
+        return BillingRepository(billingClient, userPreferencesDataStore, cloudSyncRepository)
     }
 }

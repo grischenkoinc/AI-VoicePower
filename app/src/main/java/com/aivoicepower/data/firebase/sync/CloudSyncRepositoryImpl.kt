@@ -55,6 +55,19 @@ class CloudSyncRepositoryImpl @Inject constructor(
         }
     }
 
+    /** Save isPremium = true to Firestore user document so it survives reinstall */
+    override suspend fun savePremiumToCloud(): Result<Unit> {
+        val userId = uid ?: return Result.failure(Exception("Не авторизовано"))
+        return try {
+            firestore.collection("users").document(userId)
+                .set(hashMapOf("isPremium" to true, "updatedAt" to System.currentTimeMillis()), SetOptions.merge())
+                .await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     override suspend fun syncUserProgress(): Result<Unit> {
         val userId = uid ?: return Result.failure(Exception("Не авторизовано"))
         return try {

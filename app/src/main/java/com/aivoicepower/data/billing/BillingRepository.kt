@@ -2,6 +2,7 @@ package com.aivoicepower.data.billing
 
 import android.app.Activity
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
+import com.aivoicepower.domain.repository.CloudSyncRepository
 import com.android.billingclient.api.ProductDetails
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,7 +12,8 @@ import javax.inject.Singleton
 @Singleton
 class BillingRepository @Inject constructor(
     private val billingClient: BillingClientWrapper,
-    private val userPreferencesDataStore: UserPreferencesDataStore
+    private val userPreferencesDataStore: UserPreferencesDataStore,
+    private val cloudSyncRepository: CloudSyncRepository
 ) {
 
     val billingState: StateFlow<BillingState> = billingClient.billingState
@@ -34,11 +36,8 @@ class BillingRepository @Inject constructor(
     }
 
     suspend fun handleSuccessfulPurchase() {
-        // Update premium status in DataStore
-        userPreferencesDataStore.setPremiumStatus(
-            isPremium = true,
-            expiresAt = null // For subscriptions, Google manages expiration
-        )
+        userPreferencesDataStore.setPremiumStatus(isPremium = true, expiresAt = null)
+        cloudSyncRepository.savePremiumToCloud()
     }
 
     fun restorePurchases() {

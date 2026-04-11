@@ -20,4 +20,5 @@ interface CloudSyncRepository {
     suspend fun fullSync(): Result<Unit>
     suspend fun uploadRecording(localPath: String, recordingId: String): Result<String>
     suspend fun downloadRecording(cloudUrl: String, localPath: String): Result<Unit>
+    suspend fun savePremiumToCloud(): Result<Unit>
 }
