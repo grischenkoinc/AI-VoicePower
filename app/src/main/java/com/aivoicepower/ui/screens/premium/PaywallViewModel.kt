@@ -66,7 +66,7 @@ class PaywallViewModel @Inject constructor(
             billingRepository.purchaseResult.collect { result ->
                 when (result) {
                     is PurchaseResult.Success -> {
-                        billingRepository.handleSuccessfulPurchase()
+                        // handleSuccessfulPurchase is called by isPremiumFromBilling observer below
                         _state.update {
                             it.copy(
                                 isLoading = false,

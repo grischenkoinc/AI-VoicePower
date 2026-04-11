@@ -21,7 +21,7 @@ data class LessonState(
     val courseCompletionBadge: Achievement? = null,
     // Analysis limits
     val showAnalysisLimitSheet: Boolean = false,
-    val isPremium: Boolean = true,
+    val isPremium: Boolean = false,
     val remainingAnalyses: Int = Int.MAX_VALUE,
     val remainingAdAnalyses: Int = 0,
     val isAdLoaded: Boolean = false

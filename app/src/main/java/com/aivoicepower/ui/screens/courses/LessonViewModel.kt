@@ -686,11 +686,11 @@ class LessonViewModel @Inject constructor(
         if (currentIndex < maxIndex) {
             moveToNextExercise()
         } else {
-            // Last exercise skipped - complete lesson
+            // Last exercise - show completion screen immediately, save in background
+            _state.update { it.copy(currentPhase = LessonPhase.Completed) }
             viewModelScope.launch {
                 saveLessonProgress()
                 handleCourseCompletion()
-                _state.update { it.copy(currentPhase = LessonPhase.Completed) }
             }
         }
     }

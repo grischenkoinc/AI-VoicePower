@@ -16,7 +16,7 @@ data class StorytellingState(
     val error: String? = null,
     // Analysis limits
     val showAnalysisLimitSheet: Boolean = false,
-    val isPremium: Boolean = true,
+    val isPremium: Boolean = false,
     val remainingImprovAnalyses: Int = Int.MAX_VALUE,
     val remainingAdImprovAnalyses: Int = 0,
     val isAdLoaded: Boolean = false

@@ -233,7 +233,7 @@ fun MainNavGraph(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToNextLesson = { nextCourseId, nextLessonId ->
                     navController.navigate(Screen.Lesson.createRoute(nextCourseId, nextLessonId)) {
-                        popUpTo(Screen.Lesson.createRoute(courseId, lessonId)) { inclusive = true }
+                        popUpTo(Screen.Lesson.route) { inclusive = true }
                     }
                 },
                 onNavigateToPremium = onNavigateToPremium

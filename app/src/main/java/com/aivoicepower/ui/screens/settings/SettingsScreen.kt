@@ -271,7 +271,7 @@ fun SettingsScreen(
                 SettingsItemRow(
                     icon = Icons.Default.Info,
                     title = "Про застосунок",
-                    subtitle = "Версія 1.2.3",
+                    subtitle = "Версія 1.2.4",
                     onClick = onNavigateToAbout
                 )
                 SettingsItemRow(
@@ -335,7 +335,7 @@ fun SettingsScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Diqto v1.2.3",
+                    text = "Diqto v1.2.4",
                     fontSize = 12.sp,
                     color = Color.White.copy(alpha = 0.3f),
                     fontWeight = FontWeight.Normal,

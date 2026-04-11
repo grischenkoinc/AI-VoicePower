@@ -27,7 +27,7 @@ data class HomeState(
     val isLoading: Boolean = true,
     val error: String? = null,
     // Analysis limits for free users
-    val isPremium: Boolean = true,
+    val isPremium: Boolean = false,
     val remainingAnalyses: Int = Int.MAX_VALUE,
     val remainingImprovAnalyses: Int = Int.MAX_VALUE,
     val remainingAiMessages: Int = Int.MAX_VALUE,
