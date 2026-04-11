@@ -46,6 +46,7 @@ fun SettingsScreen(
     onNavigateToAbout: () -> Unit = {},
     onLoggedOut: () -> Unit = {},
     onDataCleared: () -> Unit = {},
+    onShowPrivacyOptions: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -271,7 +272,7 @@ fun SettingsScreen(
                 SettingsItemRow(
                     icon = Icons.Default.Info,
                     title = "Про застосунок",
-                    subtitle = "Версія 1.2.4",
+                    subtitle = "Версія 1.2.5",
                     onClick = onNavigateToAbout
                 )
                 SettingsItemRow(
@@ -284,6 +285,13 @@ fun SettingsScreen(
                     title = "Умови використання",
                     onClick = { /* TODO */ }
                 )
+                if (state.isPrivacyOptionsRequired) {
+                    SettingsItemRow(
+                        icon = Icons.Default.AdminPanelSettings,
+                        title = "Налаштування реклами",
+                        onClick = onShowPrivacyOptions
+                    )
+                }
                 SettingsItemRow(
                     icon = Icons.Default.Feedback,
                     title = "Зворотний зв'язок",
@@ -335,7 +343,7 @@ fun SettingsScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Diqto v1.2.4",
+                    text = "Diqto v1.2.5",
                     fontSize = 12.sp,
                     color = Color.White.copy(alpha = 0.3f),
                     fontWeight = FontWeight.Normal,

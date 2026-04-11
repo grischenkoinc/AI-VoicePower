@@ -40,6 +40,7 @@ fun NavGraph(
     navController: NavHostController,
     googleSignInHelper: GoogleSignInHelper,
     rewardedAdManager: RewardedAdManager? = null,
+    onShowPrivacyOptions: () -> Unit = {},
     startDestination: String = Screen.Splash.route
 ) {
     NavHost(
@@ -204,6 +205,7 @@ fun NavGraph(
                     navController.navigate(Screen.Premium.route)
                 },
                 rewardedAdManager = rewardedAdManager,
+                onShowPrivacyOptions = onShowPrivacyOptions,
                 rootNavController = navController
             )
         }

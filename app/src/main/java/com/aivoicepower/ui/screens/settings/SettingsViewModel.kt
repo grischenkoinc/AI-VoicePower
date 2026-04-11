@@ -3,6 +3,7 @@ package com.aivoicepower.ui.screens.settings
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aivoicepower.data.ads.ConsentManager
 import com.aivoicepower.data.firebase.sync.CloudSyncRepositoryImpl
 import com.aivoicepower.data.local.database.AppDatabase
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
@@ -24,6 +25,7 @@ class SettingsViewModel @Inject constructor(
     private val userPreferencesDataStore: UserPreferencesDataStore,
     private val database: AppDatabase,
     private val cloudSyncRepository: CloudSyncRepositoryImpl,
+    private val consentManager: ConsentManager,
     @ApplicationContext private val appContext: Context
 ) : ViewModel() {
 
@@ -32,6 +34,7 @@ class SettingsViewModel @Inject constructor(
 
     init {
         observeUserData()
+        _state.update { it.copy(isPrivacyOptionsRequired = consentManager.isPrivacyOptionsRequired) }
     }
 
     private fun observeUserData() {

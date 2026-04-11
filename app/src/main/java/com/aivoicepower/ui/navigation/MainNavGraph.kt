@@ -57,6 +57,7 @@ fun MainNavGraph(
     onNavigateToAiCoach: () -> Unit,
     onNavigateToPremium: () -> Unit,
     rewardedAdManager: RewardedAdManager? = null,
+    onShowPrivacyOptions: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -453,7 +454,8 @@ fun MainNavGraph(
                     rootNavController.navigate(Screen.UserName.route) {
                         popUpTo(0) { inclusive = true }
                     }
-                }
+                },
+                onShowPrivacyOptions = onShowPrivacyOptions
             )
         }
 

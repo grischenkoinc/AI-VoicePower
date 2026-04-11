@@ -20,6 +20,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.compose.rememberNavController
 import com.aivoicepower.audio.LocalSoundManager
 import com.aivoicepower.audio.SoundManager
+import com.aivoicepower.data.ads.ConsentManager
 import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.data.audio.AudioPlayer
 import com.aivoicepower.data.billing.BillingClientWrapper
@@ -51,6 +52,9 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var billingClientWrapper: BillingClientWrapper
 
+    @Inject
+    lateinit var consentManager: ConsentManager
+
     override fun attachBaseContext(newBase: Context) {
         // Reset font scale and display size to device defaults
         // Ignores user's "Font size" and "Display size" settings
@@ -62,6 +66,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Gather GDPR consent (UMP SDK) — must be first before ads initialize
+        consentManager.gatherConsent(this)
 
         // Enable edge-to-edge display with transparent system bars
         enableEdgeToEdge(
@@ -90,7 +97,10 @@ class MainActivity : ComponentActivity() {
                         NavGraph(
                             navController = navController,
                             googleSignInHelper = googleSignInHelper,
-                            rewardedAdManager = rewardedAdManager
+                            rewardedAdManager = rewardedAdManager,
+                            onShowPrivacyOptions = {
+                                consentManager.showPrivacyOptionsForm(this@MainActivity) { }
+                            }
                         )
                     }
                 }

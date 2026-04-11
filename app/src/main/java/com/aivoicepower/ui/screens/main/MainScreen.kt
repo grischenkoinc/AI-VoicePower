@@ -42,6 +42,7 @@ fun MainScreen(
     onNavigateToAiCoach: () -> Unit = {},
     onNavigateToPremium: () -> Unit = {},
     rewardedAdManager: RewardedAdManager? = null,
+    onShowPrivacyOptions: () -> Unit = {},
     rootNavController: NavHostController = rememberNavController()
 ) {
     val soundManager = LocalSoundManager.current
@@ -148,6 +149,7 @@ fun MainScreen(
                 onNavigateToAiCoach = onNavigateToAiCoach,
                 onNavigateToPremium = onNavigateToPremium,
                 rewardedAdManager = rewardedAdManager,
+                onShowPrivacyOptions = onShowPrivacyOptions,
                 modifier = Modifier
             )
 

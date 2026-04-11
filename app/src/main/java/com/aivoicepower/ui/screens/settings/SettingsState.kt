@@ -18,5 +18,6 @@ data class SettingsState(
     val showClearDataDialog: Boolean = false,
     val showDailyGoalPicker: Boolean = false,
     val isLoading: Boolean = false,
-    val navigateToOnboarding: Boolean = false
+    val navigateToOnboarding: Boolean = false,
+    val isPrivacyOptionsRequired: Boolean = false
 )

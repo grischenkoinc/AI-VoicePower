@@ -3,7 +3,6 @@ package com.aivoicepower
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import com.aivoicepower.data.ads.RewardedAdManager
 import com.aivoicepower.data.local.datastore.UserPreferencesDataStore
 import com.aivoicepower.utils.AnalyticsTracker
 import com.aivoicepower.utils.NotificationHelper
@@ -21,9 +20,6 @@ import javax.inject.Inject
 class VoicePowerApp : Application(), Configuration.Provider {
 
     @Inject
-    lateinit var rewardedAdManager: RewardedAdManager
-
-    @Inject
     lateinit var workerFactory: HiltWorkerFactory
 
     @Inject
@@ -37,16 +33,6 @@ class VoicePowerApp : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         NotificationHelper.createNotificationChannel(this)
-        // Defer ad SDK init — run on main thread but after first frame
-        // Also check Play Services availability to prevent "Something went wrong" dialog on MIUI
-        appScope.launch {
-            kotlinx.coroutines.delay(1000)
-            val playServicesStatus = GoogleApiAvailability.getInstance()
-                .isGooglePlayServicesAvailable(this@VoicePowerApp)
-            if (playServicesStatus == ConnectionResult.SUCCESS) {
-                rewardedAdManager.initialize()
-            }
-        }
         initAnalyticsUserProperties()
     }
 

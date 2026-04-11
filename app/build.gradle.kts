@@ -37,8 +37,8 @@ android {
         applicationId = "com.aivoicepower"
         minSdk = 26
         targetSdk = 35
-        versionCode = 17
-        versionName = "1.2.4"
+        versionCode = 18
+        versionName = "1.2.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -164,6 +164,7 @@ dependencies {
 
     // Google AdMob
     implementation("com.google.android.gms:play-services-ads:23.6.0")
+    implementation("com.google.android.ump:user-messaging-platform:3.1.0")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
