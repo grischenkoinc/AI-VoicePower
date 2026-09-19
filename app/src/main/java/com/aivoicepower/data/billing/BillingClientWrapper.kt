@@ -124,9 +124,9 @@ class BillingClientWrapper @Inject constructor(
             .setProductList(productList)
             .build()
 
-        billingClient?.queryProductDetailsAsync(params) { billingResult, productDetailsList ->
+        billingClient?.queryProductDetailsAsync(params) { billingResult, productDetailsResult ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                _availableProducts.value = productDetailsList
+                _availableProducts.value = productDetailsResult.productDetailsList
             }
         }
     }
