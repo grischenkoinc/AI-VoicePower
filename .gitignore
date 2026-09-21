@@ -58,3 +58,6 @@ captures/
 
 # Logs
 *.log
+
+# Local-only project context (business/tax/account info — not for git)
+Context-Business.md
