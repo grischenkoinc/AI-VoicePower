@@ -1,6 +1,11 @@
 package com.aivoicepower.ui.screens.settings
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.view.HapticFeedbackConstants
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -27,12 +32,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aivoicepower.ui.screens.settings.components.*
@@ -51,7 +58,25 @@ fun SettingsScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val view = LocalView.current
+    val context = LocalContext.current
     var wasAuthenticated by remember { mutableStateOf(state.isAuthenticated) }
+
+    // Notification permission (Android 13+) — needed before enabling reminders
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) viewModel.onEvent(SettingsEvent.ToggleReminder)
+    }
+    val onReminderToggle: () -> Unit = {
+        val needsPermission = !state.isReminderEnabled &&
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        if (needsPermission) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            viewModel.onEvent(SettingsEvent.ToggleReminder)
+        }
+    }
 
     // Navigate to auth screen after logout/delete
     LaunchedEffect(state.isAuthenticated) {
@@ -205,8 +230,8 @@ fun SettingsScreen(
                     subtitle = if (state.isReminderEnabled) "Увімкнено" else "Вимкнено",
                     trailingType = SettingsTrailingType.SWITCH,
                     isChecked = state.isReminderEnabled,
-                    onCheckedChange = { viewModel.onEvent(SettingsEvent.ToggleReminder) },
-                    onClick = { viewModel.onEvent(SettingsEvent.ToggleReminder) }
+                    onCheckedChange = { onReminderToggle() },
+                    onClick = { onReminderToggle() }
                 )
                 SettingsItemRow(
                     icon = Icons.Default.Timer,
