@@ -38,13 +38,13 @@ object IntonationMagicCourse {
         getLesson13(),
         getLesson14(),
         // Тиждень 3
-        getLesson15Placeholder(),
-        getLesson16Placeholder(),
-        getLesson17Placeholder(),
-        getLesson18Placeholder(),
-        getLesson19Placeholder(),
-        getLesson20Placeholder(),
-        getLesson21Placeholder()
+        getLesson15(),
+        getLesson16(),
+        getLesson17(),
+        getLesson18(),
+        getLesson19(),
+        getLesson20(),
+        getLesson21()
     )
 
     // ==================== УРОК 1: Основи інтонації ====================
@@ -1899,103 +1899,937 @@ object IntonationMagicCourse {
         estimatedMinutes = 16
     )
 
-    // ==================== ТИЖДЕНЬ 3: Заглушки ====================
+    // ==================== ТИЖДЕНЬ 3 ====================
 
-    private fun getLesson15Placeholder(): Lesson = Lesson(
+    // ==================== УРОК 15: Саркастична інтонація ====================
+    private fun getLesson15(): Lesson = Lesson(
         id = "intonation_lesson_15",
         courseId = COURSE_ID,
         dayNumber = 15,
         title = "Саркастична інтонація",
-        description = "Скоро буде доступно",
+        description = "Коли слова кажуть одне, а тон — зовсім інше",
         theory = TheoryContent(
-            text = "Цей урок ще в розробці. Ми працюємо над тим, щоб зробити його якомога кориснішим для тебе. Дякуємо за терпіння!",
-            tips = emptyList()
+            text = """
+                Сарказм — коли слова кажуть одне, а тон інше
+
+                Сарказм — найскладніший вид інтонації, бо він працює на контрасті. Слова звучать позитивно чи нейтрально, а тон повідомляє протилежне. "Ну просто чудово" сказане з сарказмом означає "жахливо". Без правильної інтонації сарказм не працює взагалі — текст сприймається буквально.
+
+                Як звучить сарказм?
+
+                • Уповільнений темп на ключовому слові — розтягнуте "чуу-дово"
+                • Пласкіший, "видавлений" тон — без справжньої радості в голосі
+                • Легкий акцент на слові, яке суперечить контексту
+                • Пауза перед сарказмом — щоб слухач встиг налаштуватись
+                • Часто — легка посмішка чи піднята брова в голосі (навіть невидима, вона чутна)
+
+                Небезпека сарказму:
+
+                1. Легко переплутати з грубістю, якщо перегнути з тоном
+                2. Не всі культури й люди зчитують сарказм однаково
+                3. У письмовому тексті сарказм майже не читається — тому голос критично важливий
+                4. Надлишок сарказму втомлює й відштовхує співрозмовника
+
+                Типова помилка: вимовляти "сарказм" тим самим тоном, що і звичайне речення. Тоді слухач сприймає слова буквально, і жарт (чи критика) губиться повністю.
+
+                Важливо: сарказм — інструмент, не звичка. Використовуй його вибірково, з людьми, які точно зрозуміють жарт.
+
+                Сьогодні тренуємо тонку межу між грою тоном і банальною грубістю.
+            """.trimIndent(),
+            tips = listOf(
+                "Сарказм тримається на контрасті: позитивні слова + 'плаский' або перебільшений тон",
+                "Розтягуй ключове слово і став легку паузу перед ним — це сигналізує іронію",
+                "Використовуй сарказм вибірково — не з кожним і не завжди"
+            )
         ),
-        exercises = emptyList(),
-        estimatedMinutes = 10
+        exercises = listOf(
+            LessonExercise(
+                id = "intonation_ex_15_1",
+                type = ExerciseType.ARTICULATION,
+                title = "Пряме vs саркастичне",
+                instruction = "Вимов 'Чудова ідея' спочатку щиро, з радістю. Потім те саме саркастично — розтягнуто, з 'пласким' тоном. Відчуй контраст. Повтори 5 разів.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 45
+                ),
+                durationSeconds = 45,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_15_2",
+                type = ExerciseType.ARTICULATION,
+                title = "Розтягнуте слово",
+                instruction = "Вимов саркастично, розтягуючи ключове слово: 'Ну про-о-осто чудо-о-ово', 'Ти-и-и такий розумний', 'Оце так сюрпри-и-из'. По 3 рази кожну фразу.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 60
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_15_3",
+                type = ExerciseType.ARTICULATION,
+                title = "Пауза перед сарказмом",
+                instruction = "Вимов: 'Ой, як же...' — коротка пауза — '...цікаво.' — з очевидним сарказмом у голосі після паузи. Повтори 5 разів.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 45
+                ),
+                durationSeconds = 45,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_15_4",
+                type = ExerciseType.ARTICULATION,
+                title = "Градації іронії",
+                instruction = "Вимов 'Молодець' з різним рівнем сарказму: 1) легка іронія, 2) очевидний сарказм, 3) відверта насмішка. Відчуй, як тон стає більш перебільшеним. Повтори 3 рази.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 60
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_15_5",
+                type = ExerciseType.ARTICULATION,
+                title = "Сарказм у діалозі",
+                instruction = "Уяви ситуацію: хтось спізнився на годину. Вимов: 'Ой, як добре, що ти встиг.' — з чітким саркастичним тоном. Повтори 5 разів.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 45
+                ),
+                durationSeconds = 45,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_15_6",
+                type = ExerciseType.EMOTION_READING,
+                title = "Саркастичний коментар",
+                instruction = "Прочитай з чітким сарказмом — слова звучать позитивно, тон каже протилежне.",
+                content = ExerciseContent.ReadingText(
+                    text = "Ну звісно, це найкращий план, який я тільки чув. Що могло піти не так? Просто ідеально продумано до дрібниць. Браво.",
+                    emotion = null
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_15_7",
+                type = ExerciseType.EMOTION_READING,
+                title = "Іронічна історія",
+                instruction = "Прочитай з легкою іронією — як людина, що вміє посміятися над невдачею.",
+                content = ExerciseContent.ReadingText(
+                    text = "Ох, який чудовий день для пікніка — злива саме почалася вчасно. А парасольку я, звісно, забув удома. Просто ідеальний збіг обставин.",
+                    emotion = null
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
+            )
+        ),
+        estimatedMinutes = 13
     )
 
-    private fun getLesson16Placeholder(): Lesson = Lesson(
+    // ==================== УРОК 16: Тепла інтонація ====================
+    private fun getLesson16(): Lesson = Lesson(
         id = "intonation_lesson_16",
         courseId = COURSE_ID,
         dayNumber = 16,
         title = "Тепла інтонація",
-        description = "Скоро буде доступно",
+        description = "Голос, якому довіряють миттєво",
         theory = TheoryContent(
-            text = "Цей урок ще в розробці. Ми працюємо над тим, щоб зробити його якомога кориснішим для тебе. Дякуємо за терпіння!",
-            tips = emptyList()
+            text = """
+                Тепло в голосі — те, що заспокоює будь-кого
+
+                Тепла інтонація — це голос, якому довіряють миттєво. Не радість, не збудження, а м'яка, дбайлива присутність у тоні. Батьки говорять так до дітей, лікарі — до пацієнтів, друзі — коли підтримують у важку хвилину.
+
+                Як звучить тепла інтонація?
+
+                • Помірний темп — не поспішаєш, даєш простір
+                • М'яка, округла артикуляція — без різких приголосних
+                • Нижча гучність — тепло не кричить
+                • Плавні переходи тону — без різких стрибків
+                • Легка посмішка в голосі — навіть без слів "радість"
+
+                Де застосовувати теплу інтонацію?
+
+                1. Підтримка — коли комусь важко, потрібне не рішення, а тепло
+                2. Заспокоєння — теплий голос знижує тривогу співрозмовника
+                3. Побудова довіри — перше враження часто формує саме тон
+                4. Виховання й турбота — з дітьми, тваринами, вразливими людьми
+
+                Типова помилка: плутати тепло з надмірною солодкавістю. Штучно "медовий" голос звучить фальшиво і навіть дратує. Справжнє тепло — стримане і щире.
+
+                Важливо: тепла інтонація не означає слабкість. Можна говорити тепло і при цьому впевнено — це не взаємовиключні якості.
+
+                Сьогодні тренуємо голос, який заспокоює і викликає довіру з першого слова.
+            """.trimIndent(),
+            tips = listOf(
+                "Тепла інтонація: помірний темп + м'яка артикуляція + нижча гучність",
+                "Уникай надмірної солодкавості — справжнє тепло стримане, не награне",
+                "Тепло і впевненість можуть звучати разом — це не протилежності"
+            )
         ),
-        exercises = emptyList(),
-        estimatedMinutes = 10
+        exercises = listOf(
+            LessonExercise(
+                id = "intonation_ex_16_1",
+                type = ExerciseType.ARTICULATION,
+                title = "Тепле привітання",
+                instruction = "Вимов 'Привіт, як ти?' спочатку нейтрально, потім тепло — м'яко, з щирою турботою в голосі. Відчуй різницю. Повтори 5 разів.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 45
+                ),
+                durationSeconds = 45,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_16_2",
+                type = ExerciseType.ARTICULATION,
+                title = "Заспокоєння",
+                instruction = "Вимов: 'Все добре. Я поруч. Не хвилюйся.' — повільно, м'яко, тихим теплим голосом, ніби заспокоюєш близьку людину. Повтори 5 разів.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 60
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_16_3",
+                type = ExerciseType.ARTICULATION,
+                title = "Підтримка",
+                instruction = "Вимов з теплом: 'Я вірю в тебе.', 'Ти впораєшся.', 'Я поруч, що б не сталося.' — щиро, без поспіху. По 3 рази кожну фразу.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 60
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
+            ),
+            LessonExercise(
+                id = "intonation_ex_16_4",
+                type = ExerciseType.ARTICULATION,
+                title = "Голос для дитини",
+                instruction = "Уяви, що заспокоюєш дитину, яка засмутилась. Вимов: 'Тихо-тихо, все гаразд, мама тут.' — максимально м'яко й тепло. Повтори 5 разів.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 45
+                ),
+                durationSeconds = 45,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_16_5",
+                type = ExerciseType.ARTICULATION,
+                title = "Тепло + впевненість",
+                instruction = "Вимов: 'Я розумію, як тобі важко, і ми разом це подолаємо.' — тепло, але твердо і впевнено, без слабкості в голосі. Повтори 5 разів.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 45
+                ),
+                durationSeconds = 45,
+                targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
+            ),
+            LessonExercise(
+                id = "intonation_ex_16_6",
+                type = ExerciseType.EMOTION_READING,
+                title = "Тепла підтримка",
+                instruction = "Прочитай м'яко й щиро, ніби підтримуєш близьку людину у важкий момент.",
+                content = ExerciseContent.ReadingText(
+                    text = "Я знаю, зараз важко. Але ти не сам. Я поруч, і ми пройдемо через це разом. Дай собі трохи часу — все налагодиться.",
+                    emotion = null
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
+            ),
+            LessonExercise(
+                id = "intonation_ex_16_7",
+                type = ExerciseType.EMOTION_READING,
+                title = "Материнська колискова",
+                instruction = "Прочитай максимально м'яко й тепло, ніби заколисуєш дитину.",
+                content = ExerciseContent.ReadingText(
+                    text = "Спи, маленький, тихо спи. Зірочки вже засвітили. Завтра сонце знов зійде, і нові дива навколо. А зараз — просто відпочинь.",
+                    emotion = null
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION)
+            )
+        ),
+        estimatedMinutes = 13
     )
 
-    private fun getLesson17Placeholder(): Lesson = Lesson(
+    // ==================== УРОК 17: Авторитетна інтонація ====================
+    private fun getLesson17(): Lesson = Lesson(
         id = "intonation_lesson_17",
         courseId = COURSE_ID,
         dayNumber = 17,
         title = "Авторитетна інтонація",
-        description = "Скоро буде доступно",
+        description = "Голос, якому вірять без доказів",
         theory = TheoryContent(
-            text = "Цей урок ще в розробці. Ми працюємо над тим, щоб зробити його якомога кориснішим для тебе. Дякуємо за терпіння!",
-            tips = emptyList()
+            text = """
+                Голос лідера — не гучний, а вагомий
+
+                Авторитетна інтонація — це не крик і не тиск. Це голос, якому вірять без доказів, бо кожне слово звучить зважено. Лідери, експерти, ті, кого слухають у критичний момент, говорять саме так.
+
+                Складові авторитетного голосу:
+
+                • Нижчий регістр — низький тон асоціюється з компетентністю та довірою
+                • Повільний, стабільний темп — без поспіху, без хаотичних прискорень
+                • Чіткі, завершені речення — без "хвостиків" сумніву
+                • Мінімум слів-паразитів — кожна пауза свідома, а не заповнена "е-е"
+                • Стабільна гучність — не гойдається між тихим і голосним
+
+                Звідки береться відчуття авторитету?
+
+                1. Впевненість у власних словах — говориш те, у чому дійсно переконаний
+                2. Контроль темпу — не даєш нервозності прискорити мовлення
+                3. Пряма постава й дихання — фізичний стан впливає на звук голосу
+                4. Практика — авторитетний тон вибудовується повторенням, не народжується сам
+
+                Типова помилка: плутати авторитетність із агресивністю чи гучністю. Найбільш авторитетні люди часто говорять тихіше за інших — і саме тому їх слухають уважніше.
+
+                Ключовий інсайт: авторитет у голосі — це передусім внутрішня переконаність, яка потім виражається зовні через темп, тон і стабільність.
+
+                Сьогодні тренуємо голос, якому вірять з першого речення.
+            """.trimIndent(),
+            tips = listOf(
+                "Авторитетний голос — нижчий, повільніший і стабільніший, а не гучніший",
+                "Прибери слова-паразити — кожна пауза має бути свідомою",
+                "Найавторитетніші люди часто говорять тихо — саме тому їх слухають"
+            )
         ),
-        exercises = emptyList(),
-        estimatedMinutes = 10
+        exercises = listOf(
+            LessonExercise(
+                id = "intonation_ex_17_1",
+                type = ExerciseType.ARTICULATION,
+                title = "Нижчий регістр",
+                instruction = "Вимов 'Я знаю, що робити' звичайним голосом, потім навмисно нижчим, стабільнішим тоном. Відчуй, як змінюється сприйняття. Повтори 5 разів.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 45
+                ),
+                durationSeconds = 45,
+                targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
+            ),
+            LessonExercise(
+                id = "intonation_ex_17_2",
+                type = ExerciseType.ARTICULATION,
+                title = "Завершені речення",
+                instruction = "Вимов 'Рішення прийнято. Ми рухаємось далі.' — без 'хвостиків' сумніву, кожне речення чітко завершене. Повтори 5 разів.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 45
+                ),
+                durationSeconds = 45,
+                targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
+            ),
+            LessonExercise(
+                id = "intonation_ex_17_3",
+                type = ExerciseType.ARTICULATION,
+                title = "Стабільний темп",
+                instruction = "Вимов повільно й рівномірно: 'Це рішення обдумане. Воно правильне. Ми його дотримуємось.' Не пришвидшуйся від хвилювання. Повтори 5 разів.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 60
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_17_4",
+                type = ExerciseType.ARTICULATION,
+                title = "Експертна відповідь",
+                instruction = "Уяви, що тебе питають про твою сферу експертизи. Вимов впевнено: 'За моїм досвідом, це найкраще рішення в цій ситуації.' Повтори 5 разів.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 45
+                ),
+                durationSeconds = 45,
+                targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
+            ),
+            LessonExercise(
+                id = "intonation_ex_17_5",
+                type = ExerciseType.ARTICULATION,
+                title = "Без слів-паразитів",
+                instruction = "Вимов думку без жодного 'е-е', 'ну', 'типу': 'Наша стратегія проста. Ми фокусуємось на якості. Результат буде через квартал.' Тримай чисті паузи замість слів-заповнювачів. Повтори 5 разів.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 60
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_17_6",
+                type = ExerciseType.READING,
+                title = "Виступ лідера",
+                instruction = "Прочитай як звернення лідера до команди — стабільно, впевнено, з вагою в голосі.",
+                content = ExerciseContent.ReadingText(
+                    text = "Ми стоїмо перед складним вибором. Але рішення очевидне для тих, хто дивиться на факти. Я впевнений у нашому курсі. Ми рухаємось вперед — разом.",
+                    emotion = null
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
+            ),
+            LessonExercise(
+                id = "intonation_ex_17_7",
+                type = ExerciseType.READING,
+                title = "Експертна консультація",
+                instruction = "Прочитай як досвідчений експерт, що дає професійну рекомендацію.",
+                content = ExerciseContent.ReadingText(
+                    text = "На основі даних, які ми маємо, найбільш ефективним буде поетапний підхід. Це знижує ризики і дає змогу коригувати курс. Рекомендую саме цей варіант.",
+                    emotion = null
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
+            )
+        ),
+        estimatedMinutes = 14
     )
 
-    private fun getLesson18Placeholder(): Lesson = Lesson(
+    // ==================== УРОК 18: Емпатійна інтонація ====================
+    private fun getLesson18(): Lesson = Lesson(
         id = "intonation_lesson_18",
         courseId = COURSE_ID,
         dayNumber = 18,
         title = "Емпатійна інтонація",
-        description = "Скоро буде доступно",
+        description = "Голос, який дає відчуття, що тебе справді почули",
         theory = TheoryContent(
-            text = "Цей урок ще в розробці. Ми працюємо над тим, щоб зробити його якомога кориснішим для тебе. Дякуємо за терпіння!",
-            tips = emptyList()
+            text = """
+                Голос, який чує, а не тільки говорить
+
+                Емпатійна інтонація — це звучання щирого розуміння. Вона відрізняється від теплої тим, що фокус не на заспокоєнні, а на визнанні чужих почуттів: "я бачу, що тобі важко" звучить інакше, ніж "все буде добре".
+
+                Як звучить емпатія в голосі?
+
+                • Уповільнений темп — даєш співрозмовнику відчуття, що його не поспішають
+                • М'які, невеликі підйоми тону на ключових словах співчуття
+                • Паузи для "простору" — не заповнюєш кожну секунду словами
+                • Дзеркалення енергії — якщо людина говорить тихо й сумно, не відповідай бадьоро
+                • Щирість без надмірної драматизації — не переймай чужу емоцію повністю, а визнай її
+
+                Різниця між емпатією і жалістю: жалість звучить зверхньо — "бідолашний ти". Емпатія звучить на рівних — "я розумію, це справді важко". Тон емпатії партнерський, не поблажливий.
+
+                Типова помилка: одразу переходити до порад ("а ти спробуй...") замість того, щоб спершу визнати почуття голосом. Емпатійна інтонація — це спершу "я чую тебе", а вже потім, якщо просять, — рішення.
+
+                Важливо: емпатія в голосі вимагає уповільнення себе — не можна щиро співчувати в поспішному темпі.
+
+                Сьогодні тренуємо голос, який дає співрозмовнику відчуття, що його справді почули.
+            """.trimIndent(),
+            tips = listOf(
+                "Спершу визнай почуття голосом ('я розумію'), а вже потім пропонуй рішення",
+                "Уповільнюйся, коли говориш емпатійно — поспіх руйнує відчуття щирості",
+                "Дзеркали енергію співрозмовника — не будь занадто бадьорим з сумною людиною"
+            )
         ),
-        exercises = emptyList(),
-        estimatedMinutes = 10
+        exercises = listOf(
+            LessonExercise(
+                id = "intonation_ex_18_1",
+                type = ExerciseType.ARTICULATION,
+                title = "Визнання почуттів",
+                instruction = "Вимов: 'Я бачу, що тобі зараз важко.' — повільно, м'яко, з щирою увагою в голосі, без поспіху до поради. Повтори 5 разів.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 45
+                ),
+                durationSeconds = 45,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_18_2",
+                type = ExerciseType.ARTICULATION,
+                title = "Емпатія vs жалість",
+                instruction = "Вимов 'Бідолашний ти...' зверхньо-жалісливо. Потім 'Розумію, це дійсно важко' — на рівних, партнерськи. Відчуй різницю в тоні. Повтори 5 разів.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 60
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_18_3",
+                type = ExerciseType.ARTICULATION,
+                title = "Пауза для простору",
+                instruction = "Вимов: 'Розкажи, що сталося.' — потім мовчи 3 секунди, даючи простір відповіді, не заповнюй тишу. Повтори 5 разів.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 45
+                ),
+                durationSeconds = 45,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_18_4",
+                type = ExerciseType.ARTICULATION,
+                title = "Дзеркалення енергії",
+                instruction = "Уяви, що співрозмовник говорить тихо й сумно. Відповідай так само тихо й спокійно: 'Так, я розумію. Це справді нелегко.' Не будь занадто бадьорим. Повтори 5 разів.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 45
+                ),
+                durationSeconds = 45,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_18_5",
+                type = ExerciseType.ARTICULATION,
+                title = "Спершу почуття, потім рішення",
+                instruction = "Вимов: 'Я чую, наскільки це складно для тебе.' — пауза — 'Коли будеш готовий, я поруч, щоб подумати разом.' Повтори 5 разів.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 60
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
+            ),
+            LessonExercise(
+                id = "intonation_ex_18_6",
+                type = ExerciseType.EMOTION_READING,
+                title = "Емпатійна розмова",
+                instruction = "Прочитай повільно, з щирою увагою — так, ніби визнаєш чужий біль перед тим, як щось порадити.",
+                content = ExerciseContent.ReadingText(
+                    text = "Я розумію, наскільки це важко для тебе зараз. Ти маєш повне право почуватися саме так. Не поспішай — я поруч, і ми розберемося з цим разом, коли ти будеш готовий.",
+                    emotion = null
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
+            ),
+            LessonExercise(
+                id = "intonation_ex_18_7",
+                type = ExerciseType.EMOTION_READING,
+                title = "Підтримка колеги",
+                instruction = "Прочитай як щиру підтримку колезі — на рівних, без поблажливості.",
+                content = ExerciseContent.ReadingText(
+                    text = "Бачу, що цей проєкт дався тобі нелегко. Твої зусилля не залишились непоміченими. Якщо потрібна допомога чи просто хтось вислухає — я тут.",
+                    emotion = null
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION)
+            )
+        ),
+        estimatedMinutes = 14
     )
 
-    private fun getLesson19Placeholder(): Lesson = Lesson(
+    // ==================== УРОК 19: Переключення емоцій ====================
+    private fun getLesson19(): Lesson = Lesson(
         id = "intonation_lesson_19",
         courseId = COURSE_ID,
         dayNumber = 19,
         title = "Переключення емоцій",
-        description = "Скоро буде доступно",
+        description = "Швидкі й плавні переходи між емоціями без залишкового звучання попередньої",
         theory = TheoryContent(
-            text = "Цей урок ще в розробці. Ми працюємо над тим, щоб зробити його якомога кориснішим для тебе. Дякуємо за терпіння!",
-            tips = emptyList()
+            text = """
+                Життя не звучить однією нотою
+
+                Реальні розмови й виступи рідко тримаються однієї емоції. Ти можеш почати з гумору, перейти до серйозності, а закінчити натхненням — і все це за одну хвилину. Вміння плавно й швидко перемикати інтонацію — ознака справжньої голосової майстерності.
+
+                Чому це складно? Кожна емоція має свій "фізичний" стан голосу — тон, темп, гучність, напруження горла. Перемикання вимагає миттєво "відпустити" один стан і "увімкнути" інший, без залишкового звучання попередньої емоції.
+
+                Два типи перемикання:
+
+                1. Плавний перехід — емоція поступово змінюється, як у природній розповіді (сум → надія → рішучість)
+                2. Різкий контраст — раптова зміна для ефекту (спокій → раптовий гнів → знову спокій)
+
+                Як тренувати перемикання?
+
+                • Роби коротку "паузу-скидання" між емоціями — видих, розслаблення горла
+                • Уявляй конкретну картинку для кожної емоції перед тим, як її озвучити
+                • Починай з повільних переходів, потім прискорюй
+
+                Типова помилка: одна емоція "просочується" в наступну через залишкове напруження голосу. Наприклад, гнів у горлі заважає щиро прозвучати наступній фразі радості.
+
+                Сьогодні тренуємо гнучкість голосу — швидкі та плавні переходи між усіма емоціями, які ти вивчив цього курсу.
+            """.trimIndent(),
+            tips = listOf(
+                "Роби коротку паузу-скидання між емоціями — видихни й розслаб горло",
+                "Уявляй конкретну картинку для кожної емоції перед тим, як озвучити її",
+                "Тренуй спочатку повільні переходи, потім прискорюй до природного темпу"
+            )
         ),
-        exercises = emptyList(),
-        estimatedMinutes = 10
+        exercises = listOf(
+            LessonExercise(
+                id = "intonation_ex_19_1",
+                type = ExerciseType.ARTICULATION,
+                title = "Пауза-скидання",
+                instruction = "Вимов 'Я в захваті!' радісно. Пауза-видих 2 секунди. Потім 'Мені дуже шкода' сумно. Відчуй, як скидання допомагає повністю перемкнутись. Повтори 5 разів.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 60
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_19_2",
+                type = ExerciseType.ARTICULATION,
+                title = "Плавний перехід",
+                instruction = "Вимов: 'Було важко...' (сум) '...але ми не здавались...' (рішучість) '...і ми перемогли!' (радість). Плавно веди голос через три емоції. Повтори 5 разів.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 60
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_19_3",
+                type = ExerciseType.ARTICULATION,
+                title = "Різкий контраст",
+                instruction = "Вимов спокійно: 'Все було тихо.' Потім різко, з гнівом: 'РАПТОМ ВІН ЗБРЕХАВ!' Потім знову спокійно: 'Але ми впорались.' Повтори 5 разів.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 60
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_19_4",
+                type = ExerciseType.ARTICULATION,
+                title = "П'ять емоцій поспіль",
+                instruction = "Вимов 'Привіт' п'ятьма емоціями поспіль без пауз-скидань: радісно, сумно, здивовано, сердито, тепло. Відчуй, наскільки складніше без пауз.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 60
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_19_5",
+                type = ExerciseType.ARTICULATION,
+                title = "Ті самі п'ять — з паузами",
+                instruction = "Повтори попередню вправу, але тепер з короткою паузою-скиданням між кожною емоцією. Порівняй чистоту звучання кожної.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 90
+                ),
+                durationSeconds = 90,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_19_6",
+                type = ExerciseType.EMOTION_READING,
+                title = "Емоційні гойдалки",
+                instruction = "Прочитай, чітко змінюючи інтонацію на кожному емоційному повороті тексту.",
+                content = ExerciseContent.ReadingText(
+                    text = "Спочатку я злякався. Потім розсердився — як це могло статися? Але за мить прийшло розуміння, і гнів змінився сумом. А коли все нарешті владналося — я не міг стримати радості.",
+                    emotion = null
+                ),
+                durationSeconds = 75,
+                targetMetrics = listOf(SkillType.INTONATION, SkillType.TEMPO)
+            ),
+            LessonExercise(
+                id = "intonation_ex_19_7",
+                type = ExerciseType.EMOTION_READING,
+                title = "Історія з поворотами",
+                instruction = "Прочитай, проводячи голос через шок, злість, роздуми і спокійне рішення.",
+                content = ExerciseContent.ReadingText(
+                    text = "Ранок був звичайним. Раптом — дзвінок, і новина, що змінила все: 'Тебе звільнили.' Шок. Потім злість. Потім — тиша роздумів. І врешті — спокійне рішення почати щось нове.",
+                    emotion = null
+                ),
+                durationSeconds = 75,
+                targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
+            )
+        ),
+        estimatedMinutes = 15
     )
 
-    private fun getLesson20Placeholder(): Lesson = Lesson(
+    // ==================== УРОК 20: Фінальна підготовка ====================
+    private fun getLesson20(): Lesson = Lesson(
         id = "intonation_lesson_20",
         courseId = COURSE_ID,
         dayNumber = 20,
         title = "Фінальна підготовка",
-        description = "Скоро буде доступно",
+        description = "Комплексний огляд усіх технік курсу перед випускним",
         theory = TheoryContent(
-            text = "Цей урок ще в розробці. Ми працюємо над тим, щоб зробити його якомога кориснішим для тебе. Дякуємо за терпіння!",
-            tips = emptyList()
+            text = """
+                Генеральна репетиція перед випускним
+
+                Завтра — випускний урок курсу "Магія інтонації". Сьогодні ми проходимось по всьому арсеналу технік, які ти опанував за три тижні, і перевіряємо, наскільки впевнено ти ними володієш.
+
+                Чек-лист навичок курсу:
+
+                Тиждень 1 — Базові емоції:
+                - Радість, сум, гнів, здивування
+                - Паузи та логічні акценти
+
+                Тиждень 2 — Застосування голосу:
+                - Наративна та ділова інтонація
+                - Риторичні питання, драматична пауза
+                - Емоційна гучність, натхненна промова
+
+                Тиждень 3 — Майстерність:
+                - Сарказм, тепло, авторитетність, емпатія
+                - Швидке перемикання між емоціями
+
+                Сьогоднішній формат: серія коротких перевірок по кожній категорії, а наприкінці — комплексна вправа, яка поєднує все відразу.
+
+                Як оцінювати себе?
+                - Якщо емоція звучить природно з першої спроби — навичка засвоєна
+                - Якщо доводиться "грати" й напружуватись — поверни увагу до відповідного уроку
+                - Пам'ятай: мета — не ідеальність, а помітний прогрес порівняно з днем 1
+
+                Ти пройшов величезний шлях від "Основ інтонації" до вміння тримати паузу, перемикати емоції й звучати авторитетно. Завтра — час це показати.
+            """.trimIndent(),
+            tips = listOf(
+                "Це самоперевірка, а не екзамен — будь чесним і спокійним",
+                "Познач техніки, які даються важче — повернешся до них після курсу",
+                "Порівняй сьогоднішній голос із записом дня 1 — різниця тебе здивує"
+            )
         ),
-        exercises = emptyList(),
-        estimatedMinutes = 10
+        exercises = listOf(
+            LessonExercise(
+                id = "intonation_ex_20_1",
+                type = ExerciseType.ARTICULATION,
+                title = "Швидка розминка діапазону",
+                instruction = "Сирена від найнижчої до найвищої ноти і назад. Потім 5 сходинок голосу вгору-вниз. Розігрій весь діапазон перед фінальним ривком.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 60
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_20_2",
+                type = ExerciseType.ARTICULATION,
+                title = "Тест: базові емоції",
+                instruction = "Вимов 'Це сталося' з чотирма базовими емоціями поспіль: радісно, сумно, сердито, здивовано. Швидко перемикайся.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 60
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_20_3",
+                type = ExerciseType.ARTICULATION,
+                title = "Тест: пауза й акцент",
+                instruction = "Вимов: 'Головне...' — пауза 2 секунди — 'НЕ ЗДАВАТИСЬ.' З чітким акцентом після паузи. Повтори 3 рази.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 45
+                ),
+                durationSeconds = 45,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_20_4",
+                type = ExerciseType.ARTICULATION,
+                title = "Тест: ділова та авторитетна",
+                instruction = "Вимов твердо, без сумнівів: 'Рішення прийнято. Ми готові.' — стабільним, нижчим, впевненим голосом. Повтори 3 рази.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 45
+                ),
+                durationSeconds = 45,
+                targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
+            ),
+            LessonExercise(
+                id = "intonation_ex_20_5",
+                type = ExerciseType.ARTICULATION,
+                title = "Тест: тепло й емпатія",
+                instruction = "Вимов м'яко: 'Я розумію. Я поруч.' — з теплом і щирою увагою в голосі. Повтори 3 рази.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 45
+                ),
+                durationSeconds = 45,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_20_6",
+                type = ExerciseType.ARTICULATION,
+                title = "Тест: сарказм і гучність",
+                instruction = "Вимов саркастично: 'Ну просто чудово.' Потім з контрастом гучності — пошепки: 'Тихо...' і голосно: 'А тепер увага!' Повтори 3 рази.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 60
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_20_7",
+                type = ExerciseType.READING,
+                title = "Комплексне читання",
+                instruction = "Прочитай текст, застосовуючи паузи, акценти й динаміку тону — це твоя генеральна репетиція.",
+                content = ExerciseContent.ReadingText(
+                    text = "Це була неймовірна історія. Спочатку — тиша й сумніви. Потім — перша маленька перемога. А тепер, озираючись назад, я можу сказати з повною впевненістю: кожен крок був вартий цього.",
+                    emotion = null
+                ),
+                durationSeconds = 75,
+                targetMetrics = listOf(SkillType.INTONATION, SkillType.TEMPO, SkillType.CONFIDENCE)
+            ),
+            LessonExercise(
+                id = "intonation_ex_20_8",
+                type = ExerciseType.EMOTION_READING,
+                title = "Генеральна репетиція промови",
+                instruction = "Прочитай як фінальну репетицію — впевнено, з енергією, готуючись до завтрашнього випускного.",
+                content = ExerciseContent.ReadingText(
+                    text = "Три тижні тому мій голос звучав однаково в будь-якій ситуації. Сьогодні я вмію говорити з теплом, з авторитетом, із заразливим ентузіазмом. Завтра я покажу все, чого навчився.",
+                    emotion = null
+                ),
+                durationSeconds = 75,
+                targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
+            )
+        ),
+        estimatedMinutes = 17
     )
 
-    private fun getLesson21Placeholder(): Lesson = Lesson(
+    // ==================== УРОК 21: Випускний ====================
+    private fun getLesson21(): Lesson = Lesson(
         id = "intonation_lesson_21",
         courseId = COURSE_ID,
         dayNumber = 21,
         title = "Випускний",
-        description = "Скоро буде доступно",
+        description = "Фінальний урок! Підсумок курсу та випускна практика",
         theory = TheoryContent(
-            text = "Цей урок ще в розробці. Ми працюємо над тим, щоб зробити його якомога кориснішим для тебе. Дякуємо за терпіння!",
-            tips = emptyList()
+            text = """
+                Вітаю, випускнику!
+
+                Ти пройшов 21-денний курс "Магія інтонації". Три тижні тому твій голос звучав здебільшого на одній ноті. Сьогодні ти володієш цілим оркестром інтонацій — і вмієш ним диригувати свідомо.
+
+                Що ти опанував за цей час:
+
+                Базові емоції
+                Радість, сум, гнів, здивування — і як передавати їх голосом природно, без переграшу.
+
+                Практичні техніки
+                Паузи та акценти, наративна й ділова інтонація, риторичні питання, емоційна гучність.
+
+                Ораторська майстерність
+                Драматична пауза, натхненна промова з анафорою та крещендо.
+
+                Тонкі відтінки
+                Сарказм, тепло, авторитетність, емпатія — і швидке перемикання між усіма емоціями без залишкового звучання попередньої.
+
+                Що далі?
+
+                Курс закінчився, але голос — інструмент, який іржавіє без практики. Ось що рекомендую:
+
+                1. Щоденна розминка діапазону — 2 хвилини "сирени" й "сходинок" вранці
+                2. Свідоме слухання себе — помічай свою інтонацію в реальних розмовах
+                3. Записуй важливі розмови (з дозволу співрозмовника) і аналізуй свій тон
+                4. Обирай техніку тижня — раз на тиждень свідомо тренуй одну інтонацію в житті
+
+                Сьогоднішній урок — твій випускний. Ми пройдемось по найяскравіших техніках курсу, а наприкінці ти розкажеш власними словами про свій шлях.
+
+                Готовий? Твій голос змінився. Час це відчути.
+            """.trimIndent(),
+            tips = listOf(
+                "Це святкування прогресу, а не екзамен — розслабся і насолодись",
+                "Порівняй свій голос сьогодні з першим записом дня 1 — різниця буде разючою",
+                "Обирай техніку тижня і свідомо тренуй її в реальному житті після курсу"
+            )
         ),
-        exercises = emptyList(),
-        estimatedMinutes = 10
+        exercises = listOf(
+            LessonExercise(
+                id = "intonation_ex_21_1",
+                type = ExerciseType.ARTICULATION,
+                title = "Церемоніальна розминка",
+                instruction = "Востаннє в курсі: сирена від найнижчої до найвищої ноти (2 рази), 5 сходинок голосу вгору-вниз (2 рази), слово 'Так' п'ятьма емоціями.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 90
+                ),
+                durationSeconds = 90,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_21_2",
+                type = ExerciseType.EMOTION_READING,
+                title = "Випускна історія: базові емоції",
+                instruction = "Прочитай, проходячи через усі базові емоції курсу — природно, без переграшу.",
+                content = ExerciseContent.ReadingText(
+                    text = "Це був неймовірний шлях. Спочатку я хвилювався. Потім засмучувався, коли не виходило. Іноді злився на себе. Але щоразу здивування від прогресу переважало все інше.",
+                    emotion = null
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION)
+            ),
+            LessonExercise(
+                id = "intonation_ex_21_3",
+                type = ExerciseType.ARTICULATION,
+                title = "Випускна пауза",
+                instruction = "Вимов: 'І сьогодні...' — тримай паузу 4 секунди — '...я справжній випускник курсу інтонації.' Насолодись паузою, ти на це заслужив.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 60
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
+            ),
+            LessonExercise(
+                id = "intonation_ex_21_4",
+                type = ExerciseType.READING,
+                title = "Авторитетне випускне слово",
+                instruction = "Прочитай впевнено й стабільно — з вагою людини, що дійсно пройшла шлях трансформації.",
+                content = ExerciseContent.ReadingText(
+                    text = "Три тижні тому я не вірив, що голос можна тренувати так само, як м'язи. Сьогодні я знаю: це правда. І я готовий говорити так, щоб мене чули й розуміли.",
+                    emotion = null
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
+            ),
+            LessonExercise(
+                id = "intonation_ex_21_5",
+                type = ExerciseType.ARTICULATION,
+                title = "Випускне крещендо",
+                instruction = "Вимов з наростанням, як фінал натхненної промови: 'Це був не просто курс. Це була трансформація. І вона тільки починається!' Повтори 3 рази, нарощуючи енергію.",
+                content = ExerciseContent.ArticulationExercise(
+                    hasTimer = true,
+                    durationSeconds = 60
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
+            ),
+            LessonExercise(
+                id = "intonation_ex_21_6",
+                type = ExerciseType.EMOTION_READING,
+                title = "Тепле прощання з курсом",
+                instruction = "Прочитай тепло і щиро — як подяку самому собі за пройдений шлях.",
+                content = ExerciseContent.ReadingText(
+                    text = "Дякую собі за терпіння й наполегливість. Дякую за кожен запис, кожну спробу, кожну вправу. Цей голос тепер по-справжньому мій — живий, гнучкий, виразний.",
+                    emotion = null
+                ),
+                durationSeconds = 60,
+                targetMetrics = listOf(SkillType.INTONATION, SkillType.CONFIDENCE)
+            ),
+            LessonExercise(
+                id = "intonation_ex_21_7",
+                type = ExerciseType.READING,
+                title = "Фінальний тест: усі відтінки",
+                instruction = "Прочитай, свідомо проводячи голос через кілька емоцій і завершуючи впевненим, авторитетним тоном.",
+                content = ExerciseContent.ReadingText(
+                    text = "Я був здивований, засмучений, сердитий і по-справжньому щасливий за ці три тижні. Але найважливіше — я навчився керувати цим усім свідомо. Мій голос більше не веде мене. Тепер я веду його.",
+                    emotion = null
+                ),
+                durationSeconds = 75,
+                targetMetrics = listOf(SkillType.INTONATION, SkillType.TEMPO, SkillType.CONFIDENCE)
+            ),
+            LessonExercise(
+                id = "intonation_ex_21_8",
+                type = ExerciseType.FREE_SPEECH,
+                title = "Випускне слово",
+                instruction = "Скажи кілька слів про свій досвід проходження курсу 'Магія інтонації'. Яка техніка була найскладнішою? Яка — найкориснішою? Як змінився твій голос? Говори 30-60 секунд.",
+                content = ExerciseContent.FreeSpeechTopic(
+                    topic = "Мій досвід курсу 'Магія інтонації'",
+                    hints = listOf(
+                        "Яка техніка була найскладнішою?",
+                        "Яка вправа найбільше запам'яталася?",
+                        "Як змінився твій голос за три тижні?",
+                        "Яку інтонацію плануєш тренувати далі?"
+                    )
+                ),
+                durationSeconds = 90,
+                targetMetrics = listOf(SkillType.INTONATION, SkillType.STRUCTURE, SkillType.CONFIDENCE)
+            )
+        ),
+        estimatedMinutes = 18
     )
 }
