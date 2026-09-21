@@ -22,6 +22,7 @@
 - `BillingClientWrapper.kt` — обгортка над Google Play Billing. **[2026-09-19]** `queryProductDetailsAsync` callback у Billing 8 повертає `QueryProductDetailsResult` замість голого списку — виправлено (`productDetailsResult.productDetailsList`).
 - `AuthRepositoryImpl.kt` / `GoogleSignInHelper.kt` — Firebase Auth (Google + Email/Password).
 - `FirebaseModule.kt`, `BillingModule.kt`, `AudioModule.kt`, `DatabaseModule.kt` та ін. — Hilt DI модулі.
+- `NotificationHelper.kt` (`utils/`) — локальні сповіщення: канал `coach_reminders`, `showCoachNotification()`, планування через WorkManager (`scheduleCoachReminder`/`cancelCoachReminder`). `CoachReminderWorker.kt` (`data/worker/`) — щоденний `CoroutineWorker`, читає прогрес/streak і показує мотиваційне сповіщення. `service/VoicePowerMessagingService.kt` — приймач push (FCM). Деталі стану push → розділ нижче.
 
 ## Навігація
 
@@ -48,6 +49,13 @@
 - **DI через Hilt**: конструктор-injection всюди, модулі в `di/` (`FirebaseModule`, `BillingModule`, `AudioModule`, `DatabaseModule` та ін.) — по одному модулю на групу залежностей, не змішувати.
 - **Кастомні тап-жести замість `.clickable`**: там, де потрібна 3D/скейл-анімація на натисканні (напр. іконка Settings у `HomeHeader`), використовують `Modifier.pointerInput(Unit) { detectTapGestures(...) }` замість семантичного `.clickable` — має значення для accessibility/тестування (не видно у деяких tooling), але це усвідомлений стильовий вибір у проєкті, не помилка.
 - **Мова коментарів/UI-тексту** — виключно українська (код/імена змінних — англійською, як завжди в Kotlin).
+
+## Push-сповіщення (стан на 2026-09-21)
+
+- **Локальні нагадування** — повністю робочі: `NotificationHelper.kt` + `CoachReminderWorker.kt` (WorkManager), тумблер "Нагадування" в `SettingsScreen.kt`. **[2026-09-21]** Додано runtime-запит `POST_NOTIFICATIONS` (Android 13+) при увімкненні тумблера — за патерном `RECORD_AUDIO` з `AiCoachScreen.kt` (`rememberLauncherForActivityResult` + перевірка перед запуском). До цього тумблер міг бути "Увімкнено", але жодне сповіщення не приходило на Android 13+.
+- **Ручні push-розсилки через Firebase Console** — **[2026-09-21] доведено до пуття**: `VoicePowerMessagingService.kt` (приймач FCM, `onMessageReceived`) існував у коді, але ніколи не був закомічений у git — тепер закомічено. Додано в `AndroidManifest.xml` meta-data `com.google.firebase.messaging.default_notification_channel_id` (значення `coach_reminders`, той самий канал, що й локальні нагадування) та `default_notification_icon` — без цього push, надісланий коли застосунок у фоні/закритий, обробляється системою напряму (не через `onMessageReceived`) і йшов би в дефолтний канал без чіткої іконки. Токен FCM реєструється в Firebase автоматично при встановленні застосунку — Console-кампанії таргетяться "на весь застосунок" без зберігання токенів самостійно.
+- ⚠️ **У Firebase Console для тесту використовувати ЛИШЕ кнопку "Send test message"** (конкретний токен одного пристрою, з logcat/тег `FirebaseMessaging`) — **НІКОЛИ** "Review"/"Publish" з таргетом "весь застосунок" для тестування, бо в застосунку вже є реальні платні користувачі (перша оплачена підписка — вересень 2026).
+- **Відкладено свідомо** (немає конкретного сценарію): адресні/автоматичні розсилки — збереження FCM-токена в `users/{uid}.fcmToken` через Firestore, `@AndroidEntryPoint` на `VoicePowerMessagingService` (поки єдиний `Service` без Hilt у проєкті — `onNewToken()` порожня заглушка), і Cloud Functions для тригерів (реактивація неактивних, втрата streak тощо) — Cloud Functions в проєкті ще ніколи не налаштовувались (немає `functions/`, `firebase.json`, `.firebaserc`) і вимагають переходу на платний план Firebase (Blaze).
 
 ## Перевірено емулятором (2026-09-19/20, Android 16 / API 36)
 
