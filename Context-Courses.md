@@ -14,7 +14,7 @@
 | `BusinessCommunicationCourse.kt` (Course 6) | 7/21 | ⏳ Дні 8-21 — заглушки |
 | `CharismaticSpeakerCourse.kt` (Course 7) | 7/21 | ⏳ Дні 8-21 — заглушки |
 
-**Разом: 2 з 7 курсів повністю готові, 5 з 7 мають лише тиждень 1.**
+**Разом: 2 з 7 курсів повністю готові, IntonationMagic — 2 з 3 тижнів, решта 4 з 7 мають лише тиждень 1.**
 
 ## Формат заглушки
 
@@ -32,7 +32,7 @@ Lesson(
 )
 ```
 - `BusinessCommunicationCourse.kt`, `CharismaticSpeakerCourse.kt`, `ConfidentSpeakerCourse.kt` — усі 14 заглушок днів 8-21 генеруються **однією спільною функцією** `createPlaceholder(day)` (назва/опис не відрізняються по днях).
-- `IntonationMagicCourse.kt`, `VoicePowerCourse.kt` — заглушки мають **окремі функції на кожен день** (`getLesson8Placeholder()` ... `getLesson21Placeholder()`), і назви вже унікальні й тематичні (напр. "Грудний резонатор", "Головний резонатор" для IntonationMagic) — сама теорія/вправи все ще порожні, але заголовки вже продумані, легше писати по них контент.
+- `IntonationMagicCourse.kt`, `VoicePowerCourse.kt` — заглушки мають **окремі функції на кожен день** (`getLessonNPlaceholder()`), і назви вже унікальні й тематичні (напр. "Грудний резонатор", "Головний резонатор" для VoicePower) — сама теорія/вправи все ще порожні, але заголовки вже продумані, легше писати по них контент. У `IntonationMagicCourse.kt` дні 8-14 вже написані й перейменовані з `getLessonNPlaceholder()` на `getLessonN()` (як дні 1-7) — заглушки лишились тільки для днів 15-21.
 
 ## Чому це критично
 

@@ -23,7 +23,7 @@ Android-застосунок для тренування дикції/мовле
 | Технічні вимоги Play (targetSdk 36, Billing Library 8) | ✅ Готово | [`Context-Code.md`](Context-Code.md) |
 | Опис застосунку в Play Market (емодзі, переклад РУ) | ✅ Подано, на перевірці Google | [`Context-Business.md`](Context-Business.md) |
 | Податкова інформація / ФОП / виплати | 🔄 В процесі — чекаємо довідку від ДПС | [`Context-Business.md`](Context-Business.md) |
-| Контент курсів (5 з 7 курсів мають лише 7/21 уроку) | ⏳ Не почато писати, **але стиль-гайд готовий** (94 уроки проаналізовано, конкретні патерни/чекліст у файлі) | [`Context-Courses.md`](Context-Courses.md) |
+| Контент курсів (4 з 7 курсів мають лише 7/21 уроку) | 🔄 IntonationMagic 14/21 написано (2026-09-21), стиль-гайд готовий для решти | [`Context-Courses.md`](Context-Courses.md) |
 | Розділ "Impro" (імпровізація) | ℹ️ Оглянуто, повністю робочий | [`Context-Improvisation.md`](Context-Improvisation.md) |
 | Конвенції коду (MVI-патерн, шари, DI) | ✅ Задокументовано | [`Context-Code.md`](Context-Code.md) |
 
