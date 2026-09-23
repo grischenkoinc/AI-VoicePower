@@ -1,5 +1,6 @@
 package com.aivoicepower.ui.screens.settings
 
+import com.aivoicepower.BuildConfig
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -297,7 +298,7 @@ fun SettingsScreen(
                 SettingsItemRow(
                     icon = Icons.Default.Info,
                     title = "Про застосунок",
-                    subtitle = "Версія 1.2.5",
+                    subtitle = "Версія ${BuildConfig.VERSION_NAME}",
                     onClick = onNavigateToAbout
                 )
                 SettingsItemRow(
@@ -368,7 +369,7 @@ fun SettingsScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Diqto v1.2.5",
+                    text = "Diqto v${BuildConfig.VERSION_NAME}",
                     fontSize = 12.sp,
                     color = Color.White.copy(alpha = 0.3f),
                     fontWeight = FontWeight.Normal,

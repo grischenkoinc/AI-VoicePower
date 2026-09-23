@@ -1,5 +1,6 @@
 package com.aivoicepower.ui.screens.about
 
+import com.aivoicepower.BuildConfig
 import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -123,7 +124,7 @@ fun AboutScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Версія 1.2.5",
+                    text = "Версія ${BuildConfig.VERSION_NAME}",
                     fontSize = 14.sp,
                     color = Color.White.copy(alpha = 0.6f)
                 )
