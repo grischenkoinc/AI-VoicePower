@@ -33,5 +33,7 @@ data class HomeState(
     val remainingAiMessages: Int = Int.MAX_VALUE,
     val maxFreeAnalyses: Int = 5,
     val maxFreeImprovAnalyses: Int = 1,
-    val maxFreeAiMessages: Int = 10
+    val maxFreeAiMessages: Int = 10,
+    // Soft-ask for notification permission (shown once)
+    val showNotificationPrompt: Boolean = false
 )

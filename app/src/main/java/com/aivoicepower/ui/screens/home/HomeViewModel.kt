@@ -1,5 +1,9 @@
 package com.aivoicepower.ui.screens.home
 
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import android.util.Log
@@ -34,7 +38,8 @@ class HomeViewModel @Inject constructor(
     private val dailyTipsRepository: com.aivoicepower.data.repository.DailyTipsRepository,
     private val achievementRepository: AchievementRepository,
     private val authRepository: AuthRepository,
-    private val cloudSyncRepository: CloudSyncRepositoryImpl
+    private val cloudSyncRepository: CloudSyncRepositoryImpl,
+    @dagger.hilt.android.qualifiers.ApplicationContext private val appContext: Context
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeState())
@@ -51,6 +56,28 @@ class HomeViewModel @Inject constructor(
         observeCourseAndDailyPlan()
         observeAnalysisLimits()
         checkDiagnosticAchievement()
+        checkNotificationPromptVisibility()
+    }
+
+    /**
+     * Показує одноразовий м'який запит дозволу на сповіщення — для нових
+     * і вже існуючих юзерів однаково, поки дозвіл не надано і запит ще не бачили.
+     */
+    private fun checkNotificationPromptVisibility() {
+        viewModelScope.launch {
+            try {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return@launch
+                val hasPermission = ContextCompat.checkSelfPermission(
+                    appContext, android.Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+                if (hasPermission) return@launch
+
+                val prefs = userPreferencesDataStore.userPreferencesFlow.first()
+                if (prefs.hasSeenNotificationPrompt) return@launch
+
+                _state.update { it.copy(showNotificationPrompt = true) }
+            } catch (_: Exception) { }
+        }
     }
 
     /**
@@ -100,6 +127,12 @@ class HomeViewModel @Inject constructor(
             HomeEvent.ProgressClicked,
             HomeEvent.AiCoachClicked -> {
                 // Navigation handled in Screen
+            }
+            HomeEvent.NotificationPromptDismissed -> {
+                _state.update { it.copy(showNotificationPrompt = false) }
+                viewModelScope.launch {
+                    userPreferencesDataStore.setHasSeenNotificationPrompt(true)
+                }
             }
         }
     }

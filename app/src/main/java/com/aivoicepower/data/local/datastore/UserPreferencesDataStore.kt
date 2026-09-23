@@ -36,6 +36,8 @@ data class UserPreferences(
     // Reminder settings
     val isReminderEnabled: Boolean = false,
     val reminderHour: Int = 9,
+    // Notification permission soft-ask (Home screen, shown once)
+    val hasSeenNotificationPrompt: Boolean = false,
     // Sound settings
     val isSoundEnabled: Boolean = true,
     val uiVolume: Float = 0.8f,
@@ -73,6 +75,7 @@ class UserPreferencesDataStore @Inject constructor(
         val LAST_LIMIT_RESET_DATE = stringPreferencesKey("last_limit_reset_date")
         val IS_REMINDER_ENABLED = booleanPreferencesKey("is_reminder_enabled")
         val REMINDER_HOUR = intPreferencesKey("reminder_hour")
+        val HAS_SEEN_NOTIFICATION_PROMPT = booleanPreferencesKey("has_seen_notification_prompt")
         // Sound settings
         val IS_SOUND_ENABLED = booleanPreferencesKey("is_sound_enabled")
         val UI_VOLUME = floatPreferencesKey("ui_volume")
@@ -109,6 +112,7 @@ class UserPreferencesDataStore @Inject constructor(
                 lastLimitResetDate = preferences[PreferencesKeys.LAST_LIMIT_RESET_DATE],
                 isReminderEnabled = preferences[PreferencesKeys.IS_REMINDER_ENABLED] ?: false,
                 reminderHour = preferences[PreferencesKeys.REMINDER_HOUR] ?: 9,
+                hasSeenNotificationPrompt = preferences[PreferencesKeys.HAS_SEEN_NOTIFICATION_PROMPT] ?: false,
                 isSoundEnabled = preferences[PreferencesKeys.IS_SOUND_ENABLED] ?: true,
                 uiVolume = preferences[PreferencesKeys.UI_VOLUME] ?: 0.8f,
                 feedbackVolume = preferences[PreferencesKeys.FEEDBACK_VOLUME] ?: 0.9f,
@@ -368,6 +372,12 @@ class UserPreferencesDataStore @Inject constructor(
     suspend fun setReminderHour(hour: Int) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.REMINDER_HOUR] = hour
+        }
+    }
+
+    suspend fun setHasSeenNotificationPrompt(seen: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.HAS_SEEN_NOTIFICATION_PROMPT] = seen
         }
     }
 

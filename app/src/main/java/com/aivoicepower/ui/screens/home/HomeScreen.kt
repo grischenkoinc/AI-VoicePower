@@ -1,9 +1,13 @@
 package com.aivoicepower.ui.screens.home
 
+import android.Manifest
 import android.app.Activity
+import android.os.Build
 import android.view.HapticFeedbackConstants
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -47,6 +51,7 @@ import com.aivoicepower.domain.model.home.PlanActivity
 import com.aivoicepower.domain.model.home.QuickAction
 import com.aivoicepower.domain.model.home.Skill
 import com.aivoicepower.domain.model.home.TodayPlan
+import com.aivoicepower.ui.screens.home.components.NotificationPermissionPrompt
 import com.aivoicepower.ui.theme.*
 import com.aivoicepower.ui.theme.components.*
 import com.aivoicepower.ui.theme.modifiers.*
@@ -76,6 +81,11 @@ fun HomeScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var backPressedTime by remember { mutableStateOf(0L) }
+
+    // Notification permission soft-ask (Home, shown once)
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { _ -> viewModel.onEvent(HomeEvent.NotificationPromptDismissed) }
 
     // Double-back to exit app
     BackHandler {
@@ -216,6 +226,19 @@ fun HomeScreen(
             )
 
             Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        if (state.showNotificationPrompt) {
+            NotificationPermissionPrompt(
+                onAllow = {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    } else {
+                        viewModel.onEvent(HomeEvent.NotificationPromptDismissed)
+                    }
+                },
+                onDismiss = { viewModel.onEvent(HomeEvent.NotificationPromptDismissed) }
+            )
         }
     }
 }

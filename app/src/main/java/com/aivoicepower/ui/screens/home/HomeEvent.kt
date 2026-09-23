@@ -8,4 +8,5 @@ sealed class HomeEvent {
     object ImprovisationClicked : HomeEvent()
     object ProgressClicked : HomeEvent()
     object AiCoachClicked : HomeEvent()
+    object NotificationPromptDismissed : HomeEvent()
 }
