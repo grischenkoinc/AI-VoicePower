@@ -17,14 +17,14 @@ Android-застосунок для тренування дикції/мовле
 | Версія | versionCode | Стан |
 |---|---|---|
 | 1.2.6 | 19 | Останній публічний реліз — вересень 2026, у продакшн Play Console |
-| 1.2.7 | 20 | Зібрано локально (2 курси + фікс push), **ще не залито** в Play Console |
+| 1.2.7 | 20 | Зібрано локально (2 курси + фікс push), **ще не залито** в Play Console. З того часу додано ще 1 курс і proactive notification prompt — версію перед заливкою варто піднімати знову |
 
 | Напрямок | Стан | Деталі |
 |---|---|---|
 | Технічні вимоги Play (targetSdk 36, Billing Library 8) | ✅ Готово | [`Context-Code.md`](Context-Code.md) |
 | Опис застосунку в Play Market (емодзі, переклад РУ) | ✅ Подано, на перевірці Google | [`Context-Business.md`](Context-Business.md) |
 | Податкова інформація / ФОП / виплати | 🔄 В процесі — чекаємо довідку від ДПС | [`Context-Business.md`](Context-Business.md) |
-| Контент курсів (3 з 7 курсів мають лише 7/21 уроку) | 🔄 IntonationMagic (21/21, 09-21) і VoicePower (21/21, 09-22) завершено, стиль-гайд готовий для решти 3 | [`Context-Courses.md`](Context-Courses.md) |
+| Контент курсів (2 з 7 курсів мають лише 7/21 уроку) | 🔄 IntonationMagic (09-21), VoicePower (09-22), ConfidentSpeaker (09-23) завершено 21/21, стиль-гайд готовий для решти 2 | [`Context-Courses.md`](Context-Courses.md) |
 | Push-сповіщення | ✅ **[2026-09-23]** Виправлено 2 реальні баги знайдені живим тестом: майже ніхто не отримував `POST_NOTIFICATIONS` (тепер одноразовий запит на Home), іконка падала в дефолтну заглушку (тепер власна монохромна) | [`Context-Code.md`](Context-Code.md) |
 | Розділ "Impro" (імпровізація) | ℹ️ Оглянуто, повністю робочий | [`Context-Improvisation.md`](Context-Improvisation.md) |
 | Конвенції коду (MVI-патерн, шари, DI) | ✅ Задокументовано | [`Context-Code.md`](Context-Code.md) |
