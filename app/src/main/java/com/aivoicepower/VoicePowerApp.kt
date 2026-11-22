@@ -34,6 +34,27 @@ class VoicePowerApp : Application(), Configuration.Provider {
         super.onCreate()
         NotificationHelper.createNotificationChannel(this)
         initAnalyticsUserProperties()
+        ensureCoachReminderScheduled()
+    }
+
+    /**
+     * Відновлює щоденне нагадування, якщо юзер його вмикав, а завдання зникло
+     * (примусова зупинка, "оптимізація батареї" на Xiaomi/Huawei тощо).
+     * KEEP — не чіпає вже заплановане завдання, лише ставить нове, якщо його немає.
+     */
+    private fun ensureCoachReminderScheduled() {
+        appScope.launch(Dispatchers.IO) {
+            try {
+                val prefs = userPreferencesDataStore.userPreferencesFlow.first()
+                if (prefs.isReminderEnabled) {
+                    NotificationHelper.scheduleCoachReminder(
+                        this@VoicePowerApp,
+                        hour = prefs.reminderHour,
+                        replaceExisting = false
+                    )
+                }
+            } catch (_: Exception) {}
+        }
     }
 
     private fun initAnalyticsUserProperties() {

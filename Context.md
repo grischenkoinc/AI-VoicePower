@@ -17,16 +17,18 @@ Android-застосунок для тренування дикції/мовле
 | Версія | versionCode | Стан |
 |---|---|---|
 | 1.2.6 | 19 | Останній публічний реліз — вересень 2026, у продакшн Play Console |
-| 1.2.8 | 21 | Зібрано локально (3 курси + push-фікси + прибрано хардкод версії в UI), **ще не залито** в Play Console. (1.2.7/20 — проміжна локальна збірка, поглинута 1.2.8, ніколи не заливалась) |
+| 1.2.9 | 22 | Зібрано локально 2026-09-24 (CharismaticSpeaker 21/21 + push-фікси + прибрано хардкод версії в UI), **ще не залито** в Play Console. (1.2.7/20 і 1.2.8/21 — проміжні локальні збірки, поглинуті 1.2.9, ніколи не заливались) |
 
 | Напрямок | Стан | Деталі |
 |---|---|---|
 | Технічні вимоги Play (targetSdk 36, Billing Library 8) | ✅ Готово, **перевірено повторно 2026-09-24** (targetSdk=36, billing-ktx=8.1.0 — жодна сесійна зміна цього не торкнулась) | [`Context-Code.md`](Context-Code.md) |
 | Опис застосунку в Play Market (емодзі, переклад РУ) | ✅ Подано, на перевірці Google | [`Context-Business.md`](Context-Business.md) |
 | Податкова інформація / ФОП / виплати | 🔄 В процесі — чекаємо довідку від ДПС | [`Context-Business.md`](Context-Business.md) |
-| Контент курсів (2 з 7 курсів мають лише 7/21 уроку) | 🔄 IntonationMagic (09-21), VoicePower (09-22), ConfidentSpeaker (09-23) завершено 21/21, стиль-гайд готовий для решти 2 | [`Context-Courses.md`](Context-Courses.md) |
-| Push-сповіщення | ✅ **[2026-09-23]** Виправлено 2 реальні баги знайдені живим тестом: майже ніхто не отримував `POST_NOTIFICATIONS` (тепер одноразовий запит на Home), іконка падала в дефолтну заглушку (тепер власна монохромна) | [`Context-Code.md`](Context-Code.md) |
+| Контент курсів (1 з 7 курсів має лише 7/21 уроку) | 🔄 IntonationMagic (09-21), VoicePower (09-22), ConfidentSpeaker (09-23), CharismaticSpeaker (09-24) завершено 21/21 — лишився лише BusinessCommunication | [`Context-Courses.md`](Context-Courses.md) |
+| Push-сповіщення | ✅ **[2026-09-23]** Виправлено 2 реальні баги знайдені живим тестом: майже ніхто не отримував `POST_NOTIFICATIONS` (тепер одноразовий запит на Home), іконка падала в дефолтну заглушку (тепер власна монохромна). **[2026-11-18]** Нові сегментовані тексти локальних нагадувань + відновлення розкладу при старті (локально, не залито); автовмикання відхилено — основний канал = кампанії Firebase Console | [`Context-Code.md`](Context-Code.md) |
 | Розділ "Impro" (імпровізація) | ℹ️ Оглянуто, повністю робочий | [`Context-Improvisation.md`](Context-Improvisation.md) |
+| Нагороди замість rewarded-реклами (анкета + реферали) | 📝 **[2026-11-22]** Сплановано, roadmap з позначками Opus/Sonnet; наступне — Етап 1 (анкета + бонусний баланс, без Blaze) | [`REWARDS_ROADMAP.md`](REWARDS_ROADMAP.md), [`Context-Business.md`](Context-Business.md) |
+| Маркетинг / рілси (TT, YT Shorts, Reels через Google Flow) | 🆕 **[2026-10-01]** Напрям створено, обираємо формати | [`Context-Marketing.md`](Context-Marketing.md) |
 | Конвенції коду (MVI-патерн, шари, DI) | ✅ Задокументовано | [`Context-Code.md`](Context-Code.md) |
 
 ## Покажчик документів
@@ -38,9 +40,11 @@ Android-застосунок для тренування дикції/мовле
 | [`Context-Courses.md`](Context-Courses.md) | Стан контенту курсів, які уроки написані/заглушки |
 | [`Context-Improvisation.md`](Context-Improvisation.md) | Розділ вільної імпровізації (Debate/Sales/Interview/тощо) |
 | [`Context-Business.md`](Context-Business.md) | Play Console акаунт, монетизація, ФОП/податки, ReseraAI — **лише локально, не в git** |
+| [`Context-Marketing.md`](Context-Marketing.md) | Просування: соцмережі, рілси (Google Flow), формати, контент-план |
 | `README.md` | Загальний опис проєкту для людини (трохи застарів — там ще Android SDK 34) |
 | `FIREBASE_SETUP.md` | Налаштування Firebase-проєкту |
 | `ANALYTICS_ROADMAP.md` | План аналітики/back-office |
+| `REWARDS_ROADMAP.md` | Анкета + реферальна програма замість rewarded-реклами: кроки з чекбоксами й позначками Opus/Sonnet |
 | `PROMPT_IMPROVEMENT_ROADMAP.md` | План покращення AI-промптів |
 | `CLAUDE_TASK.md`/`2`/`3` | **Не контекст-доки** — скретч-зона для вставлених нотаток/багрепортів, не чіпати |
 

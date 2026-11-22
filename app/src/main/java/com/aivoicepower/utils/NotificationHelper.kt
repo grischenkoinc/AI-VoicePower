@@ -68,7 +68,11 @@ object NotificationHelper {
         NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification)
     }
 
-    fun scheduleCoachReminder(context: Context, hour: Int = 9) {
+    fun scheduleCoachReminder(
+        context: Context,
+        hour: Int = 9,
+        replaceExisting: Boolean = true
+    ) {
         val now = Calendar.getInstance()
         val target = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, hour)
@@ -88,7 +92,8 @@ object NotificationHelper {
 
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             WORK_TAG,
-            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+            if (replaceExisting) ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE
+            else ExistingPeriodicWorkPolicy.KEEP,
             workRequest
         )
     }
